@@ -31,13 +31,19 @@ import {
 import useTeam from '@/lib/hooks/use-team';
 import useTeams from '@/lib/hooks/use-teams';
 import useUser from '@/lib/hooks/use-user';
+import { GitHubIcon } from '@/components/icons/GitHub';
+import { useOAuth } from '@/lib/hooks/utils/use-oauth';
+import { setGitHubAuthState } from '@/lib/supabase';
+import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 
 const TeamSettingsPage = () => {
   const router = useRouter();
   const { user, mutate: mutateUser, signOut } = useUser();
   const { teams, mutate: mutateTeams } = useTeams();
   const { team, mutate: mutateTeam } = useTeam();
+  const { showAuthPopup } = useOAuth();
   const [loading, setLoading] = useState(false);
+  const [supabase] = useState(() => createBrowserSupabaseClient());
 
   if (!teams || !team || !user) {
     return <TeamSettingsLayout title="Settings" width="sm" />;
@@ -134,6 +140,26 @@ const TeamSettingsPage = () => {
             )}
           </Formik>
         </SettingsCard>
+        {team.is_personal && (
+          <SettingsCard title="Connected accounts">
+            <DescriptionLabel>
+              Connect your GitHub account to sync private repositories.
+            </DescriptionLabel>
+            <CTABar>
+              <Button
+                variant="plain"
+                buttonSize="sm"
+                Icon={GitHubIcon}
+                onClick={async () => {
+                  const state = await setGitHubAuthState(supabase, user.id);
+                  showAuthPopup('github', state);
+                }}
+              >
+                Authorize GitHub
+              </Button>
+            </CTABar>
+          </SettingsCard>
+        )}
         <SettingsCard
           title={team.is_personal ? 'Delete account' : 'Delete team'}
         >

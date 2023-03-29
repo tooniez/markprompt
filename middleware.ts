@@ -18,6 +18,10 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
     return new Response('ok', { status: 200 });
   }
 
+  if (req.nextUrl.pathname.startsWith('/api/oauth/')) {
+    return NextResponse.next();
+  }
+
   if (hostname === getHost()) {
     return AppMiddleware(req);
   }
