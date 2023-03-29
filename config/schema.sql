@@ -124,7 +124,8 @@ create table public.user_access_tokens (
   refresh_token            text,
   refresh_token_expires    bigint,
   state                    text,
-  scope                    text
+  scope                    text,
+  meta                     jsonb
 );
 
 create or replace function match_file_sections(project_id uuid, embedding vector(1536), match_threshold float, match_count int, min_content_length int)

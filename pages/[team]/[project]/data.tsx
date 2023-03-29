@@ -201,13 +201,13 @@ const Data = () => {
         }
         return (
           <Link
-            className="flex flex-row items-center gap-2 text-xs text-neutral-500 transition hover:text-neutral-400"
+            className="flex w-min flex-row items-center gap-2 text-xs text-neutral-500 transition hover:text-neutral-400"
             href={project.github_repo}
             target="_blank"
             rel="noreferrer"
           >
             <GitHubIcon className="h-3 w-3" />
-            <p className="subtle-underline">
+            <p className="subtle-underline truncate whitespace-nowrap">
               {getOwnerRepoString(project.github_repo)}
             </p>
             <ExternalLinkIcon className="h-3 w-3" />

@@ -46,6 +46,7 @@ import useProject from '@/lib/hooks/use-project';
 import useProjects from '@/lib/hooks/use-projects';
 import useTeam from '@/lib/hooks/use-team';
 import useTokens from '@/lib/hooks/use-tokens';
+import useOAuth from '@/lib/hooks/utils/use-oauth';
 import { DEFAULT_MARKPROMPT_CONFIG, parse } from '@/lib/schema';
 import {
   capitalize,
@@ -64,6 +65,7 @@ const ProjectSettingsPage = () => {
   const { project, mutate: mutateProject } = useProject();
   const { domains, mutate: mutateDomains } = useDomains();
   const { tokens, mutate: mutateTokens } = useTokens();
+  const { githubAccessToken } = useOAuth();
   const [loading, setLoading] = useState(false);
   const [isRefreshingDevProjectKey, setIsRefreshingDevProjectKey] =
     useState(false);
@@ -203,6 +205,7 @@ const ProjectSettingsPage = () => {
               if (values.github_repo) {
                 const isAccessible = await isGitHubRepoAccessible(
                   values.github_repo,
+                  githubAccessToken?.access_token || undefined,
                 );
                 if (!isAccessible) {
                   errors.github_repo = 'Repository is not accessible';

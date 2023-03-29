@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { PostgrestError } from '@supabase/supabase-js';
 
-import { DbFile, DbUser, Project } from '@/types/types';
+import { DbFile, DbUser, OAuthProvider, Project } from '@/types/types';
 
 import { generateKey } from './utils';
 
@@ -77,4 +78,16 @@ export const setGitHubAuthState = async (
       .insert([{ user_id: userId, state, provider: 'github' }]);
   }
   return state;
+};
+
+export const deleteUserAccessToken = async (
+  supabase: SupabaseClient,
+  userId: DbUser['id'],
+  provider: OAuthProvider,
+): Promise<PostgrestError | null> => {
+  const { error } = await supabase
+    .from('user_access_tokens')
+    .delete()
+    .match({ user_id: userId, provider });
+  return error;
 };

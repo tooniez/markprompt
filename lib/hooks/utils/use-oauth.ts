@@ -1,11 +1,13 @@
-import { generateKey } from '@/lib/utils';
+import { deleteUserAccessToken } from '@/lib/supabase';
+import { fetcher } from '@/lib/utils';
+import { OAuthProvider, OAuthToken } from '@/types/types';
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { useCallback, useState } from 'react';
-import toast from 'react-hot-toast';
+import { useCallback, useMemo, useState } from 'react';
+import useSWR from 'swr';
 
 import useUser from '../use-user';
 
-type OAuthProvider = 'github';
+type TokenState = 'no_token' | 'expired' | 'valid';
 
 const toQueryString = (params: { [key: string]: string }) => {
   return Object.keys(params)
@@ -29,7 +31,14 @@ const getOAuthUrl = (
         login: userEmail,
         state,
       };
-      return toUrl('https://github.com/login/oauth/authorize', params);
+      const appId =
+        process.env.NODE_ENV === 'production'
+          ? 'markprompt'
+          : 'markprompt-local';
+      return toUrl(
+        `https://github.com/apps/${appId}/installations/new`,
+        params,
+      );
   }
 };
 
@@ -39,11 +48,14 @@ const centerRectOnScreen = (targetWidth: number, targetHeight: number) => {
   return { width: targetWidth, height: targetHeight, left, top };
 };
 
-export const useOAuth = () => {
+export default function useOAuth() {
   const { user } = useUser();
   const [supabase] = useState(() => createBrowserSupabaseClient());
-
   const [waitingForAuth, setWaitingForAuth] = useState(false);
+  const { data: tokens, mutate: mutateAccessTokens } = useSWR(
+    user?.id ? `/api/oauth/access-tokens` : null,
+    fetcher<OAuthToken[]>,
+  );
 
   const showAuthPopup = useCallback(
     async (provider: OAuthProvider, state: string) => {
@@ -92,7 +104,7 @@ export const useOAuth = () => {
               popup.close();
             }
             resolve(true);
-            toast.success('Authorization has been granted.');
+            await mutateAccessTokens();
           } else {
             setTimeout(() => {
               if (didClosePopupManually) {
@@ -109,13 +121,61 @@ export const useOAuth = () => {
       });
 
       setWaitingForAuth(false);
-
-      if (isAuthed) {
-        toast.success('Authorization has been granted.');
-      }
+      return isAuthed;
     },
-    [user?.email, user?.id, supabase],
+    [user?.email, user?.id, supabase, mutateAccessTokens],
   );
 
-  return { loading: waitingForAuth, showAuthPopup };
-};
+  const disconnect = useCallback(
+    async (provider: OAuthProvider) => {
+      if (!user?.id) {
+        return;
+      }
+      const error = await deleteUserAccessToken(supabase, user.id, provider);
+      if (error) {
+        return error;
+      } else {
+        mutateAccessTokens();
+        return undefined;
+      }
+    },
+    [supabase, user?.id, mutateAccessTokens],
+  );
+
+  const getTokenData = useCallback(
+    (provider: OAuthProvider): OAuthToken | undefined => {
+      return tokens?.find((t) => t.provider === provider);
+    },
+    [tokens],
+  );
+
+  const getTokenState = useCallback(
+    (provider: OAuthProvider): TokenState => {
+      const token = tokens?.find(
+        (t) => t.provider === provider && !!t.access_token,
+      );
+      if (!token) {
+        return 'no_token';
+      }
+      if (token?.expires && token.expires > Date.now()) {
+        return 'valid';
+      }
+      return 'expired';
+    },
+    [tokens],
+  );
+
+  const githubAccessToken = useMemo(() => {
+    return getTokenData('github');
+  }, [getTokenData]);
+
+  return {
+    tokens,
+    loading: waitingForAuth,
+    showAuthPopup,
+    disconnect,
+    getTokenData,
+    getTokenState,
+    githubAccessToken,
+  };
+}

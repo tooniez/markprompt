@@ -21,7 +21,11 @@ const parseGitHubURL = (url: string) => {
   return undefined;
 };
 
-export const isGitHubRepoAccessible = async (url: string) => {
+export const isGitHubRepoAccessible = async (
+  url: string,
+  accessToken?: string,
+) => {
+  const octokit = new Octokit(accessToken ? { auth: accessToken } : {});
   const info = parseGitHubURL(url);
   if (!info?.owner && !info?.repo) {
     return false;

@@ -46,6 +46,22 @@ export default async function handler(
     return res.status(400).json({ status: accessTokenInfo.error_description });
   }
 
+  const userInfoRes = await fetch('https://api.github.com/user', {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      Authorization: 'Bearer ' + accessTokenInfo.access_token,
+    },
+  });
+
+  if (!userInfoRes.ok) {
+    return res
+      .status(400)
+      .json({ status: 'Unable to retrieve authorized user info.' });
+  }
+
+  const userInfo = await userInfoRes.json();
+
   const now = Date.now();
   const { error } = await supabaseAdmin
     .from('user_access_tokens')
@@ -56,6 +72,9 @@ export default async function handler(
       refresh_token_expires:
         now + accessTokenInfo.refresh_token_expires_in * 1000,
       scope: accessTokenInfo.scope,
+      meta: {
+        login: userInfo.login,
+      },
     })
     .eq('state', state);
 

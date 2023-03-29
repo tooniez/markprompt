@@ -4,6 +4,8 @@ export type TimeInterval = '1h' | '24h' | '7d' | '30d' | '3m' | '1y';
 export type TimePeriod = 'hour' | 'day' | 'weekofyear' | 'month' | 'year';
 export type HistogramStat = { start: number; end: number; value: number };
 
+export type OAuthProvider = 'github';
+
 export type OpenAIModelIdWithType =
   | { type: 'chat_completions'; value: OpenAIChatCompletionsModelId }
   | { type: 'completions'; value: OpenAICompletionsModelId };
@@ -66,6 +68,8 @@ export type MembershipType =
   Database['public']['Tables']['memberships']['Row']['type'];
 export type DbFile = Database['public']['Tables']['files']['Row'];
 export type FileSections = Database['public']['Tables']['file_sections']['Row'];
+export type OAuthToken =
+  Database['public']['Tables']['user_access_tokens']['Row'];
 
 export type FileData = { path: string; name: string; content: string };
 export type PathContentData = Pick<FileData, 'path' | 'content'>;

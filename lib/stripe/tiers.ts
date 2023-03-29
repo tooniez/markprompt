@@ -146,7 +146,7 @@ export const TIERS: Record<Tier, TierDetails> = {
     description: 'For startups',
     items: [
       'Everything in Free, plus:',
-      'Private GitHub repos (soon)',
+      'Private GitHub repos',
       'Teams (soon)',
     ],
     prices: [

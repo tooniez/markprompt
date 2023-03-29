@@ -76,7 +76,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...(href ? { href } : {})}
       >
-        {Icon && <Icon className={cn('h-5 w-5')} />}
+        {Icon && <Icon className="h-5 w-5" />}
         <span
           className={cn('absolute inset-0 flex items-center justify-center', {
             'pointer-events-none opacity-0': !loading,
