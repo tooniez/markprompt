@@ -1,7 +1,9 @@
+import { SupabaseClient, User } from '@supabase/supabase-js';
 import { Octokit } from 'octokit';
 import { isPresent } from 'ts-is-present';
 
-import { FileData, PathContentData } from '@/types/types';
+import { Database } from '@/types/supabase';
+import { ApiError, FileData, OAuthToken, PathContentData } from '@/types/types';
 
 import {
   decompress,
@@ -173,18 +175,54 @@ export const getGitHubMDFiles = async (
   });
 };
 
-export const getAppInstallations = async (accessToken: string) => {
-  const res = await fetch('https://api.github.com/app/installations', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/vnd.github+json',
-      Authorization: `Bearer ${accessToken}`,
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
-  });
-  if (!res.ok) {
-    console.error('Unable to fetch list of installations');
-    return [];
+export const getOrRefreshAccessToken = async (
+  userId: User['id'],
+  supabase: SupabaseClient<Database>,
+): Promise<OAuthToken> => {
+  const { data, error } = await supabase
+    .from('user_access_tokens')
+    .select('*')
+    .match({ user_id: userId, provider: 'github' })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data || !data.refresh_token_expires || !data.expires) {
+    throw new ApiError(400, 'Unable to retrieve access tokens.');
   }
-  return res.json();
+
+  const now = Date.now();
+  if (data.refresh_token_expires < now || !data.refresh_token) {
+    throw new ApiError(400, 'Refresh token has expired. Please sign in again.');
+  }
+
+  if (data.expires < now) {
+    const res = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      body: JSON.stringify({
+        client_id: process.env.NEXT_PUBLIC_GITHUB_APP_CLIENT_ID!,
+        client_secret: process.env.GITHUB_APP_CLIENT_SECRET,
+        grant_type: 'refresh_token',
+        refresh_token: data.refresh_token,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new ApiError(
+        500,
+        'Could not refresh access token. Please sign in again',
+      );
+    }
+
+    console.log('data.refresh_token', data.refresh_token);
+    const tokenData = await res.json();
+    console.log('res', JSON.stringify(tokenData, null, 2));
+  }
+
+  console.log('All good');
+
+  return data;
 };

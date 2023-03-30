@@ -35,7 +35,6 @@ import { GitHubIcon } from '@/components/icons/GitHub';
 import useOAuth from '@/lib/hooks/utils/use-oauth';
 import { setGitHubAuthState } from '@/lib/supabase';
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { getAppInstallations } from '@/lib/github';
 
 const TeamSettingsPage = () => {
   const router = useRouter();
@@ -282,15 +281,14 @@ const TeamSettingsPage = () => {
           variant="danger"
           loading={loading}
           onCTAClick={async () => {
-            if (githubToken?.access_token) {
-              const installations = await getAppInstallations(
-                githubToken.access_token,
-              );
-              console.log(
-                'installations',
-                JSON.stringify(installations, null, 2),
-              );
+            if (!githubToken?.access_token) {
+              return;
             }
+
+            const res = await fetch('/api/github/uninstall', {
+              method: 'POST',
+            });
+
             // const error = await disconnect('github');
             // if (error) {
             //   toast.error(`Error disconnecting: ${error.message}`);

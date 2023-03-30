@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { OAuthToken } from '@/types/types';
+import { ApiError, OAuthToken } from '@/types/types';
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/types/supabase';
+import { getOrRefreshAccessToken } from '@/lib/github';
 
 type Data =
   | {
@@ -30,14 +31,29 @@ export default async function handler(
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const { data } = await supabase
-    .from('user_access_tokens')
-    .select('*')
-    .match({ user_id: session.user.id });
-
-  if (data) {
-    return res.status(200).json(data);
+  try {
+    // For now, we only handle GitHub auth.
+    const githubToken = await getOrRefreshAccessToken(
+      session.user.id,
+      supabase,
+    );
+    return res.status(200).json([githubToken]);
+  } catch (e) {
+    if (e instanceof ApiError) {
+      return res.status(e.code).json({ error: e.message });
+    } else {
+      return res.status(400).json({ error: `${e}` });
+    }
   }
 
-  return res.status(400).end();
+  // const { data } = await supabase
+  //   .from('user_access_tokens')
+  //   .select('*')
+  //   .match({ user_id: session.user.id });
+
+  // if (data) {
+  //   return res.status(200).json(data);
+  // }
+
+  // return res.status(400).end();
 }
