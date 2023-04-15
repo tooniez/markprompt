@@ -1,9 +1,10 @@
-import { deleteUserAccessToken } from '@/lib/supabase';
-import { fetcher } from '@/lib/utils';
-import { OAuthProvider, OAuthToken } from '@/types/types';
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { useCallback, useMemo, useState } from 'react';
 import useSWR from 'swr';
+
+import { deleteUserAccessToken } from '@/lib/supabase';
+import { fetcher } from '@/lib/utils';
+import { OAuthProvider, OAuthToken } from '@/types/types';
 
 import useUser from '../use-user';
 
@@ -25,7 +26,7 @@ const getOAuthUrl = (
   state: string,
 ) => {
   switch (provider) {
-    case 'github':
+    case 'github': {
       const params = {
         client_id: process.env.NEXT_PUBLIC_GITHUB_APP_CLIENT_ID || '',
         login: userEmail,
@@ -39,6 +40,7 @@ const getOAuthUrl = (
         `https://github.com/apps/${appId}/installations/new`,
         params,
       );
+    }
   }
 };
 
@@ -133,6 +135,7 @@ export default function useOAuth() {
       }
       const error = await deleteUserAccessToken(supabase, user.id, provider);
       if (error) {
+        console.error('Error disconnecting', error);
         return error;
       } else {
         mutateAccessTokens();

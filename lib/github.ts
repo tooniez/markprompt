@@ -1,4 +1,5 @@
 import { SupabaseClient, User } from '@supabase/supabase-js';
+import { sign } from 'jsonwebtoken';
 import { Octokit } from 'octokit';
 import { isPresent } from 'ts-is-present';
 
@@ -178,7 +179,11 @@ export const getGitHubMDFiles = async (
 export const getOrRefreshAccessToken = async (
   userId: User['id'],
   supabase: SupabaseClient<Database>,
-): Promise<OAuthToken> => {
+): Promise<OAuthToken | undefined> => {
+  if (!process.env.NEXT_PUBLIC_GITHUB_APP_CLIENT_ID) {
+    throw new ApiError(400, 'Invalid GitHub client id.');
+  }
+
   const { data, error } = await supabase
     .from('user_access_tokens')
     .select('*')
@@ -186,8 +191,12 @@ export const getOrRefreshAccessToken = async (
     .limit(1)
     .maybeSingle();
 
-  if (error || !data || !data.refresh_token_expires || !data.expires) {
-    throw new ApiError(400, 'Unable to retrieve access tokens.');
+  if (error) {
+    throw new ApiError(400, 'Unable to retrieve access token.');
+  }
+
+  if (!data || !data.refresh_token_expires || !data.expires) {
+    return undefined;
   }
 
   const now = Date.now();
@@ -195,34 +204,71 @@ export const getOrRefreshAccessToken = async (
     throw new ApiError(400, 'Refresh token has expired. Please sign in again.');
   }
 
-  if (data.expires < now) {
-    const res = await fetch('https://github.com/login/oauth/access_token', {
-      method: 'POST',
-      body: JSON.stringify({
-        client_id: process.env.NEXT_PUBLIC_GITHUB_APP_CLIENT_ID!,
-        client_secret: process.env.GITHUB_APP_CLIENT_SECRET,
-        grant_type: 'refresh_token',
-        refresh_token: data.refresh_token,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-        accept: 'application/json',
-      },
-    });
-
-    if (!res.ok) {
-      throw new ApiError(
-        500,
-        'Could not refresh access token. Please sign in again',
-      );
-    }
-
-    console.log('data.refresh_token', data.refresh_token);
-    const tokenData = await res.json();
-    console.log('res', JSON.stringify(tokenData, null, 2));
+  if (data.expires >= now) {
+    return data;
   }
 
-  console.log('All good');
+  const res = await fetch('https://github.com/login/oauth/access_token', {
+    method: 'POST',
+    body: JSON.stringify({
+      client_id: process.env.NEXT_PUBLIC_GITHUB_APP_CLIENT_ID,
+      client_secret: process.env.GITHUB_APP_CLIENT_SECRET,
+      grant_type: 'refresh_token',
+      refresh_token: data.refresh_token,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+  });
 
-  return data;
+  if (!res.ok) {
+    throw new ApiError(
+      500,
+      'Could not refresh access token. Please sign in again',
+    );
+  }
+
+  const accessTokenInfo = await res.json();
+
+  const { data: refreshedData, error: refreshError } = await supabase
+    .from('user_access_tokens')
+    .update({
+      access_token: accessTokenInfo.access_token,
+      expires: now + accessTokenInfo.expires_in * 1000,
+      refresh_token: accessTokenInfo.refresh_token,
+      refresh_token_expires:
+        now + accessTokenInfo.refresh_token_expires_in * 1000,
+      scope: accessTokenInfo.scope,
+    })
+    .eq('id', data.id)
+    .select('*')
+    .limit(1)
+    .maybeSingle();
+
+  if (refreshError) {
+    console.error('Error saving updated token', refreshError.message);
+  }
+
+  if (refreshedData) {
+    return refreshedData;
+  }
+
+  return undefined;
+};
+
+export const getJWT = () => {
+  if (!process.env.GITHUB_PRIVATE_KEY) {
+    throw new Error('Missing GitHub private key');
+  }
+
+  const payload = {
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + 10 * 60, // Token expires in 10 minutes
+    iss: process.env.GITHUB_MARKPROMPT_APP_ID,
+  };
+
+  return sign(payload, process.env.GITHUB_PRIVATE_KEY, {
+    algorithm: 'RS256',
+  });
 };

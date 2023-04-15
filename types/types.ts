@@ -6,6 +6,11 @@ export type HistogramStat = { start: number; end: number; value: number };
 
 export type OAuthProvider = 'github';
 
+export type GitHubRepository = {
+  name: string;
+  owner: string;
+};
+
 export type OpenAIModelIdWithType =
   | { type: 'chat_completions'; value: OpenAIChatCompletionsModelId }
   | { type: 'completions'; value: OpenAICompletionsModelId };

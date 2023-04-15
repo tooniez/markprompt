@@ -9,30 +9,6 @@ create table users (
   subscribe_to_product_updates boolean not null default false
 );
 
--- File sections
-
-alter table file_sections
-  enable row level security;
-
--- No policies for file_sections: they are inaccessible to the client,
--- and only edited on the server with service_role access.
-
--- Triggers
-
--- This trigger automatically creates a user entry when a new user signs up
--- via Supabase Auth.for more details.
-create function public.handle_new_user()
-returns trigger as $$
-begin
-  insert into public.users (id, full_name, email, avatar_url)
-  values (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'email', new.raw_user_meta_data->>'avatar_url');
-  return new;
-end;
-$$ language plpgsql security definer;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
-
 -- Teams
 create table public.teams (
   id                  uuid primary key default uuid_generate_v4(),
@@ -127,6 +103,22 @@ create table public.user_access_tokens (
   scope                    text,
   meta                     jsonb
 );
+
+-- Triggers
+
+-- This trigger automatically creates a user entry when a new user signs up
+-- via Supabase Auth.for more details.
+create function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.users (id, full_name, email, avatar_url)
+  values (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'email', new.raw_user_meta_data->>'avatar_url');
+  return new;
+end;
+$$ language plpgsql security definer;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
 
 create or replace function match_file_sections(project_id uuid, embedding vector(1536), match_threshold float, match_count int, min_content_length int)
 returns table (path text, content text, token_count int, similarity float)
@@ -321,6 +313,14 @@ create policy "Users can delete files associated to projects they have access to
       where memberships.user_id = auth.uid()
     )
   )
+
+-- File sections
+
+alter table file_sections
+  enable row level security;
+
+-- No policies for file_sections: they are inaccessible to the client,
+-- and only edited on the server with service_role access.
 
 -- Tokens
 

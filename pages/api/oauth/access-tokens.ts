@@ -1,8 +1,9 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { ApiError, OAuthToken } from '@/types/types';
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { Database } from '@/types/supabase';
+import type { NextApiRequest, NextApiResponse } from 'next';
+
 import { getOrRefreshAccessToken } from '@/lib/github';
+import { Database } from '@/types/supabase';
+import { ApiError, OAuthToken } from '@/types/types';
 
 type Data =
   | {
@@ -37,7 +38,7 @@ export default async function handler(
       session.user.id,
       supabase,
     );
-    return res.status(200).json([githubToken]);
+    return res.status(200).json(githubToken ? [githubToken] : []);
   } catch (e) {
     if (e instanceof ApiError) {
       return res.status(e.code).json({ error: e.message });
@@ -45,15 +46,4 @@ export default async function handler(
       return res.status(400).json({ error: `${e}` });
     }
   }
-
-  // const { data } = await supabase
-  //   .from('user_access_tokens')
-  //   .select('*')
-  //   .match({ user_id: session.user.id });
-
-  // if (data) {
-  //   return res.status(200).json(data);
-  // }
-
-  // return res.status(400).end();
 }

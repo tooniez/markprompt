@@ -13,6 +13,7 @@ import cn from 'classnames';
 import dayjs from 'dayjs';
 // Cf. https://github.com/iamkun/dayjs/issues/297#issuecomment-1202327426
 import relativeTime from 'dayjs/plugin/relativeTime';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -21,6 +22,7 @@ import { isPresent } from 'ts-is-present';
 import ConfirmDialog from '@/components/dialogs/Confirm';
 import { FileDnd } from '@/components/files/FileDnd';
 import { GitHubIcon } from '@/components/icons/GitHub';
+import { MotifIcon } from '@/components/icons/Motif';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Button from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -37,6 +39,10 @@ import useTeam from '@/lib/hooks/use-team';
 import { createChecksum, pluralize, truncate } from '@/lib/utils';
 
 dayjs.extend(relativeTime);
+
+const GitHub = dynamic(() => import('@/components/dialogs/sources/GitHub'), {
+  loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
+});
 
 const getBasePath = (pathWithFile: string) => {
   if (!pathWithFile.includes('/')) {
@@ -334,102 +340,142 @@ const Data = () => {
         </div>
       )}
     >
-      {!loadingFiles && !hasFiles && (
-        <div className="mt-8 h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100">
-          <FileDnd
-            onTrainingComplete={() => {
-              toast.success('Processing complete');
-              setTimeout(async () => {
-                setFileDialogOpen(false);
-              }, 1000);
-            }}
-          />
-        </div>
-      )}
-      {hasFiles && (
-        <div className="max-w-full">
-          <table className="mt-8 w-full border-collapse">
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr
-                  key={headerGroup.id}
-                  className="border-b border-neutral-800"
-                >
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <th
-                        key={header.id}
-                        colSpan={header.colSpan}
-                        className={cn(
-                          'cursor-pointer py-2 px-2 text-left text-sm text-neutral-300',
-                          {},
-                        )}
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {header.isPlaceholder ? null : (
-                          <div className="flex flex-row items-center gap-2">
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                            {header.id !== 'select' && (
-                              <>
-                                <span className="text-sm font-normal text-neutral-600">
-                                  {{
-                                    asc: '↓',
-                                    desc: '↑',
-                                  }[header.column.getIsSorted() as string] ??
-                                    null}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        )}
-                      </th>
-                    );
-                  })}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => {
-                return (
-                  <tr
-                    key={row.id}
-                    className={cn(
-                      'border-b border-neutral-900 hover:bg-neutral-1000',
-                      {
-                        'bg-neutral-1000': row.getIsSelected(),
-                      },
-                    )}
+      <div className="grid grid-cols-4 gap-8">
+        <div className="flex flex-col gap-3">
+          <Dialog.Root>
+            <Dialog.Trigger asChild>
+              <button className="flex flex-row items-center gap-3 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
+                <GitHubIcon className="h-4 w-4" />
+                <span className="subtle-underline">Connect GitHub repo</span>
+              </button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
+              <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[600px] w-[90%] max-w-[500px] flex-col">
+                <Dialog.Title className="dialog-title flex-none">
+                  Connect GitHub repo
+                </Dialog.Title>
+                <Dialog.Description className="dialog-description flex-none border-b border-neutral-900 pb-4">
+                  Sync files from a GitHub repo. You can specify which files to
+                  include and exclude from the repository in the{' '}
+                  <Link
+                    className="subtle-underline"
+                    href={`/${team?.slug}/${project?.slug}/settings`}
                   >
-                    {row.getVisibleCells().map((cell) => {
+                    project configuration
+                  </Link>
+                  .
+                </Dialog.Description>
+                <div className="flex-grow">
+                  <GitHub />
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
+
+          <button className="flex flex-row items-center gap-3 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
+            <MotifIcon className="h-4 w-4" />
+            <span className="subtle-underline">Connect Motif project</span>
+          </button>
+        </div>
+        {!loadingFiles && !hasFiles && (
+          <div className="col-span-3 h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100">
+            <FileDnd
+              onTrainingComplete={() => {
+                toast.success('Processing complete');
+                setTimeout(async () => {
+                  setFileDialogOpen(false);
+                }, 1000);
+              }}
+            />
+          </div>
+        )}
+
+        {hasFiles && (
+          <div className="col-span-3">
+            <table className="w-full border-collapse">
+              <thead>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr
+                    key={headerGroup.id}
+                    className="border-b border-neutral-800"
+                  >
+                    {headerGroup.headers.map((header) => {
                       return (
-                        <td
-                          key={cell.id}
-                          className={cn('py-2 px-2 text-sm', {
-                            'w-8': cell.column.id === 'select',
-                            'truncate font-medium text-neutral-300':
-                              cell.column.id === 'name',
-                            'max-w-[100px] truncate text-neutral-500':
-                              cell.column.id === 'path' ||
-                              cell.column.id === 'updated',
-                          })}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
+                        <th
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          className={cn(
+                            'cursor-pointer py-2 px-2 text-left text-sm text-neutral-300',
+                            {},
                           )}
-                        </td>
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          {header.isPlaceholder ? null : (
+                            <div className="flex flex-row items-center gap-2">
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                              {header.id !== 'select' && (
+                                <>
+                                  <span className="text-sm font-normal text-neutral-600">
+                                    {{
+                                      asc: '↓',
+                                      desc: '↑',
+                                    }[header.column.getIsSorted() as string] ??
+                                      null}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </th>
                       );
                     })}
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map((row) => {
+                  return (
+                    <tr
+                      key={row.id}
+                      className={cn(
+                        'border-b border-neutral-900 hover:bg-neutral-1000',
+                        {
+                          'bg-neutral-1000': row.getIsSelected(),
+                        },
+                      )}
+                    >
+                      {row.getVisibleCells().map((cell) => {
+                        return (
+                          <td
+                            key={cell.id}
+                            className={cn('py-2 px-2 text-sm', {
+                              'w-8': cell.column.id === 'select',
+                              'truncate font-medium text-neutral-300':
+                                cell.column.id === 'name',
+                              'max-w-[100px] truncate text-neutral-500':
+                                cell.column.id === 'path' ||
+                                cell.column.id === 'updated',
+                            })}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       <Dialog.Root open={fileDialogOpen} onOpenChange={setFileDialogOpen}>
         <Dialog.Portal>

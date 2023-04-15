@@ -1,6 +1,7 @@
-import { Database } from '@/types/supabase';
 import { createClient } from '@supabase/supabase-js';
 import { NextApiRequest, NextApiResponse } from 'next';
+
+import { Database } from '@/types/supabase';
 
 // Admin access to Supabase, bypassing RLS.
 const supabaseAdmin = createClient<Database>(

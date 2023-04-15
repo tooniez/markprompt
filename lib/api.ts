@@ -166,12 +166,11 @@ export const deleteTeamAndMemberships = async (
 export const createProject = async (
   teamId: Team['id'],
   name: string,
-  slug: string,
   githubRepo: string,
 ) => {
   const res = await fetch(`/api/team/${teamId}/projects`, {
     method: 'POST',
-    body: JSON.stringify({ name, candidateSlug: slug, githubRepo }),
+    body: JSON.stringify({ name, githubRepo }),
     headers: {
       'Content-Type': 'application/json',
       accept: 'application/json',

@@ -29,7 +29,7 @@ const NewProject = () => {
       <div className="mx-auto">
         <div>
           <Formik
-            initialValues={{ name: '', slug: '', github: '' }}
+            initialValues={{ name: '', github: '' }}
             validateOnMount
             validate={async (values) => {
               const errors: FormikErrors<FormikValues> = {};
@@ -57,10 +57,10 @@ const NewProject = () => {
               if (!team) {
                 return;
               }
+
               const newProject = await createProject(
                 team.id,
                 values.name,
-                values.slug,
                 values.github,
               );
               await mutateProjects([...(projects || []), newProject]);

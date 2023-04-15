@@ -1,4 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import {
   ErrorMessage,
   Field,
@@ -12,6 +13,7 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import ConfirmDialog from '@/components/dialogs/Confirm';
+import { GitHubIcon } from '@/components/icons/GitHub';
 import { TeamSettingsLayout } from '@/components/layouts/TeamSettingsLayout';
 import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
@@ -28,20 +30,20 @@ import {
   isTeamSlugAvailable,
   updateTeam,
 } from '@/lib/api';
+import useGitHub from '@/lib/hooks/integrations/use-github';
 import useTeam from '@/lib/hooks/use-team';
 import useTeams from '@/lib/hooks/use-teams';
 import useUser from '@/lib/hooks/use-user';
-import { GitHubIcon } from '@/components/icons/GitHub';
 import useOAuth from '@/lib/hooks/utils/use-oauth';
 import { setGitHubAuthState } from '@/lib/supabase';
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 
 const TeamSettingsPage = () => {
   const router = useRouter();
   const { user, mutate: mutateUser, signOut } = useUser();
   const { teams, mutate: mutateTeams } = useTeams();
   const { team, mutate: mutateTeam } = useTeam();
-  const { showAuthPopup, disconnect, getTokenData, getTokenState } = useOAuth();
+  const { showAuthPopup, disconnect } = useOAuth();
+  const { token: githubToken, tokenState: githubTokenState } = useGitHub();
   const [loading, setLoading] = useState(false);
   const [confirmDisconnectGitHubOpen, setConfirmDisconnectGitHubOpen] =
     useState(false);
@@ -50,9 +52,6 @@ const TeamSettingsPage = () => {
   if (!teams || !team || !user) {
     return <TeamSettingsLayout title="Settings" width="sm" />;
   }
-
-  const githubToken = getTokenData('github');
-  const githubTokenState = getTokenState('github');
 
   return (
     <TeamSettingsLayout title="Settings" width="sm">
@@ -277,7 +276,7 @@ const TeamSettingsPage = () => {
         <ConfirmDialog
           title="Disconnect GitHub"
           description="You will no longer be able to sync private repos."
-          cta="Delete"
+          cta="Disconnect"
           variant="danger"
           loading={loading}
           onCTAClick={async () => {
@@ -285,16 +284,17 @@ const TeamSettingsPage = () => {
               return;
             }
 
-            const res = await fetch('/api/github/uninstall', {
+            await fetch('/api/github/uninstall', {
               method: 'POST',
             });
 
-            // const error = await disconnect('github');
-            // if (error) {
-            //   toast.error(`Error disconnecting: ${error.message}`);
-            // } else {
-            //   toast.success('Access revoked.');
-            // }
+            const error = await disconnect('github');
+            if (error) {
+              toast.error(`Error disconnecting: ${error.message}`);
+            } else {
+              toast.success('Access revoked.');
+            }
+            setConfirmDisconnectGitHubOpen(false);
           }}
         />
       </Dialog.Root>

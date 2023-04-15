@@ -1,17 +1,18 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getJWT, getOrRefreshAccessToken } from '@/lib/github';
+import { getOrRefreshAccessToken } from '@/lib/github';
 import { Database } from '@/types/supabase';
+import { GitHubRepository } from '@/types/types';
 
 type Data =
   | {
       status?: string;
       error?: string;
     }
-  | Buffer;
+  | GitHubRepository[];
 
-const allowedMethods = ['POST'];
+const allowedMethods = ['GET'];
 
 export default async function handler(
   req: NextApiRequest,
@@ -57,18 +58,29 @@ export default async function handler(
 
   const json = await installationsRes.json();
 
-  const jwt = getJWT();
-
+  const repositories: GitHubRepository[] = [];
   for (const installation of json.installations) {
-    await fetch(`https://api.github.com/app/installations/${installation.id}`, {
-      method: 'DELETE',
-      headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${jwt}`,
-        'X-GitHub-Api-Version': '2022-11-28',
+    const repositoriesRes = await fetch(
+      `https://api.github.com/user/installations/${installation.id}/repositories`,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/vnd.github+json',
+          Authorization: `Bearer ${accessToken.access_token}`,
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
       },
-    });
+    );
+    if (repositoriesRes.ok) {
+      const repositoriesForInstallation = await repositoriesRes.json();
+      for (const repo of repositoriesForInstallation.repositories) {
+        repositories.push({
+          name: repo.name,
+          owner: repo.owner.login,
+        });
+      }
+    }
   }
 
-  return res.status(200).json({});
+  return res.status(200).json(repositories);
 }
