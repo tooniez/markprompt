@@ -25,7 +25,7 @@ comment on table public.teams is 'Teams data.';
 
 -- Projects
 create table public.projects (
-  id                   uuid primary key default uuid_generate_v4(),
+  id                  uuid primary key default uuid_generate_v4(),
   inserted_at         timestamp with time zone default timezone('utc'::text, now()) not null,
   slug                text not null,
   name                text not null,
@@ -38,6 +38,16 @@ create table public.projects (
   created_by          uuid references public.users not null
 );
 comment on table public.projects is 'Projects within a team.';
+
+-- Sources
+create table public.sources (
+  id          uuid primary key default uuid_generate_v4(),
+  inserted_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  project_id  uuid references public.projects on delete cascade not null,
+  source      text not null,
+  data        jsonb
+);
+comment on table public.sources is 'Data sources for a project.';
 
 -- Memberships
 create type membership_type as enum ('viewer', 'admin');
@@ -266,6 +276,51 @@ create policy "Users can delete projects associated to teams they are members of
       select 1 from memberships
       where memberships.user_id = auth.uid()
       and memberships.team_id = projects.team_id
+    )
+  )
+
+-- Sources
+
+alter table sources
+  enable row level security;
+
+create policy "Users can only see sources associated to projects they have access to." on public.sources
+  for select using (
+    sources.project_id in (
+      select projects.id from projects
+      left join memberships
+      on projects.team_id = memberships.team_id
+      where memberships.user_id = auth.uid()
+    )
+  )
+
+create policy "Users can insert sources associated to projects they have access to." on public.sources
+  for insert with check (
+    sources.project_id in (
+      select projects.id from projects
+      left join memberships
+      on projects.team_id = memberships.team_id
+      where memberships.user_id = auth.uid()
+    )
+  )
+
+create policy "Users can update sources associated to projects they have access to." on public.sources
+  for update using (
+    sources.project_id in (
+      select projects.id from projects
+      left join memberships
+      on projects.team_id = memberships.team_id
+      where memberships.user_id = auth.uid()
+    )
+  )
+
+create policy "Users can delete sources associated to projects they have access to." on public.sources
+  for delete using (
+    sources.project_id in (
+      select projects.id from projects
+      left join memberships
+      on projects.team_id = memberships.team_id
+      where memberships.user_id = auth.uid()
     )
   )
 
