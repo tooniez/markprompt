@@ -15,22 +15,19 @@ export const ToggleMessage: FC<ToggleMessageProps> = ({
   return (
     <div className="relative flex items-center justify-center">
       <p
-        className={cn(
-          'pointer-events-none transform text-center transition duration-500',
-          {
-            'translate-y-0 opacity-100': showMessage1,
-            '-translate-y-1 opacity-0': !showMessage1,
-          },
-        )}
+        className={cn('transform text-center transition duration-500', {
+          'translate-y-0 opacity-100': showMessage1,
+          'pointer-events-none -translate-y-1 opacity-0': !showMessage1,
+        })}
       >
         {message1}
       </p>
       <p
         className={cn(
-          'pointer-events-none absolute inset-x-4 transform whitespace-nowrap text-center transition duration-500',
+          'absolute inset-x-4 transform whitespace-nowrap text-center transition duration-500',
           {
             'translate-y-0 opacity-100': !showMessage1,
-            '-translate-y-1 opacity-0': showMessage1,
+            'pointer-events-none -translate-y-1 opacity-0': showMessage1,
           },
         )}
       >

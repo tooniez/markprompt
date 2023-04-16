@@ -6,6 +6,7 @@ import {
   FileData,
   Project,
   ProjectChecksums,
+  Source,
   Team,
   Token,
 } from '@/types/types';
@@ -255,6 +256,31 @@ export const deleteToken = async (
   id: Token['id'],
 ) => {
   const res = await fetch(`/api/project/${projectId}/tokens`, {
+    method: 'DELETE',
+    body: JSON.stringify({ id }),
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return getResponseOrThrow<any>(res);
+};
+
+export const addSource = async (
+  projectId: Project['id'],
+  source: string,
+  data: any,
+): Promise<Source> => {
+  const res = await fetch(`/api/project/${projectId}/sources`, {
+    method: 'POST',
+    body: JSON.stringify({ projectId, source, data }),
+    headers: { 'Content-Type': 'application/json', accept: 'application/json' },
+  });
+  return getResponseOrThrow<Source>(res);
+};
+
+export const deleteSource = async (
+  projectId: Project['id'],
+  id: Source['id'],
+) => {
+  const res = await fetch(`/api/project/${projectId}/sources`, {
     method: 'DELETE',
     body: JSON.stringify({ id }),
     headers: { 'Content-Type': 'application/json' },

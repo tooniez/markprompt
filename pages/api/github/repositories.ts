@@ -77,6 +77,7 @@ export default async function handler(
         repositories.push({
           name: repo.name,
           owner: repo.owner.login,
+          url: repo.html_url,
         });
       }
     }

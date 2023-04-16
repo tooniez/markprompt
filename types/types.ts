@@ -9,6 +9,7 @@ export type OAuthProvider = 'github';
 export type GitHubRepository = {
   name: string;
   owner: string;
+  url: string;
 };
 
 export type OpenAIModelIdWithType =
@@ -71,6 +72,7 @@ export type Domain = Database['public']['Tables']['domains']['Row'];
 export type Membership = Database['public']['Tables']['memberships']['Row'];
 export type MembershipType =
   Database['public']['Tables']['memberships']['Row']['type'];
+export type Source = Database['public']['Tables']['sources']['Row'];
 export type DbFile = Database['public']['Tables']['files']['Row'];
 export type FileSections = Database['public']['Tables']['file_sections']['Row'];
 export type OAuthToken =

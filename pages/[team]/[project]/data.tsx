@@ -1,5 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { ExternalLinkIcon } from '@radix-ui/react-icons';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import {
   createColumnHelper,
   flexRender,
@@ -26,7 +27,7 @@ import { MotifIcon } from '@/components/icons/Motif';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Button from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { deleteFiles } from '@/lib/api';
+import { deleteFiles, deleteSource } from '@/lib/api';
 import {
   getTrainingStateMessage,
   TrainingState,
@@ -35,8 +36,10 @@ import {
 import { getGitHubMDFiles, getOwnerRepoString } from '@/lib/github';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
+import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import { createChecksum, pluralize, truncate } from '@/lib/utils';
+import { Project, Source } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
@@ -118,10 +121,118 @@ const StatusMessage: FC<StatusMessageProps> = ({
   );
 };
 
+export const getIconForSource = (source: Source) => {
+  switch (source.source) {
+    case 'motif':
+      return MotifIcon;
+    default:
+      return GitHubIcon;
+  }
+};
+
+export const getLabelForSource = (source: Source) => {
+  const data = source.data as any;
+  switch (source.source) {
+    case 'motif':
+      return (data?.['name'] || '') as string;
+    case 'github':
+      return getOwnerRepoString(data?.['url']);
+    default:
+      return (data?.['name'] || '') as string;
+  }
+};
+
+type SourceItemProps = {
+  source: Source;
+  onRemoveSelected: () => void;
+};
+
+const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
+  const Icon = getIconForSource(source);
+  return (
+    <div className="group flex w-full cursor-default flex-row items-center gap-2 text-sm">
+      <Icon className="h-4 w-4 flex-none text-neutral-500" />
+      <p className="flex flex-grow truncate text-neutral-500">
+        {getLabelForSource(source)}
+      </p>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild>
+          <button
+            className="flex-none select-none p-1 text-neutral-500 opacity-0 outline-none transition group-hover:opacity-100"
+            aria-label="Source options"
+          >
+            <DotsHorizontalIcon />
+          </button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            className="animate-menu-up dropdown-menu-content mr-2 min-w-[160px]"
+            sideOffset={5}
+          >
+            <DropdownMenu.Item asChild onSelect={() => onRemoveSelected()}>
+              <span className="dropdown-menu-item dropdown-menu-item-noindent block">
+                Remove
+              </span>
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
+    </div>
+  );
+};
+
+type RemoveSourceDialogProps = {
+  projectId: Project['id'];
+  source: Source;
+  onComplete: () => void;
+};
+
+const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
+  projectId,
+  source,
+  onComplete,
+}) => {
+  const { mutate } = useSources();
+  const [loading, setLoading] = useState(false);
+
+  return (
+    <ConfirmDialog
+      title={`Remove ${getLabelForSource(source)}?`}
+      description={<>All associated files and training data will be deleted.</>}
+      cta="Remove"
+      variant="danger"
+      loading={loading}
+      onCTAClick={async () => {
+        setLoading(true);
+        try {
+          await deleteSource(projectId, source.id);
+          await mutate();
+          toast.success(
+            `The source ${getLabelForSource(
+              source,
+            )} has been removed from the project.`,
+          );
+        } catch (e) {
+          console.error(e);
+          toast.error('Error deleting source.');
+        } finally {
+          setLoading(false);
+          onComplete();
+        }
+      }}
+    />
+  );
+};
+
 const Data = () => {
   const { team } = useTeam();
   const { project, config } = useProject();
   const { files, mutate: mutateFiles, loading: loadingFiles } = useFiles();
+  const {
+    sources,
+    mutate: mutateSources,
+    loading: loadingSources,
+  } = useSources();
   const {
     generateEmbeddings,
     stopGeneratingEmbeddings,
@@ -131,6 +242,10 @@ const Data = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDownloadingRepo, setIsDownloadingRepo] = useState(false);
   const [fileDialogOpen, setFileDialogOpen] = useState(false);
+  const [githubDialogOpen, setGithubDialogOpen] = useState(false);
+  const [sourceToRemove, setSourceToRemove] = useState<Source | undefined>(
+    undefined,
+  );
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const columnHelper = createColumnHelper<{
@@ -201,25 +316,25 @@ const Data = () => {
   return (
     <ProjectSettingsLayout
       title="Data"
-      SubHeading={() => {
-        if (!project?.github_repo) {
-          return <></>;
-        }
-        return (
-          <Link
-            className="flex w-min flex-row items-center gap-2 text-xs text-neutral-500 transition hover:text-neutral-400"
-            href={project.github_repo}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <GitHubIcon className="h-3 w-3" />
-            <p className="subtle-underline truncate whitespace-nowrap">
-              {getOwnerRepoString(project.github_repo)}
-            </p>
-            <ExternalLinkIcon className="h-3 w-3" />
-          </Link>
-        );
-      }}
+      // SubHeading={() => {
+      //   if (!project?.github_repo) {
+      //     return <></>;
+      //   }
+      //   return (
+      //     <Link
+      //       className="flex w-min flex-row items-center gap-2 text-xs text-neutral-500 transition hover:text-neutral-400"
+      //       href={project.github_repo}
+      //       target="_blank"
+      //       rel="noreferrer"
+      //     >
+      //       <GitHubIcon className="h-3 w-3" />
+      //       <p className="subtle-underline truncate whitespace-nowrap">
+      //         {getOwnerRepoString(project.github_repo)}
+      //       </p>
+      //       <ExternalLinkIcon className="h-3 w-3" />
+      //     </Link>
+      //   );
+      // }}
       RightHeading={() => (
         <div className="flex w-full items-center gap-4">
           <div className="flex-grow" />
@@ -341,10 +456,28 @@ const Data = () => {
       )}
     >
       <div className="grid grid-cols-4 gap-8">
-        <div className="flex flex-col gap-3">
-          <Dialog.Root>
+        <div className="flex flex-col gap-2">
+          {sources.length > 0 && (
+            <div className="mb-2 flex flex-col gap-2 border-b border-neutral-900 pt-2 pb-4">
+              {sources.map((source) => {
+                return (
+                  <SourceItem
+                    key={source.id}
+                    source={source}
+                    onRemoveSelected={() => {
+                      setSourceToRemove(source);
+                    }}
+                  />
+                );
+              })}
+            </div>
+          )}
+          <Dialog.Root
+            open={githubDialogOpen}
+            onOpenChange={setGithubDialogOpen}
+          >
             <Dialog.Trigger asChild>
-              <button className="flex flex-row items-center gap-3 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
+              <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
                 <GitHubIcon className="h-4 w-4" />
                 <span className="subtle-underline">Connect GitHub repo</span>
               </button>
@@ -367,13 +500,17 @@ const Data = () => {
                   .
                 </Dialog.Description>
                 <div className="flex-grow">
-                  <GitHub />
+                  <GitHub
+                    onDidRequestClose={() => {
+                      setGithubDialogOpen(false);
+                    }}
+                  />
                 </div>
               </Dialog.Content>
             </Dialog.Portal>
           </Dialog.Root>
 
-          <button className="flex flex-row items-center gap-3 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
+          <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
             <MotifIcon className="h-4 w-4" />
             <span className="subtle-underline">Connect Motif project</span>
           </button>
@@ -491,6 +628,18 @@ const Data = () => {
             />
           </Dialog.Content>
         </Dialog.Portal>
+      </Dialog.Root>
+      <Dialog.Root
+        open={!!sourceToRemove}
+        onOpenChange={() => setSourceToRemove(undefined)}
+      >
+        {sourceToRemove && project && (
+          <RemoveSourceDialog
+            projectId={project.id}
+            source={sourceToRemove}
+            onComplete={() => setSourceToRemove(undefined)}
+          />
+        )}
       </Dialog.Root>
     </ProjectSettingsLayout>
   );

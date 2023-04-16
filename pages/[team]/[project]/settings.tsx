@@ -40,7 +40,6 @@ import {
   isProjectSlugAvailable,
   updateProject,
 } from '@/lib/api';
-import { isGitHubRepoAccessible } from '@/lib/github';
 import useDomains from '@/lib/hooks/use-domains';
 import useProject from '@/lib/hooks/use-project';
 import useProjects from '@/lib/hooks/use-projects';
@@ -175,62 +174,6 @@ const ProjectSettingsPage = () => {
                     disabled={isSubmitting}
                   />
                   <ErrorMessage name="slug" component={ErrorLabel} />
-                </div>
-                <CTABar>
-                  <Button
-                    disabled={!isValid}
-                    loading={isSubmitting}
-                    variant="plain"
-                    buttonSize="sm"
-                    type="submit"
-                  >
-                    Save
-                  </Button>
-                </CTABar>
-              </Form>
-            )}
-          </Formik>
-        </SettingsCard>
-        <SettingsCard
-          title="GitHub"
-          description="Scan a GitHub repository for Markdown files."
-        >
-          <Formik
-            initialValues={{
-              github_repo: project.github_repo,
-            }}
-            validateOnMount
-            validate={async (values) => {
-              const errors: FormikErrors<FormikValues> = {};
-              if (values.github_repo) {
-                const isAccessible = await isGitHubRepoAccessible(
-                  values.github_repo,
-                  githubAccessToken?.access_token || undefined,
-                );
-                if (!isAccessible) {
-                  errors.github_repo = 'Repository is not accessible';
-                }
-              }
-              return errors;
-            }}
-            onSubmit={async (values, { setSubmitting }) => {
-              _updateProject(values, setSubmitting);
-            }}
-          >
-            {({ isSubmitting, isValid }) => (
-              <Form>
-                <div className="flex flex-col gap-1 p-4">
-                  <p className="mb-1 text-xs font-medium text-neutral-300">
-                    Repository URL
-                  </p>
-                  <Field
-                    type="text"
-                    name="github_repo"
-                    inputSize="sm"
-                    as={NoAutoInput}
-                    disabled={isSubmitting}
-                  />
-                  <ErrorMessage name="github_repo" component={ErrorLabel} />
                 </div>
                 <CTABar>
                   <Button
@@ -753,7 +696,7 @@ const ProjectSettingsPage = () => {
               toast.success('Token deleted.');
             } catch (e) {
               console.error(e);
-              toast.success('Error deleting token.');
+              toast.error('Error deleting token.');
             } finally {
               setLoading(false);
             }

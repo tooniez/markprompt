@@ -12,8 +12,6 @@ import {
   shouldIncludeFileWithPath,
 } from './utils';
 
-const octokit = new Octokit();
-
 const parseGitHubURL = (url: string) => {
   const match = url.match(
     /^https:\/\/github.com\/([a-zA-Z0-9\-_.]+)\/([a-zA-Z0-9\-_.]+)/,
@@ -44,7 +42,7 @@ export const isGitHubRepoAccessible = async (
   return false;
 };
 
-const getRepo = async (owner: string, repo: string) => {
+const getRepo = async (owner: string, repo: string, octokit: Octokit) => {
   const res = await octokit.request('GET /repos/{owner}/{repo}', {
     owner,
     repo,
@@ -52,8 +50,12 @@ const getRepo = async (owner: string, repo: string) => {
   return res.data;
 };
 
-const getDefaultBranch = async (owner: string, repo: string) => {
-  const _repo = await getRepo(owner, repo);
+const getDefaultBranch = async (
+  owner: string,
+  repo: string,
+  octokit: Octokit,
+) => {
+  const _repo = await getRepo(owner, repo, octokit);
 
   const branchRes = await octokit.request(
     `GET /repos/{owner}/{repo}/branches/{branch}`,
@@ -63,8 +65,8 @@ const getDefaultBranch = async (owner: string, repo: string) => {
   return branchRes.data;
 };
 
-const getTree = async (owner: string, repo: string) => {
-  const defaultBranch = await getDefaultBranch(owner, repo);
+const getTree = async (owner: string, repo: string, octokit: Octokit) => {
+  const defaultBranch = await getDefaultBranch(owner, repo, octokit);
 
   const tree = await octokit.request(
     'GET /repos/{owner}/{repo}/git/trees/{tree_sha}',
@@ -91,13 +93,25 @@ export const getRepositoryMDFilesInfo = async (
   url: string,
   includeGlobs: string[],
   excludeGlobs: string[],
+  accessToken: string | undefined,
 ): Promise<{ name: string; path: string; url: string; sha: string }[]> => {
   const info = parseGitHubURL(url);
   if (!info?.owner && !info?.repo) {
     return [];
   }
 
-  const tree = await getTree(info.owner, info.repo);
+  // We don't require the user to provide an access token in order to
+  // fetch the repository file info, e.g. for public repos.
+  let octokit: Octokit;
+  if (accessToken) {
+    octokit = new Octokit({
+      auth: accessToken,
+    });
+  } else {
+    octokit = new Octokit();
+  }
+
+  const tree = await getTree(info.owner, info.repo, octokit);
 
   const mdFileUrls = tree
     .map((f) => {
@@ -135,6 +149,9 @@ const paginatedFetchRepo = async (
     body: JSON.stringify({ owner, repo, offset, includeGlobs, excludeGlobs }),
     headers: { 'Content-Type': 'application/json' },
   });
+  if (!res.ok) {
+    throw new ApiError(res.status, (await res.json()).error);
+  }
   const ab = await res.arrayBuffer();
   return JSON.parse(decompress(Buffer.from(ab)));
 };
@@ -156,7 +173,9 @@ export const getGitHubMDFiles = async (
     includeGlobs,
     excludeGlobs,
   );
+
   let allFilesData = data.files;
+
   while (data.capped) {
     data = await paginatedFetchRepo(
       info.owner,

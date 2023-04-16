@@ -142,6 +142,29 @@ export interface Database {
           team_id?: string
         }
       }
+      sources: {
+        Row: {
+          data: Json | null
+          id: string
+          inserted_at: string
+          project_id: string
+          source: string
+        }
+        Insert: {
+          data?: Json | null
+          id?: string
+          inserted_at?: string
+          project_id: string
+          source: string
+        }
+        Update: {
+          data?: Json | null
+          id?: string
+          inserted_at?: string
+          project_id?: string
+          source?: string
+        }
+      }
       teams: {
         Row: {
           billing_cycle_start: string | null

@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { FC } from 'react';
+import { FC, ReactNode } from 'react';
 
 import Button, { ButtonVariant } from '../ui/Button';
 import { CTABar } from '../ui/SettingsCard';
@@ -7,7 +7,7 @@ import { CTABar } from '../ui/SettingsCard';
 type ConfirmDialogProps = {
   cta: string;
   title: string;
-  description?: string;
+  description?: string | ReactNode;
   variant?: ButtonVariant;
   loading?: boolean;
   onCTAClick: () => Promise<void>;

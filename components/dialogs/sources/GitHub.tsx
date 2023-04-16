@@ -9,43 +9,95 @@ import {
   FormikValues,
 } from 'formik';
 import { groupBy } from 'lodash-es';
-import { useMemo, useState } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import { GitHubIcon } from '@/components/icons/GitHub';
 import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
+import { addSource, deleteSource } from '@/lib/api';
 import { isGitHubRepoAccessible } from '@/lib/github';
 import useGitHub from '@/lib/hooks/integrations/use-github';
+import useProject from '@/lib/hooks/use-project';
+import useSources from '@/lib/hooks/use-sources';
 import useUser from '@/lib/hooks/use-user';
 import useOAuth from '@/lib/hooks/utils/use-oauth';
 import { setGitHubAuthState } from '@/lib/supabase';
+import { getLabelForSource } from '@/pages/[team]/[project]/data';
+import { GitHubRepository, Project } from '@/types/types';
 
-type GitHubStateIdle = { state: 'idle' };
-type GitHubStateChecking = { state: 'checking' };
-type GitHubStateInaccessible = { state: 'inaccessible' };
-type GitHubStateNoFile = { state: 'no_files' };
-type GitHubStateReady = { state: 'ready'; numFiles: number };
+const _addSource = async (
+  projectId: Project['id'],
+  url: string,
+  mutate: () => void,
+) => {
+  try {
+    const newSource = await addSource(projectId, 'github', {
+      url,
+    });
+    await mutate();
+    toast.success(
+      `The source ${getLabelForSource(
+        newSource,
+      )} has been added to the project.`,
+    );
+  } catch (e) {
+    console.error(e);
+    toast.error('Error adding source.');
+  }
+};
 
-type GitHubState =
-  | GitHubStateIdle
-  | GitHubStateChecking
-  | GitHubStateInaccessible
-  | GitHubStateNoFile
-  | GitHubStateReady;
+type ConnectButtonProps = {
+  projectId: Project['id'];
+  repository: GitHubRepository;
+  onComplete?: () => void;
+  clearPrevious?: boolean;
+};
 
-const ConnectButton = () => {
+const ConnectButton: FC<ConnectButtonProps> = ({
+  projectId,
+  repository,
+  onComplete,
+  clearPrevious,
+}) => {
+  const { sources, mutate } = useSources();
+  const [loading, setLoading] = useState(false);
+
   return (
-    <Button className="flex-none" variant="plain" buttonSize="sm" type="submit">
+    <Button
+      className="flex-none"
+      variant="plain"
+      buttonSize="sm"
+      type="submit"
+      loading={loading}
+      onClick={async () => {
+        setLoading(true);
+        if (clearPrevious) {
+          for (const source of sources) {
+            await deleteSource(projectId, source.id);
+          }
+        }
+        await _addSource(projectId, repository.url, mutate);
+        setLoading(false);
+        onComplete?.();
+      }}
+    >
       Connect
     </Button>
   );
 };
 
-const GitHub = () => {
-  const { showAuthPopup, githubAccessToken } = useOAuth();
+type GitHubProps = {
+  clearPrevious?: boolean;
+  onDidRequestClose: () => void;
+};
+
+const GitHub: FC<GitHubProps> = ({ clearPrevious, onDidRequestClose }) => {
+  const { project } = useProject();
   const { user } = useUser();
+  const { sources, mutate } = useSources();
+  const { showAuthPopup, githubAccessToken } = useOAuth();
   const {
     repositories,
     tokenState,
@@ -80,7 +132,18 @@ const GitHub = () => {
           return errors;
         }}
         onSubmit={async (values, { setSubmitting }) => {
-          // _updateProject(values, setSubmitting);
+          if (!project || !values.repoUrl) {
+            return;
+          }
+          setSubmitting(true);
+          if (clearPrevious) {
+            for (const source of sources) {
+              await deleteSource(project.id, source.id);
+            }
+          }
+          await _addSource(project.id, values.repoUrl, mutate);
+          setSubmitting(false);
+          onDidRequestClose();
         }}
       >
         {({ isSubmitting, isValid }) => (
@@ -152,7 +215,7 @@ const GitHub = () => {
                     </p>
                   )}
                 <div className="absolute inset-0 flex flex-col gap-4 overflow-y-auto p-4">
-                  {loadingRepositories && (
+                  {tokenState === 'valid' && loadingRepositories && (
                     <div className="flex animate-pulse flex-col gap-4">
                       <div className="h-4 w-48 rounded bg-neutral-900" />
                       <div className="h-8 rounded bg-neutral-900" />
@@ -161,6 +224,7 @@ const GitHub = () => {
                     </div>
                   )}
                   {!loadingRepositories &&
+                    project &&
                     Object.keys(repositoriesByOwner)?.map((owner) => {
                       const repositories = repositoriesByOwner[owner];
                       return (
@@ -171,14 +235,21 @@ const GitHub = () => {
                           <div className="flex flex-col gap-2">
                             {repositories.map((repo) => (
                               <div
-                                key={repo.name}
+                                key={repo.url}
                                 className="flex flex-row items-center gap-3"
                               >
                                 <ArchiveIcon className="h-4 w-4 flex-none text-neutral-500" />
                                 <span className="flex-grow text-sm font-medium text-neutral-300">
                                   {repo.name}
                                 </span>
-                                <ConnectButton />
+                                <ConnectButton
+                                  projectId={project.id}
+                                  repository={repo}
+                                  onComplete={() => {
+                                    onDidRequestClose();
+                                  }}
+                                  clearPrevious={!!clearPrevious}
+                                />
                               </div>
                             ))}
                           </div>

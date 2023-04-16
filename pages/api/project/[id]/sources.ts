@@ -1,19 +1,18 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { generateKey } from '@/lib/utils';
 import { Database } from '@/types/supabase';
-import { Project, Token } from '@/types/types';
+import { Project, Source } from '@/types/types';
 
 type Data =
   | {
       status?: string;
       error?: string;
     }
-  | Token[]
-  | Token;
+  | Source[]
+  | Source;
 
-const allowedMethods = ['GET', 'POST', 'DELETE'];
+const allowedMethods = ['POST', 'GET', 'DELETE'];
 
 export default async function handler(
   req: NextApiRequest,
@@ -36,8 +35,8 @@ export default async function handler(
   const projectId = req.query.id as Project['id'];
 
   if (req.method === 'GET') {
-    const { data: tokens, error } = await supabase
-      .from('tokens')
+    const { data: sources, error } = await supabase
+      .from('sources')
       .select('*')
       .eq('project_id', projectId);
 
@@ -45,20 +44,18 @@ export default async function handler(
       return res.status(400).json({ error: error.message });
     }
 
-    if (!tokens) {
-      return res.status(404).json({ error: 'No tokens found.' });
-    }
-
-    return res.status(200).json(tokens);
+    return res.status(200).json(sources);
   } else if (req.method === 'POST') {
-    const value = generateKey();
-    const { error, data } = await supabase
-      .from('tokens')
+    const source = req.body.source as string;
+    const data = req.body.data as any;
+
+    const { error, data: newSource } = await supabase
+      .from('sources')
       .insert([
         {
-          value,
           project_id: projectId,
-          created_by: session.user.id,
+          source,
+          data,
         },
       ])
       .select('*')
@@ -69,13 +66,14 @@ export default async function handler(
       return res.status(400).json({ error: error.message });
     }
 
-    if (!data) {
+    if (!newSource) {
       return res.status(400).json({ error: 'Error generating token.' });
     }
-    return res.status(200).json(data);
+
+    return res.status(200).json(newSource);
   } else if (req.method === 'DELETE') {
     const { error } = await supabase
-      .from('tokens')
+      .from('sources')
       .delete()
       .eq('id', req.body.id);
     if (error) {
@@ -85,5 +83,5 @@ export default async function handler(
     return res.status(200).json({ status: 'ok' });
   }
 
-  return res.status(400).json({ error: 'unknown' });
+  return res.status(400).end();
 }
