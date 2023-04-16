@@ -121,10 +121,7 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
                     {trainingComplete ? (
                       'Processing complete'
                     ) : (
-                      <>
-                        Drop your files here
-                        {project?.github_repo ? ' or sync repo' : ''}
-                      </>
+                      <>Drop your files here or connect sources</>
                     )}
                     <span
                       className={cn(

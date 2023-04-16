@@ -447,7 +447,7 @@ const Data = () => {
                     toast.success('Processing complete');
                   }}
                 >
-                  Sync repo
+                  Train
                 </Button>
               )}
             </div>
