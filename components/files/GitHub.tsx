@@ -38,23 +38,6 @@ type GitHubProps = {
   className?: string;
 };
 
-type GitHubStateIdle = { state: 'idle' };
-type GitHubStateChecking = { state: 'checking' };
-type GitHubStateInaccessible = { state: 'inaccessible' };
-type GitHubStateNoFile = { state: 'no_files' };
-type GitHubStateReady = { state: 'ready'; numFiles: number };
-type GitHubStateFetchingData = { state: 'fetching_gh_data' };
-type GitHubStateTrainingComplete = { state: 'training_complete' };
-
-type GitHubState =
-  | GitHubStateIdle
-  | GitHubStateChecking
-  | GitHubStateInaccessible
-  | GitHubStateNoFile
-  | GitHubStateReady
-  | GitHubStateFetchingData
-  | GitHubStateTrainingComplete;
-
 const getReadyMessage = (
   isFetchingRepoInfo: boolean,
   trainingState: TrainingState,
@@ -87,8 +70,8 @@ const getReadyMessage = (
 };
 
 export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
-  const { projects, mutate: mutateProjects } = useProjects();
-  const { project, config, mutate: mutateProject } = useProject();
+  const { projects } = useProjects();
+  const { project, config } = useProject();
   const { mutate: mutateFiles } = useFiles();
   const { sources } = useSources();
   const { token } = useGitHub();
@@ -243,80 +226,6 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
             </Button>
           )}
         </div>
-        {/* <div className="relative flex flex-row gap-2">
-          <Input
-            className="w-full"
-            value={githubUrl}
-            variant={isReady ? 'glow' : 'plain'}
-            type="text"
-            onChange={(e: any) => {
-              setGitHubUrl(e.target.value);
-              checkRepo(e.target.value, config);
-            }}
-            placeholder="Enter URL"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="none"
-            spellCheck="false"
-          />
-          <Button
-            disabled={!isReady}
-            variant={isReady ? 'glow' : 'plain'}
-            loading={
-              gitHubState.state === 'checking' ||
-              (trainingState.state !== 'idle' && isTrainingInitiatedByGitHub)
-            }
-            loadingMessage={
-              gitHubState.state === 'checking' ? 'Checking...' : 'Processing...'
-            }
-            onClick={async () => {
-              if (!projects || !project?.id || !githubUrl) {
-                return;
-              }
-              setIsTrainingInitiatedByGitHub(true);
-              const values = { github_repo: githubUrl };
-              const updatedProject = { ...project, ...values };
-              setGitHubState({ state: 'fetching_gh_data' });
-              await mutateProject(updateProject(project.id, values), {
-                optimisticData: updatedProject,
-                rollbackOnError: true,
-                populateCache: true,
-                revalidate: false,
-              });
-              await mutateProjects([
-                ...projects.filter((p) => p.id !== updatedProject.id),
-                updatedProject,
-              ]);
-              const mdFiles = await getGitHubMDFiles(
-                githubUrl,
-                config.include || [],
-                config.exclude || [],
-              );
-              await generateEmbeddings(
-                mdFiles.length,
-                (i) => {
-                  const file = mdFiles[i];
-                  const content = file.content;
-                  return {
-                    name: file.name,
-                    path: file.path,
-                    checksum: createChecksum(content),
-                  };
-                },
-                async (i) => mdFiles[i].content,
-                () => {
-                  mutateFiles();
-                },
-              );
-              await mutateFiles();
-              setIsTrainingInitiatedByGitHub(false);
-              onTrainingComplete();
-              setGitHubState({ state: 'idle' });
-            }}
-          >
-            Start training
-          </Button>
-        </div> */}
         {trainingState.state !== 'idle' && isTrainingInitiatedByGitHub && (
           <div className="absolute -bottom-7 flex w-full justify-center">
             <p
