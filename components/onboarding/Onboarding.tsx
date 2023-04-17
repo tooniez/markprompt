@@ -13,9 +13,9 @@ import useTeam from '@/lib/hooks/use-team';
 import useUser from '@/lib/hooks/use-user';
 import { showConfetti } from '@/lib/utils';
 
-import Button from '../ui/Button';
 import AddFiles from './AddFiles';
 import Query from './Query';
+import Button from '../ui/Button';
 
 const Onboarding = () => {
   const { team } = useTeam();
