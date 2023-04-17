@@ -84,7 +84,7 @@ export type Checksum = Pick<DbFile, 'path' | 'checksum'>;
 export type SourceType = Pick<Source, 'type'>['type'];
 
 export type GitHubSourceDataType = { url: string };
-export type MotifSourceDataType = { projectId: string };
+export type MotifSourceDataType = { name: string; projectId: string };
 
 export class ApiError extends Error {
   readonly code: number;

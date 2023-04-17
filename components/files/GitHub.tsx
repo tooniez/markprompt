@@ -17,7 +17,7 @@ import useProjects from '@/lib/hooks/use-projects';
 import useSources from '@/lib/hooks/use-sources';
 import { MarkpromptConfigType } from '@/lib/schema';
 import { pluralize } from '@/lib/utils';
-import { ApiError, Source } from '@/types/types';
+import { ApiError, GitHubSourceDataType, Source } from '@/types/types';
 
 import { GitHubIcon } from '../icons/GitHub';
 import Button from '../ui/Button';
@@ -118,11 +118,11 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
   const isReady = !!githubSource;
 
   useEffect(() => {
-    const data = githubSource?.data as any;
-    if (!data?.['url']) {
+    const data = githubSource?.data as GitHubSourceDataType;
+    if (!data?.url) {
       return;
     }
-    checkRepo(data['url'] as string, config);
+    checkRepo(data.url, config);
   }, [githubSource, config, checkRepo]);
 
   return (

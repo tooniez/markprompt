@@ -43,7 +43,13 @@ import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import { pluralize, truncate } from '@/lib/utils';
-import { Project, Source, SourceType } from '@/types/types';
+import {
+  GitHubSourceDataType,
+  MotifSourceDataType,
+  Project,
+  Source,
+  SourceType,
+} from '@/types/types';
 
 dayjs.extend(relativeTime);
 
@@ -139,12 +145,15 @@ export const getIconForSource = (sourceType: SourceType) => {
 };
 
 export const getLabelForSource = (source: Source) => {
-  const data = source.data as any;
   switch (source.type) {
-    case 'motif':
-      return (data?.['name'] || '') as string;
-    case 'github':
-      return getOwnerRepoString(data?.['url']);
+    case 'motif': {
+      const data = source.data as MotifSourceDataType;
+      return data.name;
+    }
+    case 'github': {
+      const data = source.data as GitHubSourceDataType;
+      return getOwnerRepoString(data.url);
+    }
     case 'file-upload':
       return 'File uploads';
     case 'api-upload':
