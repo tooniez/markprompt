@@ -9,9 +9,9 @@ import { PlainProvider } from '@team-plain/react-chat-ui';
 import { Analytics } from '@vercel/analytics/react';
 import * as Fathom from 'fathom-client';
 import { NextComponentType, NextPageContext } from 'next';
-import { ThemeProvider } from 'next-themes';
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
+import { ThemeProvider } from 'next-themes';
 import { ReactNode, useEffect, useState } from 'react';
 
 import { Toaster } from '@/components/ui/Toaster';

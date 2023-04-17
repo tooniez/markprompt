@@ -1,3 +1,4 @@
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import {
   createContext,
   FC,
@@ -10,7 +11,6 @@ import {
 
 import { FileData, Source } from '@/types/types';
 
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { processFile } from '../api';
 import { getGitHubMDFiles, getOwnerRepoString } from '../github';
 import useProject from '../hooks/use-project';
@@ -214,6 +214,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 onFileProcessed();
               },
             );
+            break;
           }
           default:
             // Skip. Note that file sources are trained at upload
@@ -223,7 +224,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         }
       }
     },
-    [sources],
+    [config.exclude, config.include, generateEmbeddings, sources],
   );
 
   const stopGeneratingEmbeddings = useCallback(() => {

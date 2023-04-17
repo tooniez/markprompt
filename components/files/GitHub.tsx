@@ -2,6 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import cn from 'classnames';
 import dynamic from 'next/dynamic';
 import { FC, useCallback, useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 import {
   getTrainingStateMessage,
@@ -18,7 +19,6 @@ import { MarkpromptConfigType } from '@/lib/schema';
 import { pluralize } from '@/lib/utils';
 import { ApiError, Source } from '@/types/types';
 
-import { toast } from 'react-hot-toast';
 import { GitHubIcon } from '../icons/GitHub';
 import Button from '../ui/Button';
 import { ToggleMessage } from '../ui/ToggleMessage';

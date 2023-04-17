@@ -2,8 +2,8 @@ import useSWR from 'swr';
 
 import { Source } from '@/types/types';
 
-import { fetcher } from '../utils';
 import useProject from './use-project';
+import { fetcher } from '../utils';
 
 export default function useSources() {
   const { project } = useProject();

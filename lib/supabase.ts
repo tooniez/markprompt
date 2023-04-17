@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { PostgrestError } from '@supabase/supabase-js';
 
+import { Database } from '@/types/supabase';
 import {
   DbUser,
   GitHubSourceDataType,
@@ -11,7 +12,6 @@ import {
   SourceType,
 } from '@/types/types';
 
-import { Database } from '@/types/supabase';
 import { generateKey } from './utils';
 
 export const getBYOOpenAIKey = async (

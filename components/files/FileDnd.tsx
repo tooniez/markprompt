@@ -1,3 +1,4 @@
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import cn from 'classnames';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -9,12 +10,11 @@ import {
 } from '@/lib/context/training';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
+import useSources from '@/lib/hooks/use-sources';
+import { getOrCreateSource } from '@/lib/supabase';
 import { readTextFileAsync } from '@/lib/utils';
 import { FileData } from '@/types/types';
 
-import useSources from '@/lib/hooks/use-sources';
-import { getOrCreateSource } from '@/lib/supabase';
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Button from '../ui/Button';
 import { ToggleMessage } from '../ui/ToggleMessage';
 
