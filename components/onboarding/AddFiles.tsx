@@ -7,7 +7,8 @@ import { FileDnd } from '@/components/files/FileDnd';
 import { Code } from '@/components/ui/Code';
 import useFiles from '@/lib/hooks/use-files';
 import useTokens from '@/lib/hooks/use-tokens';
-import { copyToClipboard, getHost, pluralize } from '@/lib/utils';
+import { copyToClipboard, pluralize } from '@/lib/utils';
+import { getHost } from '@/lib/utils.edge';
 
 import { GitHub } from '../files/GitHub';
 

@@ -19,6 +19,7 @@ import {
   OpenAIModelIdWithType,
   TimeInterval,
 } from '@/types/types';
+import { getHost } from './utils.edge';
 
 const lookup = [
   { value: 1, symbol: '' },
@@ -137,14 +138,6 @@ export const getOrigin = (subdomain?: string, forceProduction?: boolean) => {
       ? 'https://'
       : 'http://';
   return `${schema}${hostWithMaybeSubdomain}`;
-};
-
-export const getHost = (subdomain?: string, forceProduction?: boolean) => {
-  const host =
-    forceProduction || process.env.NODE_ENV === 'production'
-      ? process.env.NEXT_PUBLIC_APP_HOSTNAME
-      : 'localhost:3000';
-  return subdomain ? `${subdomain}.${host}` : host;
 };
 
 const slugGeneratorConfig: Config = {

@@ -3,7 +3,7 @@ import { NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 import AppMiddleware from './lib/middleware/app';
 import CompletionsMiddleware from './lib/middleware/completions';
 import TrainMiddleware from './lib/middleware/train';
-import { getHost } from './lib/utils';
+import { getHost } from './lib/utils.edge';
 
 export const config = {
   matcher: [

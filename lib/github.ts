@@ -219,13 +219,13 @@ export const getOrRefreshAccessToken = async (
   }
 
   const now = Date.now();
-  if (data.refresh_token_expires < now || !data.refresh_token) {
-    throw new ApiError(400, 'Refresh token has expired. Please sign in again.');
-  }
+  // if (data.refresh_token_expires < now || !data.refresh_token) {
+  //   throw new ApiError(400, 'Refresh token has expired. Please sign in again.');
+  // }
 
-  if (data.expires >= now) {
-    return data;
-  }
+  // if (data.expires >= now) {
+  //   return data;
+  // }
 
   const res = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',

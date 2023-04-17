@@ -9,16 +9,16 @@ import { PlainProvider } from '@team-plain/react-chat-ui';
 import { Analytics } from '@vercel/analytics/react';
 import * as Fathom from 'fathom-client';
 import { NextComponentType, NextPageContext } from 'next';
+import { ThemeProvider } from 'next-themes';
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
-import { ThemeProvider } from 'next-themes';
 import { ReactNode, useEffect, useState } from 'react';
 
 import { Toaster } from '@/components/ui/Toaster';
 import { ChatWindow, plainTheme } from '@/components/user/ChatWindow';
 import { ManagedAppContext } from '@/lib/context/app';
 import { ManagedTrainingContext } from '@/lib/context/training';
-import { getHost } from '@/lib/utils';
+import { getHost } from '@/lib/utils.edge';
 
 interface CustomAppProps<P = any> extends AppProps<P> {
   Component: NextComponentType<NextPageContext, any, P> & {
