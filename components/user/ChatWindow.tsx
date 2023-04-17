@@ -71,7 +71,7 @@ export const ChatWindow = () => {
           side="bottom"
           onInteractOutside={(e) => e.preventDefault()}
         >
-          <div className="relative mt-4 h-[calc(100vh-240px)] max-h-[560px] w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-2xl sm:w-[400px]">
+          <div className="relative mt-4 h-[calc(100vh-240px)] max-h-[560px] w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-2xl sm:w-[400px] [&_textarea]:ring-0">
             <Chat />
             <Popover.Close
               className="absolute top-3 right-3 z-20 rounded p-1 backdrop-blur transition hover:bg-neutral-100"
