@@ -1,13 +1,13 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { DotsHorizontalIcon } from '@radix-ui/react-icons';
+import { DotsHorizontalIcon, UploadIcon } from '@radix-ui/react-icons';
 import {
+  SortingState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
-  SortingState,
   useReactTable,
 } from '@tanstack/react-table';
 import cn from 'classnames';
@@ -29,8 +29,8 @@ import Button from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { deleteFiles, deleteSource } from '@/lib/api';
 import {
-  getTrainingStateMessage,
   TrainingState,
+  getTrainingStateMessage,
   useTrainingContext,
 } from '@/lib/context/training';
 import { getOwnerRepoString } from '@/lib/github';
@@ -380,16 +380,6 @@ const Data = () => {
           )}
           {numSelected === 0 && (
             <div className="flex flex-row items-center gap-2">
-              {hasFiles && (
-                <Button
-                  disabled={trainingState.state === 'loading'}
-                  variant={project?.github_repo ? 'plain' : 'cta'}
-                  buttonSize="sm"
-                  onClick={() => setFileDialogOpen(true)}
-                >
-                  Add files
-                </Button>
-              )}
               {project?.github_repo && (
                 <Button
                   loading={
@@ -481,6 +471,14 @@ const Data = () => {
             <span className="subtle-underline truncate">
               Connect Motif project
             </span>
+          </button>
+
+          <button
+            className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400"
+            onClick={() => setFileDialogOpen(true)}
+          >
+            <UploadIcon className="h-4 w-4 flex-none" />
+            <span className="subtle-underline truncate">Upload files</span>
           </button>
         </div>
         {!loadingFiles && !hasFiles && (
