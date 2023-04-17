@@ -211,6 +211,7 @@ export const getOrRefreshAccessToken = async (
     .maybeSingle();
 
   if (error) {
+    console.error('Error retrieving access token:', error.message);
     throw new ApiError(400, 'Unable to retrieve access token.');
   }
 
@@ -219,13 +220,13 @@ export const getOrRefreshAccessToken = async (
   }
 
   const now = Date.now();
-  // if (data.refresh_token_expires < now || !data.refresh_token) {
-  //   throw new ApiError(400, 'Refresh token has expired. Please sign in again.');
-  // }
+  if (data.refresh_token_expires < now || !data.refresh_token) {
+    throw new ApiError(400, 'Refresh token has expired. Please sign in again.');
+  }
 
-  // if (data.expires >= now) {
-  //   return data;
-  // }
+  if (data.expires >= now) {
+    return data;
+  }
 
   const res = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
@@ -262,11 +263,12 @@ export const getOrRefreshAccessToken = async (
     })
     .eq('id', data.id)
     .select('*')
+    .order('id', { ascending: false })
     .limit(1)
     .maybeSingle();
 
   if (refreshError) {
-    console.error('Error saving updated token', refreshError.message);
+    console.error('Error saving updated token:', refreshError.message);
   }
 
   if (refreshedData) {

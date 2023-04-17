@@ -11,10 +11,19 @@ import {
 import { FileData } from '@/types/types';
 
 import { getChecksums, processFile, setChecksums } from '../api';
+import { getGitHubMDFiles, getOwnerRepoString } from '../github';
+import useFiles from '../hooks/use-files';
 import useProject from '../hooks/use-project';
-import { pluralize, shouldIncludeFileWithPath, truncate } from '../utils';
+import useSources from '../hooks/use-sources';
+import {
+  createChecksum,
+  pluralize,
+  shouldIncludeFileWithPath,
+  truncate,
+} from '../utils';
 
 type IdleState = { state: 'idle' };
+type FetchingDataState = { state: 'fetching_data' };
 type LoadingState = {
   state: 'loading';
   progress?: number;
@@ -27,6 +36,7 @@ type CompleteState = { state: 'complete'; errors: string[] };
 
 export type TrainingState =
   | IdleState
+  | FetchingDataState
   | LoadingState
   | CancelRequestsState
   | CompleteState;
@@ -44,6 +54,10 @@ export type State = {
     forceRetrain?: boolean,
   ) => Promise<void>;
   stopGeneratingEmbeddings: () => void;
+  trainAllSources: (
+    onFileProcessed: () => void,
+    onError: (message: string) => void,
+  ) => void;
 };
 
 const initialState: State = {
@@ -53,6 +67,8 @@ const initialState: State = {
   generateEmbeddings: async () => {},
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   stopGeneratingEmbeddings: () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  trainAllSources: () => {},
 };
 
 export const getTrainingStateMessage = (
@@ -76,9 +92,11 @@ export const getTrainingStateMessage = (
 
 const TrainingContextProvider = (props: PropsWithChildren) => {
   const { project, config } = useProject();
+  const { mutate: mutateFiles } = useFiles();
   const [state, setState] = useState<TrainingState>({ state: 'idle' });
   const [errors, setErrors] = useState<string[]>([]);
   const stopFlag = useRef(false);
+  const { sources } = useSources();
 
   const generateEmbeddings = useCallback(
     async (
@@ -162,6 +180,45 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
     [project?.id, config],
   ) satisfies State['generateEmbeddings'];
 
+  const trainAllSources = useCallback(
+    async (onFileProcessed: () => void, onError: (message: string) => void) => {
+      for (const source of sources) {
+        setState({ state: 'fetching_data' });
+        const githubUrl = (source.data as any)?.['url'];
+
+        let mdFiles: FileData[] = [];
+        try {
+          mdFiles = await getGitHubMDFiles(
+            githubUrl,
+            config.include || [],
+            config.exclude || [],
+          );
+        } catch (e) {
+          const repoOwner = getOwnerRepoString(githubUrl);
+          onError(`Error processing ${repoOwner}: ${e}`);
+          continue;
+        }
+        await generateEmbeddings(
+          mdFiles.length,
+          (i) => {
+            const file = mdFiles[i];
+            const content = file.content;
+            return {
+              name: file.name,
+              path: file.path,
+              checksum: createChecksum(content),
+            };
+          },
+          async (i) => mdFiles[i].content,
+          () => {
+            onFileProcessed();
+          },
+        );
+      }
+    },
+    [sources],
+  );
+
   const stopGeneratingEmbeddings = useCallback(() => {
     stopFlag.current = true;
     setState({ state: 'cancel_requested' });
@@ -174,6 +231,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         errors,
         generateEmbeddings,
         stopGeneratingEmbeddings,
+        trainAllSources,
       }}
       {...props}
     />

@@ -121,7 +121,7 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
                     {trainingComplete ? (
                       'Processing complete'
                     ) : (
-                      <>Drop your files here or connect sources</>
+                      <>Drop your files here</>
                     )}
                     <span
                       className={cn(

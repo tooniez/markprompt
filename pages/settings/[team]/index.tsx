@@ -177,6 +177,7 @@ const TeamSettingsPage = () => {
                     githubTokenState === 'no_token' ? GitHubIcon : undefined
                   }
                   onClick={async () => {
+                    await disconnect('github');
                     const state = await setGitHubAuthState(supabase, user.id);
                     const authed = await showAuthPopup('github', state);
                     if (authed) {

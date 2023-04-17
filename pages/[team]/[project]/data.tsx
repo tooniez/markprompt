@@ -33,12 +33,12 @@ import {
   TrainingState,
   useTrainingContext,
 } from '@/lib/context/training';
-import { getGitHubMDFiles, getOwnerRepoString } from '@/lib/github';
+import { getOwnerRepoString } from '@/lib/github';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
-import { createChecksum, pluralize, truncate } from '@/lib/utils';
+import { pluralize, truncate } from '@/lib/utils';
 import { Project, Source } from '@/types/types';
 
 dayjs.extend(relativeTime);
@@ -150,15 +150,15 @@ type SourceItemProps = {
 const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
   const Icon = getIconForSource(source);
   return (
-    <div className="group flex w-full cursor-default flex-row items-center gap-2 text-sm">
+    <div className="flex w-full cursor-default flex-row items-center gap-2 text-sm">
       <Icon className="h-4 w-4 flex-none text-neutral-500" />
-      <p className="flex flex-grow truncate text-neutral-500">
+      <p className="flex-grow overflow-hidden truncate text-neutral-500">
         {getLabelForSource(source)}
       </p>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
           <button
-            className="flex-none select-none p-1 text-neutral-500 opacity-0 outline-none transition group-hover:opacity-100"
+            className="flex-none select-none p-1 text-neutral-500 opacity-50 outline-none transition hover:opacity-100"
             aria-label="Source options"
           >
             <DotsHorizontalIcon />
@@ -237,10 +237,10 @@ const Data = () => {
     generateEmbeddings,
     stopGeneratingEmbeddings,
     state: trainingState,
+    trainAllSources,
   } = useTrainingContext();
   const [rowSelection, setRowSelection] = useState({});
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isDownloadingRepo, setIsDownloadingRepo] = useState(false);
   const [fileDialogOpen, setFileDialogOpen] = useState(false);
   const [githubDialogOpen, setGithubDialogOpen] = useState(false);
   const [sourceToRemove, setSourceToRemove] = useState<Source | undefined>(
@@ -316,25 +316,6 @@ const Data = () => {
   return (
     <ProjectSettingsLayout
       title="Data"
-      // SubHeading={() => {
-      //   if (!project?.github_repo) {
-      //     return <></>;
-      //   }
-      //   return (
-      //     <Link
-      //       className="flex w-min flex-row items-center gap-2 text-xs text-neutral-500 transition hover:text-neutral-400"
-      //       href={project.github_repo}
-      //       target="_blank"
-      //       rel="noreferrer"
-      //     >
-      //       <GitHubIcon className="h-3 w-3" />
-      //       <p className="subtle-underline truncate whitespace-nowrap">
-      //         {getOwnerRepoString(project.github_repo)}
-      //       </p>
-      //       <ExternalLinkIcon className="h-3 w-3" />
-      //     </Link>
-      //   );
-      // }}
       RightHeading={() => (
         <div className="flex w-full items-center gap-4">
           <div className="flex-grow" />
@@ -412,35 +393,18 @@ const Data = () => {
               {project?.github_repo && (
                 <Button
                   loading={
-                    trainingState.state === 'loading' || isDownloadingRepo
+                    trainingState.state === 'loading' ||
+                    trainingState.state === 'fetching_data'
                   }
                   variant="cta"
                   buttonSize="sm"
                   onClick={async () => {
-                    if (!project.github_repo) {
-                      return;
-                    }
-                    setIsDownloadingRepo(true);
-                    const mdFiles = await getGitHubMDFiles(
-                      project.github_repo,
-                      config.include || [],
-                      config.exclude || [],
-                    );
-                    setIsDownloadingRepo(false);
-                    await generateEmbeddings(
-                      mdFiles.length,
-                      (i) => {
-                        const file = mdFiles[i];
-                        const content = file.content;
-                        return {
-                          name: file.name,
-                          path: file.path,
-                          checksum: createChecksum(content),
-                        };
-                      },
-                      async (i) => mdFiles[i].content,
+                    await trainAllSources(
                       () => {
                         mutateFiles();
+                      },
+                      (message: string) => {
+                        toast.error(message);
                       },
                     );
                     await mutateFiles();
@@ -478,8 +442,10 @@ const Data = () => {
           >
             <Dialog.Trigger asChild>
               <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
-                <GitHubIcon className="h-4 w-4" />
-                <span className="subtle-underline">Connect GitHub repo</span>
+                <GitHubIcon className="h-4 w-4 flex-none" />
+                <span className="subtle-underline truncate">
+                  Connect GitHub repo
+                </span>
               </button>
             </Dialog.Trigger>
             <Dialog.Portal>
@@ -511,8 +477,10 @@ const Data = () => {
           </Dialog.Root>
 
           <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
-            <MotifIcon className="h-4 w-4" />
-            <span className="subtle-underline">Connect Motif project</span>
+            <MotifIcon className="h-4 w-4 flex-none" />
+            <span className="subtle-underline truncate">
+              Connect Motif project
+            </span>
           </button>
         </div>
         {!loadingFiles && !hasFiles && (

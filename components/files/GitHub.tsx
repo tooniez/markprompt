@@ -8,20 +8,17 @@ import {
   TrainingState,
   useTrainingContext,
 } from '@/lib/context/training';
-import {
-  getGitHubMDFiles,
-  getOwnerRepoString,
-  getRepositoryMDFilesInfo,
-} from '@/lib/github';
+import { getOwnerRepoString, getRepositoryMDFilesInfo } from '@/lib/github';
 import useGitHub from '@/lib/hooks/integrations/use-github';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useProjects from '@/lib/hooks/use-projects';
 import useSources from '@/lib/hooks/use-sources';
 import { MarkpromptConfigType } from '@/lib/schema';
-import { createChecksum, pluralize } from '@/lib/utils';
+import { pluralize } from '@/lib/utils';
 import { ApiError, Source } from '@/types/types';
 
+import { toast } from 'react-hot-toast';
 import { GitHubIcon } from '../icons/GitHub';
 import Button from '../ui/Button';
 import { ToggleMessage } from '../ui/ToggleMessage';
@@ -76,14 +73,15 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
   const { sources } = useSources();
   const { token } = useGitHub();
   const {
-    generateEmbeddings,
     state: trainingState,
     stopGeneratingEmbeddings,
+    trainAllSources,
   } = useTrainingContext();
   const [githubDialogOpen, setGithubDialogOpen] = useState(false);
   const [isFetchingRepoInfo, setFetchingRepoInfo] = useState(false);
   const [numFiles, setNumFiles] = useState(0);
   const [error, setError] = useState<string | undefined>(undefined);
+  const [isRepoAccessible, setRepoAcessible] = useState(false);
   const [isTrainingInitiatedByGitHub, setIsTrainingInitiatedByGitHub] =
     useState(false);
 
@@ -94,14 +92,23 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
       }
 
       setFetchingRepoInfo(true);
-      const files = await getRepositoryMDFilesInfo(
-        url,
-        config.include || [],
-        config.exclude || [],
-        token?.access_token || undefined,
-      );
+      setRepoAcessible(false);
+      try {
+        const files = await getRepositoryMDFilesInfo(
+          url,
+          config.include || [],
+          config.exclude || [],
+          token?.access_token || undefined,
+        );
+        setRepoAcessible(true);
+        setNumFiles(files ? files.length : 0);
+      } catch (e) {
+        setRepoAcessible(false);
+        setError(
+          `The repository ${getOwnerRepoString(url)} is not accessible.`,
+        );
+      }
       setFetchingRepoInfo(false);
-      setNumFiles(files ? files.length : 0);
     },
     [project, token?.access_token],
   );
@@ -123,15 +130,16 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
       className={cn(
         'relative flex h-full w-full flex-col items-center justify-center rounded-lg border-2 p-8 text-sm text-neutral-300 transition duration-300',
         {
-          'border-transparent': !isReady,
-          'border-fuchsia-600 bg-fuchsia-500 bg-opacity-[7%]': isReady,
+          'border-transparent': !isReady || !isRepoAccessible,
+          'border-fuchsia-600 bg-fuchsia-500 bg-opacity-[7%]':
+            isReady && isRepoAccessible,
         },
       )}
     >
       <div className="relative mt-8 flex w-full max-w-md flex-col gap-4">
         <div className="absolute inset-x-0 -top-12 z-50 overflow-visible">
           <ToggleMessage
-            showMessage1={!isReady}
+            showMessage1={!isReady || !isRepoAccessible}
             message1="Sync files from  GitHub"
             message2={getReadyMessage(
               isFetchingRepoInfo,
@@ -150,7 +158,7 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
             onOpenChange={setGithubDialogOpen}
           >
             {/* Only hide the trigger if the state is ready. The dialog still needs to be accessible. */}
-            {!isReady && (
+            {(!isReady || !isRepoAccessible) && (
               <Dialog.Trigger asChild>
                 <Button className="mt-2" variant="plain" Icon={GitHubIcon}>
                   Select GitHub repository
@@ -177,7 +185,7 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
               </Dialog.Content>
             </Dialog.Portal>
           </Dialog.Root>
-          {isReady && (
+          {isReady && isRepoAccessible && (
             <Button
               variant="glow"
               loading={
@@ -192,28 +200,37 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
                 try {
                   setError(undefined);
                   setIsTrainingInitiatedByGitHub(true);
-                  const mdFiles = await getGitHubMDFiles(
-                    githubUrl,
-                    config.include || [],
-                    config.exclude || [],
-                  );
-                  await generateEmbeddings(
-                    mdFiles.length,
-                    (i) => {
-                      const file = mdFiles[i];
-                      const content = file.content;
-                      return {
-                        name: file.name,
-                        path: file.path,
-                        checksum: createChecksum(content),
-                      };
-                    },
-                    async (i) => mdFiles[i].content,
+                  await trainAllSources(
                     () => {
                       mutateFiles();
                     },
+                    (message: string) => {
+                      toast.error(message);
+                    },
                   );
-                  await mutateFiles();
+
+                  // const mdFiles = await getGitHubMDFiles(
+                  //   githubUrl,
+                  //   config.include || [],
+                  //   config.exclude || [],
+                  // );
+                  // await generateEmbeddings(
+                  //   mdFiles.length,
+                  //   (i) => {
+                  //     const file = mdFiles[i];
+                  //     const content = file.content;
+                  //     return {
+                  //       name: file.name,
+                  //       path: file.path,
+                  //       checksum: createChecksum(content),
+                  //     };
+                  //   },
+                  //   async (i) => mdFiles[i].content,
+                  //   () => {
+                  //     mutateFiles();
+                  //   },
+                  // );
+                  // await mutateFiles();
                   onTrainingComplete();
                 } catch (e) {
                   setError(`${(e as ApiError).message}`);
@@ -239,9 +256,16 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
           </div>
         )}
       </div>
-      {error && (
+      {(error || !isRepoAccessible) && (
         <div className="absolute left-4 right-4 bottom-3 flex justify-center">
-          <p className="text-center text-xs text-fuchsia-500">{error}</p>
+          <p
+            className={cn('text-center text-xs', {
+              'text-rose-500': !isRepoAccessible,
+              'text-fuchsia-500': isRepoAccessible,
+            })}
+          >
+            {error}
+          </p>
         </div>
       )}
     </div>
