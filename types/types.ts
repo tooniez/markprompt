@@ -80,7 +80,11 @@ export type OAuthToken =
 
 export type FileData = { path: string; name: string; content: string };
 export type PathContentData = Pick<FileData, 'path' | 'content'>;
-export type ProjectChecksums = Record<FileData['path'], string>;
+export type Checksum = Pick<DbFile, 'path' | 'checksum'>;
+export type SourceType = Pick<Source, 'type'>['type'];
+
+export type GitHubSourceDataType = { url: string };
+export type MotifSourceDataType = { projectId: string };
 
 export class ApiError extends Error {
   readonly code: number;

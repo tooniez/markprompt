@@ -44,7 +44,7 @@ const _addSource = async (
     );
   } catch (e) {
     console.error(e);
-    toast.error('Error adding source.');
+    toast.error(`Error adding source: ${e}`);
   }
 };
 

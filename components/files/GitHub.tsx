@@ -113,7 +113,7 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
     [project, token?.access_token],
   );
 
-  const githubSource = sources.find((s) => s.source === 'github');
+  const githubSource = sources.find((s) => s.type === 'github');
 
   const isReady = !!githubSource;
 

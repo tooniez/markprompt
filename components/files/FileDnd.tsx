@@ -12,7 +12,8 @@ import useProject from '@/lib/hooks/use-project';
 import { readTextFileAsync } from '@/lib/utils';
 import { FileData } from '@/types/types';
 
-import { getOrCreateUploadSourceId } from '@/lib/supabase';
+import useSources from '@/lib/hooks/use-sources';
+import { getOrCreateSource } from '@/lib/supabase';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Button from '../ui/Button';
 import { ToggleMessage } from '../ui/ToggleMessage';
@@ -28,6 +29,7 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
   const [trainingComplete, setTrainingComplete] = useState(false);
   const [dragging, setDragging] = useState(false);
   const { mutate: mutateFiles } = useFiles();
+  const { mutate: mutateSources } = useSources();
   const { project } = useProject();
   const {
     generateEmbeddings,
@@ -75,7 +77,12 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
       return;
     }
 
-    const sourceId = await getOrCreateUploadSourceId(supabase, project.id);
+    const sourceId = await getOrCreateSource(
+      supabase,
+      project.id,
+      'file-upload',
+      undefined,
+    );
 
     if (!sourceId) {
       toast.error('Unable to create source');
@@ -104,6 +111,7 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
     setPickedFiles([]);
     setTrainingComplete(true);
     mutateFiles();
+    mutateSources();
     onTrainingComplete();
   }, [
     supabase,
@@ -111,6 +119,7 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
     generateEmbeddings,
     onTrainingComplete,
     mutateFiles,
+    mutateSources,
     project?.id,
   ]);
 

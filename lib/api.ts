@@ -5,8 +5,8 @@ import {
   Domain,
   FileData,
   Project,
-  ProjectChecksums,
   Source,
+  SourceType,
   Team,
   Token,
 } from '@/types/types';
@@ -41,28 +41,6 @@ export const updateProject = async (
     headers: { 'Content-Type': 'application/json', accept: 'application/json' },
   });
   return getResponseOrThrow<Project>(res);
-};
-
-export const getChecksums = async (
-  projectId: Project['id'],
-): Promise<ProjectChecksums> => {
-  return (
-    await fetch(`/api/project/${projectId}/checksums`).then((r) => r.json())
-  )?.checksums;
-};
-
-export const setChecksums = async (
-  projectId: Project['id'],
-  checksums: ProjectChecksums,
-) => {
-  fetch(`/api/project/${projectId}/checksums`, {
-    method: 'POST',
-    body: JSON.stringify({ checksums }),
-    headers: {
-      'Content-Type': 'application/json',
-      accept: 'application/json',
-    },
-  });
 };
 
 export const processFile = async (
@@ -156,14 +134,10 @@ export const deleteTeamAndMemberships = async (
   return getResponseOrThrow<any>(res);
 };
 
-export const createProject = async (
-  teamId: Team['id'],
-  name: string,
-  githubRepo: string,
-) => {
+export const createProject = async (teamId: Team['id'], name: string) => {
   const res = await fetch(`/api/team/${teamId}/projects`, {
     method: 'POST',
-    body: JSON.stringify({ name, githubRepo }),
+    body: JSON.stringify({ name }),
     headers: {
       'Content-Type': 'application/json',
       accept: 'application/json',
@@ -257,12 +231,12 @@ export const deleteToken = async (
 
 export const addSource = async (
   projectId: Project['id'],
-  source: string,
+  sourceType: SourceType,
   data: any,
 ): Promise<Source> => {
   const res = await fetch(`/api/project/${projectId}/sources`, {
     method: 'POST',
-    body: JSON.stringify({ projectId, source, data }),
+    body: JSON.stringify({ projectId, type: sourceType, data }),
     headers: { 'Content-Type': 'application/json', accept: 'application/json' },
   });
   return getResponseOrThrow<Source>(res);

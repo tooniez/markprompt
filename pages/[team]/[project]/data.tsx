@@ -1,6 +1,10 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { DotsHorizontalIcon, UploadIcon } from '@radix-ui/react-icons';
+import {
+  DotsHorizontalIcon,
+  DoubleArrowUpIcon,
+  UploadIcon,
+} from '@radix-ui/react-icons';
 import {
   SortingState,
   createColumnHelper,
@@ -39,7 +43,7 @@ import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import { pluralize, truncate } from '@/lib/utils';
-import { Project, Source } from '@/types/types';
+import { Project, Source, SourceType } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
@@ -121,12 +125,14 @@ const StatusMessage: FC<StatusMessageProps> = ({
   );
 };
 
-export const getIconForSource = (source: Source) => {
-  switch (source.source) {
+export const getIconForSource = (sourceType: SourceType) => {
+  switch (sourceType) {
     case 'motif':
       return MotifIcon;
-    case 'upload':
+    case 'file-upload':
       return UploadIcon;
+    case 'api-upload':
+      return DoubleArrowUpIcon;
     default:
       return GitHubIcon;
   }
@@ -134,13 +140,15 @@ export const getIconForSource = (source: Source) => {
 
 export const getLabelForSource = (source: Source) => {
   const data = source.data as any;
-  switch (source.source) {
+  switch (source.type) {
     case 'motif':
       return (data?.['name'] || '') as string;
     case 'github':
       return getOwnerRepoString(data?.['url']);
-    case 'upload':
+    case 'file-upload':
       return 'File uploads';
+    case 'api-upload':
+      return 'API uploads';
     default:
       return 'Unknown source';
   }
@@ -152,7 +160,7 @@ type SourceItemProps = {
 };
 
 const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
-  const Icon = getIconForSource(source);
+  const Icon = getIconForSource(source.type);
   return (
     <div className="flex w-full cursor-default flex-row items-center gap-2 text-sm">
       <Icon className="h-4 w-4 flex-none text-neutral-500" />
@@ -230,17 +238,18 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
   );
 };
 
+const hasNonFileSources = (sources: Source[]) => {
+  return sources.some(
+    (s) => s.type !== 'api-upload' && s.type !== 'file-upload',
+  );
+};
+
 const Data = () => {
   const { team } = useTeam();
   const { project } = useProject();
   const { files, mutate: mutateFiles, loading: loadingFiles } = useFiles();
+  const { sources } = useSources();
   const {
-    sources,
-    mutate: mutateSources,
-    loading: loadingSources,
-  } = useSources();
-  const {
-    generateEmbeddings,
     stopGeneratingEmbeddings,
     state: trainingState,
     trainAllSources,
@@ -254,7 +263,6 @@ const Data = () => {
   );
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  console.log('sources', JSON.stringify(sources, null, 2));
   const columnHelper = createColumnHelper<{
     path: string;
     updated_at: string;
@@ -319,6 +327,7 @@ const Data = () => {
 
   const numSelected = Object.values(rowSelection).filter(Boolean).length;
   const hasFiles = files && files.length > 0;
+  const canTrain = hasFiles || hasNonFileSources(sources);
 
   return (
     <ProjectSettingsLayout
@@ -385,32 +394,30 @@ const Data = () => {
               />
             </Dialog.Root>
           )}
-          {numSelected === 0 && (
+          {numSelected === 0 && canTrain && (
             <div className="flex flex-row items-center gap-2">
-              {project?.github_repo && (
-                <Button
-                  loading={
-                    trainingState.state === 'loading' ||
-                    trainingState.state === 'fetching_data'
-                  }
-                  variant="cta"
-                  buttonSize="sm"
-                  onClick={async () => {
-                    await trainAllSources(
-                      () => {
-                        mutateFiles();
-                      },
-                      (message: string) => {
-                        toast.error(message);
-                      },
-                    );
-                    await mutateFiles();
-                    toast.success('Processing complete');
-                  }}
-                >
-                  Train
-                </Button>
-              )}
+              <Button
+                loading={
+                  trainingState.state === 'loading' ||
+                  trainingState.state === 'fetching_data'
+                }
+                variant="cta"
+                buttonSize="sm"
+                onClick={async () => {
+                  await trainAllSources(
+                    () => {
+                      mutateFiles();
+                    },
+                    (message: string) => {
+                      toast.error(message);
+                    },
+                  );
+                  await mutateFiles();
+                  toast.success('Processing complete');
+                }}
+              >
+                Train
+              </Button>
             </div>
           )}
         </div>
@@ -419,74 +426,73 @@ const Data = () => {
       <div className="grid grid-cols-4 gap-8">
         <div className="flex flex-col gap-2">
           {sources.length > 0 && (
-            <div className="mb-2 flex flex-col gap-2 border-b border-neutral-900 pt-2 pb-4">
-              {sources.map((source) => {
-                return (
-                  <SourceItem
-                    key={source.id}
-                    source={source}
-                    onRemoveSelected={() => {
-                      setSourceToRemove(source);
-                    }}
-                  />
-                );
-              })}
-            </div>
+            <>
+              <p className="text-xs font-medium text-neutral-500">Sources</p>
+              <div className="mb-2 flex flex-col gap-2 pt-1 pb-4">
+                {sources.map((source) => {
+                  return (
+                    <SourceItem
+                      key={source.id}
+                      source={source}
+                      onRemoveSelected={() => {
+                        setSourceToRemove(source);
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            </>
           )}
-          <Dialog.Root
-            open={githubDialogOpen}
-            onOpenChange={setGithubDialogOpen}
-          >
-            <Dialog.Trigger asChild>
-              <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
-                <GitHubIcon className="h-4 w-4 flex-none" />
-                <span className="subtle-underline truncate">
-                  Connect GitHub repo
-                </span>
-              </button>
-            </Dialog.Trigger>
-            <Dialog.Portal>
-              <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-              <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[600px] w-[90%] max-w-[500px] flex-col">
-                <Dialog.Title className="dialog-title flex-none">
-                  Connect GitHub repo
-                </Dialog.Title>
-                <Dialog.Description className="dialog-description flex-none border-b border-neutral-900 pb-4">
-                  Sync files from a GitHub repo. You can specify which files to
-                  include and exclude from the repository in the{' '}
-                  <Link
-                    className="subtle-underline"
-                    href={`/${team?.slug}/${project?.slug}/settings`}
-                  >
-                    project configuration
-                  </Link>
-                  .
-                </Dialog.Description>
-                <div className="flex-grow">
-                  <GitHub
-                    onDidRequestClose={() => {
-                      setGithubDialogOpen(false);
-                    }}
-                  />
-                </div>
-              </Dialog.Content>
-            </Dialog.Portal>
-          </Dialog.Root>
-
-          <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
-            <MotifIcon className="h-4 w-4 flex-none" />
-            <span className="subtle-underline truncate">
-              Connect Motif project
-            </span>
-          </button>
-
-          <button
-            className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400"
-            onClick={() => setFileDialogOpen(true)}
-          >
-            <UploadIcon className="h-4 w-4 flex-none" />
-            <span className="subtle-underline truncate">Upload files</span>
-          </button>
+          <div className="flex flex-col gap-2 rounded-md border border-dashed border-neutral-800 p-4">
+            <Dialog.Root
+              open={githubDialogOpen}
+              onOpenChange={setGithubDialogOpen}
+            >
+              <Dialog.Trigger asChild>
+                <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
+                  <GitHubIcon className="h-4 w-4 flex-none" />
+                  <span className="truncate">Connect GitHub repo</span>
+                </button>
+              </Dialog.Trigger>
+              <Dialog.Portal>
+                <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
+                <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[600px] w-[90%] max-w-[500px] flex-col">
+                  <Dialog.Title className="dialog-title flex-none">
+                    Connect GitHub repo
+                  </Dialog.Title>
+                  <Dialog.Description className="dialog-description flex-none border-b border-neutral-900 pb-4">
+                    Sync files from a GitHub repo. You can specify which files
+                    to include and exclude from the repository in the{' '}
+                    <Link
+                      className="subtle-underline"
+                      href={`/${team?.slug}/${project?.slug}/settings`}
+                    >
+                      project configuration
+                    </Link>
+                    .
+                  </Dialog.Description>
+                  <div className="flex-grow">
+                    <GitHub
+                      onDidRequestClose={() => {
+                        setGithubDialogOpen(false);
+                      }}
+                    />
+                  </div>
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
+            <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
+              <MotifIcon className="h-4 w-4 flex-none" />
+              <span className="truncate">Connect Motif project</span>
+            </button>
+            <button
+              className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400"
+              onClick={() => setFileDialogOpen(true)}
+            >
+              <UploadIcon className="h-4 w-4 flex-none" />
+              <span className="truncate">Upload files</span>
+            </button>
+          </div>
         </div>
         {!loadingFiles && !hasFiles && (
           <div className="col-span-3 h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100">
@@ -500,7 +506,6 @@ const Data = () => {
             />
           </div>
         )}
-
         {hasFiles && (
           <div className="col-span-3">
             <table className="w-full border-collapse">

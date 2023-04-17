@@ -14,7 +14,6 @@ import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
 import { createProject } from '@/lib/api';
-import { isGitHubRepoAccessible } from '@/lib/github';
 import useProjects from '@/lib/hooks/use-projects';
 import useTeam from '@/lib/hooks/use-team';
 import { showConfetti } from '@/lib/utils';
@@ -29,25 +28,13 @@ const NewProject = () => {
       <div className="mx-auto">
         <div>
           <Formik
-            initialValues={{ name: '', github: '' }}
+            initialValues={{ name: '' }}
             validateOnMount
             validate={async (values) => {
               const errors: FormikErrors<FormikValues> = {};
 
               if (!values.name) {
                 errors.name = 'Required';
-                return errors;
-              }
-
-              if (values.github) {
-                if (values.github) {
-                  const isAccessible = await isGitHubRepoAccessible(
-                    values.github,
-                  );
-                  if (!isAccessible) {
-                    errors.github = 'Repository is not accessible';
-                  }
-                }
                 return errors;
               }
 
@@ -58,11 +45,7 @@ const NewProject = () => {
                 return;
               }
 
-              const newProject = await createProject(
-                team.id,
-                values.name,
-                values.github,
-              );
+              const newProject = await createProject(team.id, values.name);
               await mutateProjects([...(projects || []), newProject]);
               setSubmitting(false);
               toast.success('Project created.');
@@ -89,16 +72,6 @@ const NewProject = () => {
                     autoFocus
                   />
                   <ErrorMessage name="name" component={ErrorLabel} />
-                  <p className="mb-1 mt-4 text-xs font-medium text-neutral-300">
-                    GitHub repo (optional)
-                  </p>
-                  <Field
-                    type="text"
-                    name="github"
-                    as={NoAutoInput}
-                    disabled={isSubmitting}
-                  />
-                  <ErrorMessage name="github" component={ErrorLabel} />
                 </div>
                 <div className="flex flex-row justify-end gap-4 py-8">
                   <Button

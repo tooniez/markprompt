@@ -111,9 +111,6 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
       setErrors([]);
 
-      // const checksums: { [key: FileData['path']]: string } = await getChecksums(
-      //   project.id,
-      // );
       const { data: checksums } = await supabase
         .from('files')
         .select('path,checksum')
@@ -185,36 +182,45 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
   const trainAllSources = useCallback(
     async (onFileProcessed: () => void, onError: (message: string) => void) => {
       for (const source of sources) {
-        setState({ state: 'fetching_data' });
-        const githubUrl = (source.data as any)?.['url'];
+        switch (source.type) {
+          case 'github': {
+            setState({ state: 'fetching_data' });
+            const githubUrl = (source.data as any)?.['url'];
 
-        let mdFiles: FileData[] = [];
-        try {
-          mdFiles = await getGitHubMDFiles(
-            githubUrl,
-            config.include || [],
-            config.exclude || [],
-          );
-        } catch (e) {
-          const repoOwner = getOwnerRepoString(githubUrl);
-          onError(`Error processing ${repoOwner}: ${e}`);
-          continue;
+            let mdFiles: FileData[] = [];
+            try {
+              mdFiles = await getGitHubMDFiles(
+                githubUrl,
+                config.include || [],
+                config.exclude || [],
+              );
+            } catch (e) {
+              const repoOwner = getOwnerRepoString(githubUrl);
+              onError(`Error processing ${repoOwner}: ${e}`);
+              return;
+            }
+            await generateEmbeddings(
+              source.id,
+              mdFiles.length,
+              (i) => {
+                const file = mdFiles[i];
+                return {
+                  name: file.name,
+                  path: file.path,
+                };
+              },
+              (i) => mdFiles[i].content,
+              () => {
+                onFileProcessed();
+              },
+            );
+          }
+          default:
+            // Skip. Note that file sources are trained at upload
+            // time, and file content is not stored, so there's nothing
+            // to train here in this situation.
+            break;
         }
-        await generateEmbeddings(
-          source.id,
-          mdFiles.length,
-          (i) => {
-            const file = mdFiles[i];
-            return {
-              name: file.name,
-              path: file.path,
-            };
-          },
-          (i) => mdFiles[i].content,
-          () => {
-            onFileProcessed();
-          },
-        );
       }
     },
     [sources],

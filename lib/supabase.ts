@@ -1,8 +1,17 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { PostgrestError } from '@supabase/supabase-js';
 
-import { DbUser, OAuthProvider, Project, Source } from '@/types/types';
+import {
+  DbUser,
+  GitHubSourceDataType,
+  MotifSourceDataType,
+  OAuthProvider,
+  Project,
+  Source,
+  SourceType,
+} from '@/types/types';
 
+import { Database } from '@/types/supabase';
 import { generateKey } from './utils';
 
 export const getBYOOpenAIKey = async (
@@ -69,27 +78,68 @@ export const getProjectIdFromSource = async (
   return data?.project_id || undefined;
 };
 
-export const getOrCreateUploadSourceId = async (
+export const getOrCreateSource = async (
   supabase: SupabaseClient,
   projectId: Project['id'],
+  type: SourceType,
+  data: any | undefined,
 ): Promise<Source['id']> => {
-  const { data } = await supabase
-    .from('sources')
-    .select('id')
-    .match({ project_id: projectId, source: 'upload' })
-    .limit(1)
-    .maybeSingle();
+  const source = await getSource(supabase, projectId, type, data);
 
-  if (data?.id) {
+  if (source?.id) {
     return data.id;
   }
 
-  const { data: newSourceData, error } = await supabase
+  const { data: newSourceData } = await supabase
     .from('sources')
-    .insert([{ project_id: projectId, source: 'upload' }])
+    .insert([{ project_id: projectId, type }])
     .select('id')
     .limit(1)
     .maybeSingle();
 
   return newSourceData?.id;
+};
+
+export const getSource = async (
+  supabase: SupabaseClient<Database>,
+  projectId: Project['id'],
+  sourceType: SourceType,
+  data: any,
+): Promise<Source | undefined> => {
+  const { data: sourcesOfType, error } = await supabase
+    .from('sources')
+    .select('*')
+    .match({ project_id: projectId, type: sourceType });
+
+  if (error || !sourcesOfType || sourcesOfType.length === 0) {
+    return undefined;
+  }
+
+  switch (sourceType) {
+    case 'file-upload':
+    case 'api-upload':
+      return sourcesOfType[0];
+    case 'github':
+      return sourcesOfType.find((s) => {
+        const data = s.data as GitHubSourceDataType;
+        return data.url && data?.url === data.url;
+      });
+    case 'motif': {
+      return sourcesOfType.find((s) => {
+        const data = s.data as MotifSourceDataType;
+        return data.projectId && data?.projectId === data.projectId;
+      });
+    }
+  }
+};
+
+export const getChecksums = async (
+  supabase: SupabaseClient,
+  sourceId: Source['id'],
+) => {
+  const { data } = await supabase
+    .from('files')
+    .select('path,checksum')
+    .eq('source_id', sourceId);
+  return data || [];
 };

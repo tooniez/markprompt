@@ -54,24 +54,30 @@ export interface Database {
       }
       files: {
         Row: {
+          checksum: string | null
           id: number
           meta: Json | null
           path: string
-          project_id: string
+          project_id_old: string
+          source_id: string | null
           updated_at: string
         }
         Insert: {
+          checksum?: string | null
           id?: number
           meta?: Json | null
           path: string
-          project_id: string
+          project_id_old: string
+          source_id?: string | null
           updated_at?: string
         }
         Update: {
+          checksum?: string | null
           id?: number
           meta?: Json | null
           path?: string
-          project_id?: string
+          project_id_old?: string
+          source_id?: string | null
           updated_at?: string
         }
       }
@@ -148,21 +154,21 @@ export interface Database {
           id: string
           inserted_at: string
           project_id: string
-          source: string
+          type: Database["public"]["Enums"]["source_type"]
         }
         Insert: {
           data?: Json | null
           id?: string
           inserted_at?: string
           project_id: string
-          source: string
+          type: Database["public"]["Enums"]["source_type"]
         }
         Update: {
           data?: Json | null
           id?: string
           inserted_at?: string
           project_id?: string
-          source?: string
+          type?: Database["public"]["Enums"]["source_type"]
         }
       }
       teams: {
@@ -370,6 +376,7 @@ export interface Database {
     }
     Enums: {
       membership_type: "viewer" | "admin"
+      source_type: "github" | "motif" | "file-upload" | "api-upload"
     }
     CompositeTypes: {
       [_ in never]: never

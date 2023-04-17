@@ -18,7 +18,7 @@ import {
 } from '@/lib/redis';
 import { createChecksum, getFileType } from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.node';
-import { DbFile, FileData, Source } from '@/types/types';
+import { DbFile, FileData, Project, Source } from '@/types/types';
 import { getProjectIdFromSource } from './supabase';
 
 type FileSectionData = {
@@ -207,6 +207,8 @@ const getFileAtPath = async (
 
 const createFile = async (
   supabase: SupabaseClient,
+  // TODO: remove once migration is safely completed
+  _projectId: Project['id'],
   sourceId: Source['id'],
   path: string,
   meta: any,
@@ -214,7 +216,9 @@ const createFile = async (
 ): Promise<DbFile['id'] | undefined> => {
   const { error, data } = await supabase
     .from('files')
-    .insert([{ source_id: sourceId, path, meta, checksum }])
+    .insert([
+      { source_id: sourceId, project_id: _projectId, path, meta, checksum },
+    ])
     .select('id')
     .limit(1)
     .maybeSingle();
@@ -226,6 +230,7 @@ const createFile = async (
 
 export const generateFileEmbeddings = async (
   supabaseAdmin: SupabaseClient,
+  _projectId: Project['id'],
   sourceId: Source['id'],
   file: FileData,
   byoOpenAIKey: string | undefined,
@@ -252,6 +257,7 @@ export const generateFileEmbeddings = async (
   } else {
     fileId = await createFile(
       supabaseAdmin,
+      _projectId,
       sourceId,
       file.path,
       meta,

@@ -86,7 +86,7 @@ export default async function handler(
 
     return res.status(200).json(data || []);
   } else if (req.method === 'POST') {
-    const { name, githubRepo } = req.body;
+    const { name } = req.body;
     const slug = await getAvailableProjectSlug(supabase, teamId, name);
     const public_api_key = generateKey();
     const private_dev_api_key = generateSKTestKey();
@@ -97,7 +97,6 @@ export default async function handler(
           name,
           team_id: teamId,
           slug,
-          github_repo: githubRepo,
           created_by: session.user.id,
           public_api_key,
           private_dev_api_key,

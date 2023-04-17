@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { Database } from '@/types/supabase';
-import { Project, Source } from '@/types/types';
+import { Project, Source, SourceType } from '@/types/types';
 
 type Data =
   | {
@@ -46,15 +46,20 @@ export default async function handler(
 
     return res.status(200).json(sources);
   } else if (req.method === 'POST') {
-    const source = req.body.source as string;
+    const sourceType = req.body.type as SourceType;
     const data = req.body.data as any;
+
+    const _sourceExists = await sourceExists(projectId, sourceType, data);
+    if (_sourceExists) {
+      return res.status(400).json({ error: 'Source already exists' });
+    }
 
     const { error, data: newSource } = await supabase
       .from('sources')
       .insert([
         {
           project_id: projectId,
-          source,
+          type: sourceType,
           data,
         },
       ])

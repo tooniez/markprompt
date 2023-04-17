@@ -75,6 +75,7 @@ export default async function handler(
 
   const errors = await generateFileEmbeddings(
     supabaseAdmin,
+    projectId,
     sourceId,
     file,
     byoOpenAIKey,
