@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { getSource } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 import { Project, Source, SourceType } from '@/types/types';
 
@@ -49,8 +50,8 @@ export default async function handler(
     const sourceType = req.body.type as SourceType;
     const data = req.body.data as any;
 
-    const _sourceExists = await sourceExists(projectId, sourceType, data);
-    if (_sourceExists) {
+    const source = await getSource(supabase, projectId, sourceType, data);
+    if (source) {
       return res.status(400).json({ error: 'Source already exists' });
     }
 

@@ -121,13 +121,13 @@ export const getSource = async (
       return sourcesOfType[0];
     case 'github':
       return sourcesOfType.find((s) => {
-        const data = s.data as GitHubSourceDataType;
-        return data.url && data?.url === data.url;
+        const _data = s.data as GitHubSourceDataType;
+        return _data.url && _data.url === data.url;
       });
     case 'motif': {
       return sourcesOfType.find((s) => {
-        const data = s.data as MotifSourceDataType;
-        return data.projectId && data?.projectId === data.projectId;
+        const _data = s.data as MotifSourceDataType;
+        return _data.projectId && _data.projectId === data.projectId;
       });
     }
   }
