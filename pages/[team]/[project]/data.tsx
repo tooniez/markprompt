@@ -125,6 +125,8 @@ export const getIconForSource = (source: Source) => {
   switch (source.source) {
     case 'motif':
       return MotifIcon;
+    case 'upload':
+      return UploadIcon;
     default:
       return GitHubIcon;
   }
@@ -137,8 +139,10 @@ export const getLabelForSource = (source: Source) => {
       return (data?.['name'] || '') as string;
     case 'github':
       return getOwnerRepoString(data?.['url']);
+    case 'upload':
+      return 'File uploads';
     default:
-      return (data?.['name'] || '') as string;
+      return 'Unknown source';
   }
 };
 
@@ -192,7 +196,8 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
   source,
   onComplete,
 }) => {
-  const { mutate } = useSources();
+  const { mutate: mutateFiles } = useFiles();
+  const { mutate: mutateSources } = useSources();
   const [loading, setLoading] = useState(false);
 
   return (
@@ -206,7 +211,8 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
         setLoading(true);
         try {
           await deleteSource(projectId, source.id);
-          await mutate();
+          await mutateSources();
+          await mutateFiles();
           toast.success(
             `The source ${getLabelForSource(
               source,
@@ -226,7 +232,7 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
 
 const Data = () => {
   const { team } = useTeam();
-  const { project, config } = useProject();
+  const { project } = useProject();
   const { files, mutate: mutateFiles, loading: loadingFiles } = useFiles();
   const {
     sources,
@@ -248,6 +254,7 @@ const Data = () => {
   );
   const [sorting, setSorting] = useState<SortingState>([]);
 
+  console.log('sources', JSON.stringify(sources, null, 2));
   const columnHelper = createColumnHelper<{
     path: string;
     updated_at: string;

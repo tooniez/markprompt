@@ -38,8 +38,8 @@ export default async function handler(
   if (req.method === 'GET') {
     const { data: files, error } = await supabase
       .from('files')
-      .select('*')
-      .eq('project_id', projectId);
+      .select('*, sources!inner (project_id)')
+      .eq('sources.project_id', projectId);
 
     if (error) {
       return res.status(400).json({ error: error.message });
@@ -52,28 +52,24 @@ export default async function handler(
     return res.status(200).json(files);
   } else if (req.method === 'DELETE') {
     let deletedPaths: string[] = [];
-    if (req.body) {
-      const ids = req.body;
-      const dbRes = await supabase
-        .from('files')
-        .delete()
-        .in('id', ids)
-        .select('path');
-      if (dbRes.error) {
-        return res.status(400).json({ error: dbRes.error.message });
-      }
-      deletedPaths = dbRes.data.map((d) => d.path);
-    } else {
-      const dbRes = await supabase
-        .from('files')
-        .delete()
-        .eq('project_id', projectId)
-        .select('path');
-      if (dbRes.error) {
-        return res.status(400).json({ error: dbRes.error.message });
-      }
-      deletedPaths = dbRes.data.map((d) => d.path);
+
+    const ids = req.body;
+    if (!ids) {
+      return res.status(400).json({
+        error: 'Invalid request. Please provide a list of ids to delete.',
+      });
     }
+    const { data: paths, error } = await supabase
+      .from('files')
+      .delete()
+      .in('id', ids)
+      .select('path');
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    deletedPaths = paths.map((d) => d.path);
 
     // Delete associated checksums
     const oldChecksums = await serverGetChecksums(projectId);

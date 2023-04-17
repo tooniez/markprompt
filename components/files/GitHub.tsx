@@ -208,29 +208,6 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
                       toast.error(message);
                     },
                   );
-
-                  // const mdFiles = await getGitHubMDFiles(
-                  //   githubUrl,
-                  //   config.include || [],
-                  //   config.exclude || [],
-                  // );
-                  // await generateEmbeddings(
-                  //   mdFiles.length,
-                  //   (i) => {
-                  //     const file = mdFiles[i];
-                  //     const content = file.content;
-                  //     return {
-                  //       name: file.name,
-                  //       path: file.path,
-                  //       checksum: createChecksum(content),
-                  //     };
-                  //   },
-                  //   async (i) => mdFiles[i].content,
-                  //   () => {
-                  //     mutateFiles();
-                  //   },
-                  // );
-                  // await mutateFiles();
                   onTrainingComplete();
                 } catch (e) {
                   setError(`${(e as ApiError).message}`);

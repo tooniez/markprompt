@@ -1,45 +1,9 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { PostgrestError } from '@supabase/supabase-js';
 
-import { DbFile, DbUser, OAuthProvider, Project } from '@/types/types';
+import { DbUser, OAuthProvider, Project, Source } from '@/types/types';
 
 import { generateKey } from './utils';
-
-export const getFileAtPath = async (
-  supabase: SupabaseClient,
-  projectId: Project['id'],
-  path: string,
-): Promise<DbFile['id'] | undefined> => {
-  const { data, error } = await supabase
-    .from('files')
-    .select('id')
-    .match({ project_id: projectId, path })
-    .limit(1)
-    .maybeSingle();
-  if (error) {
-    console.error('Error:', error);
-    return undefined;
-  }
-  return data?.id as DbFile['id'];
-};
-
-export const createFile = async (
-  supabase: SupabaseClient,
-  projectId: Project['id'],
-  path: string,
-  meta: any,
-): Promise<DbFile['id'] | undefined> => {
-  const { error, data } = await supabase
-    .from('files')
-    .insert([{ project_id: projectId, path, meta }])
-    .select('id')
-    .limit(1)
-    .maybeSingle();
-  if (error) {
-    throw error;
-  }
-  return data?.id as DbFile['id'];
-};
 
 export const getBYOOpenAIKey = async (
   supabaseAdmin: SupabaseClient,
@@ -90,4 +54,42 @@ export const deleteUserAccessToken = async (
     .delete()
     .match({ user_id: userId, provider });
   return error;
+};
+
+export const getProjectIdFromSource = async (
+  supabaseAdmin: SupabaseClient,
+  sourceId: Source['id'],
+): Promise<Project['id'] | undefined> => {
+  const { data } = await supabaseAdmin
+    .from('sources')
+    .select('project_id')
+    .eq('id', sourceId)
+    .limit(1)
+    .maybeSingle();
+  return data?.project_id || undefined;
+};
+
+export const getOrCreateUploadSourceId = async (
+  supabase: SupabaseClient,
+  projectId: Project['id'],
+): Promise<Source['id']> => {
+  const { data } = await supabase
+    .from('sources')
+    .select('id')
+    .match({ project_id: projectId, source: 'upload' })
+    .limit(1)
+    .maybeSingle();
+
+  if (data?.id) {
+    return data.id;
+  }
+
+  const { data: newSourceData, error } = await supabase
+    .from('sources')
+    .insert([{ project_id: projectId, source: 'upload' }])
+    .select('id')
+    .limit(1)
+    .maybeSingle();
+
+  return newSourceData?.id;
 };

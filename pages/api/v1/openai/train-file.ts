@@ -7,11 +7,9 @@ import {
   checkEmbeddingsRateLimits,
   getEmbeddingsRateLimitResponse,
 } from '@/lib/rate-limits';
-import { getProjectChecksumsKey, safeGetObject } from '@/lib/redis';
-import { getBYOOpenAIKey } from '@/lib/supabase';
-import { createChecksum } from '@/lib/utils';
+import { getBYOOpenAIKey, getProjectIdFromSource } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
-import { Project, ProjectChecksums, FileData } from '@/types/types';
+import { FileData, Source } from '@/types/types';
 
 type Data = {
   status?: string;
@@ -47,18 +45,11 @@ export default async function handler(
   }
 
   const file = req.body.file as FileData;
-  const projectId = req.body.projectId as Project['id'];
+  const sourceId = req.body.sourceId as Source['id'];
+  const projectId = await getProjectIdFromSource(supabaseAdmin, sourceId);
 
-  if (!req.body.forceRetrain && projectId) {
-    const checksums = await safeGetObject<ProjectChecksums>(
-      getProjectChecksumsKey(projectId),
-      {},
-    );
-    const previousChecksum = checksums[file.path];
-    const currentChecksum = createChecksum(file.content);
-    if (previousChecksum === currentChecksum) {
-      return res.status(200).json({ status: 'Already processed' });
-    }
+  if (!projectId) {
+    return res.status(401).json({ error: 'Project not found.' });
   }
 
   // Apply rate limits
@@ -84,7 +75,7 @@ export default async function handler(
 
   const errors = await generateFileEmbeddings(
     supabaseAdmin,
-    projectId,
+    sourceId,
     file,
     byoOpenAIKey,
   );

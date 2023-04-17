@@ -66,27 +66,19 @@ export const setChecksums = async (
 };
 
 export const processFile = async (
-  projectId: Project['id'],
+  sourceId: Source['id'],
   fileData: FileData,
-  forceRetrain: boolean,
 ) => {
   await fetch('/api/v1/openai/train-file', {
     method: 'POST',
     body: JSON.stringify({
       file: fileData,
-      projectId,
-      forceRetrain,
+      sourceId,
     }),
     headers: {
       'Content-Type': 'application/json',
       accept: 'application/json',
     },
-  });
-};
-
-export const deleteAllFiles = async (projectId: Project['id']) => {
-  return fetch(`/api/project/${projectId}/files`, {
-    method: 'DELETE',
   });
 };
 

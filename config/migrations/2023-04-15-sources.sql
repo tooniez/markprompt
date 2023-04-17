@@ -94,3 +94,7 @@ update files
 set source_id = sources.id
 from sources
 where sources.project_id = files.project_id and source.source = 'upload';
+
+-- Checksums
+alter table files
+add column checksum text

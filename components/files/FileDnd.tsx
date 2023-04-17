@@ -9,9 +9,11 @@ import {
 } from '@/lib/context/training';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
-import { createChecksum, readTextFileAsync } from '@/lib/utils';
+import { readTextFileAsync } from '@/lib/utils';
 import { FileData } from '@/types/types';
 
+import { getOrCreateUploadSourceId } from '@/lib/supabase';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Button from '../ui/Button';
 import { ToggleMessage } from '../ui/ToggleMessage';
 
@@ -21,6 +23,7 @@ type FileDndProps = {
 };
 
 export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
+  const supabase = useSupabaseClient();
   const [pickedFiles, setPickedFiles] = useState<FileData[]>([]);
   const [trainingComplete, setTrainingComplete] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -64,13 +67,25 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
   }, [acceptedFiles]);
 
   const upload = useCallback(async () => {
+    if (!project?.id) {
+      return;
+    }
     if (pickedFiles?.length === 0) {
       toast.error('No files selected');
       return;
     }
 
+    const sourceId = await getOrCreateUploadSourceId(supabase, project.id);
+
+    if (!sourceId) {
+      toast.error('Unable to create source');
+      return;
+    }
+
     setIsTrainingInitiatedByFileDnd(true);
+
     await generateEmbeddings(
+      sourceId,
       pickedFiles.length,
       (i) => {
         const file = pickedFiles[i];
@@ -78,10 +93,9 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
         return {
           name: file.name,
           path: file.path,
-          checksum: createChecksum(content),
         };
       },
-      async (i) => pickedFiles[i].content,
+      (i) => pickedFiles[i].content,
       () => {
         mutateFiles();
       },
@@ -91,7 +105,14 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
     setTrainingComplete(true);
     mutateFiles();
     onTrainingComplete();
-  }, [pickedFiles, generateEmbeddings, onTrainingComplete, mutateFiles]);
+  }, [
+    supabase,
+    pickedFiles,
+    generateEmbeddings,
+    onTrainingComplete,
+    mutateFiles,
+    project?.id,
+  ]);
 
   const hasFiles = pickedFiles?.length > 0;
 
