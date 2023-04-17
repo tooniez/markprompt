@@ -148,8 +148,10 @@ begin
   from file_sections
   join files
     on file_sections.file_id = files.id
+  join sources
+    on files.source_id = sources.id
 
-  where files.project_id = project_id
+  where sources.project_id = project_id
 
   -- We only care about sections that have a useful amount of content
   and length(file_sections.content) >= min_content_length
@@ -167,6 +169,8 @@ begin
   limit match_count;
 end;
 $$;
+
+-- Indexes
 
 create index idx_project_id on files(project_id);
 create index idx_file_id on file_sections(file_id);

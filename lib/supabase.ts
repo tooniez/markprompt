@@ -87,7 +87,7 @@ export const getOrCreateSource = async (
   const source = await getSource(supabase, projectId, type, data);
 
   if (source?.id) {
-    return data.id;
+    return source.id;
   }
 
   const { data: newSourceData } = await supabase
