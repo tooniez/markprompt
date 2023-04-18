@@ -2,6 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { CheckIcon, CaretSortIcon } from '@radix-ui/react-icons';
 import { Session, useSession } from '@supabase/auth-helpers-react';
+import cn from 'classnames';
 import {
   ErrorMessage,
   Field,
@@ -17,6 +18,7 @@ import { toast } from 'react-hot-toast';
 
 import { createTeam } from '@/lib/api';
 import useProject from '@/lib/hooks/use-project';
+import useProjects from '@/lib/hooks/use-projects';
 import useTeam from '@/lib/hooks/use-team';
 import useTeams from '@/lib/hooks/use-teams';
 import useUser from '@/lib/hooks/use-user';
@@ -102,6 +104,67 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
   );
 };
 
+const ProjectPicker = () => {
+  const { team } = useTeam();
+  const { projects, loading } = useProjects();
+  const { project } = useProject();
+  const [isOpen, setOpen] = useState(false);
+
+  if (loading || !team || !project) {
+    return <></>;
+  }
+
+  return (
+    <DropdownMenu.Root open={isOpen} onOpenChange={setOpen}>
+      <DropdownMenu.Trigger asChild>
+        <button
+          className={cn(
+            'rounded px-2 py-1 text-sm outline-none transition dark:text-neutral-300 dark:hover:bg-neutral-900',
+          )}
+          aria-label="Select team"
+        >
+          {project.name}
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          className="animate-menu-up dropdown-menu-content"
+          sideOffset={5}
+        >
+          {projects?.map((p) => {
+            const checked = p.slug === project?.slug;
+            return (
+              <DropdownMenu.CheckboxItem
+                key={`project-dropdown-${p.slug}`}
+                className="dropdown-menu-item dropdown-menu-item-indent"
+                checked={checked}
+                onClick={() => {
+                  setOpen(false);
+                }}
+              >
+                <>
+                  {checked && (
+                    <DropdownMenu.ItemIndicator className="dropdown-menu-item-indicator">
+                      <CheckIcon className="h-4 w-4" />
+                    </DropdownMenu.ItemIndicator>
+                  )}
+                  <Link href={`/${team.slug}/${p.slug}`}>{p.name}</Link>
+                </>
+              </DropdownMenu.CheckboxItem>
+            );
+          })}
+          <DropdownMenu.Separator className="dropdown-menu-separator" />
+          <DropdownMenu.Item className="dropdown-menu-item dropdown-menu-item-indent">
+            <Link href={`/settings/${team.slug}/projects/new`}>
+              Create new project
+            </Link>
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+};
+
 export const TeamProjectPicker = () => {
   const router = useRouter();
   const session = useSession();
@@ -137,13 +200,7 @@ export const TeamProjectPicker = () => {
         {!loadingProject && team && project && (
           <>
             <Slash size="md" />
-            <Link
-              href={`/${team.slug}/${project.slug}`}
-              className="dropdown-menu-button"
-              aria-label="Select project"
-            >
-              {project.name}
-            </Link>
+            <ProjectPicker />
           </>
         )}
         {isNewProjectRoute && (
