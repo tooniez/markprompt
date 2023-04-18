@@ -2,9 +2,7 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { Database } from '@/types/supabase';
-import { DbFile, Project, ProjectChecksums } from '@/types/types';
-
-import { serverGetChecksums, serverSetChecksums } from './checksums';
+import { DbFile, Project } from '@/types/types';
 
 type Data =
   | {
@@ -36,10 +34,14 @@ export default async function handler(
   const projectId = req.query.id as Project['id'];
 
   if (req.method === 'GET') {
+    // Note: if a column is a reference to another table, e.g.
+    // project_id, and the value is null, somehow the following
+    // join with filter does not include these rows. This looks
+    // like a bug in Supabase.
     const { data: files, error } = await supabase
       .from('files')
-      .select('*')
-      .eq('project_id', projectId);
+      .select('*, sources!inner (project_id)')
+      .eq('sources.project_id', projectId);
 
     if (error) {
       return res.status(400).json({ error: error.message });
@@ -51,39 +53,22 @@ export default async function handler(
 
     return res.status(200).json(files);
   } else if (req.method === 'DELETE') {
-    let deletedPaths: string[] = [];
-    if (req.body) {
-      const ids = req.body;
-      const dbRes = await supabase
-        .from('files')
-        .delete()
-        .in('id', ids)
-        .select('path');
-      if (dbRes.error) {
-        return res.status(400).json({ error: dbRes.error.message });
-      }
-      deletedPaths = dbRes.data.map((d) => d.path);
-    } else {
-      const dbRes = await supabase
-        .from('files')
-        .delete()
-        .eq('project_id', projectId)
-        .select('path');
-      if (dbRes.error) {
-        return res.status(400).json({ error: dbRes.error.message });
-      }
-      deletedPaths = dbRes.data.map((d) => d.path);
+    const ids = req.body;
+    if (!ids) {
+      return res.status(400).json({
+        error: 'Invalid request. Please provide a list of ids to delete.',
+      });
     }
 
-    // Delete associated checksums
-    const oldChecksums = await serverGetChecksums(projectId);
-    const newChecksums: ProjectChecksums = {};
-    for (const key of Object.keys(oldChecksums)) {
-      if (!deletedPaths.includes(key)) {
-        newChecksums[key] = oldChecksums[key];
-      }
+    const { error } = await supabase
+      .from('files')
+      .delete()
+      .in('id', ids)
+      .select('path');
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
     }
-    await serverSetChecksums(projectId, newChecksums);
 
     return res.status(200).json({ status: 'ok' });
   }

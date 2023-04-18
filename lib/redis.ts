@@ -8,10 +8,6 @@ const monthBin = (date: Date) => {
   return `${date.getFullYear()}/${date.getMonth() + 1}`;
 };
 
-export const getProjectChecksumsKey = (projectId: Project['id']) => {
-  return `${process.env.NODE_ENV}:project:${projectId}:checksums`;
-};
-
 export const getProjectEmbeddingsMonthTokenCountKey = (
   projectId: Project['id'],
   date: Date,

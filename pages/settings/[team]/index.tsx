@@ -1,4 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import * as Switch from '@radix-ui/react-switch';
+import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import {
   ErrorMessage,
   Field,
@@ -12,6 +14,7 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import ConfirmDialog from '@/components/dialogs/Confirm';
+import { GitHubIcon } from '@/components/icons/GitHub';
 import { TeamSettingsLayout } from '@/components/layouts/TeamSettingsLayout';
 import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
@@ -27,17 +30,26 @@ import {
   deleteUserAndMembershipsAndTeams,
   isTeamSlugAvailable,
   updateTeam,
+  updateUser,
 } from '@/lib/api';
+import useGitHub from '@/lib/hooks/integrations/use-github';
 import useTeam from '@/lib/hooks/use-team';
 import useTeams from '@/lib/hooks/use-teams';
 import useUser from '@/lib/hooks/use-user';
+import useOAuth from '@/lib/hooks/utils/use-oauth';
+import { setGitHubAuthState } from '@/lib/supabase';
 
 const TeamSettingsPage = () => {
   const router = useRouter();
   const { user, mutate: mutateUser, signOut } = useUser();
   const { teams, mutate: mutateTeams } = useTeams();
   const { team, mutate: mutateTeam } = useTeam();
+  const { showAuthPopup, disconnect } = useOAuth();
+  const { token: githubToken, tokenState: githubTokenState } = useGitHub();
   const [loading, setLoading] = useState(false);
+  const [confirmDisconnectGitHubOpen, setConfirmDisconnectGitHubOpen] =
+    useState(false);
+  const [supabase] = useState(() => createBrowserSupabaseClient());
 
   if (!teams || !team || !user) {
     return <TeamSettingsLayout title="Settings" width="sm" />;
@@ -134,6 +146,94 @@ const TeamSettingsPage = () => {
             )}
           </Formik>
         </SettingsCard>
+        {team.is_personal && (
+          <>
+            <SettingsCard title="Connected accounts">
+              <DescriptionLabel>
+                {githubTokenState === 'no_token' ? (
+                  'Connect your GitHub account to sync private repositories.'
+                ) : (
+                  <>
+                    Connected as{' '}
+                    <GitHubIcon className="ml-1 mr-1 inline-block h-3 w-3" />
+                    <a
+                      href={`https://github.com/${
+                        (githubToken?.meta as any)?.login
+                      }`}
+                      className="subtle-underline"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {(githubToken?.meta as any)?.login || 'Unknown'}
+                    </a>
+                    .
+                  </>
+                )}
+              </DescriptionLabel>
+              <CTABar>
+                {(githubTokenState === 'no_token' ||
+                  githubTokenState === 'expired') && (
+                  <Button
+                    variant="plain"
+                    buttonSize="sm"
+                    Icon={
+                      githubTokenState === 'no_token' ? GitHubIcon : undefined
+                    }
+                    onClick={async () => {
+                      await disconnect('github');
+                      const state = await setGitHubAuthState(supabase, user.id);
+                      const authed = await showAuthPopup('github', state);
+                      if (authed) {
+                        toast.success('Authorization has been granted.');
+                      }
+                    }}
+                  >
+                    {githubTokenState === 'no_token'
+                      ? 'Authorize GitHub'
+                      : 'Re-authorize'}
+                  </Button>
+                )}
+                {(githubTokenState === 'expired' ||
+                  githubTokenState === 'valid') && (
+                  <Button
+                    variant="plain"
+                    buttonSize="sm"
+                    onClick={async () => {
+                      setConfirmDisconnectGitHubOpen(true);
+                    }}
+                  >
+                    Disconnect
+                  </Button>
+                )}
+              </CTABar>
+            </SettingsCard>
+            <SettingsCard title="Updates">
+              <form>
+                <div className="flex flex-row items-center gap-4 px-4 pt-4 pb-6">
+                  <label
+                    className="flex-grow truncate text-sm text-neutral-500"
+                    htmlFor="product-updates"
+                  >
+                    Subscribe to product updates
+                  </label>
+                  <Switch.Root
+                    className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600"
+                    id="product-updates"
+                    checked={!!user.subscribe_to_product_updates}
+                    onCheckedChange={async (checked: boolean) => {
+                      await updateUser({
+                        subscribe_to_product_updates: checked,
+                      });
+                      await mutateUser();
+                    }}
+                  >
+                    <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
+                  </Switch.Root>
+                </div>
+              </form>
+            </SettingsCard>
+          </>
+        )}
         <SettingsCard
           title={team.is_personal ? 'Delete account' : 'Delete team'}
         >
@@ -199,6 +299,35 @@ const TeamSettingsPage = () => {
           </CTABar>
         </SettingsCard>
       </div>
+      <Dialog.Root
+        open={confirmDisconnectGitHubOpen}
+        onOpenChange={(open) => setConfirmDisconnectGitHubOpen(open)}
+      >
+        <ConfirmDialog
+          title="Disconnect GitHub"
+          description="You will no longer be able to sync private repos."
+          cta="Disconnect"
+          variant="danger"
+          loading={loading}
+          onCTAClick={async () => {
+            if (!githubToken?.access_token) {
+              return;
+            }
+
+            await fetch('/api/github/uninstall', {
+              method: 'POST',
+            });
+
+            const error = await disconnect('github');
+            if (error) {
+              toast.error(`Error disconnecting: ${error.message}`);
+            } else {
+              toast.success('Access revoked.');
+            }
+            setConfirmDisconnectGitHubOpen(false);
+          }}
+        />
+      </Dialog.Root>
     </TeamSettingsLayout>
   );
 };

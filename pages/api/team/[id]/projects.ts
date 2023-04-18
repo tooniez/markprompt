@@ -1,11 +1,47 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { SupabaseClient } from '@supabase/auth-helpers-react';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { generateKey, generateSKTestKey } from '@/lib/utils';
+import {
+  generateKey,
+  generateRandomSlug,
+  generateSKTestKey,
+  slugFromName,
+} from '@/lib/utils';
 import { Database } from '@/types/supabase';
 import { Project, Team } from '@/types/types';
 
-import { getAvailableProjectSlug } from '../../slug/generate-project-slug';
+import { isProjectSlugAvailable } from '../../slug/is-project-slug-available';
+
+const getAvailableProjectSlug = async (
+  supabase: SupabaseClient,
+  teamId: Team['id'],
+  name: Project['name'],
+) => {
+  // If no name is provided, generate a random slug.
+  let baseSlug: string;
+  if (name && name.length > 0) {
+    baseSlug = slugFromName(name);
+  } else {
+    baseSlug = generateRandomSlug();
+  }
+
+  let candidateSlug = baseSlug;
+  let isAvailable = await isProjectSlugAvailable(
+    supabase,
+    teamId,
+    candidateSlug,
+  );
+
+  let attempt = 0;
+  while (!isAvailable) {
+    isAvailable = await isProjectSlugAvailable(supabase, teamId, candidateSlug);
+    attempt++;
+    candidateSlug = `${baseSlug}-${attempt}`;
+  }
+
+  return candidateSlug;
+};
 
 type Data =
   | {
@@ -50,8 +86,8 @@ export default async function handler(
 
     return res.status(200).json(data || []);
   } else if (req.method === 'POST') {
-    const { name, candidateSlug, githubRepo } = req.body;
-    const slug = await getAvailableProjectSlug(supabase, teamId, candidateSlug);
+    const { name } = req.body;
+    const slug = await getAvailableProjectSlug(supabase, teamId, name);
     const public_api_key = generateKey();
     const private_dev_api_key = generateSKTestKey();
     const { data, error } = await supabase
@@ -61,7 +97,6 @@ export default async function handler(
           name,
           team_id: teamId,
           slug,
-          github_repo: githubRepo,
           created_by: session.user.id,
           public_api_key,
           private_dev_api_key,

@@ -128,8 +128,12 @@ export const comparePlans = (
 export const TIERS: Record<Tier, TierDetails> = {
   free: {
     name: 'Free',
-    description: 'For personal and open-source projects',
-    items: ['100 indexed sections', 'Basic analytics'],
+    description: 'For personal projects',
+    items: [
+      '100 indexed sections',
+      'Public/private GitHub repos',
+      'Custom prompts',
+    ],
     prices: [
       {
         name: 'Free',
@@ -144,11 +148,7 @@ export const TIERS: Record<Tier, TierDetails> = {
   standard: {
     name: 'Standard',
     description: 'For startups',
-    items: [
-      'Everything in Free, plus:',
-      'Private GitHub repos (soon)',
-      'Teams (soon)',
-    ],
+    items: ['Everything in Free, plus:', 'Basic analytics', 'Teams (soon)'],
     prices: [
       {
         name: 'Standard 1',
@@ -255,7 +255,6 @@ export const TIERS: Record<Tier, TierDetails> = {
       'Everything in Standard, plus:',
       'Insights (soon)',
       'Integrations (soon)',
-      'Priority support',
     ],
     prices: [
       {

@@ -1,15 +1,16 @@
+import { SupabaseClient, User } from '@supabase/supabase-js';
+import { sign } from 'jsonwebtoken';
 import { Octokit } from 'octokit';
 import { isPresent } from 'ts-is-present';
 
-import { FileData, PathContentData } from '@/types/types';
+import { Database } from '@/types/supabase';
+import { ApiError, FileData, OAuthToken, PathContentData } from '@/types/types';
 
 import {
   decompress,
   getNameFromPath,
   shouldIncludeFileWithPath,
 } from './utils';
-
-const octokit = new Octokit();
 
 const parseGitHubURL = (url: string) => {
   const match = url.match(
@@ -21,7 +22,11 @@ const parseGitHubURL = (url: string) => {
   return undefined;
 };
 
-export const isGitHubRepoAccessible = async (url: string) => {
+export const isGitHubRepoAccessible = async (
+  url: string,
+  accessToken?: string,
+) => {
+  const octokit = new Octokit(accessToken ? { auth: accessToken } : {});
   const info = parseGitHubURL(url);
   if (!info?.owner && !info?.repo) {
     return false;
@@ -37,7 +42,7 @@ export const isGitHubRepoAccessible = async (url: string) => {
   return false;
 };
 
-const getRepo = async (owner: string, repo: string) => {
+const getRepo = async (owner: string, repo: string, octokit: Octokit) => {
   const res = await octokit.request('GET /repos/{owner}/{repo}', {
     owner,
     repo,
@@ -45,8 +50,12 @@ const getRepo = async (owner: string, repo: string) => {
   return res.data;
 };
 
-const getDefaultBranch = async (owner: string, repo: string) => {
-  const _repo = await getRepo(owner, repo);
+const getDefaultBranch = async (
+  owner: string,
+  repo: string,
+  octokit: Octokit,
+) => {
+  const _repo = await getRepo(owner, repo, octokit);
 
   const branchRes = await octokit.request(
     `GET /repos/{owner}/{repo}/branches/{branch}`,
@@ -56,8 +65,8 @@ const getDefaultBranch = async (owner: string, repo: string) => {
   return branchRes.data;
 };
 
-const getTree = async (owner: string, repo: string) => {
-  const defaultBranch = await getDefaultBranch(owner, repo);
+const getTree = async (owner: string, repo: string, octokit: Octokit) => {
+  const defaultBranch = await getDefaultBranch(owner, repo, octokit);
 
   const tree = await octokit.request(
     'GET /repos/{owner}/{repo}/git/trees/{tree_sha}',
@@ -84,13 +93,25 @@ export const getRepositoryMDFilesInfo = async (
   url: string,
   includeGlobs: string[],
   excludeGlobs: string[],
+  accessToken: string | undefined,
 ): Promise<{ name: string; path: string; url: string; sha: string }[]> => {
   const info = parseGitHubURL(url);
   if (!info?.owner && !info?.repo) {
     return [];
   }
 
-  const tree = await getTree(info.owner, info.repo);
+  // We don't require the user to provide an access token in order to
+  // fetch the repository file info, e.g. for public repos.
+  let octokit: Octokit;
+  if (accessToken) {
+    octokit = new Octokit({
+      auth: accessToken,
+    });
+  } else {
+    octokit = new Octokit();
+  }
+
+  const tree = await getTree(info.owner, info.repo, octokit);
 
   const mdFileUrls = tree
     .map((f) => {
@@ -128,6 +149,9 @@ const paginatedFetchRepo = async (
     body: JSON.stringify({ owner, repo, offset, includeGlobs, excludeGlobs }),
     headers: { 'Content-Type': 'application/json' },
   });
+  if (!res.ok) {
+    throw new ApiError(res.status, (await res.json()).error);
+  }
   const ab = await res.arrayBuffer();
   return JSON.parse(decompress(Buffer.from(ab)));
 };
@@ -149,7 +173,9 @@ export const getGitHubMDFiles = async (
     includeGlobs,
     excludeGlobs,
   );
+
   let allFilesData = data.files;
+
   while (data.capped) {
     data = await paginatedFetchRepo(
       info.owner,
@@ -166,5 +192,104 @@ export const getGitHubMDFiles = async (
       ...fileData,
       name: getNameFromPath(fileData.path),
     };
+  });
+};
+
+export const getOrRefreshAccessToken = async (
+  userId: User['id'],
+  supabase: SupabaseClient<Database>,
+): Promise<OAuthToken | undefined> => {
+  if (!process.env.NEXT_PUBLIC_GITHUB_APP_CLIENT_ID) {
+    throw new ApiError(400, 'Invalid GitHub client id.');
+  }
+
+  const { data, error } = await supabase
+    .from('user_access_tokens')
+    .select('*')
+    .match({ user_id: userId, provider: 'github' })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error retrieving access token:', error.message);
+    throw new ApiError(400, 'Unable to retrieve access token.');
+  }
+
+  if (!data || !data.refresh_token_expires || !data.expires) {
+    return undefined;
+  }
+
+  const now = Date.now();
+  if (data.refresh_token_expires < now || !data.refresh_token) {
+    throw new ApiError(400, 'Refresh token has expired. Please sign in again.');
+  }
+
+  if (data.expires >= now) {
+    return data;
+  }
+
+  const res = await fetch('https://github.com/login/oauth/access_token', {
+    method: 'POST',
+    body: JSON.stringify({
+      client_id: process.env.NEXT_PUBLIC_GITHUB_APP_CLIENT_ID,
+      client_secret: process.env.GITHUB_APP_CLIENT_SECRET,
+      grant_type: 'refresh_token',
+      refresh_token: data.refresh_token,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+  });
+
+  if (!res.ok) {
+    throw new ApiError(
+      500,
+      'Could not refresh access token. Please sign in again',
+    );
+  }
+
+  const accessTokenInfo = await res.json();
+
+  const { data: refreshedData, error: refreshError } = await supabase
+    .from('user_access_tokens')
+    .update({
+      access_token: accessTokenInfo.access_token,
+      expires: now + accessTokenInfo.expires_in * 1000,
+      refresh_token: accessTokenInfo.refresh_token,
+      refresh_token_expires:
+        now + accessTokenInfo.refresh_token_expires_in * 1000,
+      scope: accessTokenInfo.scope,
+    })
+    .eq('id', data.id)
+    .select('*')
+    .order('id', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (refreshError) {
+    console.error('Error saving updated token:', refreshError.message);
+  }
+
+  if (refreshedData) {
+    return refreshedData;
+  }
+
+  return undefined;
+};
+
+export const getJWT = () => {
+  if (!process.env.GITHUB_PRIVATE_KEY) {
+    throw new Error('Missing GitHub private key');
+  }
+
+  const payload = {
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + 10 * 60, // Token expires in 10 minutes
+    iss: process.env.GITHUB_MARKPROMPT_APP_ID,
+  };
+
+  return sign(payload, process.env.GITHUB_PRIVATE_KEY, {
+    algorithm: 'RS256',
   });
 };

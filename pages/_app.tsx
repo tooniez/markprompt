@@ -18,7 +18,7 @@ import { Toaster } from '@/components/ui/Toaster';
 import { ChatWindow, plainTheme } from '@/components/user/ChatWindow';
 import { ManagedAppContext } from '@/lib/context/app';
 import { ManagedTrainingContext } from '@/lib/context/training';
-import { getHost } from '@/lib/utils';
+import { getHost } from '@/lib/utils.edge';
 
 interface CustomAppProps<P = any> extends AppProps<P> {
   Component: NextComponentType<NextPageContext, any, P> & {

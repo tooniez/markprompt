@@ -183,7 +183,10 @@ export default async function handler(req: NextRequest) {
       | null;
   } = await supabaseAdmin.rpc('match_file_sections', {
     project_id: projectId,
-    embedding: promptEmbedding,
+    // Somehow Supabase expects a string for the embeddings
+    // entry (which is a vector type in the function definition),
+    // so we just convert to any.
+    embedding: promptEmbedding as any,
     match_threshold: 0.5,
     match_count: 10,
     min_content_length: 30,

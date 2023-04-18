@@ -7,7 +7,8 @@ import { FileDnd } from '@/components/files/FileDnd';
 import { Code } from '@/components/ui/Code';
 import useFiles from '@/lib/hooks/use-files';
 import useTokens from '@/lib/hooks/use-tokens';
-import { copyToClipboard, getHost, pluralize } from '@/lib/utils';
+import { copyToClipboard, pluralize } from '@/lib/utils';
+import { getHost } from '@/lib/utils.edge';
 
 import { GitHub } from '../files/GitHub';
 
@@ -51,9 +52,9 @@ const AddFiles: FC<AddFilesProps> = ({ onTrainingComplete, onNext }) => {
   `.trim();
 
   return (
-    <div className="pt-12">
+    <div className="pt-12 pb-16">
       <div className="mx-auto flex w-full max-w-screen-sm flex-col items-center justify-center gap-2 p-8 pt-20 text-neutral-300">
-        <p className="font-medium">Step 1: Import files</p>
+        <p className="font-medium">Step 1: Train files</p>
         <p className="mt-1 text-sm text-neutral-500">
           Accepted: <Tag variant="fuchsia">.md</Tag>
           <Tag variant="fuchsia" className="ml-1.5">

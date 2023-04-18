@@ -40,12 +40,12 @@ import {
   isProjectSlugAvailable,
   updateProject,
 } from '@/lib/api';
-import { isGitHubRepoAccessible } from '@/lib/github';
 import useDomains from '@/lib/hooks/use-domains';
 import useProject from '@/lib/hooks/use-project';
 import useProjects from '@/lib/hooks/use-projects';
 import useTeam from '@/lib/hooks/use-team';
 import useTokens from '@/lib/hooks/use-tokens';
+import useOAuth from '@/lib/hooks/utils/use-oauth';
 import { DEFAULT_MARKPROMPT_CONFIG, parse } from '@/lib/schema';
 import {
   capitalize,
@@ -64,6 +64,7 @@ const ProjectSettingsPage = () => {
   const { project, mutate: mutateProject } = useProject();
   const { domains, mutate: mutateDomains } = useDomains();
   const { tokens, mutate: mutateTokens } = useTokens();
+  const { githubAccessToken } = useOAuth();
   const [loading, setLoading] = useState(false);
   const [isRefreshingDevProjectKey, setIsRefreshingDevProjectKey] =
     useState(false);
@@ -173,61 +174,6 @@ const ProjectSettingsPage = () => {
                     disabled={isSubmitting}
                   />
                   <ErrorMessage name="slug" component={ErrorLabel} />
-                </div>
-                <CTABar>
-                  <Button
-                    disabled={!isValid}
-                    loading={isSubmitting}
-                    variant="plain"
-                    buttonSize="sm"
-                    type="submit"
-                  >
-                    Save
-                  </Button>
-                </CTABar>
-              </Form>
-            )}
-          </Formik>
-        </SettingsCard>
-        <SettingsCard
-          title="GitHub"
-          description="Scan a public GitHub repository for Markdown files."
-        >
-          <Formik
-            initialValues={{
-              github_repo: project.github_repo,
-            }}
-            validateOnMount
-            validate={async (values) => {
-              const errors: FormikErrors<FormikValues> = {};
-              if (values.github_repo) {
-                const isAccessible = await isGitHubRepoAccessible(
-                  values.github_repo,
-                );
-                if (!isAccessible) {
-                  errors.github_repo = 'Repository is not accessible';
-                }
-              }
-              return errors;
-            }}
-            onSubmit={async (values, { setSubmitting }) => {
-              _updateProject(values, setSubmitting);
-            }}
-          >
-            {({ isSubmitting, isValid }) => (
-              <Form>
-                <div className="flex flex-col gap-1 p-4">
-                  <p className="mb-1 text-xs font-medium text-neutral-300">
-                    Public repository URL
-                  </p>
-                  <Field
-                    type="text"
-                    name="github_repo"
-                    inputSize="sm"
-                    as={NoAutoInput}
-                    disabled={isSubmitting}
-                  />
-                  <ErrorMessage name="github_repo" component={ErrorLabel} />
                 </div>
                 <CTABar>
                   <Button
@@ -750,7 +696,7 @@ const ProjectSettingsPage = () => {
               toast.success('Token deleted.');
             } catch (e) {
               console.error(e);
-              toast.success('Error deleting token.');
+              toast.error('Error deleting token.');
             } finally {
               setLoading(false);
             }

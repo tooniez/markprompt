@@ -46,16 +46,18 @@ const ProfileMenu = () => {
               </div>
             </DropdownMenu.Label>
           )}
-          <DropdownMenu.Separator className="dropdown-menu-separator" />
-          {personalTeam && (
-            <DropdownMenu.Item asChild>
-              <Link
-                className="dropdown-menu-item dropdown-menu-item-noindent block"
-                href={`/settings/${personalTeam.slug}`}
-              >
-                Settings
-              </Link>
-            </DropdownMenu.Item>
+          {personalTeam && user?.has_completed_onboarding && (
+            <>
+              <DropdownMenu.Separator className="dropdown-menu-separator" />
+              <DropdownMenu.Item asChild>
+                <Link
+                  className="dropdown-menu-item dropdown-menu-item-noindent block"
+                  href={`/settings/${personalTeam.slug}`}
+                >
+                  Settings
+                </Link>
+              </DropdownMenu.Item>
+            </>
           )}
           <DropdownMenu.Separator className="dropdown-menu-separator" />
           <DropdownMenu.Item asChild>

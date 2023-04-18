@@ -1,3 +1,4 @@
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import {
   createContext,
   FC,
@@ -8,13 +9,21 @@ import {
   useState,
 } from 'react';
 
-import { FileData } from '@/types/types';
+import { FileData, Source } from '@/types/types';
 
-import { getChecksums, processFile, setChecksums } from '../api';
+import { processFile } from '../api';
+import { getGitHubMDFiles, getOwnerRepoString } from '../github';
 import useProject from '../hooks/use-project';
-import { pluralize, shouldIncludeFileWithPath, truncate } from '../utils';
+import useSources from '../hooks/use-sources';
+import {
+  createChecksum,
+  pluralize,
+  shouldIncludeFileWithPath,
+  truncate,
+} from '../utils';
 
 type IdleState = { state: 'idle' };
+type FetchingDataState = { state: 'fetching_data' };
 type LoadingState = {
   state: 'loading';
   progress?: number;
@@ -27,6 +36,7 @@ type CompleteState = { state: 'complete'; errors: string[] };
 
 export type TrainingState =
   | IdleState
+  | FetchingDataState
   | LoadingState
   | CancelRequestsState
   | CompleteState;
@@ -35,15 +45,18 @@ export type State = {
   state: TrainingState;
   errors: string[];
   generateEmbeddings: (
+    sourceId: Source['id'],
     numFiles: number,
-    getFileMeta: (
-      index: number,
-    ) => Pick<FileData, 'name' | 'path'> & { checksum: string },
-    getFileContent: (index: number) => Promise<string>,
+    getFileMeta: (index: number) => Pick<FileData, 'name' | 'path'>,
+    getFileContent: (index: number) => string,
     onFileProcessed?: () => void,
     forceRetrain?: boolean,
   ) => Promise<void>;
   stopGeneratingEmbeddings: () => void;
+  trainAllSources: (
+    onFileProcessed: () => void,
+    onError: (message: string) => void,
+  ) => void;
 };
 
 const initialState: State = {
@@ -53,6 +66,8 @@ const initialState: State = {
   generateEmbeddings: async () => {},
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   stopGeneratingEmbeddings: () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  trainAllSources: () => {},
 };
 
 export const getTrainingStateMessage = (
@@ -75,20 +90,20 @@ export const getTrainingStateMessage = (
 };
 
 const TrainingContextProvider = (props: PropsWithChildren) => {
+  const supabase = useSupabaseClient();
   const { project, config } = useProject();
   const [state, setState] = useState<TrainingState>({ state: 'idle' });
   const [errors, setErrors] = useState<string[]>([]);
   const stopFlag = useRef(false);
+  const { sources } = useSources();
 
   const generateEmbeddings = useCallback(
     async (
+      sourceId: Source['id'],
       numFiles: number,
-      getFileMeta: (
-        index: number,
-      ) => Pick<FileData, 'name' | 'path'> & { checksum: string },
-      getFileContent: (index: number) => Promise<string>,
+      getFileMeta: (index: number) => Pick<FileData, 'name' | 'path'>,
+      getFileContent: (index: number) => string,
       onFileProcessed?: () => void,
-      forceRetrain = false,
     ) => {
       if (!project?.id) {
         return;
@@ -96,9 +111,10 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
       setErrors([]);
 
-      const checksums: { [key: FileData['path']]: string } = await getChecksums(
-        project.id,
-      );
+      const { data: checksums } = await supabase
+        .from('files')
+        .select('path,checksum')
+        .eq('source_id', sourceId);
 
       for (let i = 0; i < numFiles; i++) {
         if (stopFlag.current) {
@@ -129,24 +145,25 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           filename: fileMeta.name,
         });
 
+        const prevChecksum = checksums?.find(
+          (c) => c.path === fileMeta.path,
+        )?.checksum;
+
+        const content = getFileContent(i);
+        const currentChecksum = createChecksum(content);
+
         // Check the checksum (or SHA if GitHub file), and skip if equals.
-        if (!forceRetrain && checksums[fileMeta.path] === fileMeta.checksum) {
+        if (prevChecksum === currentChecksum) {
           console.info('Skipping', fileMeta.path);
           continue;
         }
 
         console.info('Processing', fileMeta.path);
 
-        const content = await getFileContent(i);
         const file = { ...fileMeta, content };
 
         try {
-          await processFile(project.id, file, forceRetrain);
-          // Right after a file has been processed, update the
-          // project checksums, so that they are not lost if the
-          // operation is aborted.
-          checksums[file.path] = fileMeta.checksum;
-          await setChecksums(project.id, checksums);
+          await processFile(sourceId, file);
           onFileProcessed?.();
         } catch (e) {
           console.error('Error', e);
@@ -159,8 +176,56 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
       setState({ state: 'idle' });
     },
-    [project?.id, config],
-  ) satisfies State['generateEmbeddings'];
+    [supabase, config],
+  );
+
+  const trainAllSources = useCallback(
+    async (onFileProcessed: () => void, onError: (message: string) => void) => {
+      for (const source of sources) {
+        switch (source.type) {
+          case 'github': {
+            setState({ state: 'fetching_data' });
+            const githubUrl = (source.data as any)?.['url'];
+
+            let mdFiles: FileData[] = [];
+            try {
+              mdFiles = await getGitHubMDFiles(
+                githubUrl,
+                config.include || [],
+                config.exclude || [],
+              );
+            } catch (e) {
+              const repoOwner = getOwnerRepoString(githubUrl);
+              onError(`Error processing ${repoOwner}: ${e}`);
+              return;
+            }
+            await generateEmbeddings(
+              source.id,
+              mdFiles.length,
+              (i) => {
+                const file = mdFiles[i];
+                return {
+                  name: file.name,
+                  path: file.path,
+                };
+              },
+              (i) => mdFiles[i].content,
+              () => {
+                onFileProcessed();
+              },
+            );
+            break;
+          }
+          default:
+            // Skip. Note that file sources are trained at upload
+            // time, and file content is not stored, so there's nothing
+            // to train here in this situation.
+            break;
+        }
+      }
+    },
+    [config.exclude, config.include, generateEmbeddings, sources],
+  );
 
   const stopGeneratingEmbeddings = useCallback(() => {
     stopFlag.current = true;
@@ -174,6 +239,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         errors,
         generateEmbeddings,
         stopGeneratingEmbeddings,
+        trainAllSources,
       }}
       {...props}
     />

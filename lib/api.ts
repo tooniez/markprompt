@@ -5,7 +5,8 @@ import {
   Domain,
   FileData,
   Project,
-  ProjectChecksums,
+  Source,
+  SourceType,
   Team,
   Token,
 } from '@/types/types';
@@ -42,50 +43,20 @@ export const updateProject = async (
   return getResponseOrThrow<Project>(res);
 };
 
-export const getChecksums = async (
-  projectId: Project['id'],
-): Promise<ProjectChecksums> => {
-  return (
-    await fetch(`/api/project/${projectId}/checksums`).then((r) => r.json())
-  )?.checksums;
-};
-
-export const setChecksums = async (
-  projectId: Project['id'],
-  checksums: ProjectChecksums,
-) => {
-  fetch(`/api/project/${projectId}/checksums`, {
-    method: 'POST',
-    body: JSON.stringify({ checksums }),
-    headers: {
-      'Content-Type': 'application/json',
-      accept: 'application/json',
-    },
-  });
-};
-
 export const processFile = async (
-  projectId: Project['id'],
+  sourceId: Source['id'],
   fileData: FileData,
-  forceRetrain: boolean,
 ) => {
   await fetch('/api/v1/openai/train-file', {
     method: 'POST',
     body: JSON.stringify({
       file: fileData,
-      projectId,
-      forceRetrain,
+      sourceId,
     }),
     headers: {
       'Content-Type': 'application/json',
       accept: 'application/json',
     },
-  });
-};
-
-export const deleteAllFiles = async (projectId: Project['id']) => {
-  return fetch(`/api/project/${projectId}/files`, {
-    method: 'DELETE',
   });
 };
 
@@ -163,15 +134,10 @@ export const deleteTeamAndMemberships = async (
   return getResponseOrThrow<any>(res);
 };
 
-export const createProject = async (
-  teamId: Team['id'],
-  name: string,
-  slug: string,
-  githubRepo: string,
-) => {
+export const createProject = async (teamId: Team['id'], name: string) => {
   const res = await fetch(`/api/team/${teamId}/projects`, {
     method: 'POST',
-    body: JSON.stringify({ name, candidateSlug: slug, githubRepo }),
+    body: JSON.stringify({ name }),
     headers: {
       'Content-Type': 'application/json',
       accept: 'application/json',
@@ -256,6 +222,31 @@ export const deleteToken = async (
   id: Token['id'],
 ) => {
   const res = await fetch(`/api/project/${projectId}/tokens`, {
+    method: 'DELETE',
+    body: JSON.stringify({ id }),
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return getResponseOrThrow<any>(res);
+};
+
+export const addSource = async (
+  projectId: Project['id'],
+  sourceType: SourceType,
+  data: any,
+): Promise<Source> => {
+  const res = await fetch(`/api/project/${projectId}/sources`, {
+    method: 'POST',
+    body: JSON.stringify({ projectId, type: sourceType, data }),
+    headers: { 'Content-Type': 'application/json', accept: 'application/json' },
+  });
+  return getResponseOrThrow<Source>(res);
+};
+
+export const deleteSource = async (
+  projectId: Project['id'],
+  id: Source['id'],
+) => {
+  const res = await fetch(`/api/project/${projectId}/sources`, {
     method: 'DELETE',
     body: JSON.stringify({ id }),
     headers: { 'Content-Type': 'application/json' },

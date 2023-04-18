@@ -3,7 +3,7 @@ import { NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 import AppMiddleware from './lib/middleware/app';
 import CompletionsMiddleware from './lib/middleware/completions';
 import TrainMiddleware from './lib/middleware/train';
-import { getHost } from './lib/utils';
+import { getHost } from './lib/utils.edge';
 
 export const config = {
   matcher: [
@@ -16,6 +16,10 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { status: 200 });
+  }
+
+  if (req.nextUrl.pathname.startsWith('/api/oauth/')) {
+    return NextResponse.next();
   }
 
   if (hostname === getHost()) {

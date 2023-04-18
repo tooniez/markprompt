@@ -2,9 +2,10 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import JSZip from 'jszip';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { getOrRefreshAccessToken } from '@/lib/github';
 import { compress, shouldIncludeFileWithPath } from '@/lib/utils';
 import { Database } from '@/types/supabase';
-import { PathContentData } from '@/types/types';
+import { OAuthToken, PathContentData } from '@/types/types';
 
 type Data =
   | {
@@ -72,9 +73,17 @@ const getCompressedPayloadUntilLimit = (files: PathContentData[]) => {
   return Buffer.from(compress(JSON.stringify({ files: filesToSend })));
 };
 
-const fetchRepo = async (owner: string, repo: string, branch: string) => {
+const fetchRepo = async (
+  owner: string,
+  repo: string,
+  branch: string,
+  accessToken: string | undefined,
+) => {
   return fetch(
     `https://github.com/${owner}/${repo}/archive/refs/heads/${branch}.zip`,
+    accessToken
+      ? { headers: { Authorization: `Bearer ${accessToken}` } }
+      : undefined,
   );
 };
 
@@ -96,12 +105,29 @@ export default async function handler(
     return res.status(403).json({ error: 'Forbidden' });
   }
 
+  let accessToken: OAuthToken | undefined = undefined;
+  try {
+    accessToken = await getOrRefreshAccessToken(session.user.id, supabase);
+  } catch {
+    // Do nothing
+  }
+
   // Fetch main branch
-  let githubRes = await fetchRepo(req.body.owner, req.body.repo, 'main');
+  let githubRes = await fetchRepo(
+    req.body.owner,
+    req.body.repo,
+    'main',
+    accessToken?.access_token || undefined,
+  );
 
   if (githubRes.status !== 200) {
     // If main branch doesn't exist, fallback to master
-    githubRes = await fetchRepo(req.body.owner, req.body.repo, 'master');
+    githubRes = await fetchRepo(
+      req.body.owner,
+      req.body.repo,
+      'master',
+      accessToken?.access_token || undefined,
+    );
   }
 
   if (githubRes.status !== 200) {

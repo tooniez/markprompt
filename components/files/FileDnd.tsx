@@ -1,3 +1,4 @@
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import cn from 'classnames';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -9,7 +10,9 @@ import {
 } from '@/lib/context/training';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
-import { createChecksum, readTextFileAsync } from '@/lib/utils';
+import useSources from '@/lib/hooks/use-sources';
+import { getOrCreateSource } from '@/lib/supabase';
+import { readTextFileAsync } from '@/lib/utils';
 import { FileData } from '@/types/types';
 
 import Button from '../ui/Button';
@@ -21,10 +24,12 @@ type FileDndProps = {
 };
 
 export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
+  const supabase = useSupabaseClient();
   const [pickedFiles, setPickedFiles] = useState<FileData[]>([]);
   const [trainingComplete, setTrainingComplete] = useState(false);
   const [dragging, setDragging] = useState(false);
   const { mutate: mutateFiles } = useFiles();
+  const { mutate: mutateSources } = useSources();
   const { project } = useProject();
   const {
     generateEmbeddings,
@@ -64,13 +69,30 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
   }, [acceptedFiles]);
 
   const upload = useCallback(async () => {
+    if (!project?.id) {
+      return;
+    }
     if (pickedFiles?.length === 0) {
       toast.error('No files selected');
       return;
     }
 
+    const sourceId = await getOrCreateSource(
+      supabase,
+      project.id,
+      'file-upload',
+      undefined,
+    );
+
+    if (!sourceId) {
+      toast.error('Unable to create source');
+      return;
+    }
+
     setIsTrainingInitiatedByFileDnd(true);
+
     await generateEmbeddings(
+      sourceId,
       pickedFiles.length,
       (i) => {
         const file = pickedFiles[i];
@@ -78,10 +100,9 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
         return {
           name: file.name,
           path: file.path,
-          checksum: createChecksum(content),
         };
       },
-      async (i) => pickedFiles[i].content,
+      (i) => pickedFiles[i].content,
       () => {
         mutateFiles();
       },
@@ -90,8 +111,17 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
     setPickedFiles([]);
     setTrainingComplete(true);
     mutateFiles();
+    mutateSources();
     onTrainingComplete();
-  }, [pickedFiles, generateEmbeddings, onTrainingComplete, mutateFiles]);
+  }, [
+    supabase,
+    pickedFiles,
+    generateEmbeddings,
+    onTrainingComplete,
+    mutateFiles,
+    mutateSources,
+    project?.id,
+  ]);
 
   const hasFiles = pickedFiles?.length > 0;
 
@@ -121,10 +151,7 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
                     {trainingComplete ? (
                       'Processing complete'
                     ) : (
-                      <>
-                        Drop your files here
-                        {project?.github_repo ? ' or sync repo' : ''}
-                      </>
+                      <>Drop your files here</>
                     )}
                     <span
                       className={cn(

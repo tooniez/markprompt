@@ -9,8 +9,11 @@ import {
   checkEmbeddingsRateLimits,
   getEmbeddingsRateLimitResponse,
 } from '@/lib/rate-limits';
-import { getProjectChecksumsKey, safeGetObject, set } from '@/lib/redis';
-import { getBYOOpenAIKey } from '@/lib/supabase';
+import {
+  getBYOOpenAIKey,
+  getChecksums,
+  getOrCreateSource,
+} from '@/lib/supabase';
 import {
   createChecksum,
   getNameFromPath,
@@ -20,7 +23,7 @@ import {
 import { getMarkpromptConfigOrDefault } from '@/lib/utils.browser';
 import { getBufferFromReadable } from '@/lib/utils.node';
 import { Database } from '@/types/supabase';
-import { FileData, Project, ProjectChecksums } from '@/types/types';
+import { FileData, Project } from '@/types/types';
 
 type Data = {
   status?: string;
@@ -196,11 +199,13 @@ export default async function handler(
     }
   }
 
-  const updatedChecksums: ProjectChecksums = {};
-  const checksums: ProjectChecksums = await safeGetObject(
-    getProjectChecksumsKey(projectId),
-    {},
+  const sourceId = await getOrCreateSource(
+    supabaseAdmin,
+    projectId,
+    'api-upload',
+    undefined,
   );
+  const checksums = await getChecksums(supabaseAdmin, sourceId);
 
   const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
 
@@ -213,8 +218,15 @@ export default async function handler(
     // Check the checksum, and skip if equals
     const contentChecksum = createChecksum(file.content);
 
-    if (!forceRetrain && checksums[file.path] === contentChecksum) {
-      updatedChecksums[file.path] = contentChecksum;
+    const existingChecksum = checksums.find(
+      (c) => c.path === file.path,
+    )?.checksum;
+
+    if (
+      !forceRetrain &&
+      existingChecksum &&
+      existingChecksum === contentChecksum
+    ) {
       numFilesSuccess++;
       return;
     }
@@ -222,11 +234,11 @@ export default async function handler(
     const errors = await generateFileEmbeddings(
       supabaseAdmin,
       projectId,
+      sourceId,
       file,
       byoOpenAIKey,
     );
 
-    updatedChecksums[file.path] = contentChecksum;
     if (errors && errors.length > 0) {
       allFileErrors = [...allFileErrors, ...errors];
     } else {
@@ -242,11 +254,6 @@ export default async function handler(
     filesWithPath.map((fileWithPath) => {
       return limit(() => processFile(fileWithPath));
     }),
-  );
-
-  await set(
-    getProjectChecksumsKey(projectId),
-    JSON.stringify(JSON.stringify(updatedChecksums)),
   );
 
   let message;

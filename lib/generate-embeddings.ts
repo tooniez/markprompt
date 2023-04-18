@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { backOff } from 'exponential-backoff';
-import GPT3Tokenizer from 'gpt3-tokenizer';
 import type { Content, Root } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { mdxFromMarkdown } from 'mdast-util-mdx';
@@ -17,10 +16,11 @@ import {
   getProjectEmbeddingsMonthTokenCountKey,
   getRedisClient,
 } from '@/lib/redis';
-import { createFile, getFileAtPath } from '@/lib/supabase';
-import { getFileType } from '@/lib/utils';
+import { createChecksum, getFileType } from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.node';
-import { DbFile, FileData, Project } from '@/types/types';
+import { DbFile, FileData, Project, Source } from '@/types/types';
+
+import { getProjectIdFromSource } from './supabase';
 
 type FileSectionData = {
   sections: string[];
@@ -188,9 +188,53 @@ const processFile = (file: FileData): FileSectionData => {
   return { sections: trimmedSections, meta };
 };
 
+const getFileAtPath = async (
+  supabase: SupabaseClient,
+  sourceId: Source['id'],
+  path: string,
+): Promise<DbFile['id'] | undefined> => {
+  const { data, error } = await supabase
+    .from('files')
+    .select('id')
+    .match({ source_id: sourceId, path })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    console.error('Error:', error);
+    return undefined;
+  }
+  return data?.id as DbFile['id'];
+};
+
+const createFile = async (
+  supabase: SupabaseClient,
+  // TODO: remove once migration is safely completed. We set an explicit
+  // value to prevent NULL values, because if a row has a NULL value,
+  // somehow it won't be returned in the inner joined filter query.
+  _projectId: Project['id'],
+  sourceId: Source['id'],
+  path: string,
+  meta: any,
+  checksum: string,
+): Promise<DbFile['id'] | undefined> => {
+  const { error, data } = await supabase
+    .from('files')
+    .insert([
+      { source_id: sourceId, project_id: _projectId, path, meta, checksum },
+    ])
+    .select('id')
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    throw error;
+  }
+  return data?.id as DbFile['id'];
+};
+
 export const generateFileEmbeddings = async (
   supabaseAdmin: SupabaseClient,
-  projectId: Project['id'],
+  _projectId: Project['id'],
+  sourceId: Source['id'],
   file: FileData,
   byoOpenAIKey: string | undefined,
 ) => {
@@ -199,7 +243,9 @@ export const generateFileEmbeddings = async (
 
   const { meta, sections } = processFile(file);
 
-  let fileId = await getFileAtPath(supabaseAdmin, projectId, file.path);
+  let fileId = await getFileAtPath(supabaseAdmin, sourceId, file.path);
+
+  const checksum = createChecksum(file.content);
 
   // Delete previous file section data, and update current file
   if (fileId) {
@@ -207,9 +253,19 @@ export const generateFileEmbeddings = async (
       .from('file_sections')
       .delete()
       .filter('file_id', 'eq', fileId);
-    await supabaseAdmin.from('files').update({ meta }).eq('id', fileId);
+    await supabaseAdmin
+      .from('files')
+      .update({ meta, checksum })
+      .eq('id', fileId);
   } else {
-    fileId = await createFile(supabaseAdmin, projectId, file.path, meta);
+    fileId = await createFile(
+      supabaseAdmin,
+      _projectId,
+      sourceId,
+      file.path,
+      meta,
+      checksum,
+    );
   }
 
   if (!fileId) {
@@ -276,10 +332,14 @@ export const generateFileEmbeddings = async (
     }
   }
 
-  await getRedisClient().incrby(
-    getProjectEmbeddingsMonthTokenCountKey(projectId, new Date()),
-    embeddingsTokenCount,
-  );
+  const projectId = await getProjectIdFromSource(supabaseAdmin, sourceId);
+
+  if (projectId) {
+    await getRedisClient().incrby(
+      getProjectEmbeddingsMonthTokenCountKey(projectId, new Date()),
+      embeddingsTokenCount,
+    );
+  }
 
   return errors;
 };
