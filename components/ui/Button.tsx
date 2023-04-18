@@ -1,6 +1,6 @@
 import cn from 'classnames';
 import Link from 'next/link';
-import { forwardRef, JSXElementConstructor, ReactNode, useRef } from 'react';
+import { forwardRef, JSXElementConstructor, ReactNode } from 'react';
 
 import LoadingDots from './LoadingDots';
 

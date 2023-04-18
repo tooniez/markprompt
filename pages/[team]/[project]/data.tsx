@@ -490,10 +490,10 @@ const Data = () => {
                 </Dialog.Content>
               </Dialog.Portal>
             </Dialog.Root>
-            <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
+            {/* <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
               <MotifIcon className="h-4 w-4 flex-none" />
               <span className="truncate">Connect Motif project</span>
-            </button>
+            </button> */}
             <button
               className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400"
               onClick={() => setFileDialogOpen(true)}

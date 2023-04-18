@@ -15,7 +15,7 @@ import LandingNavbar from '@/components/layouts/LandingNavbar';
 import { Blurs } from '@/components/ui/Blurs';
 import Button from '@/components/ui/Button';
 import { Code } from '@/components/ui/Code';
-import { Pattern } from '@/components/ui/Pattern';
+import { Pattern, PatternDimmedSky } from '@/components/ui/Pattern';
 import {
   modelLabels,
   PricedModel,
@@ -466,6 +466,35 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               cta="Get started with Scale"
               model={model}
             />
+          </div>
+          <div className="mt-32 grid w-full max-w-screen-sm grid-cols-2 overflow-hidden rounded-lg border border-neutral-900 bg-black/50 py-12 shadow-2xl backdrop-blur">
+            <PatternDimmedSky />
+            <div className="flex flex-col gap-4">
+              <h2 className="flex-none px-4 text-3xl font-semibold text-neutral-300 md:px-8">
+                Enterprise
+              </h2>
+              <div className="relative flex w-full flex-col px-4 md:px-8">
+                <p className="mt-0 text-lg dark:text-neutral-500">
+                  For custom needs
+                </p>
+              </div>
+              <ul className="mt-2 mb-4 flex w-full flex-grow flex-col gap-1 px-4 md:px-8">
+                <ListItem variant="discreet">Dedicated support</ListItem>
+                <ListItem variant="discreet">Custom integrations</ListItem>
+                <ListItem variant="discreet">Whiteglove onboarding</ListItem>
+              </ul>
+            </div>
+            <div className="flex h-full w-full items-center justify-end px-4 md:px-8">
+              <div className="w-full">
+                <Button
+                  className="w-full"
+                  variant="plain"
+                  href="mailto:sales@markprompt.com"
+                >
+                  Contact Sales
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
         <div className="flex flex-col items-center">
