@@ -19,6 +19,16 @@ export default async function handler(
     return res.status(400).json({ status: 'Application was not authorized.' });
   }
 
+  console.error(
+    'NEXT_PUBLIC_GITHUB_APP_CLIENT_ID',
+    process.env.NEXT_PUBLIC_GITHUB_APP_CLIENT_ID?.substring(0, 5),
+  );
+  console.error(
+    'GITHUB_APP_CLIENT_SECRET',
+    process.env.GITHUB_APP_CLIENT_SECRET?.substring(0, 5),
+  );
+  console.error('code', (code as string)?.substring(0, 5));
+
   const accessTokenRes = await fetch(
     'https://github.com/login/oauth/access_token',
     {
@@ -36,6 +46,7 @@ export default async function handler(
   );
 
   if (!accessTokenRes.ok) {
+    console.error('ERROR!');
     return res
       .status(accessTokenRes.status)
       .json({ status: await accessTokenRes.text() });
