@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import JSZip from 'jszip';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { Octokit } from 'octokit';
 
 import { getOrRefreshAccessToken } from '@/lib/github';
 import { compress, shouldIncludeFileWithPath } from '@/lib/utils';
@@ -79,8 +80,22 @@ const fetchRepo = async (
   branch: string,
   accessToken: string | undefined,
 ) => {
+  const octokit = new Octokit(accessToken ? { auth: accessToken } : {});
+
+  const info = await octokit.request(
+    'GET /repos/{owner}/{repo}/zipball/{ref}',
+    {
+      owner,
+      repo,
+      ref: branch,
+      headers: {
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    },
+  );
+
   return fetch(
-    `https://github.com/${owner}/${repo}/archive/refs/heads/${branch}.zip`,
+    info.url,
     accessToken
       ? { headers: { Authorization: `Bearer ${accessToken}` } }
       : undefined,
@@ -112,25 +127,31 @@ export default async function handler(
     // Do nothing
   }
 
-  // Fetch main branch
-  let githubRes = await fetchRepo(
-    req.body.owner,
-    req.body.repo,
-    'main',
-    accessToken?.access_token || undefined,
-  );
+  let githubRes;
 
-  if (githubRes.status !== 200) {
-    // If main branch doesn't exist, fallback to master
+  try {
+    // Fetch main branch
     githubRes = await fetchRepo(
       req.body.owner,
       req.body.repo,
-      'master',
+      'main',
       accessToken?.access_token || undefined,
     );
+
+    if (githubRes.status !== 200) {
+      // If main branch doesn't exist, fallback to master
+      githubRes = await fetchRepo(
+        req.body.owner,
+        req.body.repo,
+        'master',
+        accessToken?.access_token || undefined,
+      );
+    }
+  } catch {
+    // Handle below
   }
 
-  if (githubRes.status !== 200) {
+  if (githubRes?.status !== 200) {
     return res.status(404).json({
       error:
         'Failed to download repository. Make sure the main or master branch is accessible.',

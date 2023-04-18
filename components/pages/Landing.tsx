@@ -467,7 +467,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               model={model}
             />
           </div>
-          <div className="mt-32 grid w-full max-w-screen-sm grid-cols-2 overflow-hidden rounded-lg border border-neutral-900 bg-black/50 py-12 shadow-2xl backdrop-blur">
+          <div className="mt-20 grid w-full max-w-screen-sm grid-cols-2 overflow-hidden rounded-lg border border-neutral-900 bg-black/50 py-12 shadow-2xl backdrop-blur">
             <PatternDimmedSky />
             <div className="flex flex-col gap-4">
               <h2 className="flex-none px-4 text-3xl font-semibold text-neutral-300 md:px-8">

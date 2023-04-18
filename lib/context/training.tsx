@@ -197,7 +197,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             } catch (e) {
               const repoOwner = getOwnerRepoString(githubUrl);
               onError(`Error processing ${repoOwner}: ${e}`);
-              return;
+              break;
             }
             await generateEmbeddings(
               source.id,
@@ -223,6 +223,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             break;
         }
       }
+      setState({ state: 'idle' });
     },
     [config.exclude, config.include, generateEmbeddings, sources],
   );
