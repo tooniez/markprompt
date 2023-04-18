@@ -532,7 +532,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             </a>{' '}
             team
           </div>
-          <div className="flex flex-row items-center justify-center gap-4 text-neutral-700 sm:justify-end">
+          <div className="mr-0 flex flex-row items-center justify-center gap-4 text-neutral-700 sm:mr-12 sm:justify-end xl:mr-0">
             <a
               className="transition hover:text-neutral-500"
               href="https://github.com/motifland/markprompt"

@@ -255,7 +255,6 @@ export const TIERS: Record<Tier, TierDetails> = {
       'Everything in Standard, plus:',
       'Insights (soon)',
       'Integrations (soon)',
-      'Priority support',
     ],
     prices: [
       {
