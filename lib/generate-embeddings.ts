@@ -208,7 +208,9 @@ const getFileAtPath = async (
 
 const createFile = async (
   supabase: SupabaseClient,
-  // TODO: remove once migration is safely completed
+  // TODO: remove once migration is safely completed. We set an explicit
+  // value to prevent NULL values, because if a row has a NULL value,
+  // somehow it won't be returned in the inner joined filter query.
   _projectId: Project['id'],
   sourceId: Source['id'],
   path: string,

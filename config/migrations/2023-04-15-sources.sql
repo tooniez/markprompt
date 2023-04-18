@@ -72,7 +72,7 @@ and not exists (
 -- In the files table, add a source_id reference.
 -- reference.
 alter table files
-add column source_id uuid references public.sources on delete cascade
+add column source_id uuid references public.sources on delete cascade;
 
 -- Update the source_id to point to the appropriate source, by matching
 -- project ids
@@ -95,16 +95,16 @@ where source_id is null;
 update files
 set source_id = sources.id
 from sources
-where sources.project_id = files.project_id and source.type = 'file=upload';
+where sources.project_id = files.project_id and sources.type = 'file-upload';
 
 -- Now that all the source_ids have been filled, we can set the column
 -- type to non-nullable.
-alter table files
-add column source_id uuid references public.sources on delete cascade not null
+
+-- IN SUPABASE DASHBOARD: make source_id column non-nullable.
 
 -- Checksums
 alter table files
-add column checksum text
+add column checksum text;
 
 -- Update the match_file_sections function
 create or replace function match_file_sections(project_id uuid, embedding vector(1536), match_threshold float, match_count int, min_content_length int)
