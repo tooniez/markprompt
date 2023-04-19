@@ -75,7 +75,7 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
               <LandingNavbar noAnimation />
             </div>
           </div>
-          <div className="prose prose-invert relative mx-auto min-h-screen w-full max-w-screen-xl px-6 pt-48 sm:px-8">
+          <div className="prose prose-invert relative mx-auto min-h-screen w-full max-w-screen-xl px-6 pt-48 pb-24 sm:px-8">
             {frontmatter?.title && (
               <div className="flex justify-center">
                 <Balancer>
@@ -132,7 +132,7 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
             </div>
           </div>
         </MarkdocContext.Provider>
-        <p className="fixed bottom-4 -ml-4 rounded-full bg-black/20 px-4 py-2 text-sm text-neutral-700 backdrop-blur transition hover:text-neutral-300">
+        <p className="pb-16 pt-16 text-center text-sm text-neutral-700 backdrop-blur transition hover:text-neutral-300">
           Powered by{' '}
           <a
             href="https://motif.land"
