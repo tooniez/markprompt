@@ -62,9 +62,9 @@ A sample file containing required environment variables can be found in [example
 
 ## Using the React and Web components
 
-Markprompt comes with React and Web components that make it easy to build a prompt interface on top of the Markprompt API. With a single line of code, you can provide a prompt interface to your React application. Follow the steps in the [Markprompt React README](https://github.com/motifland/markprompt/blob/main/packages/markprompt-react/README.md) to get started using it.
+Markprompt comes with React and Web components that make it easy to build a prompt interface on top of the Markprompt API. With a single line of code, you can provide a prompt interface to your React application. Follow the steps in the [Markprompt docs](https://markprompt.com/docs#components) to get started, or explore the [source code](https://github.com/motifland/markprompt-js).
 
-Also, check out the [Markprompt starter template](https://github.com/motifland/markprompt-starter-template) for a fully working Next.js + Tailwind project.
+Also, try out the [Markprompt starter template](https://github.com/motifland/markprompt-starter-template) for a fully working Next.js + Tailwind project.
 
 ## Usage
 
