@@ -5,7 +5,7 @@ import { useEffect, useContext, useRef } from 'react';
 
 import { useTop } from '@/lib/hooks/utils/use-top';
 
-import { MarkdocContext } from '../layouts/MarkdocLayout';
+import { MarkdocContext } from '../layouts/DocsLayout';
 
 export const Heading = ({
   level,
@@ -27,7 +27,7 @@ export const Heading = ({
 
   useEffect(() => {
     if (typeof top !== 'undefined') {
-      context.registerHeading(id, top, level);
+      context?.registerHeading(id, top, level);
     }
 
     return () => {

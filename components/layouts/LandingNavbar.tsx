@@ -41,6 +41,12 @@ export default function LandingNavbar({
       </Link>
       <Link
         className="hidden transform text-sm font-medium text-white opacity-60 hover:opacity-100 sm:block"
+        href="/blog"
+      >
+        Blog
+      </Link>
+      <Link
+        className="hidden transform text-sm font-medium text-white opacity-60 hover:opacity-100 sm:block"
         href="/docs"
       >
         Docs
