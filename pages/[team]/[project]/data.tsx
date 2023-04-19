@@ -469,16 +469,30 @@ const Data = () => {
                   <Dialog.Title className="dialog-title flex-none">
                     Connect GitHub repo
                   </Dialog.Title>
-                  <Dialog.Description className="dialog-description flex-none border-b border-neutral-900 pb-4">
-                    Sync files from a GitHub repo. You can specify which files
-                    to include and exclude from the repository in the{' '}
-                    <Link
-                      className="subtle-underline"
-                      href={`/${team?.slug}/${project?.slug}/settings`}
-                    >
-                      project configuration
-                    </Link>
-                    .
+                  <Dialog.Description className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
+                    <p>
+                      Sync files from a GitHub repo. You can specify which files
+                      to include and exclude from the repository in the{' '}
+                      <Link
+                        className="subtle-underline"
+                        href={`/${team?.slug}/${project?.slug}/settings`}
+                      >
+                        project configuration
+                      </Link>
+                      .
+                    </p>
+                    <p>
+                      <span className="font-semibold">Note</span>: Syncing large
+                      repositories (&gt;100 Mb) is not yet supported. In this
+                      case, we recommend using file uploads or the{' '}
+                      <a
+                        className="subtle-underline"
+                        href="https://markprompt.com/docs#train-content"
+                      >
+                        train API
+                      </a>
+                      .
+                    </p>
                   </Dialog.Description>
                   <div className="flex-grow">
                     <GitHub

@@ -176,7 +176,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
       setState({ state: 'idle' });
     },
-    [supabase, config],
+    [project?.id, supabase, config.include, config.exclude],
   );
 
   const trainAllSources = useCallback(
