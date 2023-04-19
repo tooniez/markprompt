@@ -148,7 +148,7 @@ export const TIERS: Record<Tier, TierDetails> = {
   standard: {
     name: 'Standard',
     description: 'For startups',
-    items: ['Everything in Free, plus:', 'Basic analytics', 'Teams (soon)'],
+    items: ['Everything in Free, plus:', 'Basic analytics'],
     prices: [
       {
         name: 'Standard 1',
@@ -253,6 +253,7 @@ export const TIERS: Record<Tier, TierDetails> = {
     description: 'For large projects',
     items: [
       'Everything in Standard, plus:',
+      'Teams (soon)',
       'Insights (soon)',
       'Integrations (soon)',
     ],
