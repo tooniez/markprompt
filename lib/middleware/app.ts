@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const UNAUTHED_PATHS = [
   '/',
   '/docs',
+  '/blog',
   '/login',
   '/signup',
   '/legal/terms',
