@@ -374,9 +374,9 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
                     Use the{' '}
                     <a
                       className="subtle-underline"
-                      href="https://github.com/motifland/markprompt/tree/main/packages/markprompt-react"
+                      href="https://github.com/motifland/markprompt-js"
                     >
-                      Markprompt React component
+                      Markprompt React or Web component
                     </a>
                     , or fetch via a readable stream.
                   </p>
