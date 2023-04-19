@@ -63,6 +63,16 @@ const ProfileMenu = () => {
           <DropdownMenu.Item asChild>
             <a
               className="dropdown-menu-item dropdown-menu-item-noindent block"
+              href="/blog"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Blog
+            </a>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item asChild>
+            <a
+              className="dropdown-menu-item dropdown-menu-item-noindent block"
               href="https://twitter.com/markprompt"
               target="_blank"
               rel="noreferrer"

@@ -36,18 +36,6 @@ export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
                   'block h-full rounded-md px-2 py-1.5 text-sm text-neutral-300 outline-none ring-white ring-offset-0 transition duration-200 hover:bg-neutral-900 hover:text-neutral-100 focus-visible:text-neutral-100 focus-visible:ring-1',
                 )}
               >
-                <a target="_blank" rel="noreferrer" href="/blog">
-                  Blog
-                </a>
-              </NavigationMenu.Link>
-            </NavigationMenu.Item>
-            <NavigationMenu.Item>
-              <NavigationMenu.Link
-                asChild
-                className={cn(
-                  'block h-full rounded-md px-2 py-1.5 text-sm text-neutral-300 outline-none ring-white ring-offset-0 transition duration-200 hover:bg-neutral-900 hover:text-neutral-100 focus-visible:text-neutral-100 focus-visible:ring-1',
-                )}
-              >
                 <a target="_blank" rel="noreferrer" href="/docs">
                   Docs
                 </a>
