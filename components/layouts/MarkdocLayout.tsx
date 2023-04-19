@@ -1,6 +1,6 @@
 // Adapted from: https://github.com/tailwindlabs/tailwindcss.com/blob/master/src/layouts/ContentsLayout.js
 
-import Markdoc, {
+import {
   Config,
   Node,
   RenderableTreeNode,
@@ -12,7 +12,6 @@ import * as Popover from '@radix-ui/react-popover';
 import cn from 'classnames';
 import { Language } from 'prism-react-renderer';
 import React, {
-  createContext,
   FC,
   Fragment,
   ReactNode,
@@ -21,15 +20,8 @@ import React, {
   useState,
 } from 'react';
 
-import LandingNavbar from './LandingNavbar';
 import { Playground } from '../files/Playground';
 import { CodePanel } from '../ui/Code';
-import { Collapse, CollapseGroup } from '../ui/Collapse';
-import { Heading } from '../ui/Heading';
-import { Note } from '../ui/Note';
-import { Pattern } from '../ui/Pattern';
-
-export const MarkdocContext = createContext<any>(undefined);
 
 type MarkdocCodeFenceProps = {
   children: ReactNode;
@@ -60,6 +52,9 @@ const collectMarkdocHeadings = (
 
   return sections;
 };
+
+export type TOCEntry = { title: string; slug: string; children?: TOC };
+export type TOC = TOCEntry[];
 
 export const createTOC = (node: any): TOC => {
   const headings = collectMarkdocHeadings(node, []);
@@ -166,7 +161,7 @@ export const playgroundTag = {
   render: 'Playground',
 };
 
-const Fence = (props: MarkdocCodeFenceProps) => {
+export const Fence = (props: MarkdocCodeFenceProps) => {
   const { children, language } = props;
 
   let code = '';
@@ -222,113 +217,13 @@ export const DocsPlayground = () => {
   );
 };
 
-export const DocsSearch = () => {
-  const [promptOpen, setPromptOpen] = useState(false);
-
-  return (
-    <Popover.Root open={promptOpen} onOpenChange={setPromptOpen}>
-      <Popover.Trigger asChild>
-        <button
-          className="flex w-full transform flex-row items-center gap-2 rounded-md border border-neutral-900 p-2 text-left text-sm text-neutral-500 outline-none transition duration-300 hover:bg-neutral-1000"
-          aria-label="Ask docs"
-        >
-          <MagnifyingGlassIcon className="h-4 w-4 flex-none text-neutral-500" />
-          <div className="flex-grow truncate">Ask docs...</div>
-        </button>
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content className="animate-chat-window z-20 mr-4 mb-4 w-[calc(100vw-32px)] sm:w-full">
-          <div className="relative mt-4 h-[calc(100vh-240px)] max-h-[560px] w-full overflow-hidden rounded-lg border border-neutral-900 bg-neutral-1000 p-4 shadow-2xl sm:w-[400px]">
-            <Playground
-              forceUseProdAPI
-              projectKey={
-                process.env.NODE_ENV === 'production'
-                  ? process.env.NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY
-                  : process.env
-                      .NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY_TEST
-              }
-            />
-            <Popover.Close
-              className="absolute top-3 right-3 z-20 rounded p-1 outline-none backdrop-blur transition hover:bg-neutral-900"
-              aria-label="Close"
-            >
-              <Cross2Icon className="h-4 w-4 text-neutral-300" />
-            </Popover.Close>
-          </div>
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
-  );
-};
-
-type TableOfContentsProps = {
-  toc: TOC;
-  currentSection: string;
-};
-
-const TableOfContents: FC<TableOfContentsProps> = ({ toc, currentSection }) => {
-  const isActive = (section: any) => {
-    if (section.slug === currentSection) {
-      return true;
-    }
-    if (!section.children) {
-      return false;
-    }
-    return section.children.findIndex(isActive) > -1;
-  };
-
-  return (
-    <>
-      <ul className="text-sm leading-6 text-neutral-500">
-        {toc.map((section) => {
-          const _isActive = isActive(section);
-          return (
-            <Fragment key={section.slug}>
-              <li>
-                <a
-                  href={`#${section.slug}`}
-                  className={cn('block py-1', {
-                    'text-neutral-300': _isActive,
-                    'hover:text-neutral-300': !_isActive,
-                  })}
-                >
-                  {section.title}
-                </a>
-              </li>
-              {section.children?.map((subsection) => {
-                const _isActive = isActive(subsection);
-                return (
-                  <li className="ml-4" key={subsection.slug}>
-                    <a
-                      href={`#${subsection.slug}`}
-                      className={cn('group flex items-start py-1', {
-                        'text-neutral-300': _isActive,
-                        'dark:hover:text-slate-300': !_isActive,
-                      })}
-                    >
-                      {subsection.title}
-                    </a>
-                  </li>
-                );
-              })}
-            </Fragment>
-          );
-        })}
-      </ul>
-    </>
-  );
-};
-
 type ContentHeading = {
   id: string;
   top: number;
   level: number;
 };
 
-export type TOCEntry = { title: string; slug: string; children?: TOC };
-export type TOC = TOCEntry[];
-
-const useTableOfContents = (toc: TOC) => {
+export const useTableOfContents = (toc: TOC) => {
   const [currentSection, setCurrentSection] = useState(toc[0]?.slug);
   const [headings, setHeadings] = useState<ContentHeading[]>([]);
 
@@ -388,66 +283,114 @@ const useTableOfContents = (toc: TOC) => {
   return { currentSection, registerHeading, unregisterHeading };
 };
 
-type MarkdocLayoutProps = {
-  content: RenderableTreeNode;
-  toc: TOC;
+export const DocsSearch = () => {
+  const [promptOpen, setPromptOpen] = useState(false);
+
+  return (
+    <Popover.Root open={promptOpen} onOpenChange={setPromptOpen}>
+      <Popover.Trigger asChild>
+        <button
+          className="flex w-full transform flex-row items-center gap-2 rounded-md border border-neutral-900 p-2 text-left text-sm text-neutral-500 outline-none transition duration-300 hover:bg-neutral-1000"
+          aria-label="Ask docs"
+        >
+          <MagnifyingGlassIcon className="h-4 w-4 flex-none text-neutral-500" />
+          <div className="flex-grow truncate">Ask docs...</div>
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content className="animate-chat-window z-20 mr-4 mb-4 w-[calc(100vw-32px)] sm:w-full">
+          <div className="relative mt-4 h-[calc(100vh-240px)] max-h-[560px] w-full overflow-hidden rounded-lg border border-neutral-900 bg-neutral-1000 p-4 shadow-2xl sm:w-[400px]">
+            <Playground
+              forceUseProdAPI
+              projectKey={
+                process.env.NODE_ENV === 'production'
+                  ? process.env.NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY
+                  : process.env
+                      .NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY_TEST
+              }
+            />
+            <Popover.Close
+              className="absolute top-3 right-3 z-20 rounded p-1 outline-none backdrop-blur transition hover:bg-neutral-900"
+              aria-label="Close"
+            >
+              <Cross2Icon className="h-4 w-4 text-neutral-300" />
+            </Popover.Close>
+          </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
 };
 
-export const MarkdocLayout: FC<MarkdocLayoutProps> = ({
-  content,
+type TableOfContentsProps = {
+  toc: TOC;
+  currentSection: string;
+};
+
+export const TableOfContents: FC<TableOfContentsProps> = ({
   toc,
-}: any) => {
-  const { currentSection, registerHeading, unregisterHeading } =
-    useTableOfContents(toc);
+  currentSection,
+}) => {
+  const isActive = (section: any) => {
+    if (section.slug === currentSection) {
+      return true;
+    }
+    if (!section.children) {
+      return false;
+    }
+    return section.children.findIndex(isActive) > -1;
+  };
 
   return (
     <>
-      <div className="relative mx-auto min-h-screen max-w-screen-xl px-6 sm:px-8">
-        {/* <div className="mx-auto w-screen"> */}
-        <Pattern />
-        <MarkdocContext.Provider value={{ registerHeading, unregisterHeading }}>
-          <div className="fixed top-0 left-0 right-0 z-30 h-24 bg-black/30 backdrop-blur">
-            <div className="mx-auto max-w-screen-xl px-6 sm:px-8">
-              <LandingNavbar noAnimation />
-            </div>
-          </div>
-          <div className="relative mx-auto min-h-screen max-w-screen-xl">
-            <div className="hidden-scrollbar fixed inset-0 top-24 left-[max(0px,calc(50%-40rem))] right-auto z-20 hidden w-72 overflow-y-auto px-6 pb-10 sm:px-8 md:block">
-              <div className="mt-[26px] flex flex-col gap-1 pb-12">
-                <div className="mb-4 w-full">
-                  <DocsSearch />
-                </div>
-                <TableOfContents toc={toc} currentSection={currentSection} />
-              </div>
-              <p className="fixed bottom-4 -ml-4 rounded-full bg-black/20 px-4 py-2 text-sm text-neutral-700 backdrop-blur transition hover:text-neutral-300">
-                Powered by{' '}
+      <ul className="text-sm leading-6 text-neutral-500">
+        {toc.map((section) => {
+          const _isActive = isActive(section);
+          return (
+            <Fragment key={section.slug}>
+              <li>
                 <a
-                  href="https://motif.land"
-                  className="subtle-underline"
-                  target="_blank"
-                  rel="noreferrer"
+                  href={`#${section.slug}`}
+                  className={cn('block py-1', {
+                    'text-neutral-300': _isActive,
+                    'hover:text-neutral-300': !_isActive,
+                  })}
                 >
-                  Motif
+                  {section.title}
                 </a>
-              </p>
-            </div>
-            <div className="relative w-full max-w-full overflow-hidden md:pl-72">
-              <div className="prose prose-invert max-w-full pt-32 pb-[600px] prose-headings:text-neutral-300 prose-h1:mt-12 prose-p:text-neutral-400 prose-a:text-neutral-400 prose-strong:text-neutral-300 prose-code:rounded prose-code:border prose-code:border-neutral-900 prose-code:bg-neutral-1000 prose-code:px-1 prose-code:py-0.5 prose-code:text-neutral-400 prose-li:text-neutral-400 prose-thead:border-neutral-800 prose-tr:border-neutral-900 sm:max-w-screen-md md:px-8">
-                {Markdoc.renderers.react(content, React, {
-                  components: {
-                    Collapse,
-                    CollapseGroup,
-                    Fence,
-                    Heading,
-                    Note,
-                    Playground: DocsPlayground,
-                  },
-                })}
-              </div>
-            </div>
-          </div>
-        </MarkdocContext.Provider>
-      </div>
+              </li>
+              {section.children?.map((subsection) => {
+                const _isActive = isActive(subsection);
+                return (
+                  <li className="ml-4" key={subsection.slug}>
+                    <a
+                      href={`#${subsection.slug}`}
+                      className={cn('group flex items-start py-1', {
+                        'text-neutral-300': _isActive,
+                        'dark:hover:text-slate-300': !_isActive,
+                      })}
+                    >
+                      {subsection.title}
+                    </a>
+                  </li>
+                );
+              })}
+            </Fragment>
+          );
+        })}
+      </ul>
     </>
+  );
+};
+
+type ProseContainer = {
+  children?: ReactNode;
+};
+
+export const ProseContainer: FC<ProseContainer> = ({ children }) => {
+  return (
+    <div className="prose prose-invert max-w-full prose-headings:text-neutral-300 prose-h1:mt-12 prose-p:text-neutral-400 prose-a:text-neutral-400 prose-strong:text-neutral-300 prose-code:rounded prose-code:border prose-code:border-neutral-900 prose-code:bg-neutral-1000 prose-code:px-1 prose-code:py-0.5 prose-code:text-neutral-400 prose-li:text-neutral-400 prose-thead:border-neutral-800 prose-tr:border-neutral-900 sm:max-w-screen-md md:px-8">
+      {children}
+    </div>
   );
 };

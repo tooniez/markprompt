@@ -428,3 +428,23 @@ export const createChecksum = (content: string) => {
 export const capitalize = (text: string) => {
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
+
+export const getMotifImageDimensionsFromUrl = (
+  url: string,
+): { width: number; height: number } | undefined => {
+  // Extracts the image dimensions from a URL when uploaded via Motif,
+  // which has the form:
+  // https://res.cloudinary.com/xxx/image/upload/v111/i1600x1068-yyy.png
+  const dimens = url
+    .split('/')
+    .slice(-1)[0]
+    ?.split('-')[0]
+    ?.replace(/^i/, '')
+    .split('x');
+
+  try {
+    return { width: parseInt(dimens?.[0]), height: parseInt(dimens?.[1]) };
+  } catch {
+    return undefined;
+  }
+};

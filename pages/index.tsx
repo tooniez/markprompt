@@ -15,8 +15,10 @@ export const getStaticProps: GetStaticProps = async () => {
   const res = await fetch(repo);
   const json = await res.json();
 
+  // Sometimes, the GitHub fetch call fails, so update the current star
+  // count value regularly, as a fallback
   return {
-    props: { stars: json.stargazers_count || 1 },
+    props: { stars: json.stargazers_count || 1600 },
     revalidate: 600,
   };
 };

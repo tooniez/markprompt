@@ -1,6 +1,5 @@
 import * as Slider from '@radix-ui/react-slider';
 import cn from 'classnames';
-import Head from 'next/head';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
 
