@@ -10,13 +10,13 @@ Markprompt is a platform for building GPT-powered prompts. It scans Markdown, Ma
 
 <p align="center">
   <a href="https://twitter.com/markprompt">
-    <img src="https://img.shields.io/twitter/follow/markprompt?style=flat&label=%40markprompt&logo=twitter&color=0bf&logoColor=fff" alt="Twitter" />
+    <img alt="Twitter" src="https://img.shields.io/twitter/follow/markprompt?style=flat&label=%40markprompt&logo=twitter&color=0bf&logoColor=fff" />
   </a>
   <a aria-label="NPM version" href="https://www.npmjs.com/package/markprompt">
-    <img alt="" src="https://badgen.net/npm/v/markprompt">
+    <img alt="NPM version" src="https://badgen.net/npm/v/markprompt">
   </a>
   <a aria-label="License" href="https://github.com/motifland/markprompt/blob/main/LICENSE">
-    <img alt="" src="https://badgen.net/npm/license/markprompt">
+    <img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg">
   </a>
 </p>
 
