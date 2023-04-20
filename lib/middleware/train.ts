@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { track } from '@vercel/analytics';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { Database } from '@/types/supabase';
@@ -78,6 +79,8 @@ export default async function TrainMiddleware(req: NextRequest) {
   if (!projectId) {
     return noProjectForTokenResponse;
   }
+
+  track('Train', { projectId });
 
   return NextResponse.rewrite(
     new URL(`/api/v1/openai/train/${projectId}`, req.url),
