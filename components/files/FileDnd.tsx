@@ -96,13 +96,12 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
       pickedFiles.length,
       (i) => {
         const file = pickedFiles[i];
-        const content = file.content;
         return {
           name: file.name,
           path: file.path,
         };
       },
-      (i) => pickedFiles[i].content,
+      async (i) => pickedFiles[i].content,
       () => {
         mutateFiles();
       },
