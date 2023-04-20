@@ -1,5 +1,6 @@
 import { ArchiveIcon } from '@radix-ui/react-icons';
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { track } from '@vercel/analytics';
 import {
   ErrorMessage,
   Field,
@@ -72,6 +73,7 @@ const ConnectButton: FC<ConnectButtonProps> = ({
       type="submit"
       loading={loading}
       onClick={async () => {
+        track('connect private repo', { projectId });
         setLoading(true);
         if (clearPrevious) {
           for (const source of sources) {
