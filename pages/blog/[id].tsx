@@ -27,7 +27,9 @@ const BlogPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
     <>
       <SharedHead
         title={`${frontmatter.title} | Markprompt Blog`}
-        coverUrl="https://markprompt.com/static/cover-docs.png"
+        coverUrl={
+          frontmatter.cover || 'https://markprompt.com/static/cover.png'
+        }
       />
       <BlogLayout
         content={JSON.parse(content)}
