@@ -15,8 +15,11 @@ import {
 } from 'unique-names-generator';
 
 import {
+  GitHubSourceDataType,
   HistogramStat,
+  MotifSourceDataType,
   OpenAIModelIdWithType,
+  Source,
   TimeInterval,
 } from '@/types/types';
 
@@ -446,5 +449,42 @@ export const getMotifImageDimensionsFromUrl = (
     return { width: parseInt(dimens?.[0]), height: parseInt(dimens?.[1]) };
   } catch {
     return undefined;
+  }
+};
+
+export const parseGitHubURL = (url: string) => {
+  const match = url.match(
+    /^https:\/\/github.com\/([a-zA-Z0-9\-_.]+)\/([a-zA-Z0-9\-_.]+)/,
+  );
+  if (match && match.length > 2) {
+    return { owner: match[1], repo: match[2] };
+  }
+  return undefined;
+};
+
+export const getGitHubOwnerRepoString = (url: string) => {
+  const info = parseGitHubURL(url);
+  if (!info?.owner && !info?.repo) {
+    return undefined;
+  }
+  return `${info.owner}/${info.repo}`;
+};
+
+export const getLabelForSource = (source: Source) => {
+  switch (source.type) {
+    case 'motif': {
+      const data = source.data as MotifSourceDataType;
+      return data.projectDomain;
+    }
+    case 'github': {
+      const data = source.data as GitHubSourceDataType;
+      return getGitHubOwnerRepoString(data.url);
+    }
+    case 'file-upload':
+      return 'File uploads';
+    case 'api-upload':
+      return 'API uploads';
+    default:
+      return 'Unknown source';
   }
 };

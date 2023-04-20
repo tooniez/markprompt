@@ -9,14 +9,14 @@ import {
   TrainingState,
   useTrainingContext,
 } from '@/lib/context/training';
-import { getOwnerRepoString, getRepositoryMDFilesInfo } from '@/lib/github';
 import useGitHub from '@/lib/hooks/integrations/use-github';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useProjects from '@/lib/hooks/use-projects';
 import useSources from '@/lib/hooks/use-sources';
+import { getRepositoryMDFilesInfo } from '@/lib/integrations/github.node';
 import { MarkpromptConfigType } from '@/lib/schema';
-import { pluralize } from '@/lib/utils';
+import { getGitHubOwnerRepoString, pluralize } from '@/lib/utils';
 import { ApiError, GitHubSourceDataType, Source } from '@/types/types';
 
 import { GitHubIcon } from '../icons/GitHub';
@@ -48,7 +48,8 @@ const getReadyMessage = (
         <div className="flex flex-col">
           <p>{pluralize(numFiles, 'file', 'files')} found</p>
           <p className="text-xs text-neutral-500">
-            Syncing {getOwnerRepoString((githubSource.data as any)['url'])}.{' '}
+            Syncing{' '}
+            {getGitHubOwnerRepoString((githubSource.data as any)['url'])}.{' '}
             <span
               className="subtle-underline cursor-pointer"
               onClick={onSelectOtherClick}
@@ -105,7 +106,7 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
       } catch (e) {
         setRepoAcessible(false);
         setError(
-          `The repository ${getOwnerRepoString(url)} is not accessible.`,
+          `The repository ${getGitHubOwnerRepoString(url)} is not accessible.`,
         );
       }
       setFetchingRepoInfo(false);

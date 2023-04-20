@@ -325,7 +325,7 @@ export default async function handler(req: NextRequest) {
     },
   });
 
-  console.log(`generate completions ${projectId}`);
+  console.info(`generate completions ${projectId}`);
   track(projectId, 'generate completions', { projectId });
 
   return new Response(stream);

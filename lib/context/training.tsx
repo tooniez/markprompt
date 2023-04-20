@@ -9,14 +9,24 @@ import {
   useState,
 } from 'react';
 
-import { FileData, Source } from '@/types/types';
+import {
+  FileData,
+  GitHubSourceDataType,
+  MotifSourceDataType,
+  Source,
+} from '@/types/types';
 
 import { processFile } from '../api';
-import { getGitHubMDFiles, getOwnerRepoString } from '../github';
 import useProject from '../hooks/use-project';
 import useSources from '../hooks/use-sources';
+import { getGitHubFiles } from '../integrations/github.node';
+import {
+  getMotifFileContent,
+  getMotifPublicFileMetadata,
+} from '../integrations/motif';
 import {
   createChecksum,
+  getGitHubOwnerRepoString,
   pluralize,
   shouldIncludeFileWithPath,
   truncate,
@@ -48,7 +58,7 @@ export type State = {
     sourceId: Source['id'],
     numFiles: number,
     getFileMeta: (index: number) => Pick<FileData, 'name' | 'path'>,
-    getFileContent: (index: number) => string,
+    getFileContent: (index: number) => Promise<string>,
     onFileProcessed?: () => void,
     forceRetrain?: boolean,
   ) => Promise<void>;
@@ -102,7 +112,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       sourceId: Source['id'],
       numFiles: number,
       getFileMeta: (index: number) => Pick<FileData, 'name' | 'path'>,
-      getFileContent: (index: number) => string,
+      getFileContent: (index: number) => Promise<string>,
       onFileProcessed?: () => void,
     ) => {
       if (!project?.id) {
@@ -149,7 +159,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           (c) => c.path === fileMeta.path,
         )?.checksum;
 
-        const content = getFileContent(i);
+        const content = await getFileContent(i);
         const currentChecksum = createChecksum(content);
 
         // Check the checksum (or SHA if GitHub file), and skip if equals.
@@ -181,46 +191,77 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
   const trainAllSources = useCallback(
     async (onFileProcessed: () => void, onError: (message: string) => void) => {
+      setState({ state: 'fetching_data' });
       for (const source of sources) {
         switch (source.type) {
           case 'github': {
-            setState({ state: 'fetching_data' });
-            const githubUrl = (source.data as any)?.['url'];
-
-            let mdFiles: FileData[] = [];
+            const data = source.data as GitHubSourceDataType;
             try {
-              mdFiles = await getGitHubMDFiles(
-                githubUrl,
+              const fileData = await getGitHubFiles(
+                data.url,
                 config.include || [],
                 config.exclude || [],
               );
+
+              await generateEmbeddings(
+                source.id,
+                fileData.length,
+                (i) => {
+                  const file = fileData[i];
+                  return {
+                    name: file.name,
+                    path: file.path,
+                  };
+                },
+                async (i) => fileData[i].content,
+                () => {
+                  onFileProcessed();
+                },
+              );
             } catch (e) {
-              const repoOwner = getOwnerRepoString(githubUrl);
+              const repoOwner = getGitHubOwnerRepoString(data.url);
               onError(`Error processing ${repoOwner}: ${e}`);
               break;
             }
-            await generateEmbeddings(
-              source.id,
-              mdFiles.length,
-              (i) => {
-                const file = mdFiles[i];
-                return {
-                  name: file.name,
-                  path: file.path,
-                };
-              },
-              (i) => mdFiles[i].content,
-              () => {
-                onFileProcessed();
-              },
-            );
             break;
           }
-          default:
+          case 'motif': {
+            const data = source.data as MotifSourceDataType;
+
+            try {
+              const filesMetadata = await getMotifPublicFileMetadata(
+                data.projectDomain,
+                config.include || [],
+                config.exclude || [],
+              );
+
+              await generateEmbeddings(
+                source.id,
+                filesMetadata.length,
+                (i) => {
+                  const metadata = filesMetadata[i];
+                  return {
+                    name: metadata.name,
+                    path: metadata.path,
+                  };
+                },
+                async (i) => getMotifFileContent(filesMetadata[i].id),
+                () => {
+                  onFileProcessed();
+                },
+              );
+            } catch (e) {
+              onError(`Error processing ${data.projectDomain}: ${e}`);
+              break;
+            }
+            break;
+          }
+          default: {
             // Skip. Note that file sources are trained at upload
             // time, and file content is not stored, so there's nothing
             // to train here in this situation.
             break;
+          }
         }
       }
       setState({ state: 'idle' });

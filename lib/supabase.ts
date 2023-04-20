@@ -127,7 +127,9 @@ export const getSource = async (
     case 'motif': {
       return sourcesOfType.find((s) => {
         const _data = s.data as MotifSourceDataType;
-        return _data.projectId && _data.projectId === data.projectId;
+        return (
+          _data.projectDomain && _data.projectDomain === data.projectDomain
+        );
       });
     }
   }
