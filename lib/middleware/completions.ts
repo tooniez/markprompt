@@ -160,7 +160,7 @@ export default async function CompletionsMiddleware(req: NextRequest) {
     );
   }
 
-  track(projectId, 'Completions', { projectId });
+  track(projectId, 'generate completions', { projectId });
 
   return NextResponse.rewrite(
     new URL(`/api/v1/openai/completions/${projectId}`, req.url),

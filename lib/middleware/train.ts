@@ -80,7 +80,7 @@ export default async function TrainMiddleware(req: NextRequest) {
     return noProjectForTokenResponse;
   }
 
-  track(projectId, 'Train', { projectId });
+  track(projectId, 'train', { projectId });
 
   return NextResponse.rewrite(
     new URL(`/api/v1/openai/train/${projectId}`, req.url),
