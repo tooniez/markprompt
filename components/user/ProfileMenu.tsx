@@ -63,7 +63,7 @@ const ProfileMenu = () => {
           <DropdownMenu.Item asChild>
             <a
               className="dropdown-menu-item dropdown-menu-item-noindent block"
-              href="/blog"
+              href="/blog/prompt"
               target="_blank"
               rel="noreferrer"
             >
