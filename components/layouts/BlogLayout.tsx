@@ -90,7 +90,7 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
                 (author: { name: string; avatar: string }) => {
                   return (
                     <div
-                      className="flex flex-row items-center justify-center gap-2"
+                      className="not-prose mt-4 mb-2 flex flex-row items-center justify-center gap-2"
                       key={author.name}
                     >
                       <CloudinaryImage
@@ -106,14 +106,16 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
                 },
               )}
             </div>
-            <p className="mt-0 text-center text-neutral-500">
-              {dayjs(frontmatter.date).format('LL')}
-            </p>
+            <div className="mb-8">
+              <p className="mt-0 text-center text-neutral-500">
+                {dayjs(frontmatter.date).format('LL')}
+              </p>
+            </div>
             {frontmatter?.cover && (
               <CloudinaryImage
                 src={frontmatter.cover}
                 alt={frontmatter.title || 'Cover image'}
-                className="rounded-lg border border-neutral-900"
+                className="w-full rounded-lg border border-neutral-900"
               />
             )}
             <div className="relative mx-auto w-full max-w-screen-md overflow-hidden">
