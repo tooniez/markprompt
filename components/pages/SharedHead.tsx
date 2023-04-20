@@ -3,10 +3,15 @@ import { FC } from 'react';
 
 type SharedHeadProps = {
   title: string;
+  description?: string;
   coverUrl?: string;
 };
 
-export const SharedHead: FC<SharedHeadProps> = ({ title, coverUrl }) => {
+export const SharedHead: FC<SharedHeadProps> = ({
+  title,
+  description,
+  coverUrl,
+}) => {
   const ogImage = coverUrl ?? 'https://markprompt.com/static/cover.png';
   return (
     <Head>
@@ -14,12 +19,18 @@ export const SharedHead: FC<SharedHeadProps> = ({ title, coverUrl }) => {
       <meta property="og:title" content="Markprompt" />
       <meta
         name="description"
-        content="Open-source GPT-4 platform for Markdown, Markdoc and MDX with built-in analytics"
+        content={
+          description ||
+          'Open-source GPT-4 platform for Markdown, Markdoc and MDX with built-in analytics'
+        }
         key="desc"
       />
       <meta
         property="og:description"
-        content="Open-source GPT-4 platform for Markdown, Markdoc and MDX with built-in analytics"
+        content={
+          description ||
+          'Open-source GPT-4 platform for Markdown, Markdoc and MDX with built-in analytics'
+        }
       />
 
       <meta property="og:url" content="https://markprompt.com/" />
@@ -33,7 +44,10 @@ export const SharedHead: FC<SharedHeadProps> = ({ title, coverUrl }) => {
       <meta name="twitter:title" content={title} />
       <meta
         name="twitter:description"
-        content="Open-source GPT-4 platform for Markdown, Markdoc and MDX with built-in analytics"
+        content={
+          description ||
+          'Open-source GPT-4 platform for Markdown, Markdoc and MDX with built-in analytics'
+        }
       />
       <meta name="twitter:image" content={ogImage} />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
