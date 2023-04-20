@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
-import { track } from '@vercel/analytics';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { track } from '@/lib/posthog';
 import { Database } from '@/types/supabase';
 import { Project } from '@/types/types';
 
@@ -160,7 +160,7 @@ export default async function CompletionsMiddleware(req: NextRequest) {
     );
   }
 
-  track('Completions', { projectId });
+  track(projectId, 'Completions', { projectId });
 
   return NextResponse.rewrite(
     new URL(`/api/v1/openai/completions/${projectId}`, req.url),
