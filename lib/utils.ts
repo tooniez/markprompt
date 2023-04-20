@@ -391,7 +391,7 @@ const isSupportedExtension = (path: string) => {
   return /\.(md|mdx|mdoc|html|txt)$/.test(path);
 };
 
-const matchesGlobs = (path: string, globs: string[]) => {
+export const matchesGlobs = (path: string, globs: string[]) => {
   return globs.some((g) => minimatch(path, g));
 };
 

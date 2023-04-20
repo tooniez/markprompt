@@ -1,10 +1,13 @@
 import { createMiddlewareSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { matchesGlobs } from '../utils';
+
 const UNAUTHED_PATHS = [
   '/',
   '/docs',
   '/blog',
+  '/blog/**/*',
   '/login',
   '/signup',
   '/legal/terms',
@@ -22,7 +25,7 @@ export default async function AppMiddleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session?.user && !UNAUTHED_PATHS.includes(path)) {
+  if (!session?.user && !matchesGlobs(path, UNAUTHED_PATHS)) {
     return NextResponse.redirect(new URL('/login', req.url));
   } else if (session?.user && (path === '/login' || path === '/signup')) {
     return NextResponse.redirect(new URL('/', req.url));
