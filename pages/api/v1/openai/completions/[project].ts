@@ -17,6 +17,7 @@ import {
   STREAM_SEPARATOR,
 } from '@/lib/constants';
 import { createEmbedding, createModeration } from '@/lib/openai.edge';
+import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import { getBYOOpenAIKey } from '@/lib/supabase';
@@ -323,6 +324,8 @@ export default async function handler(req: NextRequest) {
       controller.close();
     },
   });
+
+  track(projectId, 'generate completions', { projectId });
 
   return new Response(stream);
 }
