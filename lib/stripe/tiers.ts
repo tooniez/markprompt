@@ -6,7 +6,7 @@ type Price = {
   };
 };
 
-export type Tier = 'free' | 'standard' | 'scale';
+export type Tier = 'hobby' | 'pro' | 'enterprise';
 
 export type PricedModel = 'gpt-4' | 'gpt-3.5-turbo' | 'byo';
 
@@ -30,6 +30,7 @@ export type TierPriceDetails = {
 
 export type TierDetails = {
   name: string;
+  enterprise?: boolean;
   description: string;
   items: string[];
   prices: TierPriceDetails[];
@@ -126,32 +127,39 @@ export const comparePlans = (
 };
 
 export const TIERS: Record<Tier, TierDetails> = {
-  free: {
-    name: 'Free',
-    description: 'For personal projects',
+  hobby: {
+    name: 'Hobby',
+    description: 'For personal and non-commercial projects',
     items: [
-      '100 indexed sections',
+      'Unlimited documents',
+      'Unlimited BYO completions',
+      '25 GPT-4 completions',
       'Public/private GitHub repos',
-      'Custom prompts',
     ],
     prices: [
       {
         name: 'Free',
         quota: {
-          'gpt-4': 20_000,
+          'gpt-4': 25_000,
           'gpt-3.5-turbo': 200_000,
           byo: -1,
         },
       },
     ],
   },
-  standard: {
-    name: 'Standard',
-    description: 'For startups',
-    items: ['Everything in Free, plus:', 'Basic analytics'],
+  pro: {
+    name: 'Pro',
+    description: 'For production',
+    items: [
+      'Everything in Hobby, plus:',
+      'Prompt templates',
+      'Model customization',
+      '1000 GPT-4 completions',
+      'Analytics (soon)',
+    ],
     prices: [
       {
-        name: 'Standard 1',
+        name: 'Pro',
         quota: {
           'gpt-4': 50_000,
           'gpt-3.5-turbo': 500_000,
@@ -159,171 +167,44 @@ export const TIERS: Record<Tier, TierDetails> = {
         },
         price: {
           monthly: {
-            amount: 10,
+            amount: 120,
             priceIds: {
-              test: 'price_1Mnpv4Cv3sM26vDeO9oKjBTc',
-              production: 'price_1MoqYtCv3sM26vDeO2GBGibc',
+              test: 'price_1N0TzLCv3sM26vDeQ7VxLKWP',
+              production: 'price_1N0U0ICv3sM26vDes1KHwQ4y',
             },
           },
           yearly: {
-            amount: 8,
-            priceIds: {
-              test: 'price_1Mnpv4Cv3sM26vDeBB1mMGVZ',
-              production: 'price_1MoqZwCv3sM26vDewYZ14NCI',
-            },
-          },
-        },
-      },
-      {
-        name: 'Standard 2',
-        quota: {
-          'gpt-4': 100_000,
-          'gpt-3.5-turbo': 1_000_000,
-          byo: 2_000_000,
-        },
-        price: {
-          monthly: {
-            amount: 20,
-            priceIds: {
-              test: 'price_1Mnpv5Cv3sM26vDeBjfggFdc',
-              production: 'price_1MoqalCv3sM26vDekNqn3nwe',
-            },
-          },
-          yearly: {
-            amount: 16,
-            priceIds: {
-              test: 'price_1Mnpv6Cv3sM26vDenakq1pdL',
-              production: 'price_1MoqamCv3sM26vDebp6DlgMK',
-            },
-          },
-        },
-      },
-      {
-        name: 'Standard 3',
-        quota: {
-          'gpt-4': 250_000,
-          'gpt-3.5-turbo': 2_500_000,
-          byo: 5_000_000,
-        },
-        price: {
-          monthly: {
-            amount: 50,
-            priceIds: {
-              test: 'price_1MoqdfCv3sM26vDetBr9rctJ',
-              production: 'price_1LodMEAlJJEpqkPVrMdRwaSk',
-            },
-          },
-          yearly: {
-            amount: 40,
-            priceIds: {
-              test: 'price_1Mnpv7Cv3sM26vDeZ4unDbvd',
-              production: 'price_1MoqdfCv3sM26vDedy1ZbwW5',
-            },
-          },
-        },
-      },
-      {
-        name: 'Standard 4',
-        quota: {
-          'gpt-4': 500_000,
-          'gpt-3.5-turbo': 5_000_000,
-          byo: 10_000_000,
-        },
-        price: {
-          monthly: {
             amount: 100,
             priceIds: {
-              test: 'price_1Mnpv7Cv3sM26vDeIBIJU1OW',
-              production: 'price_1MoqeDCv3sM26vDewbZJe6i0',
-            },
-          },
-          yearly: {
-            amount: 80,
-            priceIds: {
-              test: 'price_1Mnpv7Cv3sM26vDeNq06ALyL',
-              production: 'price_1MoqeDCv3sM26vDeQvhlQBQy',
+              test: 'price_1N0TzLCv3sM26vDeIwhDValY',
+              production: 'price_1N0U0ICv3sM26vDebBlSdU2k',
             },
           },
         },
       },
     ],
   },
-  scale: {
-    name: 'Scale',
-    description: 'For large projects',
+  enterprise: {
+    name: 'Enterprise',
+    enterprise: true,
+    description: 'For projects at scale',
     items: [
-      'Everything in Standard, plus:',
-      'Teams (soon)',
+      'Everything in Pro, plus:',
+      'Teams',
+      'Integrations',
+      'Unbranded prompts',
+      'Unlimited completions',
+      'Dedicated support',
+      'White glove onboarding',
       'Insights (soon)',
-      'Integrations (soon)',
     ],
     prices: [
       {
-        name: 'Scale 1',
+        name: 'Enterprise',
         quota: {
-          'gpt-4': 500_000,
-          'gpt-3.5-turbo': 5_000_000,
-          byo: 10_000_000,
-        },
-        price: {
-          yearly: {
-            amount: 100,
-            priceIds: {
-              test: 'price_1Mnpv8Cv3sM26vDeNYuTYqlR',
-              production: 'price_1MoqemCv3sM26vDeFKq8H8QC',
-            },
-          },
-        },
-      },
-      {
-        name: 'Scale 2',
-        quota: {
-          'gpt-4': 1_000_000,
-          'gpt-3.5-turbo': 10_000_000,
-          byo: 20_000_000,
-        },
-        price: {
-          yearly: {
-            amount: 200,
-            priceIds: {
-              test: 'price_1Mnpv9Cv3sM26vDeRVRSan1r',
-              production: 'price_1MoqfECv3sM26vDe3Kwz7qob',
-            },
-          },
-        },
-      },
-      {
-        name: 'Scale 3',
-        quota: {
-          'gpt-4': 2_500_000,
-          'gpt-3.5-turbo': 25_000_000,
-          byo: 50_000_000,
-        },
-        price: {
-          yearly: {
-            amount: 500,
-            priceIds: {
-              test: 'price_1Mnpv9Cv3sM26vDeiEpJ9IBk',
-              production: 'price_1MoqfVCv3sM26vDepAwi0YxP',
-            },
-          },
-        },
-      },
-      {
-        name: 'Scale 4',
-        quota: {
-          'gpt-4': 5_000_000,
-          'gpt-3.5-turbo': 50_000_000,
-          byo: 100_000_000,
-        },
-        price: {
-          yearly: {
-            amount: 1000,
-            priceIds: {
-              test: 'price_1MnpvACv3sM26vDeSCyB06Bd',
-              production: 'price_1MoqftCv3sM26vDew8LwEKUu',
-            },
-          },
+          'gpt-4': 25_000,
+          'gpt-3.5-turbo': 200_000,
+          byo: -1,
         },
       },
     ],

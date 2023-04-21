@@ -6,7 +6,6 @@ import { toast } from 'react-hot-toast';
 
 import { TeamSettingsLayout } from '@/components/layouts/TeamSettingsLayout';
 import Button from '@/components/ui/Button';
-import { Flashing } from '@/components/ui/Flashing';
 import { ListItem } from '@/components/ui/ListItem';
 import { Segment } from '@/components/ui/Segment';
 import { cancelSubscription } from '@/lib/api';
@@ -21,21 +20,27 @@ import {
   Tier,
   TIERS,
 } from '@/lib/stripe/tiers';
-import { formatNumQueries } from '@/lib/utils';
 
 const env =
   process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? 'production' : 'test';
 
 const PricingCard = ({
   tier,
-  model,
   isStandard,
   currentPriceId,
+  isEnterprisePlan,
+  customPrice,
+  cta,
+  ctaHref,
 }: {
   tier: Tier;
   model: PricedModel;
   isStandard?: boolean;
   currentPriceId?: string;
+  isEnterprisePlan?: boolean;
+  customPrice?: string;
+  cta?: string;
+  ctaHref?: string;
 }) => {
   const router = useRouter();
   const { team, mutate: mutateTeam } = useTeam();
@@ -76,12 +81,24 @@ const PricingCard = ({
       : undefined;
   const amount = priceIdsAndAmount?.amount || 0;
   const priceId = priceIdsAndAmount?.priceIds[env];
-  const isFree = amount === 0;
+  const isFree = amount === 0 && !tierDetails.enterprise;
 
-  const isCurrentPlan = priceId === currentPriceId;
+  let isCurrentPlan = false;
+  if (!currentPriceId) {
+    // Free and Enterprise do not have any price ids attached
+    if (isEnterprisePlan && tierDetails.enterprise) {
+      isCurrentPlan = true;
+    } else if (!tierDetails.enterprise) {
+      isCurrentPlan = priceId === undefined;
+    }
+  } else {
+    isCurrentPlan = priceId === currentPriceId;
+  }
 
   let buttonLabel = 'Upgrade';
-  if (isCurrentPlan) {
+  if (cta) {
+    buttonLabel = cta;
+  } else if (isCurrentPlan) {
     buttonLabel = 'Current plan';
   } else if (isFree) {
     buttonLabel = 'Downgrade';
@@ -156,12 +173,16 @@ const PricingCard = ({
         {tierDetails.prices && (
           <div className="relative flex w-full flex-col">
             <p className="text-3xl font-semibold text-neutral-300">
-              ${amount}
-              <span className="text-base font-normal text-neutral-700">
-                /month
-              </span>
+              {customPrice ?? (
+                <>
+                  ${amount}
+                  <span className="text-base font-normal text-neutral-700">
+                    /month
+                  </span>
+                </>
+              )}
             </p>
-            <Flashing active={quotaModels.findIndex((m) => m === model)}>
+            {/* <Flashing active={quotaModels.findIndex((m) => m === model)}>
               {quotaModels.map((model) => {
                 return (
                   <p
@@ -172,7 +193,7 @@ const PricingCard = ({
                   </p>
                 );
               })}
-            </Flashing>
+            </Flashing> */}
             {tierDetails.prices.length > 1 && (
               <Slider.Root
                 onValueChange={([p]) => {
@@ -195,7 +216,7 @@ const PricingCard = ({
           </div>
         )}
       </div>
-      <ul className="mt-16 mb-4 flex w-full flex-grow flex-col gap-1">
+      <ul className="mb-4 flex w-full flex-grow flex-col gap-1">
         {tierDetails.items.map((item, i) => {
           return (
             <ListItem
@@ -215,8 +236,9 @@ const PricingCard = ({
           buttonSize="sm"
           className="w-full"
           variant="plain"
+          href={ctaHref}
           onClick={async () => {
-            if (!team) {
+            if (!team || ctaHref) {
               return;
             }
             try {
@@ -302,8 +324,8 @@ const Team = () => {
       {team && (
         <>
           <div className="relative -mt-4 mb-8">
-            <div className="flex items-center gap-2">
-              {/* Transparent border-b to match baseline height of Segment */}
+            {/* Transparent border-b to match baseline height of Segment */}
+            {/* <div className="flex items-center gap-2">
               <p className="border-b border-transparent text-xs text-neutral-500">
                 Show quotas with
               </p>
@@ -320,7 +342,7 @@ const Team = () => {
                   );
                 }}
               />
-            </div>
+            </div> */}
             <p
               className={cn(
                 'absolute inset-x-0 -bottom-7 mt-4 transform text-xs text-neutral-600 transition duration-500',
@@ -335,20 +357,27 @@ const Team = () => {
           </div>
           <div className="-ml-8 grid w-[calc(100%+64px)] grid-cols-1 gap-4 sm:grid-cols-3">
             <PricingCard
-              tier="free"
+              tier="hobby"
               model={model}
               currentPriceId={team?.stripe_price_id || undefined}
+              isEnterprisePlan={!!team?.is_enterprise_plan}
+              customPrice="Free"
             />
             <PricingCard
-              tier="standard"
+              tier="pro"
               isStandard
               model={model}
               currentPriceId={team?.stripe_price_id || undefined}
+              isEnterprisePlan={!!team?.is_enterprise_plan}
             />
             <PricingCard
-              tier="scale"
+              tier="enterprise"
               model={model}
               currentPriceId={team?.stripe_price_id || undefined}
+              isEnterprisePlan={!!team?.is_enterprise_plan}
+              customPrice="Custom"
+              cta="Contact Sales"
+              ctaHref={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL!}`}
             />
           </div>
           <p

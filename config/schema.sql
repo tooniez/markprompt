@@ -18,6 +18,7 @@ create table public.teams (
   is_personal         boolean default false,
   stripe_customer_id  text,
   stripe_price_id     text,
+  is_enterprise_plan  boolean,
   billing_cycle_start timestamp with time zone,
   created_by          uuid references public.users not null
 );

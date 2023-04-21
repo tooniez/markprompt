@@ -96,7 +96,7 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
                       <CloudinaryImage
                         src={author.avatar}
                         alt={author.name || 'Avatar'}
-                        className="h-6 w-6 rounded-full"
+                        className="h-6 w-6 rounded-full object-cover"
                       />
                       <p className="flex justify-center text-neutral-500">
                         {author?.name}

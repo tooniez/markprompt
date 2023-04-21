@@ -297,7 +297,7 @@ const formatNumberK = (n: number) => {
 
 export const formatNumQueries = (quota: number) => {
   return quota === -1
-    ? 'Unlimited tokens'
+    ? 'Unlimited queries'
     : `Up to ${formatNumberK(quota)} tokens`;
 };
 

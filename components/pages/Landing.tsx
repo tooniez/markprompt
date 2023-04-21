@@ -68,18 +68,22 @@ const PricingCard = ({
   model,
   highlight,
   cta,
+  ctaHref,
+  customPrice,
 }: {
   tier: TierDetails;
   model: PricedModel;
   highlight?: boolean;
   cta: string;
+  ctaHref?: string;
+  customPrice?: string;
 }) => {
   const [priceStep, setPriceStep] = useState(0);
   const [showAnnual, setShowAnnual] = useState(true);
   const hasMonthlyOption =
     tier.prices && tier.prices?.some((p) => p.price?.monthly);
-  const quotas = tier.prices[priceStep].quota;
-  const quotaModels = Object.keys(quotas) as PricedModel[];
+  // const quotas = tier.prices[priceStep].quota;
+  // const quotaModels = Object.keys(quotas) as PricedModel[];
 
   return (
     <div
@@ -112,19 +116,23 @@ const PricingCard = ({
           </div>
         )}
       </div>
-      <div className="flex h-24 w-full items-center justify-center bg-neutral-900/0 px-4 sm:h-32 md:px-8">
+      <div className="flex h-20 w-full items-center justify-center bg-neutral-900/0 px-4 sm:h-24 md:px-8">
         {tier.prices && (
           <div className="relative -mt-4 flex w-full flex-col items-center">
-            <p className="text-[50px] font-semibold text-neutral-300 sm:text-[32px] md:text-[50px]">
-              $
-              {tier.prices[priceStep].price?.[
-                showAnnual || !hasMonthlyOption ? 'yearly' : 'monthly'
-              ]?.amount || 0}
-              <span className="text-base font-normal text-neutral-700">
-                /month
-              </span>
+            <p className="text-[44px] font-semibold text-neutral-300 sm:text-[32px] md:text-[44px]">
+              {customPrice ?? (
+                <>
+                  $
+                  {tier.prices[priceStep].price?.[
+                    showAnnual || !hasMonthlyOption ? 'yearly' : 'monthly'
+                  ]?.amount || 0}
+                  <span className="text-base font-normal text-neutral-700">
+                    /month
+                  </span>
+                </>
+              )}
             </p>
-            <Flashing active={quotaModels.findIndex((m) => m === model)}>
+            {/* <Flashing active={quotaModels.findIndex((m) => m === model)}>
               {quotaModels.map((model) => {
                 return (
                   <p
@@ -135,7 +143,7 @@ const PricingCard = ({
                   </p>
                 );
               })}
-            </Flashing>
+            </Flashing> */}
             <>
               {tier.prices.length > 1 && (
                 <Slider.Root
@@ -159,7 +167,7 @@ const PricingCard = ({
           </div>
         )}
       </div>
-      <ul className="mt-8 mb-4 flex w-full flex-grow flex-col gap-1 px-4 md:px-8">
+      <ul className="mb-4 flex w-full flex-grow flex-col gap-1 px-4 md:px-8">
         {tier.items.map((item, i) => {
           return (
             <ListItem variant="discreet" key={`pricing-${tier.name}-${i}`}>
@@ -172,7 +180,7 @@ const PricingCard = ({
         <Button
           className="w-full"
           variant={highlight ? 'fuchsia' : 'plain'}
-          href="/signup"
+          href={ctaHref ?? '/signup'}
         >
           {cta}
         </Button>
@@ -426,7 +434,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg dark:text-neutral-500">
             Start for free, no credit card required. Scale as you grow.
           </p>
-          <div className="relative mt-8">
+          {/* <div className="relative mt-8">
             <Segment
               items={modelNames}
               selected={model === 'gpt-4' ? 1 : model === 'byo' ? 2 : 0}
@@ -446,54 +454,28 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             >
               * BYO: Bring your own API key
             </p>
-          </div>
+          </div> */}
           <div className="relative mt-16 grid w-full max-w-screen-lg grid-cols-1 gap-4 sm:grid-cols-3 md:gap-8">
             <Blurs />
             <PricingCard
-              tier={TIERS.free}
-              cta="Get started with Free"
+              tier={TIERS.hobby}
+              cta="Get started with Hobby"
               model={model}
+              customPrice="Free"
             />
             <PricingCard
-              tier={TIERS.standard}
+              tier={TIERS.pro}
               highlight
-              cta="Get started with Standard"
+              cta="Get started with Pro"
               model={model}
             />
             <PricingCard
-              tier={TIERS.scale}
-              cta="Get started with Scale"
+              tier={TIERS.enterprise}
+              cta="Contact Sales"
+              ctaHref={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL!}`}
               model={model}
+              customPrice="Custom"
             />
-          </div>
-          <div className="mt-20 grid w-full max-w-screen-sm grid-cols-2 overflow-hidden rounded-lg border border-neutral-900 bg-black/50 py-12 shadow-2xl backdrop-blur">
-            <PatternDimmedSky />
-            <div className="flex flex-col gap-4">
-              <h2 className="flex-none px-4 text-3xl font-semibold text-neutral-300 md:px-8">
-                Enterprise
-              </h2>
-              <div className="relative flex w-full flex-col px-4 md:px-8">
-                <p className="mt-0 text-lg dark:text-neutral-500">
-                  For custom needs
-                </p>
-              </div>
-              <ul className="mt-2 mb-4 flex w-full flex-grow flex-col gap-1 px-4 md:px-8">
-                <ListItem variant="discreet">Dedicated support</ListItem>
-                <ListItem variant="discreet">Custom integrations</ListItem>
-                <ListItem variant="discreet">Whiteglove onboarding</ListItem>
-              </ul>
-            </div>
-            <div className="flex h-full w-full items-center justify-end px-4 md:px-8">
-              <div className="w-full">
-                <Button
-                  className="w-full"
-                  variant="plain"
-                  href="mailto:sales@markprompt.com"
-                >
-                  Contact Sales
-                </Button>
-              </div>
-            </div>
           </div>
         </div>
         <div className="flex flex-col items-center">

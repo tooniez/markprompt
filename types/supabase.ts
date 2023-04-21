@@ -58,7 +58,7 @@ export interface Database {
           id: number
           meta: Json | null
           path: string
-          project_id_old: string
+          project_id: string | null
           source_id: string | null
           updated_at: string
         }
@@ -67,7 +67,7 @@ export interface Database {
           id?: number
           meta?: Json | null
           path: string
-          project_id_old: string
+          project_id?: string | null
           source_id?: string | null
           updated_at?: string
         }
@@ -76,7 +76,7 @@ export interface Database {
           id?: number
           meta?: Json | null
           path?: string
-          project_id_old?: string
+          project_id?: string | null
           source_id?: string | null
           updated_at?: string
         }
@@ -177,6 +177,7 @@ export interface Database {
           created_by: string
           id: string
           inserted_at: string
+          is_enterprise_plan: boolean | null
           is_personal: boolean | null
           name: string | null
           slug: string
@@ -188,6 +189,7 @@ export interface Database {
           created_by: string
           id?: string
           inserted_at?: string
+          is_enterprise_plan?: boolean | null
           is_personal?: boolean | null
           name?: string | null
           slug: string
@@ -199,6 +201,7 @@ export interface Database {
           created_by?: string
           id?: string
           inserted_at?: string
+          is_enterprise_plan?: boolean | null
           is_personal?: boolean | null
           name?: string | null
           slug?: string
