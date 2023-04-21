@@ -5,6 +5,7 @@ import {
   DoubleArrowUpIcon,
   UploadIcon,
 } from '@radix-ui/react-icons';
+import * as Tooltip from '@radix-ui/react-tooltip';
 import {
   SortingState,
   createColumnHelper,
@@ -297,7 +298,21 @@ const Data = () => {
       columnHelper.accessor((row) => row.path, {
         id: 'path',
         header: () => <span>Path</span>,
-        cell: (info) => getBasePath(info.getValue()),
+        cell: (info) => (
+          <Tooltip.Provider>
+            <Tooltip.Root>
+              <Tooltip.Trigger className="cursor-default">
+                {getBasePath(info.getValue())}
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content className="tooltip-content" sideOffset={5}>
+                  {getBasePath(info.getValue())}
+                  <Tooltip.Arrow className="tooltip-arrow" />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+          </Tooltip.Provider>
+        ),
         footer: (info) => info.column.id,
       }),
       columnHelper.accessor((row) => row.updated_at, {
@@ -644,7 +659,6 @@ const Data = () => {
           </div>
         )}
       </div>
-
       <Dialog.Root open={fileDialogOpen} onOpenChange={setFileDialogOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />

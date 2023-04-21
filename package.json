@@ -34,6 +34,7 @@
     "@radix-ui/react-slider": "^1.1.1",
     "@radix-ui/react-switch": "^1.0.2",
     "@radix-ui/react-toggle-group": "^1.0.3",
+    "@radix-ui/react-tooltip": "^1.0.5",
     "@reach/rect": "^0.18.0",
     "@sindresorhus/slugify": "^2.2.0",
     "@stripe/stripe-js": "^1.49.0",
