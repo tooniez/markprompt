@@ -79,22 +79,18 @@ const getChunkText = (response: any, model: OpenAIModelIdWithType) => {
   }
 };
 
-const getCompletionsResponse = (
+const getCompletionsResponseText = (
   response: any,
   model: OpenAIModelIdWithType,
 ) => {
-  let text = '';
   switch (model.type) {
     case 'chat_completions': {
-      text = response.choices[0].message.content;
-      break;
+      return response.choices[0].message.content;
     }
     default: {
-      text = response.choices[0].text;
-      break;
+      return response.choices[0].text;
     }
   }
-  return { text };
 };
 
 // Admin access to Supabase, bypassing RLS.
@@ -310,7 +306,8 @@ export default async function handler(req: NextRequest) {
       const json = await res.json();
       // TODO: track token count
       // const tokens = json.usage.total_tokens
-      return new Response(JSON.stringify(getCompletionsResponse(json, model)), {
+      const text = getCompletionsResponseText(json, model);
+      return new Response(JSON.stringify({ text, references }), {
         status: 200,
       });
     }
