@@ -9,18 +9,9 @@ import { ApiError, FileData, OAuthToken, PathContentData } from '@/types/types';
 import {
   decompress,
   getNameFromPath,
+  parseGitHubURL,
   shouldIncludeFileWithPath,
-} from './utils';
-
-const parseGitHubURL = (url: string) => {
-  const match = url.match(
-    /^https:\/\/github.com\/([a-zA-Z0-9\-_.]+)\/([a-zA-Z0-9\-_.]+)/,
-  );
-  if (match && match.length > 2) {
-    return { owner: match[1], repo: match[2] };
-  }
-  return undefined;
-};
+} from '../utils';
 
 export const isGitHubRepoAccessible = async (
   url: string,
@@ -79,14 +70,6 @@ const getTree = async (owner: string, repo: string, octokit: Octokit) => {
   );
 
   return tree.data.tree;
-};
-
-export const getOwnerRepoString = (url: string) => {
-  const info = parseGitHubURL(url);
-  if (!info?.owner && !info?.repo) {
-    return undefined;
-  }
-  return `${info.owner}/${info.repo}`;
 };
 
 export const getRepositoryMDFilesInfo = async (
@@ -156,7 +139,7 @@ const paginatedFetchRepo = async (
   return JSON.parse(decompress(Buffer.from(ab)));
 };
 
-export const getGitHubMDFiles = async (
+export const getGitHubFiles = async (
   url: string,
   includeGlobs: string[],
   excludeGlobs: string[],

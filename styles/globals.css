@@ -42,7 +42,19 @@ textarea {
 }
 
 .input-base {
-  @apply flex appearance-none rounded-md border border-neutral-800  bg-neutral-900 text-neutral-100 transition duration-200 placeholder:text-neutral-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-white/50;
+  @apply flex appearance-none rounded-md border bg-neutral-900 text-neutral-100 transition duration-200 placeholder:text-neutral-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-white/50;
+}
+
+.input-base-noborder {
+  @apply border-transparent;
+}
+
+.input-base-border {
+  @apply border-neutral-800;
+}
+
+.input-wrapper {
+  @apply rounded-md border border-neutral-800  bg-neutral-900;
 }
 
 .gradient-heading {

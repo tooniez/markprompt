@@ -3,7 +3,7 @@ import JSZip from 'jszip';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Octokit } from 'octokit';
 
-import { getOrRefreshAccessToken } from '@/lib/github';
+import { getOrRefreshAccessToken } from '@/lib/integrations/github.node';
 import { compress, shouldIncludeFileWithPath } from '@/lib/utils';
 import { Database } from '@/types/supabase';
 import { OAuthToken, PathContentData } from '@/types/types';

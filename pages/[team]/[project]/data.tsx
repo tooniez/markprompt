@@ -37,25 +37,28 @@ import {
   getTrainingStateMessage,
   useTrainingContext,
 } from '@/lib/context/training';
-import { getOwnerRepoString } from '@/lib/github';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
-import { pluralize, truncate } from '@/lib/utils';
-import {
-  GitHubSourceDataType,
-  MotifSourceDataType,
-  Project,
-  Source,
-  SourceType,
-} from '@/types/types';
+import { getLabelForSource, pluralize, truncate } from '@/lib/utils';
+import { Project, Source, SourceType } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
-const GitHub = dynamic(() => import('@/components/dialogs/sources/GitHub'), {
-  loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
-});
+const GitHubSource = dynamic(
+  () => import('@/components/dialogs/sources/GitHub'),
+  {
+    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
+  },
+);
+
+const MotifSource = dynamic(
+  () => import('@/components/dialogs/sources/Motif'),
+  {
+    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
+  },
+);
 
 const getBasePath = (pathWithFile: string) => {
   if (!pathWithFile.includes('/')) {
@@ -141,25 +144,6 @@ export const getIconForSource = (sourceType: SourceType) => {
       return DoubleArrowUpIcon;
     default:
       return GitHubIcon;
-  }
-};
-
-export const getLabelForSource = (source: Source) => {
-  switch (source.type) {
-    case 'motif': {
-      const data = source.data as MotifSourceDataType;
-      return data.name;
-    }
-    case 'github': {
-      const data = source.data as GitHubSourceDataType;
-      return getOwnerRepoString(data.url);
-    }
-    case 'file-upload':
-      return 'File uploads';
-    case 'api-upload':
-      return 'API uploads';
-    default:
-      return 'Unknown source';
   }
 };
 
@@ -267,6 +251,7 @@ const Data = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [fileDialogOpen, setFileDialogOpen] = useState(false);
   const [githubDialogOpen, setGithubDialogOpen] = useState(false);
+  const [motifDialogOpen, setMotifDialogOpen] = useState(false);
   const [sourceToRemove, setSourceToRemove] = useState<Source | undefined>(
     undefined,
   );
@@ -458,7 +443,7 @@ const Data = () => {
               onOpenChange={setGithubDialogOpen}
             >
               <Dialog.Trigger asChild>
-                <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
+                <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
                   <GitHubIcon className="h-4 w-4 flex-none" />
                   <span className="truncate">Connect GitHub repo</span>
                 </button>
@@ -469,7 +454,7 @@ const Data = () => {
                   <Dialog.Title className="dialog-title flex-none">
                     Connect GitHub repo
                   </Dialog.Title>
-                  <Dialog.Description className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
+                  <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
                     <p>
                       Sync files from a GitHub repo. You can specify which files
                       to include and exclude from the repository in the{' '}
@@ -493,9 +478,9 @@ const Data = () => {
                       </a>
                       .
                     </p>
-                  </Dialog.Description>
+                  </div>
                   <div className="flex-grow">
-                    <GitHub
+                    <GitHubSource
                       onDidRequestClose={() => {
                         setGithubDialogOpen(false);
                       }}
@@ -504,12 +489,48 @@ const Data = () => {
                 </Dialog.Content>
               </Dialog.Portal>
             </Dialog.Root>
-            {/* <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
-              <MotifIcon className="h-4 w-4 flex-none" />
-              <span className="truncate">Connect Motif project</span>
-            </button> */}
+            <Dialog.Root
+              open={motifDialogOpen}
+              onOpenChange={setMotifDialogOpen}
+            >
+              <Dialog.Trigger asChild>
+                <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
+                  <MotifIcon className="h-4 w-4 flex-none" />
+                  <span className="truncate">Connect Motif project</span>
+                </button>
+              </Dialog.Trigger>
+              <Dialog.Portal>
+                <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
+                <Dialog.Content className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[500px] flex-col border">
+                  <Dialog.Title className="dialog-title flex-none">
+                    Connect Motif project
+                  </Dialog.Title>
+                  <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
+                    <p>
+                      Sync all public pages from your Motif project. You can
+                      specify which files to include and exclude from the
+                      repository in the{' '}
+                      <Link
+                        className="subtle-underline"
+                        href={`/${team?.slug}/${project?.slug}/settings`}
+                      >
+                        project configuration
+                      </Link>
+                      .
+                    </p>
+                  </div>
+                  <div className="flex-grow">
+                    <MotifSource
+                      onDidRequestClose={() => {
+                        setMotifDialogOpen(false);
+                      }}
+                    />
+                  </div>
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
             <button
-              className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 transition hover:text-neutral-400"
+              className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400"
               onClick={() => setFileDialogOpen(true)}
             >
               <UploadIcon className="h-4 w-4 flex-none" />

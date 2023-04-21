@@ -18,14 +18,14 @@ import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
 import { addSource, deleteSource } from '@/lib/api';
-import { isGitHubRepoAccessible } from '@/lib/github';
 import useGitHub from '@/lib/hooks/integrations/use-github';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useUser from '@/lib/hooks/use-user';
 import useOAuth from '@/lib/hooks/utils/use-oauth';
+import { isGitHubRepoAccessible } from '@/lib/integrations/github.node';
 import { setGitHubAuthState } from '@/lib/supabase';
-import { getLabelForSource } from '@/pages/[team]/[project]/data';
+import { getLabelForSource } from '@/lib/utils';
 import { GitHubRepository, Project } from '@/types/types';
 
 const _addSource = async (
@@ -90,12 +90,15 @@ const ConnectButton: FC<ConnectButtonProps> = ({
   );
 };
 
-type GitHubProps = {
+type GitHubSourceProps = {
   clearPrevious?: boolean;
   onDidRequestClose: () => void;
 };
 
-const GitHub: FC<GitHubProps> = ({ clearPrevious, onDidRequestClose }) => {
+const GitHubSource: FC<GitHubSourceProps> = ({
+  clearPrevious,
+  onDidRequestClose,
+}) => {
   const { project } = useProject();
   const { user } = useUser();
   const { sources, mutate } = useSources();
@@ -268,4 +271,4 @@ const GitHub: FC<GitHubProps> = ({ clearPrevious, onDidRequestClose }) => {
   );
 };
 
-export default GitHub;
+export default GitHubSource;

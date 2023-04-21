@@ -1,7 +1,10 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getJWT, getOrRefreshAccessToken } from '@/lib/github';
+import {
+  getJWT,
+  getOrRefreshAccessToken,
+} from '@/lib/integrations/github.node';
 import { Database } from '@/types/supabase';
 
 type Data =
