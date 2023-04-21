@@ -255,7 +255,9 @@ const Data = () => {
   const [sourceToRemove, setSourceToRemove] = useState<Source | undefined>(
     undefined,
   );
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'path', desc: false },
+  ]);
 
   const columnHelper = createColumnHelper<{
     path: string;
@@ -266,6 +268,7 @@ const Data = () => {
     () => [
       columnHelper.accessor((row) => row.path, {
         id: 'select',
+        enableSorting: false,
         header: ({ table }) => (
           <Checkbox
             checked={table.getIsAllRowsSelected()}
@@ -326,6 +329,7 @@ const Data = () => {
   return (
     <ProjectSettingsLayout
       title="Data"
+      width="xl"
       RightHeading={() => (
         <div className="flex w-full items-center gap-4">
           <div className="flex-grow" />
@@ -417,8 +421,8 @@ const Data = () => {
         </div>
       )}
     >
-      <div className="grid grid-cols-4 gap-8">
-        <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-1 gap-8 sm:grid-cols-4">
+        <div className="flex w-full flex-col gap-2">
           {sources.length > 0 && (
             <>
               <p className="text-xs font-medium text-neutral-500">Sources</p>
@@ -539,7 +543,7 @@ const Data = () => {
           </div>
         </div>
         {!loadingFiles && !hasFiles && (
-          <div className="col-span-3 h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100">
+          <div className="h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100 sm:col-span-3">
             <FileDnd
               onTrainingComplete={() => {
                 toast.success('Processing complete');
@@ -551,8 +555,14 @@ const Data = () => {
           </div>
         )}
         {hasFiles && (
-          <div className="col-span-3">
-            <table className="w-full border-collapse">
+          <div className="sm:col-span-3">
+            <table className="w-full max-w-full table-fixed border-collapse">
+              <colgroup>
+                <col className="w-[32px]" />
+                <col className="w-[calc(75%-172px)]" />
+                <col className="w-[25%]" />
+                <col className="w-[140px]" />
+              </colgroup>
               <thead>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr
@@ -564,10 +574,7 @@ const Data = () => {
                         <th
                           key={header.id}
                           colSpan={header.colSpan}
-                          className={cn(
-                            'cursor-pointer py-2 px-2 text-left text-sm text-neutral-300',
-                            {},
-                          )}
+                          className="cursor-pointer py-2 px-2 text-left text-sm text-neutral-300"
                           onClick={header.column.getToggleSortingHandler()}
                         >
                           {header.isPlaceholder ? null : (
@@ -611,8 +618,10 @@ const Data = () => {
                         return (
                           <td
                             key={cell.id}
+                            style={{
+                              width: 100,
+                            }}
                             className={cn('py-2 px-2 text-sm', {
-                              'w-8': cell.column.id === 'select',
                               'truncate font-medium text-neutral-300':
                                 cell.column.id === 'name',
                               'max-w-[100px] truncate text-neutral-500':
