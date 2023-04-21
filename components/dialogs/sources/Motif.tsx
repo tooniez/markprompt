@@ -1,3 +1,4 @@
+import { track } from '@vercel/analytics';
 import {
   ErrorMessage,
   Field,
@@ -88,6 +89,7 @@ const MotifSource: FC<MotifSourceProps> = ({
               await deleteSource(project.id, source.id);
             }
           }
+          track('connect motif project');
           await _addSource(project.id, projectDomain, mutate);
           setSubmitting(false);
           onDidRequestClose();

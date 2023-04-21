@@ -15,6 +15,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import { track } from '@vercel/analytics';
 import cn from 'classnames';
 import dayjs from 'dayjs';
 // Cf. https://github.com/iamkun/dayjs/issues/297#issuecomment-1202327426
@@ -301,8 +302,10 @@ const Data = () => {
         cell: (info) => (
           <Tooltip.Provider>
             <Tooltip.Root>
-              <Tooltip.Trigger className="cursor-default">
-                {getBasePath(info.getValue())}
+              <Tooltip.Trigger asChild>
+                <div className="cursor-default truncate">
+                  {getBasePath(info.getValue())}
+                </div>
               </Tooltip.Trigger>
               <Tooltip.Portal>
                 <Tooltip.Content className="tooltip-content" sideOffset={5}>
@@ -417,6 +420,7 @@ const Data = () => {
                 variant="cta"
                 buttonSize="sm"
                 onClick={async () => {
+                  track('start training');
                   await trainAllSources(
                     () => {
                       mutateFiles();
@@ -574,8 +578,8 @@ const Data = () => {
             <table className="w-full max-w-full table-fixed border-collapse">
               <colgroup>
                 <col className="w-[32px]" />
-                <col className="w-[calc(75%-172px)]" />
-                <col className="w-[25%]" />
+                <col className="w-[calc(65%-172px)]" />
+                <col className="w-[35%]" />
                 <col className="w-[140px]" />
               </colgroup>
               <thead>
@@ -636,13 +640,16 @@ const Data = () => {
                             style={{
                               width: 100,
                             }}
-                            className={cn('py-2 px-2 text-sm', {
-                              'truncate font-medium text-neutral-300':
-                                cell.column.id === 'name',
-                              'max-w-[100px] truncate text-neutral-500':
-                                cell.column.id === 'path' ||
-                                cell.column.id === 'updated',
-                            })}
+                            className={cn(
+                              'overflow-hidden truncate text-ellipsis whitespace-nowrap py-2 px-2 text-sm',
+                              {
+                                'font-medium text-neutral-300':
+                                  cell.column.id === 'name',
+                                'text-neutral-500':
+                                  cell.column.id === 'path' ||
+                                  cell.column.id === 'updated',
+                              },
+                            )}
                           >
                             {flexRender(
                               cell.column.columnDef.cell,
