@@ -6,7 +6,7 @@ import {
   FormikErrors,
   FormikValues,
 } from 'formik';
-import { FC } from 'react';
+import { ChangeEvent, FC, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import Button from '@/components/ui/Button';
@@ -56,6 +56,7 @@ const MotifSource: FC<MotifSourceProps> = ({
   const { project } = useProject();
   const { user } = useUser();
   const { sources, mutate } = useSources();
+  const [projectDomain, setProjectDomain] = useState('');
 
   if (!user) {
     return <></>;
@@ -66,14 +67,12 @@ const MotifSource: FC<MotifSourceProps> = ({
       <Formik
         initialValues={{ projectDomain: '' }}
         validateOnBlur
-        onSubmit={async (values, { setSubmitting, setErrors }) => {
-          if (!project || !values.projectDomain) {
+        onSubmit={async (_values, { setSubmitting, setErrors }) => {
+          if (!project || !projectDomain) {
             return;
           }
 
-          const isAccessible = await isMotifProjectAccessible(
-            values.projectDomain,
-          );
+          const isAccessible = await isMotifProjectAccessible(projectDomain);
 
           if (!isAccessible) {
             const errors: FormikErrors<FormikValues> = {
@@ -89,7 +88,7 @@ const MotifSource: FC<MotifSourceProps> = ({
               await deleteSource(project.id, source.id);
             }
           }
-          await _addSource(project.id, values.projectDomain, mutate);
+          await _addSource(project.id, projectDomain, mutate);
           setSubmitting(false);
           onDidRequestClose();
         }}
@@ -110,21 +109,23 @@ const MotifSource: FC<MotifSourceProps> = ({
                     as={NoAutoInput}
                     disabled={isSubmitting}
                     rightLabel=".motif.land"
+                    value={projectDomain}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                      setProjectDomain(event.target.value);
+                    }}
                     onPaste={(event: ClipboardEvent) => {
                       event.preventDefault();
 
                       const pastedText = event.clipboardData?.getData('text');
-                      let projectDomain = pastedText || '';
+                      let newValue = pastedText || '';
                       if (pastedText) {
                         const _projectDomain = extractProjectDomain(pastedText);
                         if (_projectDomain) {
-                          projectDomain = _projectDomain;
+                          newValue = _projectDomain;
                         }
                       }
 
-                      if (event.target) {
-                        (event.target as any).value = projectDomain;
-                      }
+                      setProjectDomain(newValue);
                     }}
                   />
                   <Button

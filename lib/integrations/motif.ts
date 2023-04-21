@@ -46,7 +46,6 @@ export const getMotifFileContent = async (id: string): Promise<string> => {
 export const extractProjectDomain = (url: string) => {
   // eslint-disable-next-line no-useless-escape
   const match = url.match(/^(https?:\/\/)?([^\/.]+)\.\w+\.\w+(?:\/|$)*/);
-  console.log('match', JSON.stringify(match, null, 2));
   if (match && match.length > 2) {
     return match[2];
   }
