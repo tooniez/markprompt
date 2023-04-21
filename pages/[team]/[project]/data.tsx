@@ -308,9 +308,8 @@ const Data = () => {
                 </div>
               </Tooltip.Trigger>
               <Tooltip.Portal>
-                <Tooltip.Content className="tooltip-content" sideOffset={5}>
+                <Tooltip.Content className="tooltip-content">
                   {getBasePath(info.getValue())}
-                  <Tooltip.Arrow className="tooltip-arrow" />
                 </Tooltip.Content>
               </Tooltip.Portal>
             </Tooltip.Root>
