@@ -29,7 +29,11 @@ export const config = {
   runtime: 'edge',
 };
 
-const getPayload = (prompt: string, model: OpenAIModelIdWithType) => {
+const getPayload = (
+  prompt: string,
+  model: OpenAIModelIdWithType,
+  stream: boolean,
+) => {
   const payload = {
     model: model.value,
     temperature: 0.1,
@@ -37,7 +41,7 @@ const getPayload = (prompt: string, model: OpenAIModelIdWithType) => {
     frequency_penalty: 0,
     presence_penalty: 0,
     max_tokens: 500,
-    stream: true,
+    stream,
     n: 1,
   };
   switch (model.type) {
@@ -53,10 +57,35 @@ const getPayload = (prompt: string, model: OpenAIModelIdWithType) => {
   }
 };
 
+const getCompletionsUrl = (model: OpenAIModelIdWithType) => {
+  switch (model.type) {
+    case 'chat_completions': {
+      return 'https://api.openai.com/v1/chat/completions';
+    }
+    default: {
+      return 'https://api.openai.com/v1/completions';
+    }
+  }
+};
+
 const getChunkText = (response: any, model: OpenAIModelIdWithType) => {
   switch (model.type) {
     case 'chat_completions': {
       return response.choices[0].delta.content;
+    }
+    default: {
+      return response.choices[0].text;
+    }
+  }
+};
+
+const getCompletionsResponse = (
+  response: any,
+  model: OpenAIModelIdWithType,
+) => {
+  switch (model.type) {
+    case 'chat_completions': {
+      return response.choices[0].message.content;
     }
     default: {
       return response.choices[0].text;
@@ -87,6 +116,10 @@ export default async function handler(req: NextRequest) {
     (params.i_dont_know_message as string) || // v1
     (params.iDontKnowMessage as string) || // v0
     I_DONT_KNOW;
+  let stream = true;
+  if (params.stream === false) {
+    stream = false;
+  }
 
   const { pathname, searchParams } = new URL(req.url);
 
@@ -211,6 +244,9 @@ export default async function handler(req: NextRequest) {
     });
   }
 
+  console.info(`generate completions ${projectId}`);
+  track(projectId, 'generate completions', { projectId });
+
   // const { completionsTokensCount } = await getTokenCountsForProject(projectId);
 
   // const maxTokenLimit = 500000;
@@ -245,19 +281,10 @@ export default async function handler(req: NextRequest) {
       .replace('{{PROMPT}}', sanitizedQuery),
   );
 
-  const payload = getPayload(fullPrompt, model);
+  const payload = getPayload(fullPrompt, model, stream);
+  const url = getCompletionsUrl(model);
 
-  const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
-
-  let counter = 0;
-
-  // All the text associated with this query, to estimate token
-  // count.
-  let allText = fullPrompt;
-  let didSendHeader = false;
-
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+  const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${
@@ -268,7 +295,32 @@ export default async function handler(req: NextRequest) {
     body: JSON.stringify(payload),
   });
 
-  const stream = new ReadableStream({
+  if (!stream) {
+    if (!res.ok) {
+      const message = await res.text();
+      return new Response(
+        `Unable to retrieve completions response: ${message}`,
+        { status: 400 },
+      );
+    } else {
+      const json = await res.json();
+      // TODO: track token count
+      // const tokens = json.usage.total_tokens
+      return new Response(getCompletionsResponse(json, model));
+    }
+  }
+
+  let counter = 0;
+
+  // All the text associated with this query, to estimate token
+  // count.
+  let allText = fullPrompt;
+  let didSendHeader = false;
+
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+
+  const readableStream = new ReadableStream({
     async start(controller) {
       function onParse(event: ParsedEvent | ReconnectInterval) {
         if (event.type === 'event') {
@@ -325,8 +377,5 @@ export default async function handler(req: NextRequest) {
     },
   });
 
-  console.info(`generate completions ${projectId}`);
-  track(projectId, 'generate completions', { projectId });
-
-  return new Response(stream);
+  return new Response(readableStream);
 }
