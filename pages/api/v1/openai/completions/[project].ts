@@ -83,14 +83,18 @@ const getCompletionsResponse = (
   response: any,
   model: OpenAIModelIdWithType,
 ) => {
+  let text = '';
   switch (model.type) {
     case 'chat_completions': {
-      return response.choices[0].message.content;
+      text = response.choices[0].message.content;
+      break;
     }
     default: {
-      return response.choices[0].text;
+      text = response.choices[0].text;
+      break;
     }
   }
+  return { text };
 };
 
 // Admin access to Supabase, bypassing RLS.
@@ -306,7 +310,9 @@ export default async function handler(req: NextRequest) {
       const json = await res.json();
       // TODO: track token count
       // const tokens = json.usage.total_tokens
-      return new Response(getCompletionsResponse(json, model));
+      return new Response(JSON.stringify(getCompletionsResponse(json, model)), {
+        status: 200,
+      });
     }
   }
 
