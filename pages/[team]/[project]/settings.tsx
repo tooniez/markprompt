@@ -272,7 +272,6 @@ const ProjectSettingsPage = () => {
                     <div className="flex w-full flex-col gap-1">
                       <div className="flex w-full flex-row items-center gap-2">
                         <Field
-                          value={undefined}
                           className="flex-grow"
                           type="text"
                           inputSize="sm"
