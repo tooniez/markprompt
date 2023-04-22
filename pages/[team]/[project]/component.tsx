@@ -151,7 +151,7 @@ const ComponentPage = () => {
           </a>
           .
         </div>
-        <h3>Motif</h3>
+        {/* <h3>Motif</h3>
         <p>
           In{' '}
           <a
@@ -173,8 +173,8 @@ const ComponentPage = () => {
           with the key associated to your project. It can be obtained in the
           project settings under &quot;Project key&quot;.
         </p>
-        <h3>Node</h3>
-        <p>In Node, install Markprompt via NPM:</p>
+        <h3>Node</h3> */}
+        <p>Install Markprompt via NPM (Yarn and PNPM also work):</p>
         <CodePanel code={npmCode} language="bash" />
         <p>
           In your React application, paste the following in an MDX, JSX or TSX
