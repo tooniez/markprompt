@@ -23,7 +23,8 @@ export type LLMInfo = {
 
 export type OpenAIModelIdWithType =
   | { type: 'chat_completions'; value: OpenAIChatCompletionsModelId }
-  | { type: 'completions'; value: OpenAICompletionsModelId };
+  | { type: 'completions'; value: OpenAICompletionsModelId }
+  | { type: 'embeddings'; value: OpenAIEmbeddingsModelId };
 
 export type OpenAIChatCompletionsModelId =
   | 'gpt-4'
@@ -44,13 +45,17 @@ export type OpenAICompletionsModelId =
   | 'babbage'
   | 'ada';
 
+export type OpenAIEmbeddingsModelId = 'text-embedding-ada-002';
+
 export type OpenAIModelId =
   | OpenAIChatCompletionsModelId
-  | OpenAICompletionsModelId;
+  | OpenAICompletionsModelId
+  | OpenAIEmbeddingsModelId;
 
 export const SUPPORTED_MODELS: {
   chat_completions: OpenAIChatCompletionsModelId[];
   completions: OpenAICompletionsModelId[];
+  embeddings: OpenAIEmbeddingsModelId[];
 } = {
   chat_completions: [
     'gpt-4',
@@ -71,10 +76,16 @@ export const SUPPORTED_MODELS: {
     'babbage',
     'ada',
   ],
+  embeddings: ['text-embedding-ada-002'],
 };
 
 export const getModelIdWithVendorPrefix = (model: LLMInfo) => {
   return `${model.vendor}:${model.model.value}`;
+};
+
+export const geLLMInfoFromModel = (model: OpenAIModelIdWithType): LLMInfo => {
+  // Only OpenAI models are supported currently
+  return { vendor: LLMVendors.openai, model };
 };
 
 export type DbUser = Database['public']['Tables']['users']['Row'];

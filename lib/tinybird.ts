@@ -1,4 +1,4 @@
-import { LLMInfo, Project, getModelIdWithVendorPrefix } from '@/types/types';
+import { LLMInfo, Project } from '@/types/types';
 
 const recordEvent = async (name: string, payload: any) => {
   return fetch(
@@ -16,14 +16,15 @@ const recordEvent = async (name: string, payload: any) => {
   ).then((res) => res.json());
 };
 
-export const recordProjectTokenUsage = async (
+export const recordProjectTokenCount = async (
   projectId: Project['id'],
-  count: number,
   model: LLMInfo,
+  count: number,
 ) => {
   return recordEvent('token_count', {
     projectId,
     count,
-    model: getModelIdWithVendorPrefix(model),
+    vendor: model.vendor,
+    model: model.model.value,
   });
 };

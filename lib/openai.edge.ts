@@ -3,6 +3,8 @@
 
 import { CreateEmbeddingResponse, CreateModerationResponse } from 'openai';
 
+import { OpenAIEmbeddingsModelId } from '@/types/types';
+
 export interface OpenAIStreamPayload {
   model: string;
   prompt: string;
@@ -32,6 +34,7 @@ export const createModeration = async (
 export const createEmbedding = async (
   input: string,
   byoOpenAIKey: string | undefined,
+  modelId: OpenAIEmbeddingsModelId,
 ): Promise<CreateEmbeddingResponse> => {
   return await fetch('https://api.openai.com/v1/embeddings', {
     headers: {
@@ -40,7 +43,7 @@ export const createEmbedding = async (
     },
     method: 'POST',
     body: JSON.stringify({
-      model: 'text-embedding-ada-002',
+      model: modelId,
       input: input.trim().replaceAll('\n', ' '),
     }),
   }).then((r) => r.json());

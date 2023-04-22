@@ -12,15 +12,19 @@ import { filter } from 'unist-util-filter';
 
 import { CONTEXT_TOKENS_CUTOFF, MIN_CONTENT_LENGTH } from '@/lib/constants';
 import { createEmbedding } from '@/lib/openai.edge';
-import {
-  getProjectEmbeddingsMonthTokenCountKey,
-  getRedisClient,
-} from '@/lib/redis';
 import { createChecksum, getFileType } from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.node';
-import { DbFile, FileData, Project, Source } from '@/types/types';
+import {
+  DbFile,
+  FileData,
+  OpenAIModelIdWithType,
+  Project,
+  Source,
+  geLLMInfoFromModel,
+} from '@/types/types';
 
 import { getProjectIdFromSource } from './supabase';
+import { recordProjectTokenCount } from './tinybird';
 
 type FileSectionData = {
   sections: string[];
@@ -241,6 +245,12 @@ export const generateFileEmbeddings = async (
   let embeddingsTokenCount = 0;
   const errors: { path: string; message: string }[] = [];
 
+  const projectId = await getProjectIdFromSource(supabaseAdmin, sourceId);
+
+  if (!projectId) {
+    return;
+  }
+
   const { meta, sections } = processFile(file);
 
   let fileId = await getFileAtPath(supabaseAdmin, sourceId, file.path);
@@ -281,6 +291,11 @@ export const generateFileEmbeddings = async (
     token_count: number;
   }[] = [];
 
+  const model: OpenAIModelIdWithType = {
+    type: 'embeddings',
+    value: 'text-embedding-ada-002',
+  };
+
   for (const section of sections) {
     const input = section.replace(/\n/g, ' ');
 
@@ -293,7 +308,7 @@ export const generateFileEmbeddings = async (
       // Retry with exponential backoff in case of error. Typical cause is
       // too_many_requests.
       const embeddingResult = await backOff(
-        () => createEmbedding(input, byoOpenAIKey),
+        () => createEmbedding(input, byoOpenAIKey, model.value),
         {
           startingDelay: 10000,
           numOfAttempts: 10,
@@ -332,14 +347,11 @@ export const generateFileEmbeddings = async (
     }
   }
 
-  const projectId = await getProjectIdFromSource(supabaseAdmin, sourceId);
-
-  if (projectId) {
-    await getRedisClient().incrby(
-      getProjectEmbeddingsMonthTokenCountKey(projectId, new Date()),
-      embeddingsTokenCount,
-    );
-  }
+  await recordProjectTokenCount(
+    projectId,
+    geLLMInfoFromModel(model),
+    embeddingsTokenCount,
+  );
 
   return errors;
 };
