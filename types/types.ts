@@ -12,6 +12,15 @@ export type GitHubRepository = {
   url: string;
 };
 
+export enum LLMVendors {
+  'openai',
+}
+
+export type LLMInfo = {
+  vendor: LLMVendors.openai;
+  model: OpenAIModelIdWithType;
+};
+
 export type OpenAIModelIdWithType =
   | { type: 'chat_completions'; value: OpenAIChatCompletionsModelId }
   | { type: 'completions'; value: OpenAICompletionsModelId };
@@ -62,6 +71,10 @@ export const SUPPORTED_MODELS: {
     'babbage',
     'ada',
   ],
+};
+
+export const getModelIdWithVendorPrefix = (model: LLMInfo) => {
+  return `${model.vendor}:${model.model.value}`;
 };
 
 export type DbUser = Database['public']['Tables']['users']['Row'];
