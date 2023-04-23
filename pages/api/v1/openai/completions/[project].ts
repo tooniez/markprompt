@@ -29,6 +29,7 @@ import {
   OpenAIModelIdWithType,
   Project,
 } from '@/types/types';
+import { safeParseInt } from '@/lib/utils.edge';
 
 export const config = {
   runtime: 'edge',
@@ -311,7 +312,7 @@ export default async function handler(req: NextRequest) {
     } else {
       const json = await res.json();
       // TODO: track token count
-      const tokenCount = json.usage.total_tokens;
+      const tokenCount = safeParseInt(json.usage.total_tokens, 0);
       await recordProjectTokenCount(projectId, modelInfo, tokenCount);
       const text = getCompletionsResponseText(json, modelInfo.model);
       return new Response(JSON.stringify({ text, references }), {
@@ -377,7 +378,7 @@ export default async function handler(req: NextRequest) {
       // const allTextEncoded = tokenizer.encode(allText);
       // const tokenCount = allTextEncoded.text.length;
 
-      const estimatedTokenCount = allText.length / 4;
+      const estimatedTokenCount = Math.round(allText.length / 4);
 
       await recordProjectTokenCount(projectId, modelInfo, estimatedTokenCount);
 

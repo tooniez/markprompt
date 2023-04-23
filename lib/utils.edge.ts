@@ -7,3 +7,12 @@ export const getHost = (subdomain?: string, forceProduction?: boolean) => {
       : 'localhost:3000';
   return subdomain ? `${subdomain}.${host}` : host;
 };
+
+export const safeParseInt = (value: any, defaultValue = 0) => {
+  try {
+    return parseInt(value);
+  } catch {
+    // Do nothing
+  }
+  return defaultValue;
+};
