@@ -172,8 +172,9 @@ $$;
 
 -- Indexes
 
-create index idx_project_id on files(project_id);
-create index idx_file_id on file_sections(file_id);
+create index idx_files_source_id on files(source_id);
+create index idx_sources_project_id on sources(project_id);
+create index idx_file_sections_file_id on file_sections(file_id);
 
 -- RLS
 
@@ -220,12 +221,12 @@ create policy "Users can only see teams they are members of." on public.teams
       where memberships.user_id = auth.uid()
       and memberships.team_id = teams.id
     )
-  )
+  );
 
 -- Note: when a user creates a team, they are not yet members. So they should
 -- just be able to create teams with no limitations
 create policy "Users can insert teams." on public.teams
-  for insert with check (true)
+  for insert with check (true);
 
 create policy "Users can update teams they are members of." on public.teams
   for update using (
@@ -234,7 +235,7 @@ create policy "Users can update teams they are members of." on public.teams
       where memberships.user_id = auth.uid()
       and memberships.team_id = teams.id
     )
-  )
+  );
 
 create policy "Users can delete teams they are members of." on public.teams
   for delete using (
@@ -243,7 +244,7 @@ create policy "Users can delete teams they are members of." on public.teams
       where memberships.user_id = auth.uid()
       and memberships.team_id = teams.id
     )
-  )
+  );
 
 -- Projects
 
@@ -257,7 +258,7 @@ create policy "Users can only see projects associated to teams they are members 
       where memberships.user_id = auth.uid()
       and memberships.team_id = projects.team_id
     )
-  )
+  );
 
 create policy "Users can insert projects associated to teams they are members of." on public.projects
   for insert with check (
@@ -266,7 +267,7 @@ create policy "Users can insert projects associated to teams they are members of
       where memberships.user_id = auth.uid()
       and memberships.team_id = projects.team_id
     )
-  )
+  );
 
 create policy "Users can update projects associated to teams they are members of." on public.projects
   for update using (
@@ -275,7 +276,7 @@ create policy "Users can update projects associated to teams they are members of
       where memberships.user_id = auth.uid()
       and memberships.team_id = projects.team_id
     )
-  )
+  );
 
 create policy "Users can delete projects associated to teams they are members of." on public.projects
   for delete using (
@@ -284,7 +285,7 @@ create policy "Users can delete projects associated to teams they are members of
       where memberships.user_id = auth.uid()
       and memberships.team_id = projects.team_id
     )
-  )
+  );
 
 -- Sources
 
@@ -299,7 +300,7 @@ create policy "Users can only see sources associated to projects they have acces
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
 create policy "Users can insert sources associated to projects they have access to." on public.sources
   for insert with check (
@@ -309,7 +310,7 @@ create policy "Users can insert sources associated to projects they have access 
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
 create policy "Users can update sources associated to projects they have access to." on public.sources
   for update using (
@@ -319,7 +320,7 @@ create policy "Users can update sources associated to projects they have access 
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
 create policy "Users can delete sources associated to projects they have access to." on public.sources
   for delete using (
@@ -329,52 +330,60 @@ create policy "Users can delete sources associated to projects they have access 
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
 -- Files
 
 alter table files
   enable row level security;
 
-create policy "Users can only see files associated to projects they have access to." on public.files
+create policy "Users can only see files associated to sources associated to projects they have access to." on public.files
   for select using (
-    files.project_id in (
-      select projects.id from projects
+    files.source_id in (
+      select sources.id from sources
+      left join projects
+      on sources.project_id = projects.id
       left join memberships
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
-create policy "Users can insert files associated to projects they have access to." on public.files
+create policy "Users can insert files associated to sources associated to projects they have access to." on public.files
   for insert with check (
-    files.project_id in (
-      select projects.id from projects
+    files.source_id in (
+      select sources.id from sources
+      left join projects
+      on sources.project_id = projects.id
       left join memberships
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
-create policy "Users can update files associated to projects they have access to." on public.files
+create policy "Users can update files associated to sources associated to projects they have access to." on public.files
   for update using (
-    files.project_id in (
-      select projects.id from projects
+    files.source_id in (
+      select sources.id from sources
+      left join projects
+      on sources.project_id = projects.id
       left join memberships
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
-create policy "Users can delete files associated to projects they have access to." on public.files
+create policy "Users can delete files associated to sources associated to projects they have access to." on public.files
   for delete using (
-    files.project_id in (
-      select projects.id from projects
+    files.source_id in (
+      select sources.id from sources
+      left join projects
+      on sources.project_id = projects.id
       left join memberships
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
 -- File sections
 
@@ -397,7 +406,7 @@ create policy "Users can only see tokens associated to projects they have access
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
 create policy "Users can insert tokens associated to projects they have access to." on public.tokens
   for insert with check (
@@ -407,7 +416,7 @@ create policy "Users can insert tokens associated to projects they have access t
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
 create policy "Users can delete tokens associated to projects they have access to." on public.tokens
   for delete using (
@@ -417,7 +426,7 @@ create policy "Users can delete tokens associated to projects they have access t
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
 -- Domains
 
@@ -432,7 +441,7 @@ create policy "Users can only see domains associated to projects they have acces
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
 create policy "Users can insert domains associated to projects they have access to." on public.domains
   for insert with check (
@@ -442,7 +451,7 @@ create policy "Users can insert domains associated to projects they have access 
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
 create policy "Users can delete domains associated to projects they have access to." on public.domains
   for delete using (
@@ -452,7 +461,7 @@ create policy "Users can delete domains associated to projects they have access 
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
     )
-  )
+  );
 
 -- User access tokens
 
