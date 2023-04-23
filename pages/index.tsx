@@ -12,13 +12,18 @@ export interface RawDomainStats {
 const repo = 'https://api.github.com/repos/motifland/markprompt';
 
 export const getStaticProps: GetStaticProps = async () => {
-  const res = await fetch(repo);
-  const json = await res.json();
+  let stars = 1700;
+  try {
+    // Sometimes, the GitHub fetch call fails, so update the current star
+    // count value regularly, as a fallback
+    const json = await fetch(repo).then((r) => r.json());
+    stars = json.stargazers_count || 1600;
+  } catch {
+    // Do nothing
+  }
 
-  // Sometimes, the GitHub fetch call fails, so update the current star
-  // count value regularly, as a fallback
   return {
-    props: { stars: json.stargazers_count || 1600 },
+    props: { stars },
     revalidate: 600,
   };
 };

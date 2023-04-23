@@ -6,7 +6,6 @@ import {
   ReconnectInterval,
 } from 'eventsource-parser';
 import { backOff } from 'exponential-backoff';
-import GPT3Tokenizer from 'gpt3-tokenizer';
 import type { NextRequest } from 'next/server';
 import { CreateEmbeddingResponse } from 'openai';
 
@@ -21,9 +20,15 @@ import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import { getBYOOpenAIKey } from '@/lib/supabase';
-import { stringToModel } from '@/lib/utils';
+import { recordProjectTokenCount } from '@/lib/tinybird';
+import { stringToLLMInfo } from '@/lib/utils';
 import { Database } from '@/types/supabase';
-import { DbFile, OpenAIModelIdWithType, Project } from '@/types/types';
+import {
+  DbFile,
+  OpenAIEmbeddingsModelId,
+  OpenAIModelIdWithType,
+  Project,
+} from '@/types/types';
 
 export const config = {
   runtime: 'edge',
@@ -110,7 +115,7 @@ export default async function handler(req: NextRequest) {
   }
 
   const params = await req.json();
-  const model = stringToModel(params.model);
+  const modelInfo = stringToLLMInfo(params.model);
   const prompt = (params.prompt as string).substring(0, MAX_PROMPT_LENGTH);
   const iDontKnowMessage =
     (params.i_dont_know_message as string) || // v1
@@ -174,8 +179,9 @@ export default async function handler(req: NextRequest) {
   try {
     // Retry with exponential backoff in case of error. Typical cause is
     // too_many_requests.
+    const modelId: OpenAIEmbeddingsModelId = 'text-embedding-ada-002';
     embeddingResult = await backOff(
-      () => createEmbedding(sanitizedQuery, byoOpenAIKey),
+      () => createEmbedding(sanitizedQuery, byoOpenAIKey, modelId),
       {
         startingDelay: 10000,
         numOfAttempts: 10,
@@ -281,8 +287,8 @@ export default async function handler(req: NextRequest) {
       .replace('{{PROMPT}}', sanitizedQuery),
   );
 
-  const payload = getPayload(fullPrompt, model, stream);
-  const url = getCompletionsUrl(model);
+  const payload = getPayload(fullPrompt, modelInfo.model, stream);
+  const url = getCompletionsUrl(modelInfo.model);
 
   const res = await fetch(url, {
     headers: {
@@ -305,8 +311,9 @@ export default async function handler(req: NextRequest) {
     } else {
       const json = await res.json();
       // TODO: track token count
-      // const tokens = json.usage.total_tokens
-      const text = getCompletionsResponseText(json, model);
+      const tokenCount = json.usage.total_tokens;
+      await recordProjectTokenCount(projectId, modelInfo, tokenCount);
+      const text = getCompletionsResponseText(json, modelInfo.model);
       return new Response(JSON.stringify({ text, references }), {
         status: 200,
       });
@@ -342,7 +349,7 @@ export default async function handler(req: NextRequest) {
               didSendHeader = true;
             }
             const json = JSON.parse(data);
-            const text = getChunkText(json, model);
+            const text = getChunkText(json, modelInfo.model);
             allText += text;
             if (counter < 2 && (text?.match(/\n/) || []).length) {
               // Prefix character (e.g. "\n\n"), do nothing
@@ -364,15 +371,15 @@ export default async function handler(req: NextRequest) {
       }
 
       // Estimate the number of tokens used by this request.
-      // TODO: update to gpt-4 tokenized if necessary.
-      const tokenizer = new GPT3Tokenizer({ type: 'gpt3' });
-      const allTextEncoded = tokenizer.encode(allText);
-      const tokenCount = allTextEncoded.text.length;
+      // TODO: GPT3Tokenizer is slow, especially on large text. Use the
+      // approximated value instead (1 token ~= 4 characters).
+      // const tokenizer = new GPT3Tokenizer({ type: 'gpt3' });
+      // const allTextEncoded = tokenizer.encode(allText);
+      // const tokenCount = allTextEncoded.text.length;
 
-      // await incrementMonthCompletionsTokenCountForProject(
-      //   projectId,
-      //   tokenCount,
-      // );
+      const estimatedTokenCount = allText.length / 4;
+
+      await recordProjectTokenCount(projectId, modelInfo, estimatedTokenCount);
 
       // We're done, wind down
       parser.reset();

@@ -5,6 +5,7 @@ import { matchesGlobs } from '../utils';
 
 const UNAUTHED_PATHS = [
   '/',
+  '/home',
   '/docs',
   '/blog',
   '/blog/**/*',

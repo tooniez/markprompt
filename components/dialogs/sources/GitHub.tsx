@@ -73,7 +73,7 @@ const ConnectButton: FC<ConnectButtonProps> = ({
       type="submit"
       loading={loading}
       onClick={async () => {
-        track('connect private repo', { projectId });
+        track('connect private github repo', { projectId });
         setLoading(true);
         if (clearPrevious) {
           for (const source of sources) {

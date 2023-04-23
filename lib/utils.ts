@@ -17,8 +17,9 @@ import {
 import {
   GitHubSourceDataType,
   HistogramStat,
+  LLMInfo,
+  LLMVendors,
   MotifSourceDataType,
-  OpenAIModelIdWithType,
   Source,
   TimeInterval,
 } from '@/types/types';
@@ -366,7 +367,7 @@ export const isSKTestKey = (key: string | null) => {
   return key?.startsWith(SK_TEST_PREFIX);
 };
 
-export const stringToModel = (param?: string): OpenAIModelIdWithType => {
+export const stringToLLMInfo = (param?: string): LLMInfo => {
   switch (param) {
     case 'gpt-4':
     case 'gpt-4-0314':
@@ -374,7 +375,10 @@ export const stringToModel = (param?: string): OpenAIModelIdWithType => {
     case 'gpt-4-32k-0314':
     case 'gpt-3.5-turbo':
     case 'gpt-3.5-turbo-0301':
-      return { type: 'chat_completions', value: param };
+      return {
+        vendor: LLMVendors.openai,
+        model: { type: 'chat_completions', value: param },
+      };
     case 'text-davinci-003':
     case 'text-davinci-002':
     case 'text-curie-001':
@@ -384,9 +388,15 @@ export const stringToModel = (param?: string): OpenAIModelIdWithType => {
     case 'curie':
     case 'babbage':
     case 'ada':
-      return { type: 'completions', value: param };
+      return {
+        vendor: LLMVendors.openai,
+        model: { type: 'completions', value: param },
+      };
     default:
-      return { type: 'chat_completions', value: 'gpt-3.5-turbo' };
+      return {
+        vendor: LLMVendors.openai,
+        model: { type: 'chat_completions', value: 'gpt-3.5-turbo' },
+      };
   }
 };
 
