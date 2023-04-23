@@ -22,6 +22,7 @@ import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import { getBYOOpenAIKey } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import { stringToLLMInfo } from '@/lib/utils';
+import { safeParseInt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
   DbFile,
@@ -29,7 +30,6 @@ import {
   OpenAIModelIdWithType,
   Project,
 } from '@/types/types';
-import { safeParseInt } from '@/lib/utils.edge';
 
 export const config = {
   runtime: 'edge',
