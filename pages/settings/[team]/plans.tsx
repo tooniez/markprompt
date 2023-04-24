@@ -377,7 +377,7 @@ const Team = () => {
               isEnterprisePlan={!!team?.is_enterprise_plan}
               customPrice="Custom"
               cta="Contact Sales"
-              ctaHref={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL!}`}
+              ctaHref={`mailto:${process.env.NEXT_PUBLIC_SALES_EMAIL!}`}
             />
           </div>
           <p

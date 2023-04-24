@@ -488,7 +488,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             <PricingCard
               tier={TIERS.enterprise}
               cta="Contact Sales"
-              ctaHref={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL!}`}
+              ctaHref={`mailto:${process.env.NEXT_PUBLIC_SALES_EMAIL!}`}
               model={model}
               customPrice="Custom"
             />
