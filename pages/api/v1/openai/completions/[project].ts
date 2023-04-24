@@ -251,7 +251,6 @@ export default async function handler(req: NextRequest) {
     });
   }
 
-  console.info(`generate completions ${projectId}`);
   track(projectId, 'generate completions', { projectId });
 
   // const { completionsTokensCount } = await getTokenCountsForProject(projectId);
@@ -380,7 +379,13 @@ export default async function handler(req: NextRequest) {
 
       const estimatedTokenCount = Math.round(allText.length / 4);
 
-      await recordProjectTokenCount(projectId, modelInfo, estimatedTokenCount);
+      if (!byoOpenAIKey) {
+        await recordProjectTokenCount(
+          projectId,
+          modelInfo,
+          estimatedTokenCount,
+        );
+      }
 
       // We're done, wind down
       parser.reset();

@@ -10,6 +10,7 @@ export type ButtonVariant =
   | 'danger'
   | 'ghost'
   | 'plain'
+  | 'bordered'
   | 'fuchsia';
 
 type ButtonProps = {
@@ -69,6 +70,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               variant === 'danger',
             'border-neutral-800 bg-neutral-900 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
               variant === 'plain',
+            'border-neutral-800 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
+              variant === 'bordered',
             'px-4 py-2 text-sm': size === 'base',
             'px-3 py-1.5 text-sm': size === 'sm',
             'px-5 py-3 text-base': size === 'lg',

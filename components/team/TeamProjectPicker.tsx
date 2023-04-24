@@ -119,7 +119,7 @@ const ProjectPicker = () => {
       <DropdownMenu.Trigger asChild>
         <button
           className={cn(
-            'rounded px-2 py-1 text-sm outline-none transition dark:text-neutral-300 dark:hover:bg-neutral-900',
+            'select-none rounded px-2 py-1 text-sm outline-none transition dark:text-neutral-300 dark:hover:bg-neutral-900',
           )}
           aria-label="Select team"
         >
@@ -186,7 +186,10 @@ export const TeamProjectPicker = () => {
       <div className="flex flex-row items-center gap-4">
         <Slash size="md" />
         {team ? (
-          <Link className="dropdown-menu-button" href={`/${team.slug}`}>
+          <Link
+            className="dropdown-menu-button select-none"
+            href={`/${team.slug}`}
+          >
             {team?.name}
           </Link>
         ) : (
