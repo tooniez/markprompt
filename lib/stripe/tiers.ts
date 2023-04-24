@@ -33,6 +33,7 @@ export type TierDetails = {
   enterprise?: boolean;
   description: string;
   items: string[];
+  notes?: string[];
   prices: TierPriceDetails[];
 };
 
@@ -132,10 +133,11 @@ export const TIERS: Record<Tier, TierDetails> = {
     description: 'For personal and non-commercial projects',
     items: [
       'Unlimited documents',
-      'Unlimited BYO completions',
+      'Unlimited BYO* completions',
       '25 GPT-4 completions',
       'Public/private GitHub repos',
     ],
+    notes: ['* BYO: Bring-your-own API key'],
     prices: [
       {
         name: 'Free',

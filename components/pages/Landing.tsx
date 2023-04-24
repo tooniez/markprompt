@@ -167,16 +167,32 @@ const PricingCard = ({
           </div>
         )}
       </div>
-      <ul className="mb-4 flex w-full flex-grow flex-col gap-1 px-4 md:px-8">
-        {tier.items.map((item, i) => {
-          return (
-            <ListItem variant="discreet" key={`pricing-${tier.name}-${i}`}>
-              {typeof item === 'string' ? item : item[model]}
-            </ListItem>
-          );
-        })}
-      </ul>
-      <div className="w-full px-4 md:px-8">
+      <div className="flex w-full flex-grow flex-col gap-1">
+        <ul className="flex w-full flex-col gap-1 px-4 md:px-8">
+          {tier.items.map((item, i) => {
+            return (
+              <ListItem variant="discreet" key={`pricing-${tier.name}-${i}`}>
+                {typeof item === 'string' ? item : item[model]}
+              </ListItem>
+            );
+          })}
+        </ul>
+        {tier.notes && (
+          <ul className="mt-4 flex w-full flex-grow flex-col gap-1 px-4 md:px-8">
+            {tier.notes.map((note, i) => {
+              return (
+                <li
+                  className="text-xs text-neutral-500"
+                  key={`note-${note}-${i}`}
+                >
+                  {note}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+      <div className="mt-4 w-full px-4 md:px-8">
         <Button
           className="w-full"
           variant={highlight ? 'fuchsia' : 'plain'}
