@@ -61,6 +61,8 @@ type PlaygroundProps = {
   demoReferences?: string[];
   iDontKnowMessage?: string;
   model?: OpenAIModelId;
+  placeholder?: string;
+  inputClassName?: string;
 };
 
 // The playground is used in three scenarios:
@@ -80,6 +82,8 @@ export const Playground: FC<PlaygroundProps> = ({
   demoReferences,
   iDontKnowMessage,
   model,
+  placeholder,
+  inputClassName,
 }) => {
   const [prompt, setPrompt] = useState<string | undefined>('');
   const [answer, setAnswer] = useState('');
@@ -252,8 +256,9 @@ export const Playground: FC<PlaygroundProps> = ({
             value={prompt || ''}
             type="text"
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Ask me anything..."
+            placeholder={placeholder || 'Ask me anything...'}
             className={cn(
+              inputClassName,
               'w-full appearance-none rounded-md border-0 bg-transparent px-0 pt-1 pb-2 text-neutral-300 outline-none transition duration-500 placeholder:text-neutral-500 focus:outline-none focus:ring-0',
               {
                 'pointer-events-none': isDemoMode && playing,

@@ -7,8 +7,6 @@ import {
   SchemaAttribute,
   Tag,
 } from '@markdoc/markdoc';
-import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
-import * as Popover from '@radix-ui/react-popover';
 import cn from 'classnames';
 import { Language } from 'prism-react-renderer';
 import React, {
@@ -281,45 +279,6 @@ export const useTableOfContents = (toc: TOC) => {
   }, [headings, toc]);
 
   return { currentSection, registerHeading, unregisterHeading };
-};
-
-export const DocsSearch = () => {
-  const [promptOpen, setPromptOpen] = useState(false);
-
-  return (
-    <Popover.Root open={promptOpen} onOpenChange={setPromptOpen}>
-      <Popover.Trigger asChild>
-        <button
-          className="flex w-full transform flex-row items-center gap-2 rounded-md border border-neutral-900 p-2 text-left text-sm text-neutral-500 outline-none transition duration-300 hover:bg-neutral-1000"
-          aria-label="Ask docs"
-        >
-          <MagnifyingGlassIcon className="h-4 w-4 flex-none text-neutral-500" />
-          <div className="flex-grow truncate">Ask docs...</div>
-        </button>
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content className="animate-chat-window z-20 mr-4 mb-4 w-[calc(100vw-32px)] sm:w-full">
-          <div className="relative mt-4 h-[calc(100vh-240px)] max-h-[560px] w-full overflow-hidden rounded-lg border border-neutral-900 bg-neutral-1000 p-4 shadow-2xl sm:w-[400px]">
-            <Playground
-              forceUseProdAPI
-              projectKey={
-                process.env.NODE_ENV === 'production'
-                  ? process.env.NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY
-                  : process.env
-                      .NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY_TEST
-              }
-            />
-            <Popover.Close
-              className="absolute top-3 right-3 z-20 rounded p-1 outline-none backdrop-blur transition hover:bg-neutral-900"
-              aria-label="Close"
-            >
-              <Cross2Icon className="h-4 w-4 text-neutral-300" />
-            </Popover.Close>
-          </div>
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
-  );
 };
 
 type TableOfContentsProps = {

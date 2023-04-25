@@ -1,10 +1,10 @@
 import Markdoc, { RenderableTreeNode } from '@markdoc/markdoc';
+import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import React, { FC, createContext } from 'react';
 
 import LandingNavbar from './LandingNavbar';
 import {
   DocsPlayground,
-  DocsSearch,
   Fence,
   ProseContainer,
   TOC,
@@ -12,6 +12,7 @@ import {
   useTableOfContents,
 } from './MarkdocLayout';
 import { Collapse, CollapseGroup } from '../ui/Collapse';
+import { DocsPrompt } from '../ui/DocsPrompt';
 import { Heading } from '../ui/Heading';
 import { Note } from '../ui/Note';
 import { Pattern } from '../ui/Pattern';
@@ -41,7 +42,15 @@ export const DocsLayout: FC<DocsLayoutProps> = ({ content, toc }: any) => {
             <div className="hidden-scrollbar fixed inset-0 top-24 left-[max(0px,calc(50%-40rem))] right-auto z-20 hidden w-72 overflow-y-auto px-6 pb-10 sm:px-8 md:block">
               <div className="mt-[26px] flex flex-col gap-1 pb-12">
                 <div className="mb-4 w-full">
-                  <DocsSearch />
+                  <DocsPrompt>
+                    <button
+                      className="flex w-full transform flex-row items-center gap-2 rounded-md border border-neutral-900 p-2 text-left text-sm text-neutral-500 outline-none transition duration-300 hover:bg-neutral-1000"
+                      aria-label="Ask docs"
+                    >
+                      <MagnifyingGlassIcon className="h-4 w-4 flex-none text-neutral-500" />
+                      <div className="flex-grow truncate">Ask docs...</div>
+                    </button>
+                  </DocsPrompt>
                 </div>
                 <TableOfContents toc={toc} currentSection={currentSection} />
               </div>
