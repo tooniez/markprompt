@@ -228,6 +228,20 @@ const PricingCard = ({
             </ListItem>
           );
         })}
+        {tierDetails.notes && (
+          <ul className="mt-6 flex w-full flex-grow flex-col gap-1">
+            {tierDetails.notes.map((note, i) => {
+              return (
+                <li
+                  className="text-xs text-neutral-500"
+                  key={`note-${note}-${i}`}
+                >
+                  {note}
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </ul>
       <div className="w-full">
         <Button
@@ -299,9 +313,14 @@ const Team = () => {
   const [model, setModel] = useState<PricedModel>('gpt-3.5-turbo');
   const [hasSwitched, setHasSwitched] = useState(false);
 
-  const tierDetails = team?.stripe_price_id
-    ? getTierDetailsFromPriceId(team.stripe_price_id)
-    : undefined;
+  let tierName: string | undefined;
+  if (team?.is_enterprise_plan) {
+    tierName = 'Enterprise';
+  } else if (team?.stripe_price_id) {
+    tierName = getTierDetailsFromPriceId(team.stripe_price_id)?.name;
+  } else {
+    tierName = 'Hobby';
+  }
 
   return (
     <TeamSettingsLayout
@@ -311,11 +330,9 @@ const Team = () => {
           return <></>;
         }
         return (
-          <p className="mb-6 text-sm text-neutral-400">
+          <p className="mb-6 text-sm text-neutral-500">
             You are currently on the{' '}
-            <span className="font-semibold text-neutral-300">
-              {tierDetails?.name || 'Free'}
-            </span>{' '}
+            <span className="font-semibold text-neutral-400">{tierName}</span>{' '}
             plan.
           </p>
         );

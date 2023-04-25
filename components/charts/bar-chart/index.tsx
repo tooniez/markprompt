@@ -9,7 +9,7 @@ import type { FC } from 'react';
 import { useMemo } from 'react';
 import colors from 'tailwindcss/colors';
 
-import { formatNumber, intervalData } from '@/lib/utils';
+import { formatNumber, intervalData, sampleVisitsData } from '@/lib/utils';
 import type { TimeInterval } from '@/types/types';
 
 const LEFT_AXIS_WIDTH = 30;
@@ -44,7 +44,8 @@ type TooltipData = {
 };
 
 const BarChart: FC<BarChartProps & ResponsiveBarChartProps> = ({
-  data,
+  data: _data,
+  isLoading,
   height,
   interval,
   parentWidth,
@@ -57,6 +58,13 @@ const BarChart: FC<BarChartProps & ResponsiveBarChartProps> = ({
   const bottomAxisHeight = noDecorations ? 0 : BOTTOM_AXIS_HEIGHT;
   const chartWidth = parentWidth - leftAxisWidth;
   const computedHeight = height || parentWidth * 0.5;
+
+  const data = useMemo(() => {
+    if (isLoading) {
+      return sampleVisitsData;
+    }
+    return _data;
+  }, [_data, isLoading]);
 
   const xScale = useMemo(() => {
     return scaleBand({
@@ -149,7 +157,8 @@ const BarChart: FC<BarChartProps & ResponsiveBarChartProps> = ({
               y={barY}
               width={barWidth}
               height={barHeight}
-              fill={colors.sky['400']}
+              className={isLoading ? 'animate-pulse opacity-30' : ''}
+              fill={isLoading ? colors.neutral['900'] : colors.sky['400']}
               onMouseLeave={() => {
                 tooltipTimeout = window.setTimeout(() => {
                   hideTooltip();

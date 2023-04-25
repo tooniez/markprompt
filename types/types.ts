@@ -3,6 +3,11 @@ import { Database } from './supabase';
 export type TimeInterval = '1h' | '24h' | '7d' | '30d' | '3m' | '1y';
 export type TimePeriod = 'hour' | 'day' | 'weekofyear' | 'month' | 'year';
 export type HistogramStat = { start: number; end: number; value: number };
+export type DateCountHistogramEntry = { date: string; count: number };
+export type ProjectUsageHistogram = {
+  projectId: Project['id'];
+  histogram: DateCountHistogramEntry[];
+};
 
 export type OAuthProvider = 'github';
 
@@ -12,12 +17,10 @@ export type GitHubRepository = {
   url: string;
 };
 
-export enum LLMVendors {
-  'openai',
-}
+export type LLMVendors = 'openai';
 
 export type LLMInfo = {
-  vendor: LLMVendors.openai;
+  vendor: LLMVendors;
   model: OpenAIModelIdWithType;
 };
 
@@ -85,7 +88,7 @@ export const getModelIdWithVendorPrefix = (model: LLMInfo) => {
 
 export const geLLMInfoFromModel = (model: OpenAIModelIdWithType): LLMInfo => {
   // Only OpenAI models are supported currently
-  return { vendor: LLMVendors.openai, model };
+  return { vendor: 'openai', model };
 };
 
 export type DbUser = Database['public']['Tables']['users']['Row'];
@@ -106,6 +109,9 @@ export type FileData = { path: string; name: string; content: string };
 export type PathContentData = Pick<FileData, 'path' | 'content'>;
 export type Checksum = Pick<DbFile, 'path' | 'checksum'>;
 export type SourceType = Pick<Source, 'type'>['type'];
+
+export type ProjectUsage = number;
+export type Usage = Record<Project['id'], ProjectUsage>;
 
 export type GitHubSourceDataType = { url: string };
 export type MotifSourceDataType = { projectDomain: string };

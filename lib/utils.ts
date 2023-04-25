@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
+import dayjs from 'dayjs';
 import minimatch from 'minimatch';
 import { customAlphabet } from 'nanoid';
 import pako from 'pako';
@@ -15,10 +16,10 @@ import {
 } from 'unique-names-generator';
 
 import {
+  DateCountHistogramEntry,
   GitHubSourceDataType,
   HistogramStat,
   LLMInfo,
-  LLMVendors,
   MotifSourceDataType,
   Source,
   TimeInterval,
@@ -337,6 +338,17 @@ export const sampleVisitsData: HistogramStat[] = Array.from(
   value: datapoints[n],
 }));
 
+export const sampleTokenCountData: DateCountHistogramEntry[] = [
+  {
+    date: dayjs().startOf('day').toISOString(),
+    count: 1,
+  },
+  {
+    date: dayjs().add(-1, 'days').startOf('day').toISOString(),
+    count: 2,
+  },
+];
+
 export const removeSchema = (origin: string) => {
   return origin.replace(/(^\w+:|^)\/\//, '');
 };
@@ -376,7 +388,7 @@ export const stringToLLMInfo = (param?: string): LLMInfo => {
     case 'gpt-3.5-turbo':
     case 'gpt-3.5-turbo-0301':
       return {
-        vendor: LLMVendors.openai,
+        vendor: 'openai',
         model: { type: 'chat_completions', value: param },
       };
     case 'text-davinci-003':
@@ -389,12 +401,12 @@ export const stringToLLMInfo = (param?: string): LLMInfo => {
     case 'babbage':
     case 'ada':
       return {
-        vendor: LLMVendors.openai,
+        vendor: 'openai',
         model: { type: 'completions', value: param },
       };
     default:
       return {
-        vendor: LLMVendors.openai,
+        vendor: 'openai',
         model: { type: 'chat_completions', value: 'gpt-3.5-turbo' },
       };
   }

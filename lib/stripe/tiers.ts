@@ -1,3 +1,5 @@
+import { Team } from '@/types/types';
+
 type Price = {
   amount: number;
   priceIds: {
@@ -21,7 +23,7 @@ const env =
 
 export type TierPriceDetails = {
   name: string;
-  quota: Record<PricedModel, number>;
+  quota: number;
   price?: {
     monthly?: Price;
     yearly: Price;
@@ -141,11 +143,7 @@ export const TIERS: Record<Tier, TierDetails> = {
     prices: [
       {
         name: 'Free',
-        quota: {
-          'gpt-4': 25_000,
-          'gpt-3.5-turbo': 200_000,
-          byo: -1,
-        },
+        quota: 25,
       },
     ],
   },
@@ -162,11 +160,7 @@ export const TIERS: Record<Tier, TierDetails> = {
     prices: [
       {
         name: 'Pro',
-        quota: {
-          'gpt-4': 50_000,
-          'gpt-3.5-turbo': 500_000,
-          byo: 1_000_000,
-        },
+        quota: 1000,
         price: {
           monthly: {
             amount: 120,
@@ -203,12 +197,25 @@ export const TIERS: Record<Tier, TierDetails> = {
     prices: [
       {
         name: 'Enterprise',
-        quota: {
-          'gpt-4': 25_000,
-          'gpt-3.5-turbo': 200_000,
-          byo: -1,
-        },
+        quota: -1,
       },
     ],
   },
+};
+
+const quotaForLegacyPriceId = 1000;
+const maxAllowanceForEnterprise = 1_000_000;
+
+export const getMonthlyQueryAllowance = (team: Team) => {
+  if (team.is_enterprise_plan) {
+    return maxAllowanceForEnterprise;
+  } else if (team.stripe_price_id) {
+    const priceDetails = getTierPriceDetailsFromPriceId(team.stripe_price_id);
+    if (priceDetails) {
+      return priceDetails.quota;
+    }
+    return quotaForLegacyPriceId;
+  } else {
+    return TIERS.hobby.prices[0].quota;
+  }
 };

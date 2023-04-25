@@ -347,11 +347,13 @@ export const generateFileEmbeddings = async (
     }
   }
 
-  await recordProjectTokenCount(
-    projectId,
-    geLLMInfoFromModel(model),
-    embeddingsTokenCount,
-  );
+  if (!byoOpenAIKey) {
+    await recordProjectTokenCount(
+      projectId,
+      geLLMInfoFromModel(model),
+      embeddingsTokenCount,
+    );
+  }
 
   return errors;
 };
