@@ -40,14 +40,11 @@ export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
           <NavigationMenu.List className="flex flex-row items-center gap-2 px-2 py-1">
             {!loadingUser && !user?.has_completed_onboarding && (
               <NavigationMenu.Item>
-                <NavigationMenu.Link
-                  asChild
-                  className={cn(
-                    'mr-4 block h-full rounded-md px-2 py-1.5 text-sm text-neutral-300 outline-none ring-white ring-offset-0 transition duration-200 hover:bg-neutral-900 hover:text-neutral-100 focus-visible:text-neutral-100 focus-visible:ring-1',
-                  )}
-                >
+                <NavigationMenu.Link asChild>
                   <Button
+                    className="mr-4"
                     variant="cta"
+                    buttonSize="sm"
                     onClick={() => {
                       finishOnboarding();
                     }}
