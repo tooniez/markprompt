@@ -286,7 +286,8 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           </h1>
           <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg dark:text-neutral-500">
             Skip the configuration, hosting and metrics collection needed to run
-            a prompt on your docs site. Works with Markdown, Markdoc and MDX.
+            a prompt on your docs site. Works with Markdown, Markdoc, MDX and
+            HTML.
             <br />
             From the{' '}
             <a
@@ -337,11 +338,11 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             As easy as 1, 2
           </h2>
           <p className="mx-auto mt-4 max-w-screen-md text-center text-lg dark:text-neutral-500">
-            Sync your Markdown/Markdoc/MDX files from a GitHub repo, drag and
-            drop them in the dashboard, or upload them programmatically. Wait a
-            little for the training to complete, then use our React component,
-            or fetch completions via our streaming API. Use the model that suits
-            your needs—all OpenAI{' '}
+            Sync your Markdown/Markdoc/MDX/HTML files from a GitHub repo, drag
+            and drop them in the dashboard, or upload them programmatically.
+            Wait a little for the training to complete, then use our React
+            component, or fetch completions via our streaming API. Use the model
+            that suits your needs—all OpenAI{' '}
             <a
               href="https://platform.openai.com/docs/models/moderation"
               className="subtle-underline"
