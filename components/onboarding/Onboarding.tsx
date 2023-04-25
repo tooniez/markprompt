@@ -2,14 +2,12 @@ import * as Checkbox from '@radix-ui/react-checkbox';
 import { CheckIcon } from '@radix-ui/react-icons';
 import cn from 'classnames';
 import Head from 'next/head';
-import Router from 'next/router';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import { NavLayout } from '@/components/layouts/NavLayout';
 import { updateUser } from '@/lib/api';
-import useProject from '@/lib/hooks/use-project';
-import useTeam from '@/lib/hooks/use-team';
+import useOnboarding from '@/lib/hooks/use-onboarding';
 import useUser from '@/lib/hooks/use-user';
 import { showConfetti } from '@/lib/utils';
 
@@ -18,23 +16,10 @@ import Query from './Query';
 import Button from '../ui/Button';
 
 const Onboarding = () => {
-  const { team } = useTeam();
-  const { project } = useProject();
   const { user, mutate: mutateUser } = useUser();
+  const { finishOnboarding } = useOnboarding();
   const [step, setStep] = useState(0);
   const [ctaVisible, setCtaVisible] = useState(false);
-
-  const finishOnboarding = useCallback(async () => {
-    const data = { has_completed_onboarding: true };
-    await updateUser(data);
-    await mutateUser();
-    if (team && project) {
-      Router.push({
-        pathname: '/[team]/[project]/data',
-        query: { team: team.slug, project: project.slug },
-      });
-    }
-  }, [mutateUser, project, team]);
 
   if (!user) {
     return <></>;
@@ -86,19 +71,6 @@ const Onboarding = () => {
               }}
               isReady={step === 1}
             />
-            {!ctaVisible && (
-              <p
-                onClick={() => {
-                  finishOnboarding();
-                }}
-                className="text-center text-sm text-neutral-600"
-              >
-                <span className="cursor-pointer border-b border-dashed dark:border-neutral-800">
-                  Skip onboarding
-                </span>{' '}
-                →
-              </p>
-            )}
             <div
               className={cn(
                 'flex w-full flex-col items-center justify-center gap-4',
@@ -116,34 +88,34 @@ const Onboarding = () => {
               >
                 Go to dashboard →
               </Button>
-            </div>
-            <div
-              className={cn(
-                'animate-slide-up mt-4 flex w-full items-center justify-center gap-4',
-                {
-                  '-mt-4': !ctaVisible,
-                  'mt-4': ctaVisible,
-                },
-              )}
-            >
-              <Checkbox.Root
-                className="flex h-5 w-5 items-center justify-center rounded border border-neutral-700 bg-neutral-1000 transition hover:bg-neutral-900"
-                id="subscribe"
-                onCheckedChange={async (checked: boolean) => {
-                  await updateUser({ subscribe_to_product_updates: checked });
-                  await mutateUser();
-                }}
+              <div
+                className={cn(
+                  'animate-slide-up mt-2 flex w-full items-center justify-center gap-4',
+                  {
+                    '-mt-4': !ctaVisible,
+                    'mt-4': ctaVisible,
+                  },
+                )}
               >
-                <Checkbox.Indicator className="text-green-600">
-                  <CheckIcon />
-                </Checkbox.Indicator>
-              </Checkbox.Root>
-              <label
-                className="cursor-pointer select-none text-sm text-neutral-500"
-                htmlFor="subscribe"
-              >
-                Keep me posted about major product updates
-              </label>
+                <Checkbox.Root
+                  className="flex h-5 w-5 items-center justify-center rounded border border-neutral-700 bg-neutral-1000 transition hover:bg-neutral-900"
+                  id="subscribe"
+                  onCheckedChange={async (checked: boolean) => {
+                    await updateUser({ subscribe_to_product_updates: checked });
+                    await mutateUser();
+                  }}
+                >
+                  <Checkbox.Indicator className="text-green-600">
+                    <CheckIcon />
+                  </Checkbox.Indicator>
+                </Checkbox.Root>
+                <label
+                  className="cursor-pointer select-none text-sm text-neutral-500"
+                  htmlFor="subscribe"
+                >
+                  Keep me posted about major product updates
+                </label>
+              </div>
             </div>
           </div>
         </div>
