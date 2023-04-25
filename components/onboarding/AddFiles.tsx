@@ -54,7 +54,7 @@ const AddFiles: FC<AddFilesProps> = ({ onTrainingComplete, onNext }) => {
   return (
     <div className="pt-12 pb-16">
       <div className="mx-auto flex w-full max-w-screen-sm flex-col items-center justify-center gap-2 p-8 pt-20 text-neutral-300">
-        <p className="font-medium">Step 1: Train files</p>
+        <p className="font-medium">Step 1: Train content</p>
         <p className="mt-1 text-sm text-neutral-500">
           Accepted: <Tag variant="fuchsia">.md</Tag>
           <Tag variant="fuchsia" className="ml-1.5">

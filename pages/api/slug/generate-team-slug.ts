@@ -35,7 +35,7 @@ export const getAvailableTeamSlug = async (
 ) => {
   let candidateSlug = baseSlug;
   let attempt = 0;
-  let isAvailable = false;
+  let isAvailable = await isTeamSlugAvailable(supabase, candidateSlug);
   while (!isAvailable) {
     isAvailable = await isTeamSlugAvailable(supabase, candidateSlug);
     attempt++;

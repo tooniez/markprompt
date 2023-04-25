@@ -43,7 +43,7 @@ const Query: FC<QueryProps> = ({ goBack, didCompleteFirstQuery, isReady }) => {
   return (
     <div className="pt-12">
       <div className="mx-auto flex max-w-screen-sm flex-col items-center justify-center gap-2 p-8 pt-20 text-neutral-300">
-        <p className="font-medium">Step 2: Query docs</p>
+        <p className="font-medium">Step 2: Query content</p>
         <p className="text-center text-sm text-neutral-600">
           Trained on {pluralize(files?.length || 0, 'file', 'files')}.{' '}
           <span

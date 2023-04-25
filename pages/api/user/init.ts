@@ -58,9 +58,9 @@ export default async function handler(
   if (!team) {
     let candidateSlug = '';
     if (session.user.user_metadata?.user_name) {
-      candidateSlug = slugify(session.user.user_metadata?.user_name);
+      candidateSlug = slugify(session.user.user_metadata.user_name);
     } else if (session.user.user_metadata?.name) {
-      candidateSlug = slugify(session.user.user_metadata?.name);
+      candidateSlug = slugify(session.user.user_metadata.name);
     } else if (session.user.email) {
       candidateSlug = slugFromEmail(session.user.email);
     } else {
