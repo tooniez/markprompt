@@ -1,14 +1,14 @@
+import dayjs from 'dayjs';
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
+import Link from 'next/link';
 import { FC } from 'react';
+import Balancer from 'react-wrap-balancer';
 
 import { AuthorList, CloudinaryImage } from '@/components/layouts/BlogLayout';
 import LandingNavbar from '@/components/layouts/LandingNavbar';
 import { SharedHead } from '@/components/pages/SharedHead';
 import { Pattern } from '@/components/ui/Pattern';
 import { getPageMetadataStaticProps } from '@/lib/pages';
-import Balancer from 'react-wrap-balancer';
-import Link from 'next/link';
-import dayjs from 'dayjs';
 
 const pageIds = JSON.parse(process.env.MOTIF_BLOG_PAGE_IDS!);
 
