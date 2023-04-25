@@ -10,6 +10,7 @@ import {
   Project,
   Source,
   SourceType,
+  WebsiteSourceDataType,
 } from '@/types/types';
 
 import { generateKey } from './utils';
@@ -106,30 +107,36 @@ export const getSource = async (
   sourceType: SourceType,
   data: any,
 ): Promise<Source | undefined> => {
-  const { data: sourcesOfType, error } = await supabase
+  const { data: sources, error } = await supabase
     .from('sources')
     .select('*')
     .match({ project_id: projectId, type: sourceType });
 
-  if (error || !sourcesOfType || sourcesOfType.length === 0) {
+  if (error || !sources || sources.length === 0) {
     return undefined;
   }
 
   switch (sourceType) {
     case 'file-upload':
     case 'api-upload':
-      return sourcesOfType[0];
+      return sources[0];
     case 'github':
-      return sourcesOfType.find((s) => {
+      return sources.find((s) => {
         const _data = s.data as GitHubSourceDataType;
         return _data.url && _data.url === data.url;
       });
     case 'motif': {
-      return sourcesOfType.find((s) => {
+      return sources.find((s) => {
         const _data = s.data as MotifSourceDataType;
         return (
           _data.projectDomain && _data.projectDomain === data.projectDomain
         );
+      });
+    }
+    case 'website': {
+      return sources.find((s) => {
+        const _data = s.data as WebsiteSourceDataType;
+        return _data.url && _data.url === data.url;
       });
     }
   }

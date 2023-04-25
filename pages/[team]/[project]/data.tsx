@@ -3,6 +3,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import {
   DotsHorizontalIcon,
   DoubleArrowUpIcon,
+  GlobeIcon,
   UploadIcon,
 } from '@radix-ui/react-icons';
 import * as Tooltip from '@radix-ui/react-tooltip';
@@ -43,6 +44,7 @@ import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
+import { getNumWebsitePagesPerProject } from '@/lib/stripe/tiers';
 import { getLabelForSource, pluralize, truncate } from '@/lib/utils';
 import { Project, Source, SourceType } from '@/types/types';
 
@@ -57,6 +59,13 @@ const GitHubSource = dynamic(
 
 const MotifSource = dynamic(
   () => import('@/components/dialogs/sources/Motif'),
+  {
+    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
+  },
+);
+
+const WebsiteSource = dynamic(
+  () => import('@/components/dialogs/sources/Website'),
   {
     loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
   },
@@ -140,6 +149,8 @@ export const getIconForSource = (sourceType: SourceType) => {
   switch (sourceType) {
     case 'motif':
       return MotifIcon;
+    case 'website':
+      return GlobeIcon;
     case 'file-upload':
       return UploadIcon;
     case 'api-upload':
@@ -254,6 +265,7 @@ const Data = () => {
   const [fileDialogOpen, setFileDialogOpen] = useState(false);
   const [githubDialogOpen, setGithubDialogOpen] = useState(false);
   const [motifDialogOpen, setMotifDialogOpen] = useState(false);
+  const [websiteDialogOpen, setWebsiteDialogOpen] = useState(false);
   const [sourceToRemove, setSourceToRemove] = useState<Source | undefined>(
     undefined,
   );
@@ -342,6 +354,8 @@ const Data = () => {
   const numSelected = Object.values(rowSelection).filter(Boolean).length;
   const hasFiles = files && files.length > 0;
   const canTrain = hasFiles || hasNonFileSources(sources);
+
+  const numWebsitePages = team ? getNumWebsitePagesPerProject(team) : 0;
 
   return (
     <ProjectSettingsLayout
@@ -545,6 +559,61 @@ const Data = () => {
                     <MotifSource
                       onDidRequestClose={() => {
                         setMotifDialogOpen(false);
+                      }}
+                    />
+                  </div>
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
+            <Dialog.Root
+              open={websiteDialogOpen}
+              onOpenChange={setWebsiteDialogOpen}
+            >
+              <Dialog.Trigger asChild>
+                <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
+                  <GlobeIcon className="h-4 w-4 flex-none" />
+                  <span className="truncate">Connect website</span>
+                </button>
+              </Dialog.Trigger>
+              <Dialog.Portal>
+                <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
+                <Dialog.Content className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[500px] flex-col border">
+                  <Dialog.Title className="dialog-title flex-none">
+                    Connect website
+                  </Dialog.Title>
+                  <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
+                    <p>
+                      Sync all pages from a website
+                      {numWebsitePages > 0 ? (
+                        <>
+                          {' '}
+                          (up to {numWebsitePages},{' '}
+                          <Link
+                            className="subtle-underline"
+                            href={`/settings/${team?.slug}/plans`}
+                          >
+                            upgrade plan
+                          </Link>{' '}
+                          for more)
+                        </>
+                      ) : (
+                        ''
+                      )}
+                      . You can specify which files to include and exclude from
+                      the website in the{' '}
+                      <Link
+                        className="subtle-underline"
+                        href={`/${team?.slug}/${project?.slug}/settings`}
+                      >
+                        project configuration
+                      </Link>
+                      .
+                    </p>
+                  </div>
+                  <div className="flex-grow">
+                    <WebsiteSource
+                      onDidRequestClose={() => {
+                        setWebsiteDialogOpen(false);
                       }}
                     />
                   </div>

@@ -14,6 +14,7 @@ import {
   GitHubSourceDataType,
   MotifSourceDataType,
   Source,
+  WebsiteSourceDataType,
 } from '@/types/types';
 
 import { processFile } from '../api';
@@ -24,6 +25,7 @@ import {
   getMotifFileContent,
   getMotifPublicFileMetadata,
 } from '../integrations/motif';
+import { fetchRobotsTxtInfo, fetchSitemapUrls } from '../integrations/website';
 import {
   createChecksum,
   getGitHubOwnerRepoString,
@@ -263,6 +265,69 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             onError(`Error processing ${data.projectDomain}: ${e}`);
             break;
           }
+          break;
+        }
+        case 'website': {
+          const data = source.data as WebsiteSourceDataType;
+          const websiteUrl = data.url;
+
+          try {
+            const robotsTxtInfo = await fetchRobotsTxtInfo(websiteUrl);
+            console.log(
+              'robotsTxtInfo',
+              JSON.stringify(robotsTxtInfo, null, 2),
+            );
+            const sitemapUrls = await fetchSitemapUrls(
+              websiteUrl,
+              robotsTxtInfo.sitemap,
+            );
+            if (sitemapUrls !== undefined) {
+              // If there is a sitemap, we honor this.
+              // await generateEmbeddings(
+              //   source.id,
+              //   filesMetadata.length,
+              //   (i) => {
+              //     const metadata = filesMetadata[i];
+              //     return {
+              //       name: metadata.name,
+              //       path: metadata.path,
+              //     };
+              //   },
+              //   async (i) => getMotifFileContent(filesMetadata[i].id),
+              //   () => {
+              //     onFileProcessed();
+              //   },
+              // );
+            } else {
+              // Otherwise, we discover links starting with the root page
+            }
+            console.log('sitemapUrls', JSON.stringify(sitemapUrls, null, 2));
+
+            // const filesMetadata = await getMotifPublicFileMetadata(
+            //   data.projectDomain,
+            //   config.include || [],
+            //   config.exclude || [],
+            // );
+
+            // await generateEmbeddings(
+            //   source.id,
+            //   filesMetadata.length,
+            //   (i) => {
+            //     const metadata = filesMetadata[i];
+            //     return {
+            //       name: metadata.name,
+            //       path: metadata.path,
+            //     };
+            //   },
+            //   async (i) => getMotifFileContent(filesMetadata[i].id),
+            //   () => {
+            //     onFileProcessed();
+            //   },
+            // );
+          } catch (e) {
+            onError(`Error processing ${websiteUrl}: ${e}`);
+          }
+
           break;
         }
         default: {

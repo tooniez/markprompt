@@ -115,6 +115,9 @@ export type Usage = Record<Project['id'], ProjectUsage>;
 
 export type GitHubSourceDataType = { url: string };
 export type MotifSourceDataType = { projectDomain: string };
+export type WebsiteSourceDataType = { url: string };
+
+export type RobotsTxtInfo = { sitemap?: string; disallowedPaths: string[] };
 
 export class ApiError extends Error {
   readonly code: number;

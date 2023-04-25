@@ -23,6 +23,7 @@ import {
   MotifSourceDataType,
   Source,
   TimeInterval,
+  WebsiteSourceDataType,
 } from '@/types/types';
 
 import { getHost } from './utils.edge';
@@ -345,7 +346,7 @@ export const sampleTokenCountData: DateCountHistogramEntry[] = [
   },
   {
     date: dayjs().add(-1, 'days').startOf('day').toISOString(),
-    count: 2,
+    count: 1,
   },
 ];
 
@@ -494,13 +495,17 @@ export const getGitHubOwnerRepoString = (url: string) => {
 
 export const getLabelForSource = (source: Source) => {
   switch (source.type) {
+    case 'github': {
+      const data = source.data as GitHubSourceDataType;
+      return getGitHubOwnerRepoString(data.url);
+    }
     case 'motif': {
       const data = source.data as MotifSourceDataType;
       return data.projectDomain;
     }
-    case 'github': {
-      const data = source.data as GitHubSourceDataType;
-      return getGitHubOwnerRepoString(data.url);
+    case 'website': {
+      const data = source.data as WebsiteSourceDataType;
+      return getUrlOrigin(data.url);
     }
     case 'file-upload':
       return 'File uploads';
@@ -509,4 +514,15 @@ export const getLabelForSource = (source: Source) => {
     default:
       return 'Unknown source';
   }
+};
+
+export const normalizeUrl = (url: string, useInsecureSchema?: boolean) => {
+  if (/^https?:\/\/[a-zA-Z]+/.test(url)) {
+    return url;
+  }
+  return `http${useInsecureSchema ? '' : 's'}://${getUrlOrigin(url)}`;
+};
+
+export const getUrlOrigin = (url: string) => {
+  return removeSchema(url).split('/')[0];
 };
