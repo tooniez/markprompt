@@ -1,4 +1,5 @@
 import Markdoc, { RenderableTreeNode } from '@markdoc/markdoc';
+import cn from 'classnames';
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import Image from 'next/image';
@@ -35,7 +36,11 @@ type CloudinaryImageProps = {
   className?: string;
 };
 
-const CloudinaryImage: FC<CloudinaryImageProps> = ({ src, alt, className }) => {
+export const CloudinaryImage: FC<CloudinaryImageProps> = ({
+  src,
+  alt,
+  className,
+}) => {
   const dimens = useMemo(() => {
     if (!src) {
       return undefined;
@@ -55,6 +60,51 @@ const CloudinaryImage: FC<CloudinaryImageProps> = ({ src, alt, className }) => {
       width={dimens.width}
       height={dimens.height}
     />
+  );
+};
+
+export const AuthorList = ({
+  authors,
+  size,
+  justify,
+  highlight,
+}: {
+  authors: { name: string; avatar: string }[];
+  size?: 'sm' | 'base';
+  justify?: 'center';
+  highlight?: boolean;
+}) => {
+  return (
+    <div className="flex flex-row flex-wrap gap-4">
+      {authors?.map((author: { name: string; avatar: string }) => {
+        return (
+          <div
+            className={cn('not-prose flex flex-row items-center gap-2', {
+              'justify-center': justify === 'center',
+            })}
+            key={author.name}
+          >
+            <CloudinaryImage
+              src={author.avatar}
+              alt={author.name || 'Avatar'}
+              className="h-6 w-6 rounded-full object-cover"
+            />
+            <p
+              className={cn(
+                'flex justify-center whitespace-nowrap font-normal',
+                {
+                  'text-sm': size === 'sm',
+                  'text-neutral-500': !highlight,
+                  'text-neutral-300': highlight,
+                },
+              )}
+            >
+              {author?.name}
+            </p>
+          </div>
+        );
+      })}
+    </div>
   );
 };
 
@@ -85,25 +135,9 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
                 </Balancer>
               </div>
             )}
-            <div className="flex flex-row items-center justify-center gap-4">
-              {frontmatter?.authors?.map(
-                (author: { name: string; avatar: string }) => {
-                  return (
-                    <div
-                      className="not-prose mt-4 mb-2 flex flex-row items-center justify-center gap-2"
-                      key={author.name}
-                    >
-                      <CloudinaryImage
-                        src={author.avatar}
-                        alt={author.name || 'Avatar'}
-                        className="h-6 w-6 rounded-full object-cover"
-                      />
-                      <p className="flex justify-center text-neutral-500">
-                        {author?.name}
-                      </p>
-                    </div>
-                  );
-                },
+            <div className="mt-4 mb-2 flex flex-row items-center  justify-center gap-4">
+              {frontmatter?.authors && (
+                <AuthorList authors={frontmatter.authors} justify="center" />
               )}
             </div>
             <div className="mb-8">
