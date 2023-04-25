@@ -1,5 +1,6 @@
 import * as Slider from '@radix-ui/react-slider';
 import cn from 'classnames';
+import Link from 'next/link';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
 
@@ -14,20 +15,18 @@ import LandingNavbar from '@/components/layouts/LandingNavbar';
 import { Blurs } from '@/components/ui/Blurs';
 import Button from '@/components/ui/Button';
 import { Code } from '@/components/ui/Code';
-import { Pattern, PatternDimmedSky } from '@/components/ui/Pattern';
+import { Pattern } from '@/components/ui/Pattern';
 import {
   modelLabels,
   PricedModel,
   TierDetails,
   TIERS,
 } from '@/lib/stripe/tiers';
-import { formatNumQueries } from '@/lib/utils';
 
 import { SharedHead } from './SharedHead';
 import { AnalyticsExample } from '../examples/analytics';
 import { Playground } from '../files/Playground';
 import { DiscordIcon } from '../icons/Discord';
-import { Flashing } from '../ui/Flashing';
 import { ListItem } from '../ui/ListItem';
 import { Segment } from '../ui/Segment';
 
@@ -260,6 +259,15 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
   return (
     <>
       <SharedHead title="Markprompt | Open Source GPT-4 platform for Markdown" />
+      <div className="bg-fuchsia-700 py-1.5 px-6 sm:px-8">
+        <Link
+          href="/blog/markprompt-qa"
+          className="mx-auto block max-w-screen-xl text-center text-xs font-medium transition hover:opacity-80"
+        >
+          Read our Q&A with Tom Johnson on the future of docs and how Markprompt
+          fits →
+        </Link>
+      </div>
       <div className="relative mx-auto min-h-screen max-w-screen-xl px-6 sm:px-8">
         <Pattern />
         <LandingNavbar />
