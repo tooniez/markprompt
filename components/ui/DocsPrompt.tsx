@@ -15,7 +15,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children }) => {
     <Popover.Root open={promptOpen} onOpenChange={setPromptOpen}>
       <Popover.Trigger asChild>{children}</Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content className="animate-chat-window z-20 mr-4 mb-4 w-[calc(100vw-32px)] sm:w-full">
+        <Popover.Content className="animate-chat-window z-30 mr-4 mb-4 w-[calc(100vw-32px)] sm:w-full">
           <div className="relative mt-4 h-[calc(100vh-240px)] max-h-[560px] w-full overflow-hidden rounded-lg border border-neutral-900 bg-neutral-1000 p-4 shadow-2xl sm:w-[400px]">
             <Playground
               placeholder="Ask the Markprompt docs..."
