@@ -21,10 +21,9 @@ export default function LandingNavbar({
       })}
     >
       <div className="flex flex-none flex-row items-center gap-4 text-white">
-        <a href="https://motif.land">
+        <Link href="/">
           <MarkpromptIcon className="mx-auto h-10 w-10 text-white" />
-          {/* <MotifIcon className="h-8 w-8 select-none text-neutral-100" /> */}
-        </a>{' '}
+        </Link>{' '}
         <Link
           href="/"
           className="text-lg font-semibold transition hover:opacity-80"
