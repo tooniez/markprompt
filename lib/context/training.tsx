@@ -67,6 +67,11 @@ export type State = {
     onFileProcessed: () => void,
     onError: (message: string) => void,
   ) => void;
+  trainSource: (
+    source: Source,
+    onFileProcessed: () => void,
+    onError: (message: string) => void,
+  ) => void;
 };
 
 const initialState: State = {
@@ -78,6 +83,8 @@ const initialState: State = {
   stopGeneratingEmbeddings: () => {},
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   trainAllSources: () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  trainSource: () => {},
 };
 
 export const getTrainingStateMessage = (
@@ -189,84 +196,95 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
     [project?.id, supabase, config.include, config.exclude],
   );
 
+  const trainSource = useCallback(
+    async (
+      source: Source,
+      onFileProcessed: () => void,
+      onError: (message: string) => void,
+    ) => {
+      switch (source.type) {
+        case 'github': {
+          const data = source.data as GitHubSourceDataType;
+          try {
+            const fileData = await getGitHubFiles(
+              data.url,
+              config.include || [],
+              config.exclude || [],
+            );
+
+            await generateEmbeddings(
+              source.id,
+              fileData.length,
+              (i) => {
+                const file = fileData[i];
+                return {
+                  name: file.name,
+                  path: file.path,
+                };
+              },
+              async (i) => fileData[i].content,
+              () => {
+                onFileProcessed();
+              },
+            );
+          } catch (e) {
+            const repoOwner = getGitHubOwnerRepoString(data.url);
+            onError(`Error processing ${repoOwner}: ${e}`);
+            break;
+          }
+          break;
+        }
+        case 'motif': {
+          const data = source.data as MotifSourceDataType;
+
+          try {
+            const filesMetadata = await getMotifPublicFileMetadata(
+              data.projectDomain,
+              config.include || [],
+              config.exclude || [],
+            );
+
+            await generateEmbeddings(
+              source.id,
+              filesMetadata.length,
+              (i) => {
+                const metadata = filesMetadata[i];
+                return {
+                  name: metadata.name,
+                  path: metadata.path,
+                };
+              },
+              async (i) => getMotifFileContent(filesMetadata[i].id),
+              () => {
+                onFileProcessed();
+              },
+            );
+          } catch (e) {
+            onError(`Error processing ${data.projectDomain}: ${e}`);
+            break;
+          }
+          break;
+        }
+        default: {
+          // Skip. Note that file sources are trained at upload
+          // time, and file content is not stored, so there's nothing
+          // to train here in this situation.
+          break;
+        }
+      }
+    },
+    [config.exclude, config.include, generateEmbeddings],
+  );
+
   const trainAllSources = useCallback(
     async (onFileProcessed: () => void, onError: (message: string) => void) => {
       setState({ state: 'fetching_data' });
       for (const source of sources) {
-        switch (source.type) {
-          case 'github': {
-            const data = source.data as GitHubSourceDataType;
-            try {
-              const fileData = await getGitHubFiles(
-                data.url,
-                config.include || [],
-                config.exclude || [],
-              );
-
-              await generateEmbeddings(
-                source.id,
-                fileData.length,
-                (i) => {
-                  const file = fileData[i];
-                  return {
-                    name: file.name,
-                    path: file.path,
-                  };
-                },
-                async (i) => fileData[i].content,
-                () => {
-                  onFileProcessed();
-                },
-              );
-            } catch (e) {
-              const repoOwner = getGitHubOwnerRepoString(data.url);
-              onError(`Error processing ${repoOwner}: ${e}`);
-              break;
-            }
-            break;
-          }
-          case 'motif': {
-            const data = source.data as MotifSourceDataType;
-
-            try {
-              const filesMetadata = await getMotifPublicFileMetadata(
-                data.projectDomain,
-                config.include || [],
-                config.exclude || [],
-              );
-
-              await generateEmbeddings(
-                source.id,
-                filesMetadata.length,
-                (i) => {
-                  const metadata = filesMetadata[i];
-                  return {
-                    name: metadata.name,
-                    path: metadata.path,
-                  };
-                },
-                async (i) => getMotifFileContent(filesMetadata[i].id),
-                () => {
-                  onFileProcessed();
-                },
-              );
-            } catch (e) {
-              onError(`Error processing ${data.projectDomain}: ${e}`);
-              break;
-            }
-            break;
-          }
-          default: {
-            // Skip. Note that file sources are trained at upload
-            // time, and file content is not stored, so there's nothing
-            // to train here in this situation.
-            break;
-          }
-        }
+        await trainSource(source, onFileProcessed, onError);
       }
       setState({ state: 'idle' });
     },
-    [config.exclude, config.include, generateEmbeddings, sources],
+    [sources, trainSource],
   );
 
   const stopGeneratingEmbeddings = useCallback(() => {
@@ -282,6 +300,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         generateEmbeddings,
         stopGeneratingEmbeddings,
         trainAllSources,
+        trainSource,
       }}
       {...props}
     />

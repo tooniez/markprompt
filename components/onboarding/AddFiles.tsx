@@ -5,11 +5,13 @@ import { toast } from 'react-hot-toast';
 
 import { FileDnd } from '@/components/files/FileDnd';
 import { Code } from '@/components/ui/Code';
+import { SAMPLE_REPO_URL } from '@/lib/constants';
 import useFiles from '@/lib/hooks/use-files';
 import useTokens from '@/lib/hooks/use-tokens';
 import { copyToClipboard, pluralize } from '@/lib/utils';
 import { getHost } from '@/lib/utils.edge';
 
+import { GitHubSample } from './GitHubSample';
 import { GitHub } from '../files/GitHub';
 
 type TagProps = {
@@ -72,7 +74,17 @@ const AddFiles: FC<AddFilesProps> = ({ onTrainingComplete, onNext }) => {
         </p>
         <div className="mt-4 flex w-full flex-col items-center gap-3">
           <div className="h-[160px] w-full rounded-lg border border-dashed border-neutral-800 bg-neutral-900/50">
-            <GitHub onTrainingComplete={onTrainingComplete} />
+            <GitHub
+              onTrainingComplete={onTrainingComplete}
+              ignoreSource={SAMPLE_REPO_URL}
+            />
+          </div>
+          <p className="text-sm text-neutral-400">or</p>
+          <div className="h-[140px] w-full rounded-lg border border-dashed border-neutral-800 bg-neutral-900/50">
+            <GitHubSample
+              repoUrl={SAMPLE_REPO_URL}
+              onTrainingComplete={onTrainingComplete}
+            />
           </div>
           <p className="text-sm text-neutral-400">or</p>
           <div className="h-[160px] w-full rounded-lg border border-dashed border-neutral-800 bg-neutral-900/50">

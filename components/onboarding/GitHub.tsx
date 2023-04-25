@@ -33,7 +33,6 @@ const GitHubSource = dynamic(
 type GitHubProps = {
   onTrainingComplete: () => void;
   className?: string;
-  ignoreSource?: string;
 };
 
 const getReadyMessage = (
@@ -68,10 +67,7 @@ const getReadyMessage = (
   return getTrainingStateMessage(trainingState);
 };
 
-export const GitHub: FC<GitHubProps> = ({
-  ignoreSource,
-  onTrainingComplete,
-}) => {
+export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
   const { projects } = useProjects();
   const { project, config } = useProject();
   const { mutate: mutateFiles } = useFiles();
@@ -120,9 +116,7 @@ export const GitHub: FC<GitHubProps> = ({
 
   const githubSource = sources.find((s) => s.type === 'github');
 
-  const isReady =
-    !!githubSource &&
-    (githubSource?.data as GitHubSourceDataType)?.url !== ignoreSource;
+  const isReady = !!githubSource;
 
   useEffect(() => {
     const data = githubSource?.data as GitHubSourceDataType;
