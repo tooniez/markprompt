@@ -259,7 +259,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
   return (
     <>
       <SharedHead title="Markprompt | Open Source GPT-4 platform for Markdown" />
-      <div className="bg-fuchsia-700 py-1.5 px-6 sm:px-8">
+      <div className="z-40 bg-fuchsia-700 py-1.5 px-6 sm:px-8">
         <Link
           href="/blog/markprompt-qa"
           className="mx-auto block max-w-screen-xl text-center text-xs font-medium transition hover:opacity-80"
