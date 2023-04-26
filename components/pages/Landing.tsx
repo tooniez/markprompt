@@ -268,7 +268,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           fits →
         </Link>
       </div>
-      <div className="relative mx-auto min-h-screen max-w-screen-xl px-6 sm:px-8">
+      <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 sm:px-8">
         <Pattern />
         <LandingNavbar />
         <div className="animate-slide-up">

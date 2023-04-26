@@ -1,5 +1,5 @@
 export const Pattern = () => (
-  <div className="absolute left-1/2 top-0 ml-[-15rem] h-[30rem] w-[80rem] opacity-70 dark:[mask-image:linear-gradient(white,transparent)]">
+  <div className="pointer-events-none absolute left-1/2 top-0 ml-[-15rem] h-[30rem] w-[80rem] opacity-70 dark:[mask-image:linear-gradient(white,transparent)]">
     <div className="to-highlight-200 dark:to-highlight-200/20 absolute inset-0 bg-gradient-to-r from-primary-500 opacity-40 [mask-image:radial-gradient(farthest-side_at_top,white,transparent)] dark:from-primary-500/50 dark:opacity-100">
       <svg
         aria-hidden="true"
