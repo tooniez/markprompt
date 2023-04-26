@@ -24,7 +24,7 @@ const env =
 export type TierPriceDetails = {
   name: string;
   quota: number;
-  fileAllowance: number;
+  numWebsitePagesPerProject: number;
   price?: {
     monthly?: Price;
     yearly: Price;
@@ -135,9 +135,10 @@ export const TIERS: Record<Tier, TierDetails> = {
     name: 'Hobby',
     description: 'For personal and non-commercial projects',
     items: [
+      'Unlimited documents',
       'Unlimited BYO* completions',
       '25 GPT-4 completions',
-      '100 indexed files',
+      '100 website pages per project',
       'Public/private GitHub repos',
     ],
     notes: ['* BYO: Bring-your-own API key'],
@@ -145,7 +146,8 @@ export const TIERS: Record<Tier, TierDetails> = {
       {
         name: 'Free',
         quota: 25,
-        fileAllowance: 100,
+        // fileAllowance: 100,
+        numWebsitePagesPerProject: 3,
       },
     ],
   },
@@ -157,14 +159,14 @@ export const TIERS: Record<Tier, TierDetails> = {
       'Prompt templates',
       'Model customization',
       '1000 GPT-4 completions',
-      '1000 indexed files',
+      '1000 website pages per project',
       'Analytics (soon)',
     ],
     prices: [
       {
         name: 'Pro',
         quota: 1000,
-        fileAllowance: 1000,
+        numWebsitePagesPerProject: 1000,
         price: {
           monthly: {
             amount: 120,
@@ -202,7 +204,7 @@ export const TIERS: Record<Tier, TierDetails> = {
       {
         name: 'Enterprise',
         quota: -1,
-        fileAllowance: -1,
+        numWebsitePagesPerProject: -1,
       },
     ],
   },
@@ -210,7 +212,8 @@ export const TIERS: Record<Tier, TierDetails> = {
 
 const maxAllowanceForEnterprise = 1_000_000;
 const quotaForLegacyPriceId = TIERS.pro.prices[0].quota;
-const legacyNumWebsitePagesPerProject = TIERS.pro.prices[0].fileAllowance;
+const legacyNumWebsitePagesPerProject =
+  TIERS.pro.prices[0].numWebsitePagesPerProject;
 
 export const getMonthlyQueryAllowance = (team: Team) => {
   if (team.is_enterprise_plan) {
@@ -226,16 +229,16 @@ export const getMonthlyQueryAllowance = (team: Team) => {
   }
 };
 
-export const getFileAllowance = (team: Team) => {
+export const getNumWebsitePagesPerProjectAllowance = (team: Team) => {
   if (team.is_enterprise_plan) {
     return -1;
   } else if (team.stripe_price_id) {
     const priceDetails = getTierPriceDetailsFromPriceId(team.stripe_price_id);
     if (priceDetails) {
-      return priceDetails.fileAllowance;
+      return priceDetails.numWebsitePagesPerProject;
     }
     return legacyNumWebsitePagesPerProject;
   } else {
-    return TIERS.hobby.prices[0].fileAllowance;
+    return TIERS.hobby.prices[0].numWebsitePagesPerProject;
   }
 };

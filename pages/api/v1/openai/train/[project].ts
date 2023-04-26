@@ -13,6 +13,7 @@ import {
   getBYOOpenAIKey,
   getChecksums,
   getOrCreateSource,
+  getProjectTeam,
 } from '@/lib/supabase';
 import {
   createChecksum,
@@ -93,6 +94,14 @@ export default async function handler(
       status: `Please specify a content type. Currently supported values are: ${ACCEPTED_CONTENT_TYPES.join(
         ', ',
       )}.`,
+    });
+  }
+
+  const team = await getProjectTeam(supabaseAdmin, projectId);
+
+  if (!team) {
+    return res.status(400).json({
+      status: 'Team not found.',
     });
   }
 

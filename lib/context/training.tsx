@@ -8,10 +8,10 @@ import {
   useRef,
   useState,
 } from 'react';
+import { toast } from 'react-hot-toast';
 
 import {
   FileData,
-  FileType,
   GitHubSourceDataType,
   MotifSourceDataType,
   Source,
@@ -21,6 +21,7 @@ import {
 import { processFile } from '../api';
 import useProject from '../hooks/use-project';
 import useSources from '../hooks/use-sources';
+import useUsage from '../hooks/use-usage';
 import { getGitHubFiles } from '../integrations/github.node';
 import {
   getMotifFileContent,
@@ -64,6 +65,7 @@ export type State = {
   errors: string[];
   generateEmbeddings: (
     sourceId: Source['id'],
+    sourceType: Source['type'],
     numFiles: number,
     getFilePath: (index: number) => string,
     getFileNameContent: (
@@ -103,30 +105,47 @@ export const getTrainingStateMessage = (
 ) => {
   if (state.state === 'loading') {
     return `Processing file ${state.progress} of ${state.total}${
-      state.filename ? ` (${truncate(state.filename, 20)})` : '.'
+      state.filename ? ` (${truncate(state.filename, 20)})` : ''
     }`;
   } else if (state.state === 'complete') {
-    return 'Done processing files.';
+    return 'Done processing files';
   } else if (state.state === 'cancel_requested') {
     return 'Stopping processing...';
   }
   if (typeof numFiles !== 'undefined') {
-    return `${pluralize(numFiles, 'file', 'files')} added.`;
+    return `${pluralize(numFiles, 'file', 'files')} added`;
   }
   return '';
+};
+
+const hasReachedTrainingQuota = (
+  sourceType: Source['type'],
+  numNewlyProcessedFiles: number,
+  numWebsitePagesRemainingOnPlan: number,
+) => {
+  return (
+    sourceType === 'website' &&
+    numNewlyProcessedFiles >= numWebsitePagesRemainingOnPlan
+  );
 };
 
 const TrainingContextProvider = (props: PropsWithChildren) => {
   const supabase = useSupabaseClient();
   const { project, config } = useProject();
+  const { sources } = useSources();
+  const { numWebsitePagesInProject, numWebsitePagesPerProjectAllowance } =
+    useUsage();
   const [state, setState] = useState<TrainingState>({ state: 'idle' });
   const [errors, setErrors] = useState<string[]>([]);
   const stopFlag = useRef(false);
-  const { sources } = useSources();
+
+  const numWebsitePagesRemainingOnPlan =
+    numWebsitePagesPerProjectAllowance - numWebsitePagesInProject;
 
   const generateEmbeddings = useCallback(
     async (
       sourceId: Source['id'],
+      sourceType: Source['type'],
       numFiles: number,
       getFilePath: (index: number) => string,
       getFileNameContent: (
@@ -145,6 +164,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         .select('path,checksum')
         .eq('source_id', sourceId);
 
+      let numNewlyProcessed = 0;
       for (let i = 0; i < numFiles; i++) {
         if (stopFlag.current) {
           stopFlag.current = false;
@@ -185,6 +205,16 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           continue;
         }
 
+        if (
+          hasReachedTrainingQuota(
+            sourceType,
+            numNewlyProcessed,
+            numWebsitePagesRemainingOnPlan,
+          )
+        ) {
+          break;
+        }
+
         console.info('Processing', path);
 
         const file: FileData = { path, name, content };
@@ -199,11 +229,30 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             `Error processing ${file.name}: ${e}`,
           ]);
         }
+        numNewlyProcessed++;
+      }
+
+      if (
+        hasReachedTrainingQuota(
+          sourceType,
+          numNewlyProcessed,
+          numWebsitePagesRemainingOnPlan,
+        )
+      ) {
+        toast.error(
+          'You have reached the quota of website pages per project on this plan.',
+        );
       }
 
       setState({ state: 'idle' });
     },
-    [project?.id, supabase, config.include, config.exclude],
+    [
+      project?.id,
+      supabase,
+      numWebsitePagesRemainingOnPlan,
+      config.include,
+      config.exclude,
+    ],
   );
 
   const trainSource = useCallback(
@@ -224,6 +273,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
             await generateEmbeddings(
               source.id,
+              'github',
               fileData.length,
               (i) => fileData[i].path,
               async (i) => {
@@ -254,6 +304,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
             await generateEmbeddings(
               source.id,
+              'motif',
               filesMetadata.length,
               (i) => filesMetadata[i].path,
               async (i) => {
@@ -285,6 +336,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               // If there is a sitemap, we honor this.
               await generateEmbeddings(
                 source.id,
+                'website',
                 sitemapUrls.length,
                 (i) => sitemapUrls[i],
                 async (i) => {
@@ -300,28 +352,6 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             } else {
               // Otherwise, we discover links starting with the root page
             }
-
-            // const filesMetadata = await getMotifPublicFileMetadata(
-            //   data.projectDomain,
-            //   config.include || [],
-            //   config.exclude || [],
-            // );
-
-            // await generateEmbeddings(
-            //   source.id,
-            //   filesMetadata.length,
-            //   (i) => {
-            //     const metadata = filesMetadata[i];
-            //     return {
-            //       name: metadata.name,
-            //       path: metadata.path,
-            //     };
-            //   },
-            //   async (i) => getMotifFileContent(filesMetadata[i].id),
-            //   () => {
-            //     onFileProcessed();
-            //   },
-            // );
           } catch (e) {
             onError(`Error processing ${websiteUrl}: ${e}`);
           }

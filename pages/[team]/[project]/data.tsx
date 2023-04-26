@@ -44,7 +44,7 @@ import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
-import { getNumWebsitePagesPerProject } from '@/lib/stripe/tiers';
+import useUsage from '@/lib/hooks/use-usage';
 import {
   getFileNameForSourceAtPath,
   getLabelForSource,
@@ -271,6 +271,11 @@ const Data = () => {
     state: trainingState,
     trainAllSources,
   } = useTrainingContext();
+  const {
+    numWebsitePagesInProject,
+    numWebsitePagesPerProjectAllowance,
+    mutate: mutateFileStats,
+  } = useUsage();
   const [rowSelection, setRowSelection] = useState({});
   const [isDeleting, setIsDeleting] = useState(false);
   const [fileDialogOpen, setFileDialogOpen] = useState(false);
@@ -390,8 +395,8 @@ const Data = () => {
   const numSelected = Object.values(rowSelection).filter(Boolean).length;
   const hasFiles = files && files.length > 0;
   const canTrain = hasFiles || hasNonFileSources(sources);
-
-  const numWebsitePages = team ? getNumWebsitePagesPerProject(team) : 0;
+  const canAddMoreWebsitePages =
+    numWebsitePagesInProject < numWebsitePagesPerProjectAllowance;
 
   return (
     <ProjectSettingsLayout
@@ -452,6 +457,7 @@ const Data = () => {
                   );
                   setRowSelection([]);
                   setIsDeleting(false);
+                  mutateFileStats();
                   toast.success(
                     `${pluralize(fileIds.length, 'file', 'files')} deleted.`,
                   );
@@ -491,6 +497,23 @@ const Data = () => {
     >
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-4">
         <div className="flex w-full flex-col gap-2">
+          {!loadingFiles && !canAddMoreWebsitePages && (
+            <div className="mb-4 flex flex-col gap-4 rounded-md border border-dashed border-fuchsia-500/20 bg-fuchsia-900/20 p-4 text-xs leading-relaxed text-fuchsia-400">
+              You have reached your quota of indexed website pages (
+              {numWebsitePagesPerProjectAllowance}) for this plan. Please
+              upgrade your plan to index more website pages.
+              <div className="flex justify-end">
+                <Button
+                  href={`/settings/${team?.slug}/plans`}
+                  buttonSize="xs"
+                  variant="borderedFuchsia"
+                  light
+                >
+                  Upgrade plan
+                </Button>
+              </div>
+            </div>
+          )}
           {sources.length > 0 && (
             <>
               <p className="text-xs font-medium text-neutral-500">Sources</p>
@@ -606,7 +629,14 @@ const Data = () => {
               onOpenChange={setWebsiteDialogOpen}
             >
               <Dialog.Trigger asChild>
-                <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
+                <button
+                  className={cn(
+                    'flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400',
+                    {
+                      'pointer-events-none opacity-50': !canAddMoreWebsitePages,
+                    },
+                  )}
+                >
                   <GlobeIcon className="h-4 w-4 flex-none" />
                   <span className="truncate">Connect website</span>
                 </button>
@@ -619,24 +649,8 @@ const Data = () => {
                   </Dialog.Title>
                   <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
                     <p>
-                      Sync all pages from a website
-                      {numWebsitePages > 0 ? (
-                        <>
-                          {' '}
-                          (up to {numWebsitePages},{' '}
-                          <Link
-                            className="subtle-underline"
-                            href={`/settings/${team?.slug}/plans`}
-                          >
-                            upgrade plan
-                          </Link>{' '}
-                          for more)
-                        </>
-                      ) : (
-                        ''
-                      )}
-                      . You can specify which files to include and exclude from
-                      the website in the{' '}
+                      Sync pages from a website. You can specify which files to
+                      include and exclude from the website in the{' '}
                       <Link
                         className="subtle-underline"
                         href={`/${team?.slug}/${project?.slug}/settings`}

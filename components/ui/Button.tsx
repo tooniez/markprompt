@@ -11,11 +11,13 @@ export type ButtonVariant =
   | 'ghost'
   | 'plain'
   | 'bordered'
-  | 'fuchsia';
+  | 'fuchsia'
+  | 'borderedFuchsia';
 
 type ButtonProps = {
-  buttonSize?: 'sm' | 'base' | 'md' | 'lg';
+  buttonSize?: 'xs' | 'sm' | 'base' | 'md' | 'lg';
   variant?: ButtonVariant;
+  light?: boolean;
   href?: string;
   Icon?: JSXElementConstructor<any> | string;
   children?: ReactNode;
@@ -34,6 +36,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     {
       buttonSize,
       variant,
+      light,
       href,
       children,
       Icon,
@@ -58,7 +61,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         className={cn(
           className,
-          'relative flex select-none flex-row items-center justify-center gap-3 whitespace-nowrap rounded-md border font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 disabled:cursor-not-allowed',
+          'relative flex select-none flex-row items-center justify-center gap-3 whitespace-nowrap rounded-md border transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 disabled:cursor-not-allowed',
           {
             'border-transparent bg-white text-neutral-900 hover:bg-neutral-300 disabled:bg-neutral-900 disabled:text-neutral-500 hover:disabled:bg-neutral-900':
               variant === 'cta',
@@ -72,9 +75,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               variant === 'plain',
             'border-neutral-800 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
               variant === 'bordered',
+            'border-fuchsia-400/20 text-fuchsia-400 hover:bg-fuchsia-900/20 hover:text-fuchsia-100 disabled:border-transparent disabled:text-fuchsia-500 hover:disabled:bg-opacity-100':
+              variant === 'borderedFuchsia',
             'px-4 py-2 text-sm': size === 'base',
+            'px-2 py-1.5 text-xs': size === 'xs',
             'px-3 py-1.5 text-sm': size === 'sm',
             'px-5 py-3 text-base': size === 'lg',
+            'font-semibold': !light,
           },
         )}
         {...(href ? { href } : {})}

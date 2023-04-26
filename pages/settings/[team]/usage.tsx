@@ -10,9 +10,8 @@ import useSWR from 'swr';
 import BarChart, { BarChartData } from '@/components/charts/bar-chart';
 import { TeamSettingsLayout } from '@/components/layouts/TeamSettingsLayout';
 import Button from '@/components/ui/Button';
-import useFileStats from '@/lib/hooks/use-file-stats';
 import useTeam from '@/lib/hooks/use-team';
-import { getFileAllowance, getMonthlyQueryAllowance } from '@/lib/stripe/tiers';
+import { getMonthlyQueryAllowance } from '@/lib/stripe/tiers';
 import { fetcher } from '@/lib/utils';
 import { ProjectUsageHistogram } from '@/types/types';
 
@@ -21,7 +20,6 @@ dayjs.extend(duration);
 const Usage = () => {
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(0);
   const { team } = useTeam();
-  const { fileStats } = useFileStats();
 
   const interval = useMemo(
     () => ({
@@ -100,11 +98,6 @@ const Usage = () => {
       Math.round((monthlyUsedQueries / monthyQueryAllowance) * 100),
     ) || 0;
 
-  const fileAllowance = (team && getFileAllowance(team)) || 0;
-  const numFiles = fileStats?.numFiles || 0;
-  const usedFilesPercentage =
-    Math.min(100, Math.round((numFiles / fileAllowance) * 100)) || 0;
-
   return (
     <TeamSettingsLayout
       title="Usage"
@@ -159,8 +152,8 @@ const Usage = () => {
       SubHeading={() => {
         return (
           <p className="mb-6 text-sm text-neutral-500">
-            Below you will find a summary of your monthly usage of the query
-            API. Dates are UTC-based, and data is updated in real time.
+            Below is a summary of your monthly usage of the query API. Dates are
+            UTC-based, and data is updated in real time.
           </p>
         );
       }}
@@ -197,41 +190,16 @@ const Usage = () => {
         <span className="text-sm text-neutral-500">
           {monthlyUsedQueries} out of {monthyQueryAllowance} queries
         </span>
+        {team?.slug && !team.is_enterprise_plan && (
+          <Button
+            href={`/settings/${team.slug}/plans`}
+            variant="bordered"
+            buttonSize="sm"
+          >
+            Upgrade
+          </Button>
+        )}
       </div>
-
-      <h2 className="mt-6 text-base font-bold">File quota</h2>
-      <div className="mt-1 flex h-10 w-1/2 flex-row items-center gap-4">
-        <Progress.Root
-          // Fix overflow clipping in Safari
-          // https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0
-          style={{ transform: 'translateZ(0)' }}
-          className="translate- relative h-2 flex-grow overflow-hidden rounded-full bg-neutral-800"
-          value={usedFilesPercentage}
-        >
-          <Progress.Indicator
-            className={cn('h-full w-full transform duration-500 ease-in-out', {
-              'bg-sky-400': usedFilesPercentage <= 70,
-              'bg-amber-400':
-                usedFilesPercentage > 70 && usedFilesPercentage <= 90,
-              'bg-red-400': usedFilesPercentage > 90,
-            })}
-            style={{ transform: `translateX(-${100 - usedFilesPercentage}%)` }}
-          />
-        </Progress.Root>
-        <span className="text-sm text-neutral-500">
-          {numFiles} out of {fileAllowance} files
-        </span>
-      </div>
-
-      {team?.slug && !team.is_enterprise_plan && usedFilesPercentage > 70 && (
-        <Button
-          href={`/settings/${team.slug}/plans`}
-          variant="bordered"
-          buttonSize="sm"
-        >
-          Upgrade
-        </Button>
-      )}
     </TeamSettingsLayout>
   );
 };

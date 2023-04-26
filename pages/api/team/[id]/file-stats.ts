@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { getFilesInTeam } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 import { FileStats, Team } from '@/types/types';
 
@@ -33,12 +34,7 @@ export default async function handler(
 
   const teamId = req.query.id as Team['id'];
 
-  // TODO: this query should be revised if/when we remove the project_id
-  // column from the files table.
-  const { data } = await supabase
-    .from('files')
-    .select('sources!inner (project_id), projects!inner (team_id)')
-    .eq('projects.team_id', teamId);
+  const data = await getFilesInTeam(supabase, teamId);
 
   if (!data) {
     return res.status(400).json({ error: 'Unable to retrieve usage data' });
