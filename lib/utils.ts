@@ -17,6 +17,7 @@ import {
 
 import {
   DateCountHistogramEntry,
+  FileType,
   GitHubSourceDataType,
   HistogramStat,
   LLMInfo,
@@ -204,8 +205,6 @@ export const compress = (plainString: string): Uint8Array => {
 export const decompress = (compressedString: Buffer): string => {
   return pako.inflate(compressedString, { to: 'string' });
 };
-
-export type FileType = 'mdx' | 'mdoc' | 'md' | 'html' | 'txt';
 
 export const getFileType = (name: string): FileType => {
   const extension = name.match(/\.(\w*)$/)?.[1];
@@ -413,10 +412,6 @@ export const stringToLLMInfo = (param?: string): LLMInfo => {
   }
 };
 
-const isSupportedExtension = (path: string) => {
-  return /\.(md|mdx|mdoc|html|txt)$/.test(path);
-};
-
 export const matchesGlobs = (path: string, globs: string[]) => {
   return globs.some((g) => minimatch(path, g));
 };
@@ -426,13 +421,7 @@ export const shouldIncludeFileWithPath = (
   includeGlobs: string[],
   excludeGlobs: string[],
 ) => {
-  if (
-    !(
-      !path.startsWith('.') &&
-      !path.includes('/.') &&
-      isSupportedExtension(path)
-    )
-  ) {
+  if (path.startsWith('.') || path.includes('/.')) {
     // Exclude unsupported files and dotfiles
     return false;
   }
@@ -516,6 +505,33 @@ export const getLabelForSource = (source: Source) => {
   }
 };
 
+export const getFileNameForSourceAtPath = (source: Source, path: string) => {
+  switch (source.type) {
+    case 'website': {
+      // Handles e.g. index.html when last path component is empty
+      return getNameFromUrlOrPath(path);
+    }
+    default:
+      return path.split('/').slice(-1)[0];
+  }
+};
+
+export const getNameFromUrlOrPath = (url: string) => {
+  // When processing a text file, the type of a file (md, mdoc, html, etc)
+  // is determined by the file name, specifically by its extension. In
+  // the case where we are parsing websites, the URL of the page might
+  // not contain the HTML extension, we nevertheless consider it as an
+  // HTML file.
+  const baseName = url.split('/').slice(-1)[0];
+  if (/\.html$/.test(baseName)) {
+    return baseName;
+  } else if (baseName.length > 0) {
+    return `${baseName}.html`;
+  } else {
+    return 'index.html';
+  }
+};
+
 export const normalizeUrl = (url: string, useInsecureSchema?: boolean) => {
   if (/^https?:\/\/[a-zA-Z]+/.test(url)) {
     return url;
@@ -525,4 +541,17 @@ export const normalizeUrl = (url: string, useInsecureSchema?: boolean) => {
 
 export const getUrlOrigin = (url: string) => {
   return removeSchema(url).split('/')[0];
+};
+
+export const isUrl = (path: string) => {
+  try {
+    new URL(path);
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+export const getUrlPath = (url: string) => {
+  const urlObj = new URL(url);
+  return urlObj.pathname;
 };

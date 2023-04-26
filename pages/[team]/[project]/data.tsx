@@ -45,7 +45,14 @@ import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import { getNumWebsitePagesPerProject } from '@/lib/stripe/tiers';
-import { getLabelForSource, pluralize, truncate } from '@/lib/utils';
+import {
+  getFileNameForSourceAtPath,
+  getLabelForSource,
+  getUrlPath,
+  isUrl,
+  pluralize,
+  truncate,
+} from '@/lib/utils';
 import { Project, Source, SourceType } from '@/types/types';
 
 dayjs.extend(relativeTime);
@@ -72,6 +79,10 @@ const WebsiteSource = dynamic(
 );
 
 const getBasePath = (pathWithFile: string) => {
+  if (isUrl(pathWithFile)) {
+    return getUrlPath(pathWithFile);
+  }
+
   if (!pathWithFile.includes('/')) {
     return '/';
   }
@@ -275,6 +286,7 @@ const Data = () => {
 
   const columnHelper = createColumnHelper<{
     path: string;
+    source_id: string;
     updated_at: string;
   }>();
 
@@ -302,12 +314,22 @@ const Data = () => {
         },
         footer: (info) => info.column.id,
       }),
-      columnHelper.accessor((row) => row.path, {
-        id: 'name',
-        header: () => <span>Name</span>,
-        cell: (info) => info.getValue().split('/').slice(-1)[0],
-        footer: (info) => info.column.id,
-      }),
+      columnHelper.accessor(
+        (row) => ({ sourceId: row.source_id, path: row.path }),
+        {
+          id: 'name',
+          header: () => <span>Name</span>,
+          cell: (info) => {
+            const sourcePath = info.getValue();
+            const source = sources.find((s) => s.id === sourcePath.sourceId);
+            if (!source) {
+              return sourcePath.path;
+            }
+            return getFileNameForSourceAtPath(source, sourcePath.path);
+          },
+          footer: (info) => info.column.id,
+        },
+      ),
       columnHelper.accessor((row) => row.path, {
         id: 'path',
         header: () => <span>Path</span>,
@@ -327,6 +349,20 @@ const Data = () => {
             </Tooltip.Root>
           </Tooltip.Provider>
         ),
+        footer: (info) => info.column.id,
+      }),
+      columnHelper.accessor((row) => row.source_id, {
+        id: 'source',
+        header: () => <span>Source</span>,
+        cell: (info) => {
+          const value = info.getValue();
+          const source = sources.find((s) => s.id === value);
+          if (source) {
+            return getLabelForSource(source);
+          } else {
+            return '';
+          }
+        },
         footer: (info) => info.column.id,
       }),
       columnHelper.accessor((row) => row.updated_at, {
@@ -646,8 +682,9 @@ const Data = () => {
             <table className="w-full max-w-full table-fixed border-collapse">
               <colgroup>
                 <col className="w-[32px]" />
-                <col className="w-[calc(65%-172px)]" />
-                <col className="w-[35%]" />
+                <col className="w-[calc(50%-172px)]" />
+                <col className="w-[30%]" />
+                <col className="w-[20%]" />
                 <col className="w-[140px]" />
               </colgroup>
               <thead>
@@ -715,6 +752,7 @@ const Data = () => {
                                   cell.column.id === 'name',
                                 'text-neutral-500':
                                   cell.column.id === 'path' ||
+                                  cell.column.id === 'source' ||
                                   cell.column.id === 'updated',
                               },
                             )}

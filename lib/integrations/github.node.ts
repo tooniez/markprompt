@@ -8,6 +8,7 @@ import { ApiError, FileData, OAuthToken, PathContentData } from '@/types/types';
 
 import {
   decompress,
+  getFileType,
   getNameFromPath,
   parseGitHubURL,
   shouldIncludeFileWithPath,
@@ -171,8 +172,11 @@ export const getGitHubFiles = async (
   }
 
   return allFilesData.map((fileData) => {
+    const name = getNameFromPath(fileData.path);
+    const fileType = getFileType(name);
     return {
       ...fileData,
+      fileType,
       name: getNameFromPath(fileData.path),
     };
   });

@@ -1,5 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { load } from 'cheerio';
 import { backOff } from 'exponential-backoff';
 import type { Content, Root } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
@@ -122,9 +123,25 @@ const splitMarkdocIntoSections = (content: string): string[] => {
   return splitMarkdownIntoSections(md, false);
 };
 
+const htmlExcludeTags = ['head', 'script', 'style', 'nav', 'footer', 'aside'];
+
 const splitHtmlIntoSections = (content: string): string[] => {
-  const md = turndown.turndown(content);
-  return splitMarkdownIntoSections(md, false);
+  const $ = load(content);
+
+  htmlExcludeTags.forEach((tag) => {
+    $(tag).remove();
+  });
+
+  let cleanedHtml = $('main').html();
+  if (!cleanedHtml) {
+    cleanedHtml = $('body').html();
+  }
+
+  if (cleanedHtml) {
+    const md = turndown.turndown(cleanedHtml);
+    return splitMarkdownIntoSections(md, false);
+  }
+  return [];
 };
 
 const TOKEN_CUTOFF_ADJUSTED = CONTEXT_TOKENS_CUTOFF * 0.8;

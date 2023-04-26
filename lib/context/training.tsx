@@ -11,6 +11,7 @@ import {
 
 import {
   FileData,
+  FileType,
   GitHubSourceDataType,
   MotifSourceDataType,
   Source,
@@ -25,10 +26,15 @@ import {
   getMotifFileContent,
   getMotifPublicFileMetadata,
 } from '../integrations/motif';
-import { fetchRobotsTxtInfo, fetchSitemapUrls } from '../integrations/website';
+import {
+  fetchPageContent,
+  fetchRobotsTxtInfo,
+  fetchSitemapUrls,
+} from '../integrations/website';
 import {
   createChecksum,
   getGitHubOwnerRepoString,
+  getNameFromUrlOrPath,
   pluralize,
   shouldIncludeFileWithPath,
   truncate,
@@ -59,8 +65,10 @@ export type State = {
   generateEmbeddings: (
     sourceId: Source['id'],
     numFiles: number,
-    getFileMeta: (index: number) => Pick<FileData, 'name' | 'path'>,
-    getFileContent: (index: number) => Promise<string>,
+    getFilePath: (index: number) => string,
+    getFileNameContent: (
+      index: number,
+    ) => Promise<{ name: string; content: string }>,
     onFileProcessed?: () => void,
     forceRetrain?: boolean,
   ) => Promise<void>;
@@ -120,8 +128,10 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
     async (
       sourceId: Source['id'],
       numFiles: number,
-      getFileMeta: (index: number) => Pick<FileData, 'name' | 'path'>,
-      getFileContent: (index: number) => Promise<string>,
+      getFilePath: (index: number) => string,
+      getFileNameContent: (
+        index: number,
+      ) => Promise<{ name: string; content: string }>,
       onFileProcessed?: () => void,
     ) => {
       if (!project?.id) {
@@ -144,16 +154,16 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         // Only pick the metadata, not the full file content, since this
         // could be an expensive operation (GitHub) that might not be
         // needed if the checksums match.
-        const fileMeta = getFileMeta(i);
+        const path = getFilePath(i);
 
         if (
           !shouldIncludeFileWithPath(
-            fileMeta.path,
+            path,
             config.include || [],
             config.exclude || [],
           )
         ) {
-          console.info('Skipping', fileMeta.path);
+          console.info('Skipping', path);
           continue;
         }
 
@@ -161,25 +171,23 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           state: 'loading',
           progress: i + 1,
           total: numFiles,
-          filename: fileMeta.name,
+          filename: path.split('/').slice(-1)[0],
         });
 
-        const prevChecksum = checksums?.find(
-          (c) => c.path === fileMeta.path,
-        )?.checksum;
+        const prevChecksum = checksums?.find((c) => c.path === path)?.checksum;
 
-        const content = await getFileContent(i);
+        const { name, content } = await getFileNameContent(i);
         const currentChecksum = createChecksum(content);
 
         // Check the checksum (or SHA if GitHub file), and skip if equals.
         if (prevChecksum === currentChecksum) {
-          console.info('Skipping', fileMeta.path);
+          console.info('Skipping', path);
           continue;
         }
 
-        console.info('Processing', fileMeta.path);
+        console.info('Processing', path);
 
-        const file = { ...fileMeta, content };
+        const file: FileData = { path, name, content };
 
         try {
           await processFile(sourceId, file);
@@ -217,14 +225,12 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             await generateEmbeddings(
               source.id,
               fileData.length,
-              (i) => {
-                const file = fileData[i];
-                return {
-                  name: file.name,
-                  path: file.path,
-                };
+              (i) => fileData[i].path,
+              async (i) => {
+                const name = fileData[i].name;
+                const content = fileData[i].content;
+                return { name, content };
               },
-              async (i) => fileData[i].content,
               () => {
                 onFileProcessed();
               },
@@ -249,14 +255,12 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             await generateEmbeddings(
               source.id,
               filesMetadata.length,
-              (i) => {
-                const metadata = filesMetadata[i];
-                return {
-                  name: metadata.name,
-                  path: metadata.path,
-                };
+              (i) => filesMetadata[i].path,
+              async (i) => {
+                const name = filesMetadata[i].name;
+                const content = await getMotifFileContent(filesMetadata[i].id);
+                return { name, content };
               },
-              async (i) => getMotifFileContent(filesMetadata[i].id),
               () => {
                 onFileProcessed();
               },
@@ -273,35 +277,29 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
           try {
             const robotsTxtInfo = await fetchRobotsTxtInfo(websiteUrl);
-            console.log(
-              'robotsTxtInfo',
-              JSON.stringify(robotsTxtInfo, null, 2),
-            );
             const sitemapUrls = await fetchSitemapUrls(
               websiteUrl,
               robotsTxtInfo.sitemap,
             );
             if (sitemapUrls !== undefined) {
               // If there is a sitemap, we honor this.
-              // await generateEmbeddings(
-              //   source.id,
-              //   filesMetadata.length,
-              //   (i) => {
-              //     const metadata = filesMetadata[i];
-              //     return {
-              //       name: metadata.name,
-              //       path: metadata.path,
-              //     };
-              //   },
-              //   async (i) => getMotifFileContent(filesMetadata[i].id),
-              //   () => {
-              //     onFileProcessed();
-              //   },
-              // );
+              await generateEmbeddings(
+                source.id,
+                sitemapUrls.length,
+                (i) => sitemapUrls[i],
+                async (i) => {
+                  const url = sitemapUrls[i];
+                  const name = getNameFromUrlOrPath(url);
+                  const content = (await fetchPageContent(url)) || '';
+                  return { name, content };
+                },
+                () => {
+                  onFileProcessed();
+                },
+              );
             } else {
               // Otherwise, we discover links starting with the root page
             }
-            console.log('sitemapUrls', JSON.stringify(sitemapUrls, null, 2));
 
             // const filesMetadata = await getMotifPublicFileMetadata(
             //   data.projectDomain,

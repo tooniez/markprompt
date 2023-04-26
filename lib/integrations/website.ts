@@ -50,7 +50,6 @@ export const fetchRobotsTxtInfo = async (
     }
   }
 
-  console.log('sitemap', JSON.stringify(sitemap, null, 2));
   return {
     sitemap,
     disallowedPaths,
@@ -84,7 +83,7 @@ export const fetchSitemapUrls = async (
     }
   });
 
-  return [];
+  return sitemapUrls;
 };
 
 export const fetchPageContent = async (
