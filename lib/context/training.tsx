@@ -131,11 +131,6 @@ const hasReachedTrainingQuota = (
   numNewlyProcessedFiles: number,
   numWebsitePagesRemainingOnPlan: number,
 ) => {
-  console.log(
-    'numWebsitePagesRemainingOnPlan',
-    numWebsitePagesRemainingOnPlan,
-    numNewlyProcessedFiles,
-  );
   return (
     sourceType === 'website' &&
     numNewlyProcessedFiles >= numWebsitePagesRemainingOnPlan
@@ -150,15 +145,10 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
   const supabase = useSupabaseClient();
   const { project, config } = useProject();
   const { sources } = useSources();
-  const { numWebsitePagesInProject, numWebsitePagesPerProjectAllowance } =
-    useUsage();
+  const { numWebsitePagesPerProjectAllowance } = useUsage();
   const [state, setState] = useState<TrainingState>({ state: 'idle' });
   const [errors, setErrors] = useState<string[]>([]);
   const stopFlag = useRef(false);
-  const numPagesOfCappedTypeProcessedInSession = useRef(0);
-
-  const numWebsitePagesRemainingOnPlan =
-    numWebsitePagesPerProjectAllowance - numWebsitePagesInProject;
 
   const generateEmbeddingForFile = useCallback(
     async (
@@ -211,33 +201,15 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         return;
       }
 
-      if (
-        hasReachedTrainingQuota(
-          sourceType,
-          numPagesOfCappedTypeProcessedInSession.current,
-          numWebsitePagesRemainingOnPlan,
-        )
-      ) {
-        return;
-      }
-
-      // We update early because processing is run in parallel.
-      // If the processing fails, we just decrement the value.
-      if (isCappedSourceType(sourceType)) {
-        numPagesOfCappedTypeProcessedInSession.current++;
-      }
-
       console.info('Processing', path);
 
       const file: FileData = { path, name, content };
 
       try {
         await processFile(sourceId, file);
+
         onFileProcessed?.();
       } catch (e) {
-        if (isCappedSourceType(sourceType)) {
-          numPagesOfCappedTypeProcessedInSession.current--;
-        }
         console.error('Error', e);
         setErrors((errors) => [
           ...errors,
@@ -245,7 +217,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         ]);
       }
     },
-    [config.exclude, config.include, numWebsitePagesRemainingOnPlan],
+    [config.exclude, config.include],
   );
 
   const generateEmbeddings = useCallback(
@@ -292,26 +264,9 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         }),
       );
 
-      if (
-        hasReachedTrainingQuota(
-          sourceType,
-          numPagesOfCappedTypeProcessedInSession.current,
-          numWebsitePagesRemainingOnPlan,
-        )
-      ) {
-        toast.error(
-          'You have reached the quota of website pages per project on this plan.',
-        );
-      }
-
       setState({ state: 'idle' });
     },
-    [
-      project?.id,
-      supabase,
-      numWebsitePagesRemainingOnPlan,
-      generateEmbeddingForFile,
-    ],
+    [project?.id, supabase, generateEmbeddingForFile],
   );
 
   const trainSource = useCallback(
@@ -382,11 +337,6 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           break;
         }
         case 'website': {
-          // Website pages are capped. When starting a session, reset the
-          // counter. Each processed page will increment the counter, and
-          // compare its value with the maximum number of pages left on the
-          // plan.
-          numPagesOfCappedTypeProcessedInSession.current = 0;
           const data = source.data as WebsiteSourceDataType;
           const websiteUrl = toNormalizedHostname(data.url);
 
@@ -419,22 +369,44 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             );
             if (sitemapUrls !== undefined) {
               // If there is a sitemap, we honor this.
-              await generateEmbeddingsForUrls(sitemapUrls);
+              await generateEmbeddingsForUrls(
+                sitemapUrls.slice(0, numWebsitePagesPerProjectAllowance),
+              );
+              if (sitemapUrls.length > numWebsitePagesPerProjectAllowance) {
+                toast.error(
+                  'You have reached the quota of pages per website on this plan.',
+                );
+              }
             } else {
               // Otherwise, we discover links starting with the root page
               let processedLinks: string[] = [];
               let linksToProcess = [websiteUrl];
               const hostname = getUrlHostname(websiteUrl);
-              let _hasReachedTrainingQuota = hasReachedTrainingQuota(
-                'website',
-                numPagesOfCappedTypeProcessedInSession.current,
-                numWebsitePagesRemainingOnPlan,
-              );
 
-              while (linksToProcess.length > 0 && !_hasReachedTrainingQuota) {
+              let numLinksSentForProcessing = 0;
+              let didReachLimit = false;
+              while (
+                linksToProcess.length > 0 &&
+                numLinksSentForProcessing < numWebsitePagesPerProjectAllowance
+              ) {
+                let linksActuallySentToProcess = linksToProcess;
+                if (
+                  numLinksSentForProcessing +
+                    linksActuallySentToProcess.length >
+                  numWebsitePagesPerProjectAllowance
+                ) {
+                  didReachLimit = true;
+                  linksActuallySentToProcess = linksToProcess.slice(
+                    0,
+                    numWebsitePagesPerProjectAllowance -
+                      numLinksSentForProcessing,
+                  );
+                }
                 const processedContent = await generateEmbeddingsForUrls(
-                  linksToProcess,
+                  linksActuallySentToProcess,
                 );
+                numLinksSentForProcessing += linksActuallySentToProcess.length;
+
                 const discoveredLinks = uniq(
                   processedContent.flatMap((html) =>
                     extractLinksFromHtml(html),
@@ -445,14 +417,17 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                     return completeHrefWithOrigin(websiteUrl, href);
                   })
                   .filter(isPresent);
-                processedLinks = [...processedLinks, ...linksToProcess];
+                processedLinks = [
+                  ...processedLinks,
+                  ...linksActuallySentToProcess,
+                ];
                 linksToProcess = discoveredLinks.filter(
                   (link) => !processedLinks.includes(link),
                 );
-                _hasReachedTrainingQuota = hasReachedTrainingQuota(
-                  'website',
-                  numPagesOfCappedTypeProcessedInSession.current,
-                  numWebsitePagesRemainingOnPlan,
+              }
+              if (didReachLimit) {
+                toast.error(
+                  'You have reached the quota of pages per website on this plan.',
                 );
               }
             }
@@ -474,7 +449,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       config.exclude,
       config.include,
       generateEmbeddings,
-      numWebsitePagesRemainingOnPlan,
+      numWebsitePagesPerProjectAllowance,
     ],
   );
 
