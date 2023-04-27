@@ -34,6 +34,9 @@ export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
       {!!user?.has_completed_onboarding && !loadingUser && (
         <TeamProjectPicker />
       )}
+      {!user?.has_completed_onboarding && !loadingUser && (
+        <p className="text-sm font-medium text-neutral-300">Onboarding</p>
+      )}
       <div className="flex-grow" />
       <div className="flex flex-none items-center gap-4">
         <NavigationMenu.Root>
