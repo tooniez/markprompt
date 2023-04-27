@@ -10,12 +10,14 @@ import {
   Project,
   Source,
   SourceType,
+  Team,
+  WebsiteSourceDataType,
 } from '@/types/types';
 
 import { generateKey } from './utils';
 
 export const getBYOOpenAIKey = async (
-  supabaseAdmin: SupabaseClient,
+  supabaseAdmin: SupabaseClient<Database>,
   projectId: Project['id'],
 ) => {
   const { data: openAIKeyData } = await supabaseAdmin
@@ -30,7 +32,7 @@ export const getBYOOpenAIKey = async (
 };
 
 export const setGitHubAuthState = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   userId: DbUser['id'],
 ): Promise<string> => {
   const state = generateKey();
@@ -54,7 +56,7 @@ export const setGitHubAuthState = async (
 };
 
 export const deleteUserAccessToken = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   userId: DbUser['id'],
   provider: OAuthProvider,
 ): Promise<PostgrestError | null> => {
@@ -66,7 +68,7 @@ export const deleteUserAccessToken = async (
 };
 
 export const getProjectIdFromSource = async (
-  supabaseAdmin: SupabaseClient,
+  supabaseAdmin: SupabaseClient<Database>,
   sourceId: Source['id'],
 ): Promise<Project['id'] | undefined> => {
   const { data } = await supabaseAdmin
@@ -79,7 +81,7 @@ export const getProjectIdFromSource = async (
 };
 
 export const getOrCreateSource = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   projectId: Project['id'],
   type: SourceType,
   data: any | undefined,
@@ -97,7 +99,7 @@ export const getOrCreateSource = async (
     .limit(1)
     .maybeSingle();
 
-  return newSourceData?.id;
+  return newSourceData!.id;
 };
 
 export const getSource = async (
@@ -106,37 +108,43 @@ export const getSource = async (
   sourceType: SourceType,
   data: any,
 ): Promise<Source | undefined> => {
-  const { data: sourcesOfType, error } = await supabase
+  const { data: sources, error } = await supabase
     .from('sources')
     .select('*')
     .match({ project_id: projectId, type: sourceType });
 
-  if (error || !sourcesOfType || sourcesOfType.length === 0) {
+  if (error || !sources || sources.length === 0) {
     return undefined;
   }
 
   switch (sourceType) {
     case 'file-upload':
     case 'api-upload':
-      return sourcesOfType[0];
+      return sources[0];
     case 'github':
-      return sourcesOfType.find((s) => {
+      return sources.find((s) => {
         const _data = s.data as GitHubSourceDataType;
         return _data.url && _data.url === data.url;
       });
     case 'motif': {
-      return sourcesOfType.find((s) => {
+      return sources.find((s) => {
         const _data = s.data as MotifSourceDataType;
         return (
           _data.projectDomain && _data.projectDomain === data.projectDomain
         );
       });
     }
+    case 'website': {
+      return sources.find((s) => {
+        const _data = s.data as WebsiteSourceDataType;
+        return _data.url && _data.url === data.url;
+      });
+    }
   }
 };
 
 export const getChecksums = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   sourceId: Source['id'],
 ) => {
   const { data } = await supabase
@@ -144,4 +152,31 @@ export const getChecksums = async (
     .select('path,checksum')
     .eq('source_id', sourceId);
   return data || [];
+};
+
+export const getProjectTeam = async (
+  supabase: SupabaseClient<Database>,
+  projectId: Project['id'],
+): Promise<Team | undefined> => {
+  const { data } = await supabase
+    .from('teams')
+    .select('*')
+    .eq('project_id', projectId)
+    .limit(1)
+    .maybeSingle();
+  return data || undefined;
+};
+
+export const getFilesInTeam = async (
+  supabase: SupabaseClient<Database>,
+  teamId: Team['id'],
+) => {
+  // TODO: this query should be revised if/when we remove the project_id
+  // column from the files table.
+  const { data } = await supabase
+    .from('files')
+    .select('sources!inner (project_id), projects!inner (team_id)')
+    .eq('projects.team_id', teamId);
+
+  return data;
 };

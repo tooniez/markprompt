@@ -93,15 +93,14 @@ export const FileDnd: FC<FileDndProps> = ({ onTrainingComplete }) => {
 
     await generateEmbeddings(
       sourceId,
+      'file-upload',
       pickedFiles.length,
-      (i) => {
-        const file = pickedFiles[i];
-        return {
-          name: file.name,
-          path: file.path,
-        };
+      (i) => pickedFiles[i].path,
+      async (i) => {
+        const name = pickedFiles[i].name;
+        const content = pickedFiles[i].content;
+        return { name, content };
       },
-      async (i) => pickedFiles[i].content,
       () => {
         mutateFiles();
       },

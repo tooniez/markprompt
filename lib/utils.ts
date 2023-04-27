@@ -17,12 +17,14 @@ import {
 
 import {
   DateCountHistogramEntry,
+  FileType,
   GitHubSourceDataType,
   HistogramStat,
   LLMInfo,
   MotifSourceDataType,
   Source,
   TimeInterval,
+  WebsiteSourceDataType,
 } from '@/types/types';
 
 import { getHost } from './utils.edge';
@@ -204,8 +206,6 @@ export const decompress = (compressedString: Buffer): string => {
   return pako.inflate(compressedString, { to: 'string' });
 };
 
-export type FileType = 'mdx' | 'mdoc' | 'md' | 'html' | 'txt';
-
 export const getFileType = (name: string): FileType => {
   const extension = name.match(/\.(\w*)$/)?.[1];
   switch (extension) {
@@ -345,7 +345,7 @@ export const sampleTokenCountData: DateCountHistogramEntry[] = [
   },
   {
     date: dayjs().add(-1, 'days').startOf('day').toISOString(),
-    count: 2,
+    count: 1,
   },
 ];
 
@@ -412,10 +412,6 @@ export const stringToLLMInfo = (param?: string): LLMInfo => {
   }
 };
 
-const isSupportedExtension = (path: string) => {
-  return /\.(md|mdx|mdoc|html|txt)$/.test(path);
-};
-
 export const matchesGlobs = (path: string, globs: string[]) => {
   return globs.some((g) => minimatch(path, g));
 };
@@ -425,13 +421,7 @@ export const shouldIncludeFileWithPath = (
   includeGlobs: string[],
   excludeGlobs: string[],
 ) => {
-  if (
-    !(
-      !path.startsWith('.') &&
-      !path.includes('/.') &&
-      isSupportedExtension(path)
-    )
-  ) {
+  if (path.startsWith('.') || path.includes('/.')) {
     // Exclude unsupported files and dotfiles
     return false;
   }
@@ -494,13 +484,17 @@ export const getGitHubOwnerRepoString = (url: string) => {
 
 export const getLabelForSource = (source: Source) => {
   switch (source.type) {
+    case 'github': {
+      const data = source.data as GitHubSourceDataType;
+      return getGitHubOwnerRepoString(data.url);
+    }
     case 'motif': {
       const data = source.data as MotifSourceDataType;
       return data.projectDomain;
     }
-    case 'github': {
-      const data = source.data as GitHubSourceDataType;
-      return getGitHubOwnerRepoString(data.url);
+    case 'website': {
+      const data = source.data as WebsiteSourceDataType;
+      return getUrlHostname(data.url);
     }
     case 'file-upload':
       return 'File uploads';
@@ -508,5 +502,84 @@ export const getLabelForSource = (source: Source) => {
       return 'API uploads';
     default:
       return 'Unknown source';
+  }
+};
+
+export const getFileNameForSourceAtPath = (source: Source, path: string) => {
+  switch (source.type) {
+    case 'website': {
+      // Handles e.g. index.html when last path component is empty
+      return getNameFromUrlOrPath(path);
+    }
+    default:
+      return path.split('/').slice(-1)[0];
+  }
+};
+
+export const getNameFromUrlOrPath = (url: string) => {
+  // When processing a text file, the type of a file (md, mdoc, html, etc)
+  // is determined by the file name, specifically by its extension. In
+  // the case where we are parsing websites, the URL of the page might
+  // not contain the HTML extension, we nevertheless consider it as an
+  // HTML file.
+  const baseName = url.split('/').slice(-1)[0];
+  if (/\.html$/.test(baseName)) {
+    return baseName;
+  } else if (baseName.length > 0) {
+    return `${baseName}.html`;
+  } else {
+    return 'index.html';
+  }
+};
+
+export const toNormalizedHostname = (
+  url: string,
+  useInsecureSchema?: boolean,
+) => {
+  if (/^https?:\/\/[a-zA-Z]+/.test(url)) {
+    return `${getSchema(url)}://${getUrlHostname(url)}`;
+  }
+  return `http${useInsecureSchema ? '' : 's'}://${getUrlHostname(url)}`;
+};
+
+export const getUrlHostname = (url: string) => {
+  return removeSchema(url).split('/')[0];
+};
+
+export const getSchema = (hostname: string) => {
+  return hostname.split('://')[0];
+};
+
+export const isUrl = (path: string) => {
+  try {
+    new URL(path);
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
+export const getUrlPath = (url: string) => {
+  const urlObj = new URL(url);
+  return urlObj.pathname;
+};
+
+export const isHrefFromHost = (hostname: string, href: string) => {
+  if (/^https?:\/\/[a-zA-Z]+/.test(href)) {
+    return hostname === getUrlHostname(href);
+  } else {
+    // Links that don't include a full hostname are considered relative links
+    // from the given host.
+    return true;
+  }
+};
+
+export const completeHrefWithOrigin = (origin: string, href: string) => {
+  if (href.startsWith('/')) {
+    return `${origin}${href}`;
+  } else if (/^https?:\/\/[a-zA-Z]+/.test(href)) {
+    return href;
+  } else {
+    return `${origin}/${href}`;
   }
 };

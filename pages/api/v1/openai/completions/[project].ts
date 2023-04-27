@@ -172,6 +172,7 @@ export default async function handler(req: NextRequest) {
     sanitizedQuery,
     byoOpenAIKey,
   );
+
   if (moderationResponse?.results?.[0]?.flagged) {
     throw new Error('Flagged content');
   }
@@ -188,6 +189,15 @@ export default async function handler(req: NextRequest) {
         numOfAttempts: 10,
       },
     );
+
+    if (!byoOpenAIKey) {
+      const embeddingModelInfo = stringToLLMInfo(modelId);
+      await recordProjectTokenCount(
+        projectId,
+        embeddingModelInfo,
+        embeddingResult.usage.total_tokens,
+      );
+    }
   } catch (error) {
     console.error(
       `[COMPLETIONS] [CREATE-EMBEDDING] [${projectId}] - Error creating embedding for prompt '${prompt}': ${error}`,

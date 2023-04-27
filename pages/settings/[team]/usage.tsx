@@ -35,7 +35,7 @@ const Usage = () => {
     team?.id
       ? `/api/team/${
           team.id
-        }/usage?startDate=${interval.startDate.format()}&endDate=${interval.endDate.format()}`
+        }/token-histograms?startDate=${interval.startDate.format()}&endDate=${interval.endDate.format()}`
       : null,
     fetcher<ProjectUsageHistogram[]>,
   );
@@ -92,10 +92,11 @@ const Usage = () => {
 
   const monthyQueryAllowance = (team && getMonthlyQueryAllowance(team)) || 0;
 
-  const usedPercentage = Math.min(
-    100,
-    Math.round((monthlyUsedQueries / monthyQueryAllowance) * 100),
-  );
+  const monthlyUsedQueriesPercentage =
+    Math.min(
+      100,
+      Math.round((monthlyUsedQueries / monthyQueryAllowance) * 100),
+    ) || 0;
 
   return (
     <TeamSettingsLayout
@@ -151,8 +152,8 @@ const Usage = () => {
       SubHeading={() => {
         return (
           <p className="mb-6 text-sm text-neutral-500">
-            Below you will find a summary of your monthly usage of the query
-            API. Dates are UTC-based, and data is updated in real time.
+            Below is a summary of your monthly usage of the query API. Dates are
+            UTC-based, and data is updated in real time.
           </p>
         );
       }}
@@ -165,28 +166,31 @@ const Usage = () => {
         countLabel="queries"
       />
       <h2 className="mt-12 text-base font-bold">Monthly usage</h2>
-      <div className="mt-2 flex h-10 w-1/2 flex-row items-center gap-4">
+      <div className="mt-1 flex h-10 w-1/2 flex-row items-center gap-4">
         <Progress.Root
           // Fix overflow clipping in Safari
           // https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0
           style={{ transform: 'translateZ(0)' }}
           className="translate- relative h-2 flex-grow overflow-hidden rounded-full bg-neutral-800"
-          value={usedPercentage}
+          value={monthlyUsedQueriesPercentage}
         >
           <Progress.Indicator
             className={cn('h-full w-full transform duration-500 ease-in-out', {
-              'bg-sky-400': usedPercentage <= 70,
-              'bg-amber-400': usedPercentage > 70 && usedPercentage <= 90,
-              'bg-red-400': usedPercentage > 90,
+              'bg-sky-400': monthlyUsedQueriesPercentage <= 70,
+              'bg-amber-400':
+                monthlyUsedQueriesPercentage > 70 &&
+                monthlyUsedQueriesPercentage <= 90,
+              'bg-red-400': monthlyUsedQueriesPercentage > 90,
             })}
-            style={{ transform: `translateX(-${100 - usedPercentage}%)` }}
+            style={{
+              transform: `translateX(-${100 - monthlyUsedQueriesPercentage}%)`,
+            }}
           />
         </Progress.Root>
         <span className="text-sm text-neutral-500">
-          {Math.min(monthlyUsedQueries, monthlyUsedQueries)} out of{' '}
-          {monthyQueryAllowance} queries
+          {monthlyUsedQueries} out of {monthyQueryAllowance} queries
         </span>
-        {team?.id && usedPercentage > 70 && (
+        {team?.slug && !team.is_enterprise_plan && (
           <Button
             href={`/settings/${team.slug}/plans`}
             variant="bordered"

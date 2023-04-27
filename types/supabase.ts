@@ -379,7 +379,7 @@ export interface Database {
     }
     Enums: {
       membership_type: "viewer" | "admin"
-      source_type: "github" | "motif" | "file-upload" | "api-upload"
+      source_type: "github" | "motif" | "website" | "file-upload" | "api-upload"
     }
     CompositeTypes: {
       [_ in never]: never

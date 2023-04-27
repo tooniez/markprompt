@@ -8,6 +8,9 @@ export type ProjectUsageHistogram = {
   projectId: Project['id'];
   histogram: DateCountHistogramEntry[];
 };
+export type FileStats = {
+  numFiles: number;
+};
 
 export type OAuthProvider = 'github';
 
@@ -110,11 +113,16 @@ export type PathContentData = Pick<FileData, 'path' | 'content'>;
 export type Checksum = Pick<DbFile, 'path' | 'checksum'>;
 export type SourceType = Pick<Source, 'type'>['type'];
 
+export type FileType = 'mdx' | 'mdoc' | 'md' | 'html' | 'txt';
+
 export type ProjectUsage = number;
 export type Usage = Record<Project['id'], ProjectUsage>;
 
 export type GitHubSourceDataType = { url: string };
 export type MotifSourceDataType = { projectDomain: string };
+export type WebsiteSourceDataType = { url: string };
+
+export type RobotsTxtInfo = { sitemap?: string; disallowedPaths: string[] };
 
 export class ApiError extends Error {
   readonly code: number;

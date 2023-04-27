@@ -3,6 +3,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import {
   DotsHorizontalIcon,
   DoubleArrowUpIcon,
+  GlobeIcon,
   UploadIcon,
 } from '@radix-ui/react-icons';
 import * as Tooltip from '@radix-ui/react-tooltip';
@@ -43,7 +44,15 @@ import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
-import { getLabelForSource, pluralize, truncate } from '@/lib/utils';
+import useUsage from '@/lib/hooks/use-usage';
+import {
+  getFileNameForSourceAtPath,
+  getLabelForSource,
+  getUrlPath,
+  isUrl,
+  pluralize,
+  truncate,
+} from '@/lib/utils';
 import { Project, Source, SourceType } from '@/types/types';
 
 dayjs.extend(relativeTime);
@@ -62,7 +71,18 @@ const MotifSource = dynamic(
   },
 );
 
+const WebsiteSource = dynamic(
+  () => import('@/components/dialogs/sources/Website'),
+  {
+    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
+  },
+);
+
 const getBasePath = (pathWithFile: string) => {
+  if (isUrl(pathWithFile)) {
+    return getUrlPath(pathWithFile);
+  }
+
   if (!pathWithFile.includes('/')) {
     return '/';
   }
@@ -140,6 +160,8 @@ export const getIconForSource = (sourceType: SourceType) => {
   switch (sourceType) {
     case 'motif':
       return MotifIcon;
+    case 'website':
+      return GlobeIcon;
     case 'file-upload':
       return UploadIcon;
     case 'api-upload':
@@ -239,6 +261,18 @@ const hasNonFileSources = (sources: Source[]) => {
   );
 };
 
+const getNameForPath = (
+  sources: Source[],
+  sourceId: Source['id'],
+  path: string,
+) => {
+  const source = sources.find((s) => s.id === sourceId);
+  if (!source) {
+    return path;
+  }
+  return getFileNameForSourceAtPath(source, path);
+};
+
 const Data = () => {
   const { team } = useTeam();
   const { project } = useProject();
@@ -249,11 +283,17 @@ const Data = () => {
     state: trainingState,
     trainAllSources,
   } = useTrainingContext();
+  const {
+    numWebsitePagesInProject,
+    numWebsitePagesPerProjectAllowance,
+    mutate: mutateFileStats,
+  } = useUsage();
   const [rowSelection, setRowSelection] = useState({});
   const [isDeleting, setIsDeleting] = useState(false);
   const [fileDialogOpen, setFileDialogOpen] = useState(false);
   const [githubDialogOpen, setGithubDialogOpen] = useState(false);
   const [motifDialogOpen, setMotifDialogOpen] = useState(false);
+  const [websiteDialogOpen, setWebsiteDialogOpen] = useState(false);
   const [sourceToRemove, setSourceToRemove] = useState<Source | undefined>(
     undefined,
   );
@@ -263,6 +303,7 @@ const Data = () => {
 
   const columnHelper = createColumnHelper<{
     path: string;
+    source_id: string;
     updated_at: string;
   }>();
 
@@ -290,12 +331,31 @@ const Data = () => {
         },
         footer: (info) => info.column.id,
       }),
-      columnHelper.accessor((row) => row.path, {
-        id: 'name',
-        header: () => <span>Name</span>,
-        cell: (info) => info.getValue().split('/').slice(-1)[0],
-        footer: (info) => info.column.id,
-      }),
+      columnHelper.accessor(
+        (row) => ({ sourceId: row.source_id, path: row.path }),
+        {
+          id: 'name',
+          header: () => <span>Name</span>,
+          cell: (info) => {
+            const sourcePath = info.getValue();
+            return getNameForPath(
+              sources,
+              sourcePath.sourceId,
+              sourcePath.path,
+            );
+          },
+          footer: (info) => info.column.id,
+          sortingFn: (rowA, rowB, columnId) => {
+            const valueA: { sourceId: Source['id']; path: string } =
+              rowA.getValue(columnId);
+            const valueB: { sourceId: Source['id']; path: string } =
+              rowB.getValue(columnId);
+            const nameA = getNameForPath(sources, valueA.sourceId, valueA.path);
+            const nameB = getNameForPath(sources, valueB.sourceId, valueB.path);
+            return nameA.localeCompare(nameB);
+          },
+        },
+      ),
       columnHelper.accessor((row) => row.path, {
         id: 'path',
         header: () => <span>Path</span>,
@@ -315,6 +375,20 @@ const Data = () => {
             </Tooltip.Root>
           </Tooltip.Provider>
         ),
+        footer: (info) => info.column.id,
+      }),
+      columnHelper.accessor((row) => row.source_id, {
+        id: 'source',
+        header: () => <span>Source</span>,
+        cell: (info) => {
+          const value = info.getValue();
+          const source = sources.find((s) => s.id === value);
+          if (source) {
+            return getLabelForSource(source);
+          } else {
+            return '';
+          }
+        },
         footer: (info) => info.column.id,
       }),
       columnHelper.accessor((row) => row.updated_at, {
@@ -342,6 +416,8 @@ const Data = () => {
   const numSelected = Object.values(rowSelection).filter(Boolean).length;
   const hasFiles = files && files.length > 0;
   const canTrain = hasFiles || hasNonFileSources(sources);
+  const canAddMoreWebsitePages =
+    numWebsitePagesInProject < numWebsitePagesPerProjectAllowance;
 
   return (
     <ProjectSettingsLayout
@@ -402,6 +478,7 @@ const Data = () => {
                   );
                   setRowSelection([]);
                   setIsDeleting(false);
+                  mutateFileStats();
                   toast.success(
                     `${pluralize(fileIds.length, 'file', 'files')} deleted.`,
                   );
@@ -441,6 +518,23 @@ const Data = () => {
     >
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-4">
         <div className="flex w-full flex-col gap-2">
+          {!loadingFiles && !canAddMoreWebsitePages && (
+            <div className="mb-4 flex flex-col gap-4 rounded-md border border-dashed border-fuchsia-500/20 bg-fuchsia-900/20 p-4 text-xs leading-relaxed text-fuchsia-400">
+              You have reached your quota of indexed website pages (
+              {numWebsitePagesPerProjectAllowance}) for this plan. Please
+              upgrade your plan to index more website pages.
+              <div className="flex justify-end">
+                <Button
+                  href={`/settings/${team?.slug}/plans`}
+                  buttonSize="xs"
+                  variant="borderedFuchsia"
+                  light
+                >
+                  Upgrade plan
+                </Button>
+              </div>
+            </div>
+          )}
           {sources.length > 0 && (
             <>
               <p className="text-xs font-medium text-neutral-500">Sources</p>
@@ -551,6 +645,52 @@ const Data = () => {
                 </Dialog.Content>
               </Dialog.Portal>
             </Dialog.Root>
+            <Dialog.Root
+              open={websiteDialogOpen}
+              onOpenChange={setWebsiteDialogOpen}
+            >
+              <Dialog.Trigger asChild>
+                <button
+                  className={cn(
+                    'flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400',
+                    {
+                      'pointer-events-none opacity-50': !canAddMoreWebsitePages,
+                    },
+                  )}
+                >
+                  <GlobeIcon className="h-4 w-4 flex-none" />
+                  <span className="truncate">Connect website</span>
+                </button>
+              </Dialog.Trigger>
+              <Dialog.Portal>
+                <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
+                <Dialog.Content className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[500px] flex-col border">
+                  <Dialog.Title className="dialog-title flex-none">
+                    Connect website
+                  </Dialog.Title>
+                  <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
+                    <p>
+                      Sync pages from a website. You can specify which files to
+                      include and exclude from the website in the{' '}
+                      <Link
+                        className="subtle-underline"
+                        href={`/${team?.slug}/${project?.slug}/settings`}
+                      >
+                        project configuration
+                      </Link>
+                      .
+                    </p>
+                  </div>
+                  <div className="flex-grow">
+                    <WebsiteSource
+                      onDidRequestClose={() => {
+                        setWebsiteDialogOpen(false);
+                      }}
+                    />
+                  </div>
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
             <button
               className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400"
               onClick={() => setFileDialogOpen(true)}
@@ -577,8 +717,9 @@ const Data = () => {
             <table className="w-full max-w-full table-fixed border-collapse">
               <colgroup>
                 <col className="w-[32px]" />
-                <col className="w-[calc(65%-172px)]" />
-                <col className="w-[35%]" />
+                <col className="w-[calc(50%-172px)]" />
+                <col className="w-[30%]" />
+                <col className="w-[20%]" />
                 <col className="w-[140px]" />
               </colgroup>
               <thead>
@@ -646,6 +787,7 @@ const Data = () => {
                                   cell.column.id === 'name',
                                 'text-neutral-500':
                                   cell.column.id === 'path' ||
+                                  cell.column.id === 'source' ||
                                   cell.column.id === 'updated',
                               },
                             )}
