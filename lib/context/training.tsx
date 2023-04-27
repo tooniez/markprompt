@@ -131,10 +131,19 @@ const hasReachedTrainingQuota = (
   numNewlyProcessedFiles: number,
   numWebsitePagesRemainingOnPlan: number,
 ) => {
+  console.log(
+    'numWebsitePagesRemainingOnPlan',
+    numWebsitePagesRemainingOnPlan,
+    numNewlyProcessedFiles,
+  );
   return (
     sourceType === 'website' &&
     numNewlyProcessedFiles >= numWebsitePagesRemainingOnPlan
   );
+};
+
+const isCappedSourceType = (sourceType: Source['type']) => {
+  return sourceType === 'website';
 };
 
 const TrainingContextProvider = (props: PropsWithChildren) => {
@@ -146,7 +155,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
   const [state, setState] = useState<TrainingState>({ state: 'idle' });
   const [errors, setErrors] = useState<string[]>([]);
   const stopFlag = useRef(false);
-  const numProcessedInSession = useRef(0);
+  const numPagesOfCappedTypeProcessedInSession = useRef(0);
 
   const numWebsitePagesRemainingOnPlan =
     numWebsitePagesPerProjectAllowance - numWebsitePagesInProject;
@@ -205,7 +214,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       if (
         hasReachedTrainingQuota(
           sourceType,
-          numProcessedInSession.current,
+          numPagesOfCappedTypeProcessedInSession.current,
           numWebsitePagesRemainingOnPlan,
         )
       ) {
@@ -214,7 +223,9 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
       // We update early because processing is run in parallel.
       // If the processing fails, we just decrement the value.
-      numProcessedInSession.current++;
+      if (isCappedSourceType(sourceType)) {
+        numPagesOfCappedTypeProcessedInSession.current++;
+      }
 
       console.info('Processing', path);
 
@@ -224,7 +235,9 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         await processFile(sourceId, file);
         onFileProcessed?.();
       } catch (e) {
-        numProcessedInSession.current--;
+        if (isCappedSourceType(sourceType)) {
+          numPagesOfCappedTypeProcessedInSession.current--;
+        }
         console.error('Error', e);
         setErrors((errors) => [
           ...errors,
@@ -251,7 +264,6 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       }
 
       setErrors([]);
-      numProcessedInSession.current = 0;
       stopFlag.current = false;
 
       const { data: checksums } = await supabase
@@ -283,7 +295,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       if (
         hasReachedTrainingQuota(
           sourceType,
-          numProcessedInSession.current,
+          numPagesOfCappedTypeProcessedInSession.current,
           numWebsitePagesRemainingOnPlan,
         )
       ) {
@@ -370,6 +382,11 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           break;
         }
         case 'website': {
+          // Website pages are capped. When starting a session, reset the
+          // counter. Each processed page will increment the counter, and
+          // compare its value with the maximum number of pages left on the
+          // plan.
+          numPagesOfCappedTypeProcessedInSession.current = 0;
           const data = source.data as WebsiteSourceDataType;
           const websiteUrl = toNormalizedHostname(data.url);
 
@@ -408,7 +425,13 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               let processedLinks: string[] = [];
               let linksToProcess = [websiteUrl];
               const hostname = getUrlHostname(websiteUrl);
-              while (linksToProcess.length > 0) {
+              let _hasReachedTrainingQuota = hasReachedTrainingQuota(
+                'website',
+                numPagesOfCappedTypeProcessedInSession.current,
+                numWebsitePagesRemainingOnPlan,
+              );
+
+              while (linksToProcess.length > 0 && !_hasReachedTrainingQuota) {
                 const processedContent = await generateEmbeddingsForUrls(
                   linksToProcess,
                 );
@@ -426,6 +449,11 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 linksToProcess = discoveredLinks.filter(
                   (link) => !processedLinks.includes(link),
                 );
+                _hasReachedTrainingQuota = hasReachedTrainingQuota(
+                  'website',
+                  numPagesOfCappedTypeProcessedInSession.current,
+                  numWebsitePagesRemainingOnPlan,
+                );
               }
             }
           } catch (e) {
@@ -442,7 +470,12 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         }
       }
     },
-    [config.exclude, config.include, generateEmbeddings],
+    [
+      config.exclude,
+      config.include,
+      generateEmbeddings,
+      numWebsitePagesRemainingOnPlan,
+    ],
   );
 
   const trainAllSources = useCallback(

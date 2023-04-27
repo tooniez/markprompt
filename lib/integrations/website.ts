@@ -107,7 +107,8 @@ export const fetchPageContent = async (
 export const extractLinksFromHtml = (html: string) => {
   const $ = load(html);
   const hrefs: string[] = [];
-  // $('a')
+  // Filter on href attribute rather than tag. Several other tags
+  // than <a> support href attributes, such as <area>.
   $('*[href]')
     .each((i, link) => {
       const s = $(link).attr('href')?.toString();
@@ -116,13 +117,5 @@ export const extractLinksFromHtml = (html: string) => {
       }
     })
     .filter(isPresent);
-  // $('area')
-  //   .each((i, link) => {
-  //     const s = $(link).attr('href')?.toString();
-  //     if (s) {
-  //       hrefs.push(s);
-  //     }
-  //   })
-  //   .filter(isPresent);
   return hrefs;
 };
