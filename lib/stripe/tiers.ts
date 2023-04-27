@@ -138,7 +138,7 @@ export const TIERS: Record<Tier, TierDetails> = {
       'Unlimited documents',
       'Unlimited BYO* completions',
       '25 GPT-4 completions',
-      '100 pages per connected website',
+      '100 indexed website pages per project',
       'Public/private GitHub repos',
     ],
     notes: ['* BYO: Bring-your-own API key'],
@@ -158,7 +158,7 @@ export const TIERS: Record<Tier, TierDetails> = {
       'Prompt templates',
       'Model customization',
       '1000 GPT-4 completions',
-      '1000 pages per connected website',
+      '1000 indexed website pages per project',
       'Analytics (soon)',
     ],
     prices: [

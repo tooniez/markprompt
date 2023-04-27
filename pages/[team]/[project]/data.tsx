@@ -261,6 +261,18 @@ const hasNonFileSources = (sources: Source[]) => {
   );
 };
 
+const getNameForPath = (
+  sources: Source[],
+  sourceId: Source['id'],
+  path: string,
+) => {
+  const source = sources.find((s) => s.id === sourceId);
+  if (!source) {
+    return path;
+  }
+  return getFileNameForSourceAtPath(source, path);
+};
+
 const Data = () => {
   const { team } = useTeam();
   const { project } = useProject();
@@ -326,13 +338,22 @@ const Data = () => {
           header: () => <span>Name</span>,
           cell: (info) => {
             const sourcePath = info.getValue();
-            const source = sources.find((s) => s.id === sourcePath.sourceId);
-            if (!source) {
-              return sourcePath.path;
-            }
-            return getFileNameForSourceAtPath(source, sourcePath.path);
+            return getNameForPath(
+              sources,
+              sourcePath.sourceId,
+              sourcePath.path,
+            );
           },
           footer: (info) => info.column.id,
+          sortingFn: (rowA, rowB, columnId) => {
+            const valueA: { sourceId: Source['id']; path: string } =
+              rowA.getValue(columnId);
+            const valueB: { sourceId: Source['id']; path: string } =
+              rowB.getValue(columnId);
+            const nameA = getNameForPath(sources, valueA.sourceId, valueA.path);
+            const nameB = getNameForPath(sources, valueB.sourceId, valueB.path);
+            return nameA.localeCompare(nameB);
+          },
         },
       ),
       columnHelper.accessor((row) => row.path, {
