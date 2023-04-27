@@ -1,4 +1,6 @@
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { uniq } from 'lodash-es';
+import pLimit from 'p-limit';
 import {
   createContext,
   FC,
@@ -9,6 +11,7 @@ import {
   useState,
 } from 'react';
 import { toast } from 'react-hot-toast';
+import { isPresent } from 'ts-is-present';
 
 import {
   FileData,
@@ -28,16 +31,21 @@ import {
   getMotifPublicFileMetadata,
 } from '../integrations/motif';
 import {
+  extractLinksFromHtml,
   fetchPageContent,
   fetchRobotsTxtInfo,
   fetchSitemapUrls,
 } from '../integrations/website';
 import {
+  completeHrefWithOrigin,
   createChecksum,
   getGitHubOwnerRepoString,
   getNameFromUrlOrPath,
+  getUrlHostname,
+  isHrefFromHost,
   pluralize,
   shouldIncludeFileWithPath,
+  toNormalizedHostname,
   truncate,
 } from '../utils';
 
@@ -138,9 +146,94 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
   const [state, setState] = useState<TrainingState>({ state: 'idle' });
   const [errors, setErrors] = useState<string[]>([]);
   const stopFlag = useRef(false);
+  const numProcessedInSession = useRef(0);
 
   const numWebsitePagesRemainingOnPlan =
     numWebsitePagesPerProjectAllowance - numWebsitePagesInProject;
+
+  const generateEmbeddingForFile = useCallback(
+    async (
+      index: number,
+      checksums: { path: any; checksum: any }[],
+      sourceId: Source['id'],
+      sourceType: Source['type'],
+      numFiles: number,
+      getFilePath: (index: number) => string,
+      getFileNameContent: (
+        index: number,
+      ) => Promise<{ name: string; content: string }>,
+      onFileProcessed?: () => void,
+    ) => {
+      if (stopFlag.current) {
+        return;
+      }
+
+      // Only pick the metadata, not the full file content, since this
+      // could be an expensive operation (GitHub) that might not be
+      // needed if the checksums match.
+      const path = getFilePath(index);
+
+      if (
+        !shouldIncludeFileWithPath(
+          path,
+          config.include || [],
+          config.exclude || [],
+        )
+      ) {
+        console.info('Skipping', path);
+        return;
+      }
+
+      setState({
+        state: 'loading',
+        progress: index + 1,
+        total: numFiles,
+        filename: path.split('/').slice(-1)[0],
+      });
+
+      const prevChecksum = checksums?.find((c) => c.path === path)?.checksum;
+
+      const { name, content } = await getFileNameContent(index);
+      const currentChecksum = createChecksum(content);
+
+      // Check the checksum (or SHA if GitHub file), and skip if equals.
+      if (prevChecksum === currentChecksum) {
+        console.info('Skipping', path);
+        return;
+      }
+
+      if (
+        hasReachedTrainingQuota(
+          sourceType,
+          numProcessedInSession.current,
+          numWebsitePagesRemainingOnPlan,
+        )
+      ) {
+        return;
+      }
+
+      // We update early because processing is run in parallel.
+      // If the processing fails, we just decrement the value.
+      numProcessedInSession.current++;
+
+      console.info('Processing', path);
+
+      const file: FileData = { path, name, content };
+
+      try {
+        await processFile(sourceId, file);
+        onFileProcessed?.();
+      } catch (e) {
+        numProcessedInSession.current--;
+        console.error('Error', e);
+        setErrors((errors) => [
+          ...errors,
+          `Error processing ${file.name}: ${e}`,
+        ]);
+      }
+    },
+    [config.exclude, config.include, numWebsitePagesRemainingOnPlan],
+  );
 
   const generateEmbeddings = useCallback(
     async (
@@ -158,84 +251,39 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       }
 
       setErrors([]);
+      numProcessedInSession.current = 0;
+      stopFlag.current = false;
 
       const { data: checksums } = await supabase
         .from('files')
         .select('path,checksum')
         .eq('source_id', sourceId);
 
-      let numNewlyProcessed = 0;
-      for (let i = 0; i < numFiles; i++) {
-        if (stopFlag.current) {
-          stopFlag.current = false;
-          break;
-        }
+      // TODO: check how much we can do concurrently without hitting
+      // rate limitations.
+      const limit = pLimit(10);
 
-        // Only pick the metadata, not the full file content, since this
-        // could be an expensive operation (GitHub) that might not be
-        // needed if the checksums match.
-        const path = getFilePath(i);
-
-        if (
-          !shouldIncludeFileWithPath(
-            path,
-            config.include || [],
-            config.exclude || [],
-          )
-        ) {
-          console.info('Skipping', path);
-          continue;
-        }
-
-        setState({
-          state: 'loading',
-          progress: i + 1,
-          total: numFiles,
-          filename: path.split('/').slice(-1)[0],
-        });
-
-        const prevChecksum = checksums?.find((c) => c.path === path)?.checksum;
-
-        const { name, content } = await getFileNameContent(i);
-        const currentChecksum = createChecksum(content);
-
-        // Check the checksum (or SHA if GitHub file), and skip if equals.
-        if (prevChecksum === currentChecksum) {
-          console.info('Skipping', path);
-          continue;
-        }
-
-        if (
-          hasReachedTrainingQuota(
-            sourceType,
-            numNewlyProcessed,
-            numWebsitePagesRemainingOnPlan,
-          )
-        ) {
-          break;
-        }
-
-        console.info('Processing', path);
-
-        const file: FileData = { path, name, content };
-
-        try {
-          await processFile(sourceId, file);
-          onFileProcessed?.();
-        } catch (e) {
-          console.error('Error', e);
-          setErrors((errors) => [
-            ...errors,
-            `Error processing ${file.name}: ${e}`,
-          ]);
-        }
-        numNewlyProcessed++;
-      }
+      await Promise.all(
+        Array.from(Array(numFiles).keys()).map((index) => {
+          return limit(() =>
+            generateEmbeddingForFile(
+              index,
+              checksums || [],
+              sourceId,
+              sourceType,
+              numFiles,
+              getFilePath,
+              getFileNameContent,
+              onFileProcessed,
+            ),
+          );
+        }),
+      );
 
       if (
         hasReachedTrainingQuota(
           sourceType,
-          numNewlyProcessed,
+          numProcessedInSession.current,
           numWebsitePagesRemainingOnPlan,
         )
       ) {
@@ -250,8 +298,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       project?.id,
       supabase,
       numWebsitePagesRemainingOnPlan,
-      config.include,
-      config.exclude,
+      generateEmbeddingForFile,
     ],
   );
 
@@ -324,9 +371,30 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         }
         case 'website': {
           const data = source.data as WebsiteSourceDataType;
-          const websiteUrl = data.url;
+          const websiteUrl = toNormalizedHostname(data.url);
 
           try {
+            const generateEmbeddingsForUrls = async (urls: string[]) => {
+              const processedContent: string[] = [];
+              await generateEmbeddings(
+                source.id,
+                'website',
+                urls.length,
+                (i) => urls[i],
+                async (i) => {
+                  const url = urls[i];
+                  const name = getNameFromUrlOrPath(url);
+                  const content = (await fetchPageContent(url)) || '';
+                  processedContent.push(content);
+                  return { name, content };
+                },
+                () => {
+                  onFileProcessed();
+                },
+              );
+              return processedContent;
+            };
+
             const robotsTxtInfo = await fetchRobotsTxtInfo(websiteUrl);
             const sitemapUrls = await fetchSitemapUrls(
               websiteUrl,
@@ -334,23 +402,31 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             );
             if (sitemapUrls !== undefined) {
               // If there is a sitemap, we honor this.
-              await generateEmbeddings(
-                source.id,
-                'website',
-                sitemapUrls.length,
-                (i) => sitemapUrls[i],
-                async (i) => {
-                  const url = sitemapUrls[i];
-                  const name = getNameFromUrlOrPath(url);
-                  const content = (await fetchPageContent(url)) || '';
-                  return { name, content };
-                },
-                () => {
-                  onFileProcessed();
-                },
-              );
+              await generateEmbeddingsForUrls(sitemapUrls);
             } else {
               // Otherwise, we discover links starting with the root page
+              let processedLinks: string[] = [];
+              let linksToProcess = [websiteUrl];
+              const hostname = getUrlHostname(websiteUrl);
+              while (linksToProcess.length > 0) {
+                const processedContent = await generateEmbeddingsForUrls(
+                  linksToProcess,
+                );
+                const discoveredLinks = uniq(
+                  processedContent.flatMap((html) =>
+                    extractLinksFromHtml(html),
+                  ),
+                )
+                  .filter((href) => isHrefFromHost(hostname, href))
+                  .map((href) => {
+                    return completeHrefWithOrigin(websiteUrl, href);
+                  })
+                  .filter(isPresent);
+                processedLinks = [...processedLinks, ...linksToProcess];
+                linksToProcess = discoveredLinks.filter(
+                  (link) => !processedLinks.includes(link),
+                );
+              }
             }
           } catch (e) {
             onError(`Error processing ${websiteUrl}: ${e}`);

@@ -1,4 +1,5 @@
 import { load } from 'cheerio';
+import { isPresent } from 'ts-is-present';
 
 import { RobotsTxtInfo } from '@/types/types';
 
@@ -101,4 +102,27 @@ export const fetchPageContent = async (
     return (await res.json()).content;
   }
   return undefined;
+};
+
+export const extractLinksFromHtml = (html: string) => {
+  const $ = load(html);
+  const hrefs: string[] = [];
+  // $('a')
+  $('*[href]')
+    .each((i, link) => {
+      const s = $(link).attr('href')?.toString();
+      if (s) {
+        hrefs.push(s);
+      }
+    })
+    .filter(isPresent);
+  // $('area')
+  //   .each((i, link) => {
+  //     const s = $(link).attr('href')?.toString();
+  //     if (s) {
+  //       hrefs.push(s);
+  //     }
+  //   })
+  //   .filter(isPresent);
+  return hrefs;
 };

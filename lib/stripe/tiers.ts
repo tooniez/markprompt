@@ -146,8 +146,8 @@ export const TIERS: Record<Tier, TierDetails> = {
       {
         name: 'Free',
         quota: 25,
-        // fileAllowance: 100,
-        numWebsitePagesPerProject: 3,
+        numWebsitePagesPerProject: 100,
+        // numWebsitePagesPerProject: 3,
       },
     ],
   },

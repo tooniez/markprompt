@@ -16,10 +16,9 @@ import { NoAutoInput } from '@/components/ui/Input';
 import { addSource, deleteSource } from '@/lib/api';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
-import useTeam from '@/lib/hooks/use-team';
 import useUser from '@/lib/hooks/use-user';
 import { isWebsiteAccessible } from '@/lib/integrations/website';
-import { getLabelForSource, normalizeUrl } from '@/lib/utils';
+import { getLabelForSource, toNormalizedHostname } from '@/lib/utils';
 import { Project } from '@/types/types';
 
 const _addSource = async (
@@ -52,7 +51,6 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
   clearPrevious,
   onDidRequestClose,
 }) => {
-  const { team } = useTeam();
   const { project } = useProject();
   const { user } = useUser();
   const { sources, mutate } = useSources();
@@ -72,12 +70,12 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
             return;
           }
 
-          let url = normalizeUrl(website);
+          let hostname = toNormalizedHostname(website);
 
-          let isAccessible = await isWebsiteAccessible(url);
+          let isAccessible = await isWebsiteAccessible(hostname);
           if (!isAccessible) {
-            url = normalizeUrl(website, true);
-            isAccessible = await isWebsiteAccessible(url);
+            hostname = toNormalizedHostname(website, true);
+            isAccessible = await isWebsiteAccessible(hostname);
           }
 
           if (!isAccessible) {
@@ -95,7 +93,7 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
             }
           }
           track('connect website');
-          await _addSource(project.id, url, mutate);
+          await _addSource(project.id, hostname, mutate);
           setSubmitting(false);
           onDidRequestClose();
         }}

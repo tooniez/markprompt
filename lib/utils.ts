@@ -494,7 +494,7 @@ export const getLabelForSource = (source: Source) => {
     }
     case 'website': {
       const data = source.data as WebsiteSourceDataType;
-      return getUrlOrigin(data.url);
+      return getUrlHostname(data.url);
     }
     case 'file-upload':
       return 'File uploads';
@@ -532,15 +532,22 @@ export const getNameFromUrlOrPath = (url: string) => {
   }
 };
 
-export const normalizeUrl = (url: string, useInsecureSchema?: boolean) => {
+export const toNormalizedHostname = (
+  url: string,
+  useInsecureSchema?: boolean,
+) => {
   if (/^https?:\/\/[a-zA-Z]+/.test(url)) {
-    return url;
+    return `${getSchema(url)}://${getUrlHostname(url)}`;
   }
-  return `http${useInsecureSchema ? '' : 's'}://${getUrlOrigin(url)}`;
+  return `http${useInsecureSchema ? '' : 's'}://${getUrlHostname(url)}`;
 };
 
-export const getUrlOrigin = (url: string) => {
+export const getUrlHostname = (url: string) => {
   return removeSchema(url).split('/')[0];
+};
+
+export const getSchema = (hostname: string) => {
+  return hostname.split('://')[0];
 };
 
 export const isUrl = (path: string) => {
@@ -551,7 +558,28 @@ export const isUrl = (path: string) => {
     return false;
   }
 };
+
 export const getUrlPath = (url: string) => {
   const urlObj = new URL(url);
   return urlObj.pathname;
+};
+
+export const isHrefFromHost = (hostname: string, href: string) => {
+  if (/^https?:\/\/[a-zA-Z]+/.test(href)) {
+    return hostname === getUrlHostname(href);
+  } else {
+    // Links that don't include a full hostname are considered relative links
+    // from the given host.
+    return true;
+  }
+};
+
+export const completeHrefWithOrigin = (origin: string, href: string) => {
+  if (href.startsWith('/')) {
+    return `${origin}${href}`;
+  } else if (/^https?:\/\/[a-zA-Z]+/.test(href)) {
+    return href;
+  } else {
+    return `${origin}/${href}`;
+  }
 };
