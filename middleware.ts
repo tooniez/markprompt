@@ -3,7 +3,7 @@ import { NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 import AppMiddleware from './lib/middleware/app';
 import CompletionsMiddleware from './lib/middleware/completions';
 import TrainMiddleware from './lib/middleware/train';
-import { getHost } from './lib/utils.edge';
+import { getAppHost } from './lib/utils.edge';
 
 export const config = {
   matcher: [
@@ -22,7 +22,7 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
     return NextResponse.next();
   }
 
-  if (hostname === getHost()) {
+  if (hostname === getAppHost()) {
     return AppMiddleware(req);
   }
 

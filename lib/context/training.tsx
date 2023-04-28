@@ -37,15 +37,15 @@ import {
   fetchSitemapUrls,
 } from '../integrations/website';
 import {
-  completeHrefWithOrigin,
+  completeHrefWithBaseUrl,
   createChecksum,
   getGitHubOwnerRepoString,
   getNameFromUrlOrPath,
-  getUrlHostname,
-  isHrefFromHost,
+  isHrefFromBaseUrl,
   pluralize,
   shouldIncludeFileWithPath,
-  toNormalizedHostname,
+  toNormalizedOrigin,
+  toNormalizedUrl,
   truncate,
 } from '../utils';
 
@@ -160,7 +160,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       getFilePath: (index: number) => string,
       getFileNameContent: (
         index: number,
-      ) => Promise<{ name: string; content: string }>,
+      ) => Promise<{ name: string; content: string } | undefined>,
       onFileProcessed?: () => void,
     ) => {
       if (stopFlag.current) {
@@ -192,8 +192,12 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
       const prevChecksum = checksums?.find((c) => c.path === path)?.checksum;
 
-      const { name, content } = await getFileNameContent(index);
-      const currentChecksum = createChecksum(content);
+      const nameAndContent = await getFileNameContent(index);
+      if (!nameAndContent) {
+        return;
+      }
+
+      const currentChecksum = createChecksum(nameAndContent.content);
 
       // Check the checksum (or SHA if GitHub file), and skip if equals.
       if (prevChecksum === currentChecksum) {
@@ -203,7 +207,11 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
       console.info('Processing', path);
 
-      const file: FileData = { path, name, content };
+      const file: FileData = {
+        path,
+        name: nameAndContent.name,
+        content: nameAndContent.content,
+      };
 
       try {
         await processFile(sourceId, file);
@@ -211,6 +219,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         onFileProcessed?.();
       } catch (e) {
         console.error('Error', e);
+        toast.error(`Error processing file ${nameAndContent.name}: ${e}`);
         setErrors((errors) => [
           ...errors,
           `Error processing ${file.name}: ${e}`,
@@ -228,7 +237,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       getFilePath: (index: number) => string,
       getFileNameContent: (
         index: number,
-      ) => Promise<{ name: string; content: string }>,
+      ) => Promise<{ name: string; content: string } | undefined>,
       onFileProcessed?: () => void,
     ) => {
       if (!project?.id) {
@@ -244,8 +253,9 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         .eq('source_id', sourceId);
 
       // TODO: check how much we can do concurrently without hitting
-      // rate limitations.
-      const limit = pLimit(10);
+      // rate limitations, in particular the OpenAI limits for
+      // training.
+      const limit = pLimit(5);
 
       await Promise.all(
         Array.from(Array(numFiles).keys()).map((index) => {
@@ -338,7 +348,8 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         }
         case 'website': {
           const data = source.data as WebsiteSourceDataType;
-          const websiteUrl = toNormalizedHostname(data.url);
+          const baseUrl = toNormalizedUrl(data.url);
+          const origin = toNormalizedOrigin(baseUrl);
 
           try {
             const generateEmbeddingsForUrls = async (urls: string[]) => {
@@ -351,7 +362,10 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 async (i) => {
                   const url = urls[i];
                   const name = getNameFromUrlOrPath(url);
-                  const content = (await fetchPageContent(url)) || '';
+                  const content = await fetchPageContent(url);
+                  if (!content) {
+                    return undefined;
+                  }
                   processedContent.push(content);
                   return { name, content };
                 },
@@ -362,12 +376,15 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               return processedContent;
             };
 
-            const robotsTxtInfo = await fetchRobotsTxtInfo(websiteUrl);
-            const sitemapUrls = await fetchSitemapUrls(
-              websiteUrl,
-              robotsTxtInfo.sitemap,
-            );
-            if (sitemapUrls !== undefined) {
+            const robotsTxtInfo = await fetchRobotsTxtInfo(origin);
+            const sitemapUrls = (
+              (await fetchSitemapUrls(origin, robotsTxtInfo.sitemap)) || []
+            ).filter((url) => {
+              // Only include the url with the same root as baseUrl, e.g.
+              // example.com/docs should not inculde example.com/blog links.
+              return url.startsWith(baseUrl);
+            });
+            if (false && sitemapUrls !== undefined) {
               const numAllowance =
                 numWebsitePagesPerProjectAllowance === 'unlimited'
                   ? sitemapUrls.length
@@ -383,12 +400,11 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             } else {
               // Otherwise, we discover links starting with the root page
               let processedLinks: string[] = [];
-              let linksToProcess = [websiteUrl];
-              const hostname = getUrlHostname(websiteUrl);
+              let linksToProcess = [data.url];
 
               let numLinksSentForProcessing = 0;
               let didReachLimit = false;
-              // Even in "unlimited" case, cap at 1_000_000 to prevent
+              // Even in the "unlimited" case, cap at 1_000_000 to prevent
               // degenerate cases.
               const _numWebsitePagesPerProjectAllowance =
                 numWebsitePagesPerProjectAllowance === 'unlimited'
@@ -416,16 +432,18 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 );
                 numLinksSentForProcessing += linksActuallySentToProcess.length;
 
-                const discoveredLinks = uniq(
-                  processedContent.flatMap((html) =>
-                    extractLinksFromHtml(html),
-                  ),
-                )
-                  .filter((href) => isHrefFromHost(hostname, href))
-                  .map((href) => {
-                    return completeHrefWithOrigin(websiteUrl, href);
-                  })
-                  .filter(isPresent);
+                const discoveredLinks = !processedContent
+                  ? []
+                  : uniq(
+                      processedContent.flatMap((html) =>
+                        extractLinksFromHtml(html),
+                      ),
+                    )
+                      .filter((href) => isHrefFromBaseUrl(baseUrl, href))
+                      .map((href) => {
+                        return completeHrefWithBaseUrl(baseUrl, href);
+                      })
+                      .filter(isPresent);
                 processedLinks = [
                   ...processedLinks,
                   ...linksActuallySentToProcess,
@@ -441,7 +459,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               }
             }
           } catch (e) {
-            onError(`Error processing ${websiteUrl}: ${e}`);
+            onError(`Error processing ${origin}: ${e}`);
           }
 
           break;

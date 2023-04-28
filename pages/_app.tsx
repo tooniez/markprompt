@@ -18,7 +18,7 @@ import { Toaster } from '@/components/ui/Toaster';
 import { ChatWindow, plainTheme } from '@/components/user/ChatWindow';
 import { ManagedAppContext } from '@/lib/context/app';
 import { ManagedTrainingContext } from '@/lib/context/training';
-import { getHost } from '@/lib/utils.edge';
+import { getAppHost } from '@/lib/utils.edge';
 
 interface CustomAppProps<P = any> extends AppProps<P> {
   Component: NextComponentType<NextPageContext, any, P> & {
@@ -38,7 +38,7 @@ export default function App({ Component, pageProps }: CustomAppProps) {
   const [supabase] = useState(() => createBrowserSupabaseClient());
 
   useEffect(() => {
-    const origin = getHost();
+    const origin = getAppHost();
     if (!process.env.NEXT_PUBLIC_FATHOM_SITE_ID || !origin) {
       return;
     }

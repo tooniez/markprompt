@@ -12,7 +12,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import { I_DONT_KNOW, STREAM_SEPARATOR } from '@/lib/constants';
-import { getOrigin, timeout } from '@/lib/utils';
+import { getAppOrigin, timeout } from '@/lib/utils';
 import { OpenAIModelId } from '@/types/types';
 
 const Caret = () => {
@@ -156,7 +156,7 @@ export const Playground: FC<PlaygroundProps> = ({
 
       try {
         const res = await fetch(
-          `${getOrigin('api', !!forceUseProdAPI)}/v1/completions`,
+          `${getAppOrigin('api', !!forceUseProdAPI)}/v1/completions`,
           {
             method: 'POST',
             headers: {

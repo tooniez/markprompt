@@ -19,7 +19,7 @@ import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useUser from '@/lib/hooks/use-user';
 import { isWebsiteAccessible } from '@/lib/integrations/website';
-import { getLabelForSource, toNormalizedHostname } from '@/lib/utils';
+import { getLabelForSource, toNormalizedUrl } from '@/lib/utils';
 import { Project } from '@/types/types';
 
 const _addSource = async (
@@ -71,12 +71,12 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
             return;
           }
 
-          let hostname = toNormalizedHostname(website);
+          let url = toNormalizedUrl(website);
 
-          let isAccessible = await isWebsiteAccessible(hostname);
+          let isAccessible = await isWebsiteAccessible(url);
           if (!isAccessible) {
-            hostname = toNormalizedHostname(website, true);
-            isAccessible = await isWebsiteAccessible(hostname);
+            url = toNormalizedUrl(website, true);
+            isAccessible = await isWebsiteAccessible(url);
           }
 
           if (!isAccessible) {
@@ -94,7 +94,7 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
             }
           }
           track('connect website');
-          await _addSource(project.id, hostname, mutate);
+          await _addSource(project.id, url, mutate);
           setSubmitting(false);
           onDidRequestClose();
         }}

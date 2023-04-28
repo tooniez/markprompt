@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { stripe } from '@/lib/stripe/server';
-import { getOrigin } from '@/lib/utils';
+import { getAppOrigin } from '@/lib/utils';
 import { Database } from '@/types/supabase';
 
 type Data =
@@ -32,7 +32,7 @@ export default async function handler(
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const redirect = `${getOrigin()}/${req.body.redirect}`;
+  const redirect = `${getAppOrigin()}/${req.body.redirect}`;
 
   const stripeSession = await stripe.checkout.sessions.create({
     customer_email: session.user.email,

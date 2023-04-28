@@ -9,7 +9,7 @@ import { SAMPLE_REPO_URL } from '@/lib/constants';
 import useFiles from '@/lib/hooks/use-files';
 import useTokens from '@/lib/hooks/use-tokens';
 import { copyToClipboard, pluralize } from '@/lib/utils';
-import { getHost } from '@/lib/utils.edge';
+import { getAppHost } from '@/lib/utils.edge';
 
 import { GitHubSample } from './GitHubSample';
 import { GitHub } from '../files/GitHub';
@@ -47,7 +47,7 @@ const AddFiles: FC<AddFilesProps> = ({ onTrainingComplete, onNext }) => {
   const { tokens } = useTokens();
 
   const curlCode = `
-  curl https://api.${getHost()}/v1/train \\
+  curl https://api.${getAppHost()}/v1/train \\
   --data-binary @content.zip \\
     -H "Content-Type: application/zip" \\
     -H "Authorization: Bearer ${tokens?.[0]?.value || '<TOKEN>'}"

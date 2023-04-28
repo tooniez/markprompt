@@ -27,7 +27,7 @@ import {
   WebsiteSourceDataType,
 } from '@/types/types';
 
-import { getHost } from './utils.edge';
+import { getAppHost } from './utils.edge';
 
 const lookup = [
   { value: 1, symbol: '' },
@@ -139,8 +139,8 @@ export const getTimeIntervals = (
   return { startTimestamp, endTimestamp, timeIntervals };
 };
 
-export const getOrigin = (subdomain?: string, forceProduction?: boolean) => {
-  const hostWithMaybeSubdomain = getHost(subdomain, forceProduction);
+export const getAppOrigin = (subdomain?: string, forceProduction?: boolean) => {
+  const hostWithMaybeSubdomain = getAppHost(subdomain, forceProduction);
   const schema =
     forceProduction || process.env.NODE_ENV === 'production'
       ? 'https://'
@@ -494,7 +494,7 @@ export const getLabelForSource = (source: Source) => {
     }
     case 'website': {
       const data = source.data as WebsiteSourceDataType;
-      return getUrlHostname(data.url);
+      return removeSchema(toNormalizedUrl(data.url));
     }
     case 'file-upload':
       return 'File uploads';
@@ -532,7 +532,7 @@ export const getNameFromUrlOrPath = (url: string) => {
   }
 };
 
-export const toNormalizedHostname = (
+export const toNormalizedOrigin = (
   url: string,
   useInsecureSchema?: boolean,
 ) => {
@@ -540,6 +540,26 @@ export const toNormalizedHostname = (
     return `${getSchema(url)}://${getUrlHostname(url)}`;
   }
   return `http${useInsecureSchema ? '' : 's'}://${getUrlHostname(url)}`;
+};
+
+export const toNormalizedUrl = (url: string, useInsecureSchema?: boolean) => {
+  // Add schema, remove trailing slashes and query params.
+  // Check if the URL already contains a schema
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    // If not, add "https://" or "http://" to the beginning of the URL
+    url = (useInsecureSchema ? 'http://' : 'https://') + url;
+  }
+
+  // Remove any query parameters
+  const queryIndex = url.indexOf('?');
+  if (queryIndex !== -1) {
+    url = url.substring(0, queryIndex);
+  }
+
+  // Remove any trailing slashes
+  url = url.replace(/\/+$/gi, '');
+
+  return url;
 };
 
 export const getUrlHostname = (url: string) => {
@@ -564,22 +584,37 @@ export const getUrlPath = (url: string) => {
   return urlObj.pathname;
 };
 
-export const isHrefFromHost = (hostname: string, href: string) => {
+export const isHrefFromBaseUrl = (baseUrl: string, href: string) => {
+  // Given a baseUrl, e.g. https://example.com/docs, determine whether
+  // provided href has the same base. Some examples:
+  // - https://acme.com is not
+  // - https://example.com/docs/welcome is
+  // - /blog is not
+  // - /docs/welcome is
   if (/^https?:\/\/[a-zA-Z]+/.test(href)) {
-    return hostname === getUrlHostname(href);
-  } else {
+    return toNormalizedUrl(href).startsWith(baseUrl);
+  } else if (href.startsWith('/')) {
     // Links that don't include a full hostname are considered relative links
     // from the given host.
+    const basePath = getUrlPath(baseUrl);
+    return href.startsWith(basePath);
+  } else if (!href.includes(':')) {
+    // Relative paths should be considered valid, since they are
+    // present in a page that has already been validated for processing,
+    // so its full URL is already whitelisted, and adding a relative
+    // path to its base path with not change this. We do exclude deep
+    // links like "mailto:" and "tel:".
     return true;
   }
 };
 
-export const completeHrefWithOrigin = (origin: string, href: string) => {
+export const completeHrefWithBaseUrl = (baseUrl: string, href: string) => {
   if (href.startsWith('/')) {
+    const origin = toNormalizedOrigin(baseUrl);
     return `${origin}${href}`;
   } else if (/^https?:\/\/[a-zA-Z]+/.test(href)) {
     return href;
   } else {
-    return `${origin}/${href}`;
+    return `${baseUrl}/${href}`;
   }
 };
