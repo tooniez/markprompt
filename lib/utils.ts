@@ -1,5 +1,10 @@
 import { createHash } from 'crypto';
 
+import {
+  DoubleArrowUpIcon,
+  GlobeIcon,
+  UploadIcon,
+} from '@radix-ui/react-icons';
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
 import dayjs from 'dayjs';
@@ -15,6 +20,8 @@ import {
   uniqueNamesGenerator,
 } from 'unique-names-generator';
 
+import { GitHubIcon } from '@/components/icons/GitHub';
+import { MotifIcon } from '@/components/icons/Motif';
 import {
   DateCountHistogramEntry,
   FileType,
@@ -23,6 +30,7 @@ import {
   LLMInfo,
   MotifSourceDataType,
   Source,
+  SourceType,
   TimeInterval,
   WebsiteSourceDataType,
 } from '@/types/types';
@@ -662,4 +670,19 @@ export const splitIntoSubstringsOfMaxLength = (
   }
 
   return result;
+};
+
+export const getIconForSource = (sourceType: SourceType) => {
+  switch (sourceType) {
+    case 'motif':
+      return MotifIcon;
+    case 'website':
+      return GlobeIcon;
+    case 'file-upload':
+      return UploadIcon;
+    case 'api-upload':
+      return DoubleArrowUpIcon;
+    default:
+      return GitHubIcon;
+  }
 };

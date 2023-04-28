@@ -1,3 +1,4 @@
+import * as Dialog from '@radix-ui/react-dialog';
 import { track } from '@vercel/analytics';
 import {
   ErrorMessage,
@@ -7,7 +8,8 @@ import {
   FormikErrors,
   FormikValues,
 } from 'formik';
-import { ChangeEvent, FC, useState } from 'react';
+import Link from 'next/link';
+import { ChangeEvent, FC, ReactNode, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import Button from '@/components/ui/Button';
@@ -47,12 +49,12 @@ const _addSource = async (
 
 type WebsiteSourceProps = {
   clearPrevious?: boolean;
-  onDidRequestClose: () => void;
+  onDidAddSource: () => void;
 };
 
 const WebsiteSource: FC<WebsiteSourceProps> = ({
   clearPrevious,
-  onDidRequestClose,
+  onDidAddSource,
 }) => {
   const { team } = useTeam();
   const { project } = useProject();
@@ -100,7 +102,7 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
           track('connect website');
           await _addSource(project.id, url, mutate);
           setSubmitting(false);
-          onDidRequestClose();
+          onDidAddSource();
         }}
       >
         {({ isSubmitting, isValid }) => (
@@ -168,4 +170,51 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
   );
 };
 
-export default WebsiteSource;
+const WebsiteAddSourceDialog = ({
+  onDidAddSource,
+  children,
+}: {
+  onDidAddSource?: () => void;
+  children: ReactNode;
+}) => {
+  const { team } = useTeam();
+  const { project } = useProject();
+  const [websiteDialogOpen, setWebsiteDialogOpen] = useState(false);
+
+  return (
+    <Dialog.Root open={websiteDialogOpen} onOpenChange={setWebsiteDialogOpen}>
+      <Dialog.Trigger asChild>{children}</Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
+        <Dialog.Content className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[500px] flex-col border">
+          <Dialog.Title className="dialog-title flex-none">
+            Connect website
+          </Dialog.Title>
+          <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
+            <p>
+              Sync pages from a website. You can specify which files to include
+              and exclude from the website in the{' '}
+              <Link
+                className="subtle-underline"
+                href={`/${team?.slug}/${project?.slug}/settings`}
+              >
+                project configuration
+              </Link>
+              .
+            </p>
+          </div>
+          <div className="flex-grow">
+            <WebsiteSource
+              onDidAddSource={() => {
+                setWebsiteDialogOpen(false);
+                onDidAddSource?.();
+              }}
+            />
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+};
+
+export default WebsiteAddSourceDialog;

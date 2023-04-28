@@ -1,3 +1,4 @@
+import * as Dialog from '@radix-ui/react-dialog';
 import { ArchiveIcon } from '@radix-ui/react-icons';
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { track } from '@vercel/analytics';
@@ -10,7 +11,8 @@ import {
   FormikValues,
 } from 'formik';
 import { groupBy } from 'lodash-es';
-import { FC, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { FC, ReactNode, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import { GitHubIcon } from '@/components/icons/GitHub';
@@ -22,6 +24,7 @@ import { addSource, deleteSource } from '@/lib/api';
 import useGitHub from '@/lib/hooks/integrations/use-github';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
+import useTeam from '@/lib/hooks/use-team';
 import useUser from '@/lib/hooks/use-user';
 import useOAuth from '@/lib/hooks/utils/use-oauth';
 import { isGitHubRepoAccessible } from '@/lib/integrations/github.node';
@@ -93,12 +96,12 @@ const ConnectButton: FC<ConnectButtonProps> = ({
 
 type GitHubSourceProps = {
   clearPrevious?: boolean;
-  onDidRequestClose: () => void;
+  onDidAddSource: () => void;
 };
 
-const GitHubSource: FC<GitHubSourceProps> = ({
+export const GitHubSource: FC<GitHubSourceProps> = ({
   clearPrevious,
-  onDidRequestClose,
+  onDidAddSource,
 }) => {
   const { project } = useProject();
   const { user } = useUser();
@@ -149,7 +152,7 @@ const GitHubSource: FC<GitHubSourceProps> = ({
           }
           await _addSource(project.id, values.repoUrl, mutate);
           setSubmitting(false);
-          onDidRequestClose();
+          onDidAddSource();
         }}
       >
         {({ isSubmitting, isValid }) => (
@@ -257,7 +260,7 @@ const GitHubSource: FC<GitHubSourceProps> = ({
                                   projectId={project.id}
                                   repository={repo}
                                   onComplete={() => {
-                                    onDidRequestClose();
+                                    onDidAddSource();
                                   }}
                                   clearPrevious={!!clearPrevious}
                                 />
@@ -277,4 +280,63 @@ const GitHubSource: FC<GitHubSourceProps> = ({
   );
 };
 
-export default GitHubSource;
+const GitHubAddSourceDialog = ({
+  onDidAddSource,
+  children,
+}: {
+  onDidAddSource?: () => void;
+  children: ReactNode;
+}) => {
+  const { team } = useTeam();
+  const { project } = useProject();
+  const [githubDialogOpen, setGithubDialogOpen] = useState(false);
+
+  return (
+    <Dialog.Root open={githubDialogOpen} onOpenChange={setGithubDialogOpen}>
+      <Dialog.Trigger asChild>{children}</Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
+        <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[600px] w-[90%] max-w-[500px] flex-col">
+          <Dialog.Title className="dialog-title flex-none">
+            Connect GitHub repo
+          </Dialog.Title>
+          <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
+            <p>
+              Sync files from a GitHub repo. You can specify which files to
+              include and exclude from the repository in the{' '}
+              <Link
+                className="subtle-underline"
+                href={`/${team?.slug}/${project?.slug}/settings`}
+              >
+                project configuration
+              </Link>
+              .
+            </p>
+            <p>
+              <span className="font-semibold">Note</span>: Syncing large
+              repositories (&gt;100 Mb) is not yet supported. In this case, we
+              recommend using file uploads or the{' '}
+              <a
+                className="subtle-underline"
+                href="https://markprompt.com/docs#train-content"
+              >
+                train API
+              </a>
+              .
+            </p>
+          </div>
+          <div className="flex-grow">
+            <GitHubSource
+              onDidAddSource={() => {
+                setGithubDialogOpen(false);
+                onDidAddSource?.();
+              }}
+            />
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+};
+
+export default GitHubAddSourceDialog;

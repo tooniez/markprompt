@@ -19,16 +19,10 @@ import { MarkpromptConfigType } from '@/lib/schema';
 import { getGitHubOwnerRepoString, pluralize } from '@/lib/utils';
 import { ApiError, GitHubSourceDataType, Source } from '@/types/types';
 
+import { GitHubSource } from '../dialogs/sources/GitHub';
 import { GitHubIcon } from '../icons/GitHub';
 import Button from '../ui/Button';
 import { ToggleMessage } from '../ui/ToggleMessage';
-
-const GitHubSource = dynamic(
-  () => import('@/components/dialogs/sources/GitHub'),
-  {
-    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
-  },
-);
 
 type GitHubProps = {
   onTrainingComplete: () => void;
@@ -181,7 +175,7 @@ export const GitHub: FC<GitHubProps> = ({ onTrainingComplete }) => {
                   <div className="flex-grow">
                     <GitHubSource
                       clearPrevious
-                      onDidRequestClose={() => {
+                      onDidAddSource={() => {
                         setGithubDialogOpen(false);
                       }}
                     />

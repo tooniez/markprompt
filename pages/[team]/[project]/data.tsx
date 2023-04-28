@@ -47,6 +47,7 @@ import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import {
   getFileNameForSourceAtPath,
+  getIconForSource,
   getLabelForSource,
   getUrlPath,
   isUrl,
@@ -57,22 +58,29 @@ import { Project, Source, SourceType } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
-const GitHubSource = dynamic(
+const GitHubAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/GitHub'),
   {
     loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
   },
 );
 
-const MotifSource = dynamic(
+const MotifAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Motif'),
   {
     loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
   },
 );
 
-const WebsiteSource = dynamic(
+const WebsiteAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Website'),
+  {
+    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
+  },
+);
+
+const FilesAddSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/Files'),
   {
     loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
   },
@@ -154,21 +162,6 @@ const StatusMessage: FC<StatusMessageProps> = ({
       )}
     </div>
   );
-};
-
-export const getIconForSource = (sourceType: SourceType) => {
-  switch (sourceType) {
-    case 'motif':
-      return MotifIcon;
-    case 'website':
-      return GlobeIcon;
-    case 'file-upload':
-      return UploadIcon;
-    case 'api-upload':
-      return DoubleArrowUpIcon;
-    default:
-      return GitHubIcon;
-  }
 };
 
 type SourceItemProps = {
@@ -290,10 +283,6 @@ const Data = () => {
   } = useUsage();
   const [rowSelection, setRowSelection] = useState({});
   const [isDeleting, setIsDeleting] = useState(false);
-  const [fileDialogOpen, setFileDialogOpen] = useState(false);
-  const [githubDialogOpen, setGithubDialogOpen] = useState(false);
-  const [motifDialogOpen, setMotifDialogOpen] = useState(false);
-  const [websiteDialogOpen, setWebsiteDialogOpen] = useState(false);
   const [sourceToRemove, setSourceToRemove] = useState<Source | undefined>(
     undefined,
   );
@@ -555,150 +544,37 @@ const Data = () => {
             </>
           )}
           <div className="flex flex-col gap-2 rounded-md border border-dashed border-neutral-800 p-4">
-            <Dialog.Root
-              open={githubDialogOpen}
-              onOpenChange={setGithubDialogOpen}
-            >
-              <Dialog.Trigger asChild>
-                <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
-                  <GitHubIcon className="h-4 w-4 flex-none" />
-                  <span className="truncate">Connect GitHub repo</span>
-                </button>
-              </Dialog.Trigger>
-              <Dialog.Portal>
-                <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-                <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[600px] w-[90%] max-w-[500px] flex-col">
-                  <Dialog.Title className="dialog-title flex-none">
-                    Connect GitHub repo
-                  </Dialog.Title>
-                  <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-                    <p>
-                      Sync files from a GitHub repo. You can specify which files
-                      to include and exclude from the repository in the{' '}
-                      <Link
-                        className="subtle-underline"
-                        href={`/${team?.slug}/${project?.slug}/settings`}
-                      >
-                        project configuration
-                      </Link>
-                      .
-                    </p>
-                    <p>
-                      <span className="font-semibold">Note</span>: Syncing large
-                      repositories (&gt;100 Mb) is not yet supported. In this
-                      case, we recommend using file uploads or the{' '}
-                      <a
-                        className="subtle-underline"
-                        href="https://markprompt.com/docs#train-content"
-                      >
-                        train API
-                      </a>
-                      .
-                    </p>
-                  </div>
-                  <div className="flex-grow">
-                    <GitHubSource
-                      onDidRequestClose={() => {
-                        setGithubDialogOpen(false);
-                      }}
-                    />
-                  </div>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
-            <Dialog.Root
-              open={motifDialogOpen}
-              onOpenChange={setMotifDialogOpen}
-            >
-              <Dialog.Trigger asChild>
-                <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
-                  <MotifIcon className="h-4 w-4 flex-none" />
-                  <span className="truncate">Connect Motif project</span>
-                </button>
-              </Dialog.Trigger>
-              <Dialog.Portal>
-                <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-                <Dialog.Content className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[500px] flex-col border">
-                  <Dialog.Title className="dialog-title flex-none">
-                    Connect Motif project
-                  </Dialog.Title>
-                  <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-                    <p>
-                      Sync all public pages from your Motif project. You can
-                      specify which files to include and exclude from the
-                      repository in the{' '}
-                      <Link
-                        className="subtle-underline"
-                        href={`/${team?.slug}/${project?.slug}/settings`}
-                      >
-                        project configuration
-                      </Link>
-                      .
-                    </p>
-                  </div>
-                  <div className="flex-grow">
-                    <MotifSource
-                      onDidRequestClose={() => {
-                        setMotifDialogOpen(false);
-                      }}
-                    />
-                  </div>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
-            <Dialog.Root
-              open={websiteDialogOpen}
-              onOpenChange={setWebsiteDialogOpen}
-            >
-              <Dialog.Trigger asChild>
-                <button
-                  className={cn(
-                    'flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400',
-                    {
-                      'pointer-events-none opacity-50': !canAddMoreWebsitePages,
-                    },
-                  )}
-                >
-                  <GlobeIcon className="h-4 w-4 flex-none" />
-                  <span className="truncate">Connect website</span>
-                </button>
-              </Dialog.Trigger>
-              <Dialog.Portal>
-                <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-                <Dialog.Content className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[500px] flex-col border">
-                  <Dialog.Title className="dialog-title flex-none">
-                    Connect website
-                  </Dialog.Title>
-                  <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-                    <p>
-                      Sync pages from a website. You can specify which files to
-                      include and exclude from the website in the{' '}
-                      <Link
-                        className="subtle-underline"
-                        href={`/${team?.slug}/${project?.slug}/settings`}
-                      >
-                        project configuration
-                      </Link>
-                      .
-                    </p>
-                  </div>
-                  <div className="flex-grow">
-                    <WebsiteSource
-                      onDidRequestClose={() => {
-                        setWebsiteDialogOpen(false);
-                      }}
-                    />
-                  </div>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
-            <button
-              className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400"
-              onClick={() => setFileDialogOpen(true)}
-            >
-              <UploadIcon className="h-4 w-4 flex-none" />
-              <span className="truncate">Upload files</span>
-            </button>
+            <GitHubAddSourceDialog>
+              <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
+                <GitHubIcon className="h-4 w-4 flex-none" />
+                <span className="truncate">Connect GitHub repo</span>
+              </button>
+            </GitHubAddSourceDialog>
+            <MotifAddSourceDialog>
+              <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
+                <MotifIcon className="h-4 w-4 flex-none" />
+                <span className="truncate">Connect Motif project</span>
+              </button>
+            </MotifAddSourceDialog>
+            <WebsiteAddSourceDialog>
+              <button
+                className={cn(
+                  'flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400',
+                  {
+                    'pointer-events-none opacity-50': !canAddMoreWebsitePages,
+                  },
+                )}
+              >
+                <GlobeIcon className="h-4 w-4 flex-none" />
+                <span className="truncate">Connect website</span>
+              </button>
+            </WebsiteAddSourceDialog>
+            <FilesAddSourceDialog>
+              <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
+                <UploadIcon className="h-4 w-4 flex-none" />
+                <span className="truncate">Upload files</span>
+              </button>
+            </FilesAddSourceDialog>
           </div>
         </div>
         {!loadingFiles && !hasFiles && (
@@ -706,9 +582,6 @@ const Data = () => {
             <FileDnd
               onTrainingComplete={() => {
                 toast.success('Processing complete');
-                setTimeout(async () => {
-                  setFileDialogOpen(false);
-                }, 1000);
               }}
             />
           </div>
@@ -808,21 +681,6 @@ const Data = () => {
           </div>
         )}
       </div>
-      <Dialog.Root open={fileDialogOpen} onOpenChange={setFileDialogOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-          <Dialog.Content className="animate-dialog-slide-in dialog-content h-[90%] max-h-[400px] w-[90%] max-w-[600px]">
-            <FileDnd
-              onTrainingComplete={() => {
-                toast.success('Processing complete');
-                setTimeout(async () => {
-                  setFileDialogOpen(false);
-                }, 1000);
-              }}
-            />
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
       <Dialog.Root
         open={!!sourceToRemove}
         onOpenChange={() => setSourceToRemove(undefined)}
