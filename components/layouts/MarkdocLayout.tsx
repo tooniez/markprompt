@@ -137,6 +137,10 @@ export const noteTag = {
       default: 'info',
       matches: ['info', 'warning', 'error'],
     },
+    className: {
+      type: String,
+      default: 'mb-8',
+    },
   },
 };
 

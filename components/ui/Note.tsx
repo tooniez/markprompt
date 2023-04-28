@@ -8,13 +8,8 @@ import { ReactNode, FC } from 'react';
 type NoteType = 'info' | 'warning' | 'error';
 
 type IconProps = {
-  type: NoteType;
+  type?: NoteType;
   className?: string;
-};
-
-type NoteProps = {
-  children?: ReactNode;
-  type: NoteType;
 };
 
 const Icon: FC<IconProps> = ({ type, className }) => {
@@ -28,15 +23,40 @@ const Icon: FC<IconProps> = ({ type, className }) => {
   }
 };
 
-export const Note: FC<NoteProps> = ({ children, type }) => {
+type NoteProps = {
+  size?: 'sm' | 'base';
+  className?: string;
+  type?: NoteType;
+  children?: ReactNode;
+};
+
+export const Note: FC<NoteProps> = ({ size, className, type, children }) => {
+  const noteSize = size || 'base';
   return (
     <div
       className={cn(
-        'mb-8 flex flex-row items-start gap-4 rounded-md border border-neutral-900 bg-neutral-1000 p-4',
+        className,
+        'flex flex-row items-start gap-4 rounded-md border border-neutral-900 bg-neutral-1000',
+        {
+          'py-2 px-3': noteSize === 'sm',
+          'p-4': noteSize === 'base',
+        },
       )}
     >
-      <Icon type={type} className="mt-1 h-5 w-5 flex-none" />
-      <div className="flex-grow prose-p:my-0">{children}</div>
+      <Icon
+        type={type}
+        className={cn('mt-1 flex-none', {
+          'h-5 w-5': noteSize === 'base',
+          'h-4 w-4': noteSize === 'sm',
+        })}
+      />
+      <div
+        className={cn('flex-grow prose-p:my-0', {
+          'text-sm': noteSize === 'sm',
+        })}
+      >
+        {children}
+      </div>
     </div>
   );
 };

@@ -17,6 +17,7 @@ import { GitHubIcon } from '@/components/icons/GitHub';
 import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
+import { Note } from '@/components/ui/Note';
 import { addSource, deleteSource } from '@/lib/api';
 import useGitHub from '@/lib/hooks/integrations/use-github';
 import useProject from '@/lib/hooks/use-project';
@@ -179,6 +180,11 @@ const GitHubSource: FC<GitHubSourceProps> = ({
                   </Button>
                 </div>
                 <ErrorMessage name="repoUrl" component={ErrorLabel} />
+                <Note size="sm" className="mt-4" type="warning">
+                  Make sure the repository allows you to index its content.
+                  Please do not build on top of other people&apos;s work unless
+                  you have explicit authorization to do so.
+                </Note>
               </div>
               <p className="mb-1 mt-6 flex-none px-4 text-sm font-medium text-neutral-300">
                 Your repositories

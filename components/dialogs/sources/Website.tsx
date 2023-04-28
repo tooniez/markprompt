@@ -13,6 +13,7 @@ import { toast } from 'react-hot-toast';
 import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
+import { Note } from '@/components/ui/Note';
 import { addSource, deleteSource } from '@/lib/api';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
@@ -110,7 +111,7 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
                     className="flex-grow"
                     type="text"
                     name="website"
-                    placeholder="paulgraham.com"
+                    placeholder="example.com"
                     inputSize="sm"
                     as={NoAutoInput}
                     disabled={isSubmitting}
@@ -131,6 +132,11 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
                   </Button>
                 </div>
                 <ErrorMessage name="website" component={ErrorLabel} />
+                <Note size="sm" className="mt-4" type="warning">
+                  Make sure the website allows you to index its content. Please
+                  do not build on top of other people&apos;s work unless you
+                  have explicit authorization to do so.
+                </Note>
               </div>
             </div>
           </Form>
