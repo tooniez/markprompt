@@ -228,9 +228,11 @@ export const getMonthlyQueryAllowance = (team: Team) => {
   }
 };
 
-export const getNumWebsitePagesPerProjectAllowance = (team: Team) => {
+export const getNumWebsitePagesPerProjectAllowance = (
+  team: Team,
+): number | 'unlimited' => {
   if (team.is_enterprise_plan) {
-    return -1;
+    return 'unlimited';
   } else if (team.stripe_price_id) {
     const priceDetails = getTierPriceDetailsFromPriceId(team.stripe_price_id);
     if (priceDetails) {

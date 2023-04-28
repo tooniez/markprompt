@@ -417,6 +417,7 @@ const Data = () => {
   const hasFiles = files && files.length > 0;
   const canTrain = hasFiles || hasNonFileSources(sources);
   const canAddMoreWebsitePages =
+    numWebsitePagesPerProjectAllowance === 'unlimited' ||
     numWebsitePagesInProject < numWebsitePagesPerProjectAllowance;
 
   return (
@@ -670,8 +671,25 @@ const Data = () => {
                   </Dialog.Title>
                   <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
                     <p>
-                      Sync pages from a website. You can specify which files to
-                      include and exclude from the website in the{' '}
+                      Sync pages from a website.
+                      {numWebsitePagesPerProjectAllowance === 'unlimited' ? (
+                        ''
+                      ) : (
+                        <>
+                          {' '}
+                          You can index up to{' '}
+                          {numWebsitePagesPerProjectAllowance} pages (
+                          <Link
+                            href={`/settings/${team?.slug}/plans`}
+                            className="subtle-underline"
+                          >
+                            upgrade your plan
+                          </Link>{' '}
+                          to increase this limit).{' '}
+                        </>
+                      )}
+                      You can specify which files to include and exclude from
+                      the website in the{' '}
                       <Link
                         className="subtle-underline"
                         href={`/${team?.slug}/${project?.slug}/settings`}

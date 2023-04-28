@@ -368,11 +368,14 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               robotsTxtInfo.sitemap,
             );
             if (sitemapUrls !== undefined) {
-              // If there is a sitemap, we honor this.
+              const numAllowance =
+                numWebsitePagesPerProjectAllowance === 'unlimited'
+                  ? sitemapUrls.length
+                  : numWebsitePagesPerProjectAllowance;
               await generateEmbeddingsForUrls(
-                sitemapUrls.slice(0, numWebsitePagesPerProjectAllowance),
+                sitemapUrls.slice(0, numAllowance),
               );
-              if (sitemapUrls.length > numWebsitePagesPerProjectAllowance) {
+              if (sitemapUrls.length > numAllowance) {
                 toast.error(
                   'You have reached the quota of pages per website on this plan.',
                 );
@@ -385,20 +388,26 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
               let numLinksSentForProcessing = 0;
               let didReachLimit = false;
+              // Even in "unlimited" case, cap at 1_000_000 to prevent
+              // degenerate cases.
+              const _numWebsitePagesPerProjectAllowance =
+                numWebsitePagesPerProjectAllowance === 'unlimited'
+                  ? 1_000_000
+                  : numWebsitePagesPerProjectAllowance;
               while (
                 linksToProcess.length > 0 &&
-                numLinksSentForProcessing < numWebsitePagesPerProjectAllowance
+                numLinksSentForProcessing < _numWebsitePagesPerProjectAllowance
               ) {
                 let linksActuallySentToProcess = linksToProcess;
                 if (
                   numLinksSentForProcessing +
                     linksActuallySentToProcess.length >
-                  numWebsitePagesPerProjectAllowance
+                  _numWebsitePagesPerProjectAllowance
                 ) {
                   didReachLimit = true;
                   linksActuallySentToProcess = linksToProcess.slice(
                     0,
-                    numWebsitePagesPerProjectAllowance -
+                    _numWebsitePagesPerProjectAllowance -
                       numLinksSentForProcessing,
                   );
                 }

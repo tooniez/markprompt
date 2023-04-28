@@ -181,9 +181,9 @@ const GitHubSource: FC<GitHubSourceProps> = ({
                 </div>
                 <ErrorMessage name="repoUrl" component={ErrorLabel} />
                 <Note size="sm" className="mt-4" type="warning">
-                  Make sure the repository allows you to index its content.
-                  Please do not build on top of other people&apos;s work unless
-                  you have explicit authorization to do so.
+                  Make sure the repository allows you to index its content. Do
+                  not build on top of other people&apos;s work unless you have
+                  explicit authorization to do so.
                 </Note>
               </div>
               <p className="mb-1 mt-6 flex-none px-4 text-sm font-medium text-neutral-300">

@@ -133,9 +133,9 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
                 </div>
                 <ErrorMessage name="website" component={ErrorLabel} />
                 <Note size="sm" className="mt-4" type="warning">
-                  Make sure the website allows you to index its content. Please
-                  do not build on top of other people&apos;s work unless you
-                  have explicit authorization to do so.
+                  Make sure the website allows you to index its content. Do not
+                  build on top of other people&apos;s work unless you have
+                  explicit authorization to do so.
                 </Note>
               </div>
             </div>
