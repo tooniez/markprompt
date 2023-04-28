@@ -384,7 +384,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               // example.com/docs should not inculde example.com/blog links.
               return url.startsWith(baseUrl);
             });
-            if (false && sitemapUrls !== undefined) {
+            if (sitemapUrls !== undefined) {
               const numAllowance =
                 numWebsitePagesPerProjectAllowance === 'unlimited'
                   ? sitemapUrls.length
