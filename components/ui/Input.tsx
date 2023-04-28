@@ -18,23 +18,27 @@ type InputWrapperProps = {
   variant?: 'plain' | 'glow';
   children?: ReactNode;
   className?: string;
-  rightLabel?: string;
+  rightAccessory?: string | ReactNode;
 } & any;
 
 const InputWrapper: FC<InputWrapperProps> = ({
   children,
   className,
-  rightLabel,
+  rightAccessory,
 }) => {
-  if (rightLabel) {
+  if (rightAccessory) {
     return (
       <div
         className={cn(className, 'input-wrapper', 'flex flex-row items-center')}
       >
         <div className="flex-grow">{children}</div>
-        <div className="flex-none whitespace-nowrap px-2 text-sm text-neutral-500">
-          {rightLabel}
-        </div>
+        {typeof rightAccessory === 'string' ? (
+          <div className="flex-none whitespace-nowrap px-2 text-sm text-neutral-500">
+            {rightAccessory}
+          </div>
+        ) : (
+          <>{rightAccessory}</>
+        )}
       </div>
     );
   }
@@ -48,7 +52,7 @@ type InputProps = {
   children?: ReactNode;
   className?: string;
   wrapperClassName?: string;
-  rightLabel?: string;
+  rightAccessory?: string | ReactNode;
 } & any;
 
 const Input: FC<InputProps> = ({
@@ -56,22 +60,21 @@ const Input: FC<InputProps> = ({
   variant,
   className,
   wrapperClassName,
-  rightLabel,
+  rightAccessory,
   ...props
 }) => {
   const inputSize = s ?? 'base';
-  const hasLegend = !!rightLabel;
+  const hasRightAccessory = !!rightAccessory;
 
   return (
-    <InputWrapper className={wrapperClassName} rightLabel={rightLabel}>
+    <InputWrapper className={wrapperClassName} rightAccessory={rightAccessory}>
       <input
         {...props}
-        // value={props.value || undefined}
         value={props.value || ''}
         className={cn(className, 'input-base', {
-          'input-base-border': !hasLegend,
-          'input-base-noborder': hasLegend,
-          'w-full flex-grow': hasLegend,
+          'input-base-border': !hasRightAccessory,
+          'input-base-noborder': hasRightAccessory,
+          'w-full flex-grow': hasRightAccessory,
           'px-2 py-2 text-sm': inputSize === 'base',
           'px-2 py-1.5 text-sm': inputSize === 'sm',
           'input-glow-color': variant === 'glow',

@@ -20,7 +20,6 @@ type ButtonProps = {
   variant?: ButtonVariant;
   light?: boolean;
   href?: string;
-  Icon?: JSXElementConstructor<any> | string;
   children?: ReactNode;
   target?: string;
   rel?: string;
@@ -29,6 +28,7 @@ type ButtonProps = {
   disabled?: boolean;
   loading?: boolean;
   loadingMessage?: string;
+  Icon?: JSXElementConstructor<any> | string;
   Component?: JSXElementConstructor<any> | string;
 } & React.HTMLProps<HTMLButtonElement>;
 
@@ -76,7 +76,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               variant === 'plain',
             'border-neutral-800 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
               variant === 'bordered',
-            'border-neutral-200 text-neutral-900 hover:bg-neutral-100 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
+            'border-neutral-200 text-neutral-500 hover:bg-neutral-100 disabled:opacity-50':
               variant === 'borderedWhite',
             'border-transparent text-neutral-100 hover:bg-neutral-1000 disabled:text-neutral-500 hover:disabled:bg-opacity-100':
               variant === 'ghost',

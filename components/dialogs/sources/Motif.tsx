@@ -113,7 +113,7 @@ const MotifSource: FC<MotifSourceProps> = ({
                     inputSize="sm"
                     as={NoAutoInput}
                     disabled={isSubmitting}
-                    rightLabel=".motif.land"
+                    rightAccessory=".motif.land"
                     value={projectDomain}
                     onChange={(event: ChangeEvent<HTMLInputElement>) => {
                       setProjectDomain(event.target.value);
