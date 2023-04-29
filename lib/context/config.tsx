@@ -4,30 +4,45 @@ import {
   FC,
   PropsWithChildren,
   SetStateAction,
-  useCallback,
   useContext,
   useState,
 } from 'react';
 
+import { useLocalStorage } from '../hooks/utils/use-localstorage';
+import { defaultTheme, Theme } from '../themes';
+
 export type State = {
-  uiConfig: any;
-  setUIConfig: Dispatch<SetStateAction<any>>;
+  theme: Theme;
+  isDark: boolean;
+  setTheme: Dispatch<SetStateAction<Theme>>;
+  setDark: (dark: boolean) => void;
 };
 
 const initialState: State = {
-  uiConfig: {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setUIConfig: () => {},
+  theme: defaultTheme,
+  isDark: false,
+  setTheme: () => {
+    // Do nothing
+  },
+  setDark: () => {
+    // Do nothing
+  },
 };
 
 const ConfigContextProvider = (props: PropsWithChildren) => {
-  const [uiConfig, setUIConfig] = useState({});
+  const [theme, setTheme] = useState(defaultTheme);
+  const [isDark, setDark] = useLocalStorage<boolean>(
+    'playground-model-dark',
+    false,
+  );
 
   return (
     <ConfigContext.Provider
       value={{
-        uiConfig,
-        setUIConfig,
+        theme,
+        isDark,
+        setTheme,
+        setDark,
       }}
       {...props}
     />

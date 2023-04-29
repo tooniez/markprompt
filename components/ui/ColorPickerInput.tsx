@@ -1,10 +1,8 @@
-import cn from 'classnames';
-import { ChangeEvent, FC, ReactNode, useMemo, useState } from 'react';
-import Input from './Input';
 import * as Popover from '@radix-ui/react-popover';
+import { ChangeEvent, FC, useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
 
-type ColorPickerInputProps = {} & any;
+import Input from './Input';
 
 const ColorDialog = ({
   color,
@@ -37,16 +35,45 @@ const ColorDialog = ({
   );
 };
 
-const ColorPickerInput: FC<ColorPickerInputProps> = ({ ...props }) => {
-  const [color, setColor] = useState('440044');
+type ColorPickerInputProps = {
+  color?: string;
+  setColor?: (color: string) => void;
+} & any;
 
+const removeHash = (color: string) => {
+  if (color.startsWith('#')) {
+    return color.slice(1);
+  }
+  return color;
+};
+
+const ColorPickerInput: FC<ColorPickerInputProps> = ({
+  color,
+  setColor,
+  ...props
+}) => {
   return (
     <Input
       {...props}
-      value={color}
-      onChange={(e: ChangeEvent<HTMLInputElement>) => setColor(e.target.value)}
+      className="uppercase"
+      value={removeHash(color) || 'ffffff'}
+      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+        setColor?.(e.target.value)
+      }
       inputSize="sm"
-      rightAccessory={<ColorDialog color={color} setColor={setColor} />}
+      leftAccessory={
+        <span className="relative ml-2 h-6 w-[6px] text-neutral-600">
+          <span className="absolute top-0 left-0 bottom-0 flex items-center">
+            #
+          </span>
+        </span>
+      }
+      rightAccessory={
+        <ColorDialog
+          color={removeHash(color)}
+          setColor={(c) => setColor(`#${c}`)}
+        />
+      }
     />
   );
 };

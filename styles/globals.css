@@ -44,7 +44,7 @@ textarea {
 }
 
 .input-base {
-  @apply flex appearance-none rounded-md border bg-neutral-900 text-neutral-100 transition duration-200 placeholder:text-neutral-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-white/50;
+  @apply flex appearance-none rounded-md border bg-neutral-900 text-neutral-100 transition duration-200 placeholder:text-neutral-500;
 }
 
 .input-base-noborder {
@@ -55,8 +55,12 @@ textarea {
   @apply border-neutral-800;
 }
 
+.input-focus {
+  @apply focus:border-transparent focus:outline-none focus:ring-2 focus:ring-white/50;
+}
+
 .input-wrapper {
-  @apply rounded-md border border-neutral-800  bg-neutral-900;
+  @apply rounded-md border border-neutral-800 bg-neutral-900;
 }
 
 .shadow-up {
@@ -85,6 +89,17 @@ textarea {
 
 .tooltip-arrow {
   @apply fill-neutral-800;
+}
+
+.accordion-content[data-state='open'] {
+  animation: menu-slide-down 300ms cubic-bezier(0.87, 0, 0.13, 1);
+}
+.accordion-content[data-state='closed'] {
+  animation: menu-slide-down-reverse 300ms cubic-bezier(0.87, 0, 0.13, 1);
+}
+
+.accordion-trigger[data-state='open'] > .accordion-chevron {
+  @apply rotate-0;
 }
 
 .gradient-heading {
@@ -215,8 +230,16 @@ button:not([type='submit']).supabase-auth-ui_ui-button {
 
 .grid-background {
   @apply bg-[length:30px_30px];
+}
+
+.grid-background-light {
   background-image: linear-gradient(to right, #e5e5e555 1px, transparent 1px),
     linear-gradient(to bottom, #e5e5e555 1px, transparent 1px);
+}
+
+.grid-background-dark {
+  background-image: linear-gradient(to right, #ffffff05 1px, transparent 1px),
+    linear-gradient(to bottom, #ffffff05 1px, transparent 1px);
 }
 
 .hidden-scrollbar::-webkit-scrollbar {
@@ -506,6 +529,17 @@ button:not([type='submit']).supabase-auth-ui_ui-button {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes menu-slide-down-reverse {
+  from {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
   }
 }
 

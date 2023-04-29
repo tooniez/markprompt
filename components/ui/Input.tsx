@@ -24,13 +24,24 @@ type InputWrapperProps = {
 const InputWrapper: FC<InputWrapperProps> = ({
   children,
   className,
+  leftAccessory,
   rightAccessory,
 }) => {
-  if (rightAccessory) {
+  if (rightAccessory || leftAccessory) {
     return (
       <div
-        className={cn(className, 'input-wrapper', 'flex flex-row items-center')}
+        className={cn(
+          className,
+          'input-wrapper group flex flex-row items-center transition focus-within:border-transparent focus-within:outline-none focus-within:ring-2 focus-within:ring-white/50',
+        )}
       >
+        {typeof leftAccessory === 'string' ? (
+          <div className="flex-none whitespace-nowrap px-2 text-sm text-neutral-500">
+            {leftAccessory}
+          </div>
+        ) : (
+          <>{leftAccessory}</>
+        )}
         <div className="flex-grow">{children}</div>
         {typeof rightAccessory === 'string' ? (
           <div className="flex-none whitespace-nowrap px-2 text-sm text-neutral-500">
@@ -52,6 +63,7 @@ type InputProps = {
   children?: ReactNode;
   className?: string;
   wrapperClassName?: string;
+  leftAccessory?: string | ReactNode;
   rightAccessory?: string | ReactNode;
 } & any;
 
@@ -60,21 +72,28 @@ const Input: FC<InputProps> = ({
   variant,
   className,
   wrapperClassName,
+  leftAccessory,
   rightAccessory,
   ...props
 }) => {
   const inputSize = s ?? 'base';
+  const hasLeftAccessory = !!leftAccessory;
   const hasRightAccessory = !!rightAccessory;
 
   return (
-    <InputWrapper className={wrapperClassName} rightAccessory={rightAccessory}>
+    <InputWrapper
+      className={wrapperClassName}
+      leftAccessory={leftAccessory}
+      rightAccessory={rightAccessory}
+    >
       <input
         {...props}
         value={props.value || ''}
-        className={cn(className, 'input-base', {
-          'input-base-border': !hasRightAccessory,
-          'input-base-noborder': hasRightAccessory,
-          'w-full flex-grow': hasRightAccessory,
+        className={cn(className, 'input-base focus:outline-none', {
+          'input-base-border input-focus':
+            !hasRightAccessory && !hasLeftAccessory,
+          'input-base-noborder': hasRightAccessory || hasLeftAccessory,
+          'w-full flex-grow': hasRightAccessory || hasLeftAccessory,
           'px-2 py-2 text-sm': inputSize === 'base',
           'px-2 py-1.5 text-sm': inputSize === 'sm',
           'input-glow-color': variant === 'glow',

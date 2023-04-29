@@ -1,9 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 
 export const useLocalStorage = <T>(
   key: string,
   initialValue: T,
 ): [T, (value: T) => void] => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  const isServer = typeof window === 'undefined';
+  const useEffectFn = !isServer ? useLayoutEffect : useEffect;
+
+  useEffectFn(() => {
+    setIsMounted(true);
+  }, []);
+
   const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === 'undefined') {
       return initialValue;
@@ -31,5 +40,5 @@ export const useLocalStorage = <T>(
     }
   };
 
-  return [storedValue, setValue];
+  return [isMounted ? storedValue : initialValue, setValue];
 };

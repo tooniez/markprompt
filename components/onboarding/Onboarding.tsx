@@ -1,30 +1,21 @@
-import {
-  ChatBubbleIcon,
-  CodeIcon,
-  Cross2Icon,
-  GlobeIcon,
-  MixerVerticalIcon,
-  Share2Icon,
-  UploadIcon,
-} from '@radix-ui/react-icons';
+import { Cross2Icon, GlobeIcon, UploadIcon } from '@radix-ui/react-icons';
 import cn from 'classnames';
+import { Code, Moon, Share, Sun, MessageCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import {
   JSXElementConstructor,
+  ReactNode,
   forwardRef,
   useCallback,
-  useState,
 } from 'react';
 import { toast } from 'react-hot-toast';
 
 import { NavLayout } from '@/components/layouts/NavLayout';
 import { addSource, deleteSource } from '@/lib/api';
 import { SAMPLE_REPO_URL } from '@/lib/constants';
-import {
-  ManagedTrainingContext,
-  useTrainingContext,
-} from '@/lib/context/training';
+import { ManagedConfigContext, useConfigContext } from '@/lib/context/config';
+import { useTrainingContext } from '@/lib/context/training';
 import emitter, { EVENT_OPEN_CHAT } from '@/lib/events';
 import useFiles from '@/lib/hooks/use-files';
 import useOnboarding from '@/lib/hooks/use-onboarding';
@@ -38,14 +29,13 @@ import FilesAddSourceDialog from '../dialogs/sources/Files';
 import MotifAddSourceDialog from '../dialogs/sources/Motif';
 import WebsiteAddSourceDialog from '../dialogs/sources/Website';
 import { Playground } from '../files/Playground';
+import { UIConfigurator } from '../files/UIConfigurator';
 import { GitHubIcon } from '../icons/GitHub';
 import { MarkpromptIcon } from '../icons/Markprompt';
 import { MotifIcon } from '../icons/Motif';
+import { AccordionContent, AccordionTrigger } from '../ui/Accordion';
 import Button from '../ui/Button';
-import { SpinnerIcon } from '../icons/Spinner';
-import { UIConfigurator } from '../files/UIConfigurator';
 import { Tag } from '../ui/Tag';
-import { ManagedConfigContext } from '@/lib/context/config';
 
 const GitHubAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/GitHub'),
@@ -53,6 +43,23 @@ const GitHubAddSourceDialog = dynamic(
     loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
   },
 );
+
+export const Row = ({
+  label,
+  className,
+  children,
+}: {
+  label: string | ReactNode;
+  className?: string;
+  children: ReactNode;
+}) => {
+  return (
+    <div className={cn(className, 'grid grid-cols-2 items-center')}>
+      <div className="py-1 text-sm text-neutral-300">{label}</div>
+      <div className="flex w-full justify-end">{children}</div>
+    </div>
+  );
+};
 
 type ConnectButtonProps = {
   label: string;
@@ -94,6 +101,7 @@ const Onboarding = () => {
     stopGeneratingEmbeddings,
     trainAllSources,
   } = useTrainingContext();
+  const { isDark, setDark } = useConfigContext();
 
   const startTraining = useCallback(async () => {
     await trainAllSources(
@@ -212,7 +220,7 @@ const Onboarding = () => {
             </div>
             <div
               className={cn(
-                'absolute inset-x-0 bottom-0 z-20 flex h-[var(--onboarding-footer-height)] transform justify-center border-t border-neutral-900 bg-neutral-1100 px-8 py-3 transition duration-300',
+                'absolute inset-x-0 bottom-0 z-20 flex h-[var(--onboarding-footer-height)] transform justify-center border-t border-neutral-900 bg-neutral-1100 px-6 py-3 transition duration-300',
                 {
                   'translate-y-0 opacity-100': sources.length > 0,
                   'translate-y-[20px] opacity-0': sources.length === 0,
@@ -229,36 +237,67 @@ const Onboarding = () => {
               </Button>
             </div>
           </div>
-          <div className="grid-background col-span-2 bg-neutral-100">
+          <div
+            className={cn(
+              'grid-background col-span-2 border-l border-r border-neutral-900',
+              {
+                'grid-background-dark bg-neutral-900': isDark,
+                'grid-background-light bg-neutral-100': !isDark,
+              },
+            )}
+          >
             <div className="flex h-full flex-col gap-4">
-              <div className="flex h-[var(--onboarding-footer-height)] flex-none flex-row items-center justify-end gap-2 border-t border-neutral-200 bg-white px-8 shadow-xl">
+              <div
+                className={cn(
+                  'flex h-[var(--onboarding-footer-height)] flex-none flex-row items-center gap-2 border-b px-6 shadow-xl',
+                  {
+                    'border-neutral-900 bg-neutral-1100': isDark,
+                    'border-neutral-200 bg-white': !isDark,
+                  },
+                )}
+              >
+                <div className="flex-grow">
+                  <button
+                    className={cn('rounded p-2 transition', {
+                      'text-neutral-300 hover:bg-white/10': isDark,
+                      'text-neutral-700 hover:bg-black/10': !isDark,
+                    })}
+                    onClick={() => setDark(!isDark)}
+                  >
+                    {isDark ? (
+                      <Sun className="h-5 w-5" />
+                    ) : (
+                      <Moon className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
                 <Button
                   disabled={!isTrained}
                   buttonSize="sm"
-                  variant="borderedWhite"
-                  Icon={Share2Icon}
+                  variant={isDark ? 'plain' : 'borderedWhite'}
+                  Icon={Share}
                 >
                   Share
                 </Button>
                 <Button
                   disabled={!isTrained}
                   buttonSize="sm"
-                  variant="borderedWhite"
-                  Icon={CodeIcon}
+                  variant={isDark ? 'plain' : 'borderedWhite'}
+                  Icon={Code}
                 >
                   Get code
                 </Button>
               </div>
               <div className="flex flex-grow flex-col gap-4 px-16 py-8">
-                <div className="relative h-full flex-grow overflow-hidden rounded-lg border border-neutral-200 bg-neutral-900 p-4 shadow-2xl">
-                  {/* {!isTrained && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-neutral-500">
-                      <SpinnerIcon className="h-5 w-5 animate-spin" />
-                      <p className="text-sm text-neutral-400">
-                        Waiting for sources...
-                      </p>
-                    </div>
-                  )} */}
+                <div
+                  className={cn(
+                    'relative h-full flex-grow overflow-hidden rounded-lg border p-4 shadow-2xl',
+                    {
+                      'border-neutral-800 bg-neutral-1000': isDark,
+                      'border-neutral-100 bg-white': !isDark,
+                    },
+                  )}
+                >
                   {project && (
                     <Playground
                       projectKey={project.private_dev_api_key}
@@ -271,24 +310,25 @@ const Onboarding = () => {
                   )}
                 </div>
                 <div className="flex flex-none flex-row justify-end">
-                  <div className="rounded-full bg-black p-3">
-                    <ChatBubbleIcon className="h-5 w-5 text-white" />
+                  <div
+                    className={cn('rounded-full border p-3', {
+                      'border-neutral-800 bg-neutral-1000': isDark,
+                      'border-transparent bg-black': !isDark,
+                    })}
+                  >
+                    <MessageCircle className="h-5 w-5 text-white" />
                   </div>
                 </div>
               </div>
             </div>
           </div>
           <div className="relative h-full">
-            <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto">
-              <div className="flex-grow overflow-y-auto p-6">
-                <h2 className="mb-4 text-sm font-bold">Design</h2>
-                <UIConfigurator />
-              </div>
-              <div className="flex-none border-t border-neutral-900 p-6">
-                <h2 className="mb-4 text-sm font-bold">
-                  Model configurator <Tag color="fuchsia">Pro</Tag>
-                </h2>
-              </div>
+            <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto p-6">
+              <h2 className="mb-4 text-lg font-bold">Design</h2>
+              {/* <UIConfigurator /> */}
+              <h2 className="mb-4 mt-12 text-lg font-bold">
+                Model configurator <Tag color="fuchsia">Pro</Tag>
+              </h2>
             </div>
           </div>
         </div>

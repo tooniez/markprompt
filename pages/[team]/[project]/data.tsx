@@ -406,6 +406,7 @@ const Data = () => {
   const hasFiles = files && files.length > 0;
   const canTrain = hasFiles || hasNonFileSources(sources);
   const canAddMoreWebsitePages =
+    !team ||
     numWebsitePagesPerProjectAllowance === 'unlimited' ||
     numWebsitePagesInProject < numWebsitePagesPerProjectAllowance;
 

@@ -43,18 +43,34 @@ export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
         <NavigationMenu.Root>
           <NavigationMenu.List className="flex flex-row items-center gap-2 px-2 py-1">
             {!loadingUser && !user?.has_completed_onboarding && (
-              <ChatWindow
-                closeOnClickOutside
-                Component={
-                  <NavigationMenu.Item>
-                    <NavigationMenu.Link asChild>
-                      <button className="focus-visible:ring-1' block h-full rounded-md px-2 py-1.5 text-sm text-neutral-300 outline-none ring-white ring-offset-0 transition duration-200 hover:bg-neutral-900 hover:text-neutral-100 focus-visible:text-neutral-100">
-                        Help
-                      </button>
-                    </NavigationMenu.Link>
-                  </NavigationMenu.Item>
-                }
-              />
+              <>
+                <NavigationMenu.Item>
+                  <NavigationMenu.Link asChild>
+                    <Button
+                      className="mr-4"
+                      variant="plain"
+                      buttonSize="sm"
+                      onClick={() => {
+                        finishOnboarding();
+                      }}
+                    >
+                      Skip onboarding →
+                    </Button>
+                  </NavigationMenu.Link>
+                </NavigationMenu.Item>
+                <ChatWindow
+                  closeOnClickOutside
+                  Component={
+                    <NavigationMenu.Item>
+                      <NavigationMenu.Link asChild>
+                        <button className="focus-visible:ring-1' block h-full rounded-md px-2 py-1.5 text-sm text-neutral-300 outline-none ring-white ring-offset-0 transition duration-200 hover:bg-neutral-900 hover:text-neutral-100 focus-visible:text-neutral-100">
+                          Help
+                        </button>
+                      </NavigationMenu.Link>
+                    </NavigationMenu.Item>
+                  }
+                />
+              </>
             )}
             <NavigationMenu.Item>
               <NavigationMenu.Link
