@@ -17,6 +17,8 @@ import { Note } from '@/components/ui/Note';
 import { addSource, deleteSource } from '@/lib/api';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
+import useTeam from '@/lib/hooks/use-team';
+import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
 import { isWebsiteAccessible } from '@/lib/integrations/website';
 import { getLabelForSource, toNormalizedUrl } from '@/lib/utils';
@@ -52,8 +54,10 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
   clearPrevious,
   onDidRequestClose,
 }) => {
+  const { team } = useTeam();
   const { project } = useProject();
   const { user } = useUser();
+  const { numWebsitePagesPerProjectAllowance } = useUsage();
   const { sources, mutate } = useSources();
   const [website, setWebsite] = useState('');
 
@@ -137,6 +141,24 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
                   build on top of other people&apos;s work unless you have
                   explicit authorization to do so.
                 </Note>
+                {numWebsitePagesPerProjectAllowance !== 'unlimited' && (
+                  <div className="mt-2 flex flex-row items-center gap-2 rounded-md border border-neutral-900 p-4">
+                    <div className="flex-grow text-sm text-neutral-300">
+                      Page limit:{' '}
+                      <span className="font-semibold">
+                        {numWebsitePagesPerProjectAllowance}
+                      </span>
+                    </div>
+                    <Button
+                      className="flex-none"
+                      href={`/settings/${team?.slug}/plans`}
+                      buttonSize="sm"
+                      variant="plain"
+                    >
+                      Upgrade plan
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </Form>
