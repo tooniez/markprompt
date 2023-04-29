@@ -493,7 +493,6 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
   const trainAllSources = useCallback(
     async (onFileProcessed: () => void, onError: (message: string) => void) => {
       setState({ state: 'fetching_data' });
-      console.log('... sources', JSON.stringify(sources, null, 2));
       for (const source of sources) {
         await trainSource(source, onFileProcessed, onError);
       }
