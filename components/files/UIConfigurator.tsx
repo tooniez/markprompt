@@ -1,9 +1,10 @@
 import * as Accordion from '@radix-ui/react-accordion';
 import * as Switch from '@radix-ui/react-switch';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
-import { FC, useMemo } from 'react';
+import { ChangeEvent, FC, useCallback, useMemo } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
+import { Theme, ThemeColorKeys, ThemeColors } from '@/lib/themes';
 
 import { ThemePicker } from './ThemePicker';
 import { Row } from '../onboarding/Onboarding';
@@ -12,12 +13,38 @@ import ColorPickerInput from '../ui/ColorPickerInput';
 import Input from '../ui/Input';
 import { Tag } from '../ui/Tag';
 
+type ThemeColorPickerProps = {
+  colors: ThemeColors;
+  colorKey: ThemeColorKeys;
+};
+
+const ThemeColorPicker: FC<ThemeColorPickerProps> = ({ colors, colorKey }) => {
+  const { setColor } = useConfigContext();
+
+  return (
+    <ColorPickerInput
+      color={colors[colorKey]}
+      setColor={(color: string) => setColor(colorKey, color)}
+    />
+  );
+};
+
 type UIConfiguratorProps = {
   className?: string;
 };
 
 export const UIConfigurator: FC<UIConfiguratorProps> = () => {
-  const { theme, isDark, setDark } = useConfigContext();
+  const {
+    theme,
+    setTheme,
+    isDark,
+    setDark,
+    setSize,
+    placeholder,
+    setPlaceholder,
+    referencesHeading,
+    setReferencesHeading,
+  } = useConfigContext();
 
   const colors = useMemo(() => {
     return isDark ? theme.colors.dark : theme.colors.light;
@@ -27,6 +54,15 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
     <div className="flex flex-col gap-2">
       <Row label="Theme">
         <ThemePicker />
+      </Row>
+      <Row label="Placeholder">
+        <Input
+          inputSize="sm"
+          value={placeholder}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setPlaceholder(event.target.value);
+          }}
+        />
       </Row>
       <Row
         label={
@@ -45,11 +81,45 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
       </Row>
       <Accordion.Root className="mt-4 w-full" type="single" collapsible>
         <Accordion.Item value="options">
-          <AccordionTrigger>Options</AccordionTrigger>
+          <AccordionTrigger>Advanced configuration</AccordionTrigger>
           <AccordionContent>
             <div className="flex flex-col gap-2">
-              {/* Default colors of content */}
-              <Row className="mb-4" label="Show colors for">
+              <Row label="References heading">
+                <Input
+                  inputSize="sm"
+                  value={referencesHeading}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    setReferencesHeading(event.target.value);
+                  }}
+                />
+              </Row>
+              <Row className="mt-4" label="Size">
+                <ToggleGroup.Root
+                  className="grid w-full grid-cols-2 overflow-hidden rounded border border-neutral-800 bg-neutral-1000 text-xs font-medium text-neutral-300"
+                  type="single"
+                  value={theme.size}
+                  onValueChange={(value) => {
+                    setSize(value as Theme['size']);
+                  }}
+                  aria-label="Mode"
+                >
+                  <ToggleGroup.Item
+                    className="px-2 py-1.5 text-center transition data-[state='on']:bg-neutral-900 data-[state='on']:text-neutral-300 data-[state='off']:text-neutral-500"
+                    value="sm"
+                    aria-label="Small"
+                  >
+                    Small
+                  </ToggleGroup.Item>
+                  <ToggleGroup.Item
+                    className="px-2 py-1.5 text-center transition data-[state='on']:bg-neutral-900 data-[state='on']:text-neutral-300 data-[state='off']:text-neutral-500"
+                    value="base"
+                    aria-label="Base"
+                  >
+                    Base
+                  </ToggleGroup.Item>
+                </ToggleGroup.Root>
+              </Row>
+              <Row className="mb-2 mt-4" label="Show colors for">
                 <ToggleGroup.Root
                   className="grid w-full grid-cols-2 overflow-hidden rounded border border-neutral-800 bg-neutral-1000 text-xs font-medium text-neutral-300"
                   type="single"
@@ -76,45 +146,78 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                 </ToggleGroup.Root>
               </Row>
               <Row label="Background">
-                <ColorPickerInput color={colors.background} />
+                <ThemeColorPicker colors={colors} colorKey="background" />
               </Row>
               <Row label="Foreground">
-                <ColorPickerInput color={colors.foreground} />
+                <ThemeColorPicker colors={colors} colorKey="foreground" />
               </Row>
               {/* Muted colors of content */}
               <Row label="Muted">
-                <ColorPickerInput color={colors.muted} />
+                <ThemeColorPicker colors={colors} colorKey="muted" />
               </Row>
               <Row label="Muted foreground">
-                <ColorPickerInput color={colors.mutedForeground} />
+                <ThemeColorPicker colors={colors} colorKey="mutedForeground" />
               </Row>
               <Row label="Border">
-                <ColorPickerInput color={colors.border} />
+                <ThemeColorPicker colors={colors} colorKey="border" />
               </Row>
               <Row label="Input">
-                <ColorPickerInput color={colors.input} />
+                <ThemeColorPicker colors={colors} colorKey="input" />
               </Row>
               {/* Primary colors for buttons */}
               <Row label="Primary">
-                <ColorPickerInput color={colors.primary} />
+                <ThemeColorPicker colors={colors} colorKey="primary" />
               </Row>
               <Row label="Primary foreground">
-                <ColorPickerInput color={colors.primaryForeground} />
+                <ThemeColorPicker
+                  colors={colors}
+                  colorKey="primaryForeground"
+                />
               </Row>
               {/* Secondary colors for buttons */}
               <Row label="Secondary">
-                <ColorPickerInput color={colors.secondary} />
+                <ThemeColorPicker colors={colors} colorKey="secondary" />
               </Row>
               <Row label="Secondary foreground">
-                <ColorPickerInput color={colors.secondaryForeground} />
+                <ThemeColorPicker
+                  colors={colors}
+                  colorKey="secondaryForeground"
+                />
+              </Row>
+              <Row label="Primary highlight">
+                <ThemeColorPicker colors={colors} colorKey="primaryHighlight" />
+              </Row>
+              <Row label="Primary highlight">
+                <ThemeColorPicker
+                  colors={colors}
+                  colorKey="secondaryHighlight"
+                />
               </Row>
               {/* Border radius for card, input and buttons */}
               <Row label="Ring">
-                <ColorPickerInput color={colors.ring} />
+                <ThemeColorPicker colors={colors} colorKey="ring" />
               </Row>
               {/* Border radius for card, input and buttons */}
               <Row label="Radius">
-                <Input inputSize="sm" rightAccessory="px" />
+                <Input
+                  inputSize="sm"
+                  rightAccessory="px"
+                  value={theme.dimensions.radius}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    try {
+                      const radius = parseInt(event.target.value);
+                      setTheme({
+                        ...theme,
+                        dimensions: {
+                          ...theme.dimensions,
+                          radius,
+                        },
+                      });
+                    } catch {
+                      //
+                    }
+                  }}
+                />
               </Row>
             </div>
           </AccordionContent>

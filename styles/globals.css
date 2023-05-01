@@ -229,7 +229,7 @@ button:not([type='submit']).supabase-auth-ui_ui-button {
 }
 
 .grid-background {
-  @apply bg-[length:30px_30px];
+  @apply bg-[length:36px_36px];
 }
 
 .grid-background-light {
@@ -317,7 +317,8 @@ button:not([type='submit']).supabase-auth-ui_ui-button {
 }
 
 .prompt-answer pre {
-  @apply rounded border border-neutral-800 bg-neutral-900 !important;
+  @apply rounded border !important;
+  /* border-neutral-800 bg-neutral-900 */
 }
 
 .collapse-trigger[data-state='open'] > .collapse-chevron {
@@ -440,7 +441,14 @@ button:not([type='submit']).supabase-auth-ui_ui-button {
   animation-duration: 1000ms;
   animation-fill-mode: both;
   animation-iteration-count: infinite;
-  animation-fill-mode: forwards;
+  transition-timing-function: cubic-bezier(0.14, 0, 0.16, 1);
+}
+
+.animate-progress {
+  animation-name: progress;
+  animation-duration: 2s;
+  animation-fill-mode: none;
+  animation-iteration-count: infinite;
   transition-timing-function: cubic-bezier(0.14, 0, 0.16, 1);
 }
 
@@ -670,5 +678,20 @@ button:not([type='submit']).supabase-auth-ui_ui-button {
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes progress {
+  0% {
+    width: 0;
+    transform: translateX(0);
+  }
+  50% {
+    width: 100%;
+    transform: translateX(0);
+  }
+  100% {
+    width: 100%;
+    transform: translateX(100%);
   }
 }

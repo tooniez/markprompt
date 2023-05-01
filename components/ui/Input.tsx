@@ -89,7 +89,7 @@ const Input: FC<InputProps> = ({
       <input
         {...props}
         value={props.value || ''}
-        className={cn(className, 'input-base focus:outline-none', {
+        className={cn(className, 'input-base max-w-full focus:outline-none', {
           'input-base-border input-focus':
             !hasRightAccessory && !hasLeftAccessory,
           'input-base-noborder': hasRightAccessory || hasLeftAccessory,

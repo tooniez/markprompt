@@ -47,6 +47,10 @@ const removeHash = (color: string) => {
   return color;
 };
 
+const toHexColor = (color: string) => {
+  return `#${removeHash(color)}`;
+};
+
 const ColorPickerInput: FC<ColorPickerInputProps> = ({
   color,
   setColor,
@@ -58,7 +62,7 @@ const ColorPickerInput: FC<ColorPickerInputProps> = ({
       className="uppercase"
       value={removeHash(color) || 'ffffff'}
       onChange={(e: ChangeEvent<HTMLInputElement>) =>
-        setColor?.(e.target.value)
+        setColor?.(toHexColor(e.target.value))
       }
       inputSize="sm"
       leftAccessory={
@@ -71,7 +75,7 @@ const ColorPickerInput: FC<ColorPickerInputProps> = ({
       rightAccessory={
         <ColorDialog
           color={removeHash(color)}
-          setColor={(c) => setColor(`#${c}`)}
+          setColor={(c) => setColor(toHexColor(c))}
         />
       }
     />

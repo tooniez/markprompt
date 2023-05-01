@@ -3,7 +3,7 @@ import * as Select from '@radix-ui/react-select';
 import { FC } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
-import { getTheme, themes } from '@/lib/themes';
+import { defaultThemes, getTheme } from '@/lib/themes';
 
 import { SelectItem } from '../ui/Select';
 
@@ -16,7 +16,7 @@ export const ThemePicker: FC<ThemePickerProps> = () => {
 
   return (
     <Select.Root
-      value={theme.name}
+      value={theme.isCustom ? 'Custom' : theme.name}
       onValueChange={(value) => {
         const selectedTheme = getTheme(value);
         if (selectedTheme) {
@@ -25,7 +25,7 @@ export const ThemePicker: FC<ThemePickerProps> = () => {
       }}
     >
       <Select.Trigger
-        className="flex h-10 w-full flex-row items-center gap-2 rounded-md border border-neutral-900 py-1.5 px-3 text-sm outline-none"
+        className="flex w-full flex-row items-center gap-2 rounded-md border border-neutral-900 py-1.5 px-3 text-sm outline-none"
         aria-label="Theme"
       >
         <div className="flex-grow text-left">
@@ -42,7 +42,8 @@ export const ThemePicker: FC<ThemePickerProps> = () => {
           </Select.ScrollUpButton>
           <Select.Viewport>
             <Select.Group>
-              {themes?.map((theme) => {
+              {theme.isCustom && <SelectItem value="Custom">Custom</SelectItem>}
+              {defaultThemes?.map((theme) => {
                 return (
                   <SelectItem key={`theme-${theme.name}`} value={theme.name}>
                     {theme.name}

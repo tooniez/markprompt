@@ -1,4 +1,5 @@
 import cn from 'classnames';
+import { X, Search } from 'lucide-react';
 import {
   FC,
   ReactNode,
@@ -12,38 +13,60 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import { I_DONT_KNOW, STREAM_SEPARATOR } from '@/lib/constants';
+import { Theme } from '@/lib/themes';
 import { getAppOrigin, timeout } from '@/lib/utils';
 import { OpenAIModelId } from '@/types/types';
 
-const Caret = () => {
+type CaretProps = {
+  color?: string;
+};
+
+const Caret: FC<CaretProps> = ({ color }) => {
   return (
-    <i className="caret animate-caret inline-block h-[15px] w-[8px] translate-y-[2px] translate-x-[2px] transform rounded-[1px] bg-fuchsia-500 shadow-[0_0px_3px_0px_rgba(217,70,219,0.9)]" />
+    <i
+      className="caret animate-caret inline-block h-[15px] w-[8px] translate-y-[2px] translate-x-[2px] transform rounded-[1px]"
+      style={{
+        backgroundColor: color,
+        boxShadow: `0 0px 3px 0 ${color}bb`,
+      }}
+    />
   );
 };
 
 type WithCaretProps = {
   Component: string;
+  caretColor?: string;
   children?: ReactNode;
 } & any;
 
-const WithCaret: FC<WithCaretProps> = ({ Component, children, ...rest }) => {
+const WithCaret: FC<WithCaretProps> = ({
+  Component,
+  caretColor,
+  children,
+  ...rest
+}) => {
   // Sometimes, react-markdown sends props of incorrect type,
   // causing React errors. To be safe, we normalize them here.
-  const stringifiedProps = Object.keys(rest).reduce((acc, key) => {
-    const value = rest[key];
-    if (value === null || typeof value === 'undefined') {
-      return acc;
-    }
-    return {
-      ...acc,
-      key: typeof value !== 'string' ? value.toString() : value,
-    };
-  }, {});
+  // const stringifiedProps = Object.keys(rest).reduce((acc, key) => {
+  //   const value = rest[key];
+  //   if (value === null || typeof value === 'undefined') {
+  //     return acc;
+  //   }
+  //   return {
+  //     ...acc,
+  //     [key]: typeof value !== 'string' ? value.toString() : value,
+  //   };
+  // }, {});
 
+  // console.log('stringifiedProps', JSON.stringify(rest, null, 2));
   return (
-    <Component {...stringifiedProps} className="markdown-node">
+    <Component
+      // {...stringifiedProps}
+      {...rest}
+      className="markdown-node"
+    >
       {children}
-      <Caret />
+      <Caret color={caretColor} />
     </Component>
   );
 };
@@ -59,10 +82,14 @@ type PlaygroundProps = {
   demoPrompt?: string;
   demoResponse?: string;
   demoReferences?: string[];
+  noAnimation?: boolean;
   iDontKnowMessage?: string;
   model?: OpenAIModelId;
   placeholder?: string;
+  referencesHeading?: string;
   inputClassName?: string;
+  theme?: Theme;
+  useDarkTheme?: boolean;
 };
 
 // The playground is used in three scenarios:
@@ -73,17 +100,20 @@ export const Playground: FC<PlaygroundProps> = ({
   projectKey,
   forceUseProdAPI,
   didCompleteFirstQuery,
-  onDark,
   autoScrollDisabled,
   isDemoMode,
   playing,
   demoPrompt,
   demoResponse,
   demoReferences,
+  noAnimation,
   iDontKnowMessage,
   model,
   placeholder,
+  referencesHeading,
   inputClassName,
+  theme,
+  useDarkTheme,
 }) => {
   const [prompt, setPrompt] = useState<string | undefined>('');
   const [answer, setAnswer] = useState('');
@@ -95,6 +125,7 @@ export const Playground: FC<PlaygroundProps> = ({
   const _didCompleteFirstQuery = useRef<boolean>(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const _iDontKnowMessage = iDontKnowMessage || I_DONT_KNOW;
+  const colors = useDarkTheme ? theme?.colors.dark : theme?.colors.light;
 
   useEffect(() => {
     if (!playing || !demoResponse || !demoPrompt) {
@@ -102,21 +133,33 @@ export const Playground: FC<PlaygroundProps> = ({
     }
 
     timeoutRef.current = setTimeout(async () => {
-      inputRef.current?.focus();
+      if (!noAnimation) {
+        inputRef.current?.focus();
+      }
       const promptChunks = demoPrompt.split('');
-      await timeout(500);
+      if (!noAnimation) {
+        await timeout(500);
+      }
       for (const prompt of promptChunks) {
         setPrompt((p) => (p ? p : '') + prompt);
-        await timeout(Math.random() * 10 + 30);
+        if (!noAnimation) {
+          await timeout(Math.random() * 10 + 30);
+        }
       }
 
-      await timeout(500);
+      if (!noAnimation) {
+        await timeout(500);
+      }
       setLoading(true);
-      await timeout(2000);
+      if (!noAnimation) {
+        await timeout(2000);
+      }
       const responseChunks = demoResponse.split(' ');
       for (const chunk of responseChunks) {
         setAnswer((a) => a + chunk + ' ');
-        await timeout(Math.random() * 10 + 70);
+        if (!noAnimation) {
+          await timeout(Math.random() * 10 + 70);
+        }
       }
       setLoading(false);
       await timeout(500);
@@ -128,7 +171,7 @@ export const Playground: FC<PlaygroundProps> = ({
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [playing, demoResponse, demoPrompt, demoReferences]);
+  }, [playing, demoResponse, demoPrompt, demoReferences, noAnimation]);
 
   const setAnswerAnimated = useCallback(async (answer: string) => {
     const responseChunks = answer.split(' ');
@@ -196,6 +239,7 @@ export const Playground: FC<PlaygroundProps> = ({
               const parts = startText.split(STREAM_SEPARATOR);
               try {
                 refs = JSON.parse(parts[0]);
+                setReferences(refs);
               } catch {
                 // do nothing
               }
@@ -206,7 +250,6 @@ export const Playground: FC<PlaygroundProps> = ({
             setAnswer((prev) => prev + chunkValue);
           }
         }
-        setReferences(refs);
       } catch (e) {
         console.error('Error', e);
         await setAnswerAnimated(_iDontKnowMessage);
@@ -248,92 +291,237 @@ export const Playground: FC<PlaygroundProps> = ({
   }, [loading, answer, didCompleteFirstQuery]);
 
   return (
-    <div className="relative flex h-full flex-col">
-      <div className="relative h-12 border-b border-neutral-900">
-        <form onSubmit={submitPrompt}>
-          <input
-            ref={inputRef}
-            value={prompt || ''}
-            type="text"
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder={placeholder || 'Ask me anything...'}
-            className={cn(
-              inputClassName,
-              'w-full appearance-none rounded-md border-0 bg-transparent px-0 pt-1 pb-2 text-neutral-300 outline-none transition duration-500 placeholder:text-neutral-500 focus:outline-none focus:ring-0',
-              {
-                'pointer-events-none': isDemoMode && playing,
-              },
-            )}
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="none"
-            spellCheck="false"
-            autoFocus={false}
+    <div
+      className="relative flex h-full flex-col overflow-hidden border shadow-2xl"
+      style={{
+        backgroundColor: colors?.background,
+        borderColor: colors?.border,
+        borderRadius: theme?.dimensions.radius,
+      }}
+    >
+      <div
+        className="relative flex flex-none flex-row items-center gap-2 border-b py-1 px-4"
+        style={{
+          borderColor: colors?.border,
+        }}
+      >
+        <div className="-mr-1 flex-none rounded p-1 transition hover:opacity-60">
+          <Search
+            className={cn({
+              'h-5 w-5': theme?.size === 'base',
+              'h-4 w-4': theme?.size === 'sm',
+            })}
+            style={{ color: colors?.foreground }}
           />
-        </form>
+        </div>
+        <div className="flex-grow">
+          <form onSubmit={submitPrompt}>
+            <input
+              ref={inputRef}
+              value={prompt || ''}
+              type="text"
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder={placeholder}
+              className={cn(
+                inputClassName,
+                'mt-[2px] w-full appearance-none rounded-md border-0 bg-transparent outline-none transition duration-500 placeholder:text-neutral-500/50 focus:outline-none focus:ring-0',
+                {
+                  'pointer-events-none': isDemoMode && playing,
+                  'text-sm': theme?.size === 'sm',
+                },
+              )}
+              style={{
+                caretColor: colors?.primary,
+                color: colors?.foreground,
+              }}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck="false"
+              autoFocus={false}
+            />
+          </form>
+        </div>
+        <button className="-mr-1 flex-none rounded p-1 transition hover:opacity-60">
+          <X
+            className={cn({
+              'h-5 w-5': theme?.size === 'base',
+              'h-4 w-4': theme?.size === 'sm',
+            })}
+            style={{ color: colors?.foreground }}
+          />
+        </button>
       </div>
       <div
-        className={cn(
-          'absolute inset-x-0 bottom-0 z-10 h-10 bg-gradient-to-t',
-          {
-            'from-neutral-1000 to-neutral-1000/0': !onDark,
-            'from-neutral-1100 to-neutral-1100/0': onDark,
-          },
-        )}
-      />
-      <div
         ref={containerRef}
-        className="hidden-scrollbar prose prose-sm absolute inset-x-0 bottom-0 top-12 z-0 max-w-full overflow-y-auto scroll-smooth py-4 pb-8 dark:prose-invert"
-      >
-        {loading && !(answer.length > 0) && <Caret />}
-        {/* Need a container for ReactMarkdown to be able to access
-            :last-child and display the caret */}
-        <div
-          className={cn('prompt-answer', {
+        className={cn(
+          'hidden-scrollbar prompt-answer prose z-0 flex max-w-full flex-grow flex-col overflow-y-auto scroll-smooth px-8 py-4',
+          {
             'prompt-answer-done': !loading,
             'prompt-answer-loading': loading,
-          })}
-        >
+            'prose-sm': theme?.size === 'sm',
+          },
+        )}
+        style={{
+          color: colors?.foreground,
+        }}
+      >
+        {loading && !(answer.length > 0) && <Caret color={colors?.primary} />}
+        {/* Need a container for ReactMarkdown to be able to access
+            :last-child and display the caret */}
+        <div>
           <ReactMarkdown
             components={{
-              p: (props) => <WithCaret Component="p" {...props} />,
-              span: (props) => <WithCaret Component="span" {...props} />,
-              h1: (props) => <WithCaret Component="h1" {...props} />,
-              h2: (props) => <WithCaret Component="h2" {...props} />,
-              h3: (props) => <WithCaret Component="h3" {...props} />,
-              h4: (props) => <WithCaret Component="h4" {...props} />,
-              h5: (props) => <WithCaret Component="h5" {...props} />,
-              h6: (props) => <WithCaret Component="h6" {...props} />,
-              pre: (props) => <WithCaret Component="pre" {...props} />,
-              code: (props) => <WithCaret Component="code" {...props} />,
-              td: (props) => <WithCaret Component="td" {...props} />,
-              li: (props) => <WithCaret Component="li" {...props} />,
+              p: (props) => (
+                <WithCaret
+                  Component="p"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              span: (props) => (
+                <WithCaret
+                  Component="span"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              h1: (props) => (
+                <WithCaret
+                  Component="h1"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              h2: (props) => (
+                <WithCaret
+                  Component="h2"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              h3: (props) => (
+                <WithCaret
+                  Component="h3"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              h4: (props) => (
+                <WithCaret
+                  Component="h4"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              h5: (props) => (
+                <WithCaret
+                  Component="h5"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              h6: (props) => (
+                <WithCaret
+                  Component="h6"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              pre: (props) => (
+                <WithCaret
+                  Component="pre"
+                  style={{
+                    backgroundColor: colors?.muted,
+                    borderColor: colors?.border,
+                  }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              code: (props) => (
+                <WithCaret
+                  Component="code"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              td: (props) => (
+                <WithCaret
+                  Component="td"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              li: (props) => (
+                <WithCaret
+                  Component="li"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
             }}
             remarkPlugins={[remarkGfm]}
           >
             {answer}
           </ReactMarkdown>
+          <div ref={answerContainerRef} />
         </div>
-        {answer.length > 0 && references.length > 0 && (
-          <div className="mt-8 border-t border-neutral-900 pt-4 text-sm text-neutral-500">
-            <div className="animate-slide-up">
-              Summary generated from the following sources:
-              <div className="mt-4 flex w-full flex-row flex-wrap items-center gap-2">
-                {references.map((r) => (
-                  <div
-                    key={`reference-${r}`}
-                    className="cursor-pointer rounded-md border border-neutral-900 bg-neutral-1100 px-2 py-1 text-sm font-medium text-neutral-300 transition hover:border-neutral-800 hover:text-neutral-200"
-                  >
-                    {r}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-        <div className="h-8" />
-        <div ref={answerContainerRef} />
       </div>
+      {loading && !(answer.length > 0) && (
+        <div className="relative flex-none">
+          <div
+            className="animate-progress absolute left-0 bottom-0 h-[3px]"
+            style={{
+              backgroundImage: `linear-gradient(to right,${colors?.primaryHighlight},${colors?.secondaryHighlight})`,
+            }}
+          ></div>
+        </div>
+      )}
+      {references.length > 0 && (
+        <div
+          className="animate-slide-up flex-none border-t pt-4 pb-8 text-sm text-neutral-500"
+          style={{
+            borderColor: colors?.border,
+            backgroundColor: colors?.secondary,
+          }}
+        >
+          <div
+            className="px-8 text-xs font-semibold"
+            style={{ color: colors?.foreground }}
+          >
+            {referencesHeading}
+          </div>
+          <div className="hidden-scrollbar mt-3 flex w-full flex-row items-center gap-2 overflow-x-auto px-8">
+            {references.map((r) => (
+              <div
+                key={`reference-${r}`}
+                className={
+                  'cursor-pointer whitespace-nowrap rounded-md border px-2 py-1 text-sm font-medium transition hover:opacity-60'
+                }
+                style={{
+                  borderColor: colors?.border,
+                  backgroundColor: colors?.muted,
+                  color: colors?.primary,
+                }}
+              >
+                {r}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -54,8 +54,8 @@ export const Row = ({
   children: ReactNode;
 }) => {
   return (
-    <div className={cn(className, 'grid grid-cols-2 items-center')}>
-      <div className="py-1 text-sm text-neutral-300">{label}</div>
+    <div className={cn(className, 'grid grid-cols-2 items-center gap-4')}>
+      <div className="truncate py-1 text-sm text-neutral-300">{label}</div>
       <div className="flex w-full justify-end">{children}</div>
     </div>
   );
@@ -101,7 +101,8 @@ const Onboarding = () => {
     stopGeneratingEmbeddings,
     trainAllSources,
   } = useTrainingContext();
-  const { isDark, setDark } = useConfigContext();
+  const { theme, colors, isDark, setDark, placeholder, referencesHeading } =
+    useConfigContext();
 
   const startTraining = useCallback(async () => {
     await trainAllSources(
@@ -237,68 +238,60 @@ const Onboarding = () => {
               </Button>
             </div>
           </div>
-          <div
-            className={cn(
-              'grid-background col-span-2 border-l border-r border-neutral-900',
-              {
-                'grid-background-dark bg-neutral-900': isDark,
-                'grid-background-light bg-neutral-100': !isDark,
-              },
-            )}
-          >
-            <div className="flex h-full flex-col gap-4">
+          <div className="col-span-2 h-full overflow-hidden">
+            {project && (
               <div
                 className={cn(
-                  'flex h-[var(--onboarding-footer-height)] flex-none flex-row items-center gap-2 border-b px-6 shadow-xl',
+                  'grid-background h-full border-l border-r border-neutral-900',
                   {
-                    'border-neutral-900 bg-neutral-1100': isDark,
-                    'border-neutral-200 bg-white': !isDark,
+                    'grid-background-dark bg-neutral-900': isDark,
+                    'grid-background-light bg-neutral-100': !isDark,
                   },
                 )}
               >
-                <div className="flex-grow">
-                  <button
-                    className={cn('rounded p-2 transition', {
-                      'text-neutral-300 hover:bg-white/10': isDark,
-                      'text-neutral-700 hover:bg-black/10': !isDark,
-                    })}
-                    onClick={() => setDark(!isDark)}
-                  >
-                    {isDark ? (
-                      <Sun className="h-5 w-5" />
-                    ) : (
-                      <Moon className="h-5 w-5" />
+                <div className="relative flex h-full flex-col gap-4">
+                  <div
+                    className={cn(
+                      'flex h-[var(--onboarding-footer-height)] flex-none flex-row items-center gap-2 px-6 shadow-lg',
+                      {
+                        'border-b border-neutral-900 bg-neutral-1100': isDark,
+                        'border-neutral-200 bg-white': !isDark,
+                      },
                     )}
-                  </button>
-                </div>
-                <Button
-                  disabled={!isTrained}
-                  buttonSize="sm"
-                  variant={isDark ? 'plain' : 'borderedWhite'}
-                  Icon={Share}
-                >
-                  Share
-                </Button>
-                <Button
-                  disabled={!isTrained}
-                  buttonSize="sm"
-                  variant={isDark ? 'plain' : 'borderedWhite'}
-                  Icon={Code}
-                >
-                  Get code
-                </Button>
-              </div>
-              <div className="flex flex-grow flex-col gap-4 px-16 py-8">
-                <div
-                  className={cn(
-                    'relative h-full flex-grow overflow-hidden rounded-lg border p-4 shadow-2xl',
-                    {
-                      'border-neutral-800 bg-neutral-1000': isDark,
-                      'border-neutral-100 bg-white': !isDark,
-                    },
-                  )}
-                >
-                  {project && (
+                  >
+                    <div className="flex-grow">
+                      <button
+                        className={cn('rounded p-2 transition', {
+                          'text-neutral-300 hover:bg-white/10': isDark,
+                          'text-neutral-700 hover:bg-black/10': !isDark,
+                        })}
+                        onClick={() => setDark(!isDark)}
+                      >
+                        {isDark ? (
+                          <Sun className="h-5 w-5" />
+                        ) : (
+                          <Moon className="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
+                    <Button
+                      disabled={!isTrained}
+                      buttonSize="sm"
+                      variant={isDark ? 'plain' : 'borderedWhite'}
+                      Icon={Share}
+                    >
+                      Share
+                    </Button>
+                    <Button
+                      disabled={!isTrained}
+                      buttonSize="sm"
+                      variant={isDark ? 'plain' : 'borderedWhite'}
+                      Icon={Code}
+                    >
+                      Get code
+                    </Button>
+                  </div>
+                  <div className="absolute inset-x-0 top-[var(--onboarding-footer-height)] bottom-0 flex flex-col gap-4 px-16 py-8">
                     <Playground
                       projectKey={project.private_dev_api_key}
                       // didCompleteFirstQuery={didCompleteFirstQuery}
@@ -306,133 +299,72 @@ const Onboarding = () => {
                       iDontKnowMessage={
                         'Sorry, I am not sure how to answer that. But we are all set training your files!'
                       }
+                      theme={theme}
+                      placeholder={placeholder}
+                      referencesHeading={referencesHeading}
+                      useDarkTheme={isDark}
+                      // isDemoMode
+                      // noAnimation
+                      // playing={true}
+                      // demoPrompt="How do I publish a component?"
+                      // demoResponse={`To publish a component on Acme, follow these steps:
+
+                      // # Sign up
+
+                      // - At the root of your project, open or create a file named \`index.js\`, and add the following lines (you can add as many components as you need):
+
+                      // \`\`\`js
+                      // import Component1 from "/path/to/component1
+                      // import Component2 from "/path/to/component2
+
+                      // export {
+                      //   Component1,
+                      //   Component2,
+                      //   // ...
+                      // }
+                      // \`\`\`
+
+                      // - Then, head over to the Component Library, accessible via the sidebar.
+                      // - Navigate to the Publish tab, and set a new semantic version. It must be higher than the previous one.
+                      // - Hit "Publish".
+                      // `}
+                      // demoReferences={[
+                      //   'Getting Started',
+                      //   'Publishing',
+                      //   'Components',
+                      // ]}
                     />
-                  )}
-                </div>
-                <div className="flex flex-none flex-row justify-end">
-                  <div
-                    className={cn('rounded-full border p-3', {
-                      'border-neutral-800 bg-neutral-1000': isDark,
-                      'border-transparent bg-black': !isDark,
-                    })}
-                  >
-                    <MessageCircle className="h-5 w-5 text-white" />
+                    <div className="flex flex-none flex-row justify-end">
+                      <div
+                        className="rounded-full border p-3"
+                        style={{
+                          backgroundColor: colors.primary,
+                          borderColor: colors.border,
+                        }}
+                      >
+                        <MessageCircle
+                          className="h-5 w-5"
+                          style={{
+                            color: colors.primaryForeground,
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
           <div className="relative h-full">
             <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto p-6">
               <h2 className="mb-4 text-lg font-bold">Design</h2>
-              {/* <UIConfigurator /> */}
+              <UIConfigurator />
               <h2 className="mb-4 mt-12 text-lg font-bold">
                 Model configurator <Tag color="fuchsia">Pro</Tag>
               </h2>
             </div>
           </div>
         </div>
-        {/* <div className="animate-slide-up relative z-0 mx-auto w-full max-w-full border">
-          <div
-            className={cn('absolute w-full transform transition duration-500', {
-              'pointer-events-none -translate-x-24 opacity-0': step !== 0,
-            })}
-          >
-            <AddFiles
-              onTrainingComplete={() => {
-                toast.success('Processing complete');
-                setTimeout(() => {
-                  setStep(1);
-                }, 1000);
-              }}
-              onNext={() => {
-                setStep(1);
-              }}
-            />
-          </div>
-          <div
-            className={cn(
-              'absolute inset-x-0 transform transition duration-500',
-              {
-                'pointer-events-none translate-x-24 opacity-0': step !== 1,
-              },
-            )}
-          >
-            <Query
-              goBack={() => {
-                setStep(0);
-              }}
-              didCompleteFirstQuery={async () => {
-                setTimeout(() => {
-                  showConfetti();
-                }, 1000);
-                setTimeout(() => {
-                  setCtaVisible(true);
-                }, 2000);
-              }}
-              isReady={step === 1}
-            />
-            <div
-              className={cn(
-                'flex w-full flex-col items-center justify-center gap-4',
-                {
-                  'animate-slide-up': ctaVisible,
-                  'opacity-0': !ctaVisible,
-                },
-              )}
-            >
-              <Button
-                variant="cta"
-                onClick={() => {
-                  finishOnboarding();
-                }}
-              >
-                Go to dashboard →
-              </Button>
-              <div
-                className={cn(
-                  'animate-slide-up mt-2 flex w-full items-center justify-center gap-4',
-                  {
-                    '-mt-4': !ctaVisible,
-                    'mt-4': ctaVisible,
-                  },
-                )}
-              >
-                <Checkbox.Root
-                  className="flex h-5 w-5 items-center justify-center rounded border border-neutral-700 bg-neutral-1000 transition hover:bg-neutral-900"
-                  id="subscribe"
-                  onCheckedChange={async (checked: boolean) => {
-                    await updateUser({ subscribe_to_product_updates: checked });
-                    await mutateUser();
-                  }}
-                >
-                  <Checkbox.Indicator className="text-green-600">
-                    <CheckIcon />
-                  </Checkbox.Indicator>
-                </Checkbox.Root>
-                <label
-                  className="cursor-pointer select-none text-sm text-neutral-500"
-                  htmlFor="subscribe"
-                >
-                  Keep me posted about major product updates
-                </label>
-              </div>
-            </div>
-          </div>
-        </div> */}
-        {/* <div className="fixed bottom-0 left-0 right-0 z-20 flex h-[var(--onboarding-footer-height)] flex-row items-center gap-4 border-t border-neutral-900 bg-neutral-1100 px-6 sm:px-8">
-          <div className="flex-grow"></div>
-          <Button
-            className="flex-none"
-            variant="ghost"
-            buttonSize="sm"
-            onClick={() => {
-              finishOnboarding();
-            }}
-          >
-            Skip onboarding →
-          </Button>
-        </div> */}
       </NavLayout>
     </>
   );

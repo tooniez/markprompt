@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 
 export const useLocalStorage = <T>(
   key: string,
@@ -13,32 +13,42 @@ export const useLocalStorage = <T>(
     setIsMounted(true);
   }, []);
 
-  const [storedValue, setStoredValue] = useState<T>(() => {
+  const [storedValue, setStoredValue] = useState<T | undefined>(initialValue);
+
+  useEffectFn(() => {
     if (typeof window === 'undefined') {
-      return initialValue;
+      return setStoredValue(initialValue);
     }
 
     try {
       const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
+      setStoredValue(item ? JSON.parse(item) : initialValue);
     } catch (e) {
       console.error('Error getting value from localStorage', e);
-      return initialValue;
+      return setStoredValue(initialValue);
     }
-  });
+  }, [key, initialValue]);
 
-  const setValue = (value: T) => {
-    try {
-      const valueToStore =
-        value instanceof Function ? value(storedValue) : value;
-      setStoredValue(valueToStore);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(key, JSON.stringify(valueToStore));
+  const setValue = useCallback(
+    (value: T) => {
+      try {
+        const valueToStore =
+          value instanceof Function ? value(storedValue) : value;
+        setStoredValue(valueToStore);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(key, JSON.stringify(valueToStore));
+        }
+      } catch (e) {
+        console.error('Error writing value to localStorage', e);
       }
-    } catch (e) {
-      console.error('Error writing value to localStorage', e);
-    }
-  };
+    },
+    [key, storedValue],
+  );
 
-  return [isMounted ? storedValue : initialValue, setValue];
+  return [
+    !isMounted || typeof storedValue === 'undefined'
+      ? initialValue
+      : storedValue,
+    setValue,
+  ];
 };
