@@ -243,3 +243,7 @@ export const getNumWebsitePagesPerProjectAllowance = (
     return TIERS.hobby.prices[0].numWebsitePagesPerProject;
   }
 };
+
+export const canRemoveBranding = (team: Team) => {
+  return team.is_enterprise_plan;
+};

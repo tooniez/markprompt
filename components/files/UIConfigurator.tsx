@@ -1,9 +1,11 @@
 import * as Accordion from '@radix-ui/react-accordion';
 import * as Switch from '@radix-ui/react-switch';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
-import { ChangeEvent, FC, useCallback, useMemo } from 'react';
+import { ChangeEvent, FC, useMemo } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
+import useTeam from '@/lib/hooks/use-team';
+import { canRemoveBranding } from '@/lib/stripe/tiers';
 import { Theme, ThemeColorKeys, ThemeColors } from '@/lib/themes';
 
 import { ThemePicker } from './ThemePicker';
@@ -21,9 +23,14 @@ type ThemeColorPickerProps = {
 const ThemeColorPicker: FC<ThemeColorPickerProps> = ({ colors, colorKey }) => {
   const { setColor } = useConfigContext();
 
+  console.log(
+    'colors[colorKey]',
+    colorKey,
+    JSON.stringify(colors[colorKey], null, 2),
+  );
   return (
     <ColorPickerInput
-      color={colors[colorKey]}
+      color={colors[colorKey] || 'FFFFFF'}
       setColor={(color: string) => setColor(colorKey, color)}
     />
   );
@@ -34,21 +41,26 @@ type UIConfiguratorProps = {
 };
 
 export const UIConfigurator: FC<UIConfiguratorProps> = () => {
+  const { team } = useTeam();
   const {
     theme,
     setTheme,
     isDark,
     setDark,
     setSize,
+    includeBranding,
     placeholder,
     setPlaceholder,
     referencesHeading,
     setReferencesHeading,
+    setIncludeBranding,
   } = useConfigContext();
 
   const colors = useMemo(() => {
     return isDark ? theme.colors.dark : theme.colors.light;
   }, [theme, isDark]);
+
+  const _canRemoveBranding = team && canRemoveBranding(team);
 
   return (
     <div className="flex flex-col gap-2">
@@ -67,14 +79,16 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
       <Row
         label={
           <>
-            Include branding <Tag color="fuchsia">Pro</Tag>
+            Include branding{' '}
+            {!_canRemoveBranding && <Tag color="fuchsia">Pro</Tag>}
           </>
         }
       >
         <Switch.Root
-          className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600"
-          checked={isDark}
-          onCheckedChange={(d: boolean) => setDark(d)}
+          className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 disabled:cursor-not-allowed data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600 disabled:data-[state='checked']:opacity-40"
+          checked={includeBranding || !_canRemoveBranding}
+          disabled={!_canRemoveBranding}
+          onCheckedChange={(b: boolean) => setIncludeBranding(b)}
         >
           <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
         </Switch.Root>

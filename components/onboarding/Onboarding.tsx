@@ -101,8 +101,15 @@ const Onboarding = () => {
     stopGeneratingEmbeddings,
     trainAllSources,
   } = useTrainingContext();
-  const { theme, colors, isDark, setDark, placeholder, referencesHeading } =
-    useConfigContext();
+  const {
+    theme,
+    colors,
+    isDark,
+    includeBranding,
+    setDark,
+    placeholder,
+    referencesHeading,
+  } = useConfigContext();
 
   const startTraining = useCallback(async () => {
     await trainAllSources(
@@ -302,7 +309,8 @@ const Onboarding = () => {
                       theme={theme}
                       placeholder={placeholder}
                       referencesHeading={referencesHeading}
-                      useDarkTheme={isDark}
+                      isDark={isDark}
+                      includeBranding={includeBranding}
                       // isDemoMode
                       // noAnimation
                       // playing={true}

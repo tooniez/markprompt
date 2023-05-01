@@ -26,12 +26,14 @@ export type State = {
   isDark: boolean;
   placeholder: string;
   referencesHeading: string;
+  includeBranding: boolean;
   setColor: (colorKey: ThemeColorKeys, value: string) => void;
   setTheme: (theme: Theme) => void;
   setDark: (dark: boolean) => void;
   setSize: (size: Theme['size']) => void;
   setPlaceholder: (placeholder: string) => void;
   setReferencesHeading: (referencesHeading: string) => void;
+  setIncludeBranding: (includeBranding: boolean) => void;
 };
 
 const initialState: State = {
@@ -40,12 +42,14 @@ const initialState: State = {
   isDark: false,
   placeholder: '',
   referencesHeading: '',
+  includeBranding: true,
   setColor: () => {},
   setTheme: () => {},
   setDark: () => {},
   setSize: () => {},
   setPlaceholder: () => {},
   setReferencesHeading: () => {},
+  setIncludeBranding: () => {},
 };
 
 const ConfigContextProvider = (props: PropsWithChildren) => {
@@ -69,6 +73,11 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
   const [referencesHeading, setReferencesHeading] = useLocalStorage<string>(
     `${project?.id ?? 'undefined'}:playground-references-heading`,
     'Summary generated from the following sources:',
+  );
+
+  const [includeBranding, setIncludeBranding] = useLocalStorage<boolean>(
+    `${project?.id ?? 'undefined'}:includeBranding`,
+    true,
   );
 
   const updateOrCreateCustomTheme = useCallback(
@@ -119,6 +128,7 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
         isDark,
         placeholder,
         referencesHeading,
+        includeBranding,
         colors: isDark ? theme.colors.dark : theme.colors.light,
         setTheme: updateOrCreateCustomTheme,
         setColor,
@@ -126,6 +136,7 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
         setSize,
         setPlaceholder,
         setReferencesHeading,
+        setIncludeBranding,
       }}
       {...props}
     />

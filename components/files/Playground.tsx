@@ -19,12 +19,16 @@ import { OpenAIModelId } from '@/types/types';
 
 type CaretProps = {
   color?: string;
+  className?: string;
 };
 
-const Caret: FC<CaretProps> = ({ color }) => {
+const Caret: FC<CaretProps> = ({ color, className }) => {
   return (
     <i
-      className="caret animate-caret inline-block h-[15px] w-[8px] translate-y-[2px] translate-x-[2px] transform rounded-[1px]"
+      className={cn(
+        className,
+        'caret animate-caret inline-block h-[15px] w-[8px] translate-y-[2px] translate-x-[2px] transform rounded-[1px]',
+      )}
       style={{
         backgroundColor: color,
         boxShadow: `0 0px 3px 0 ${color}bb`,
@@ -89,7 +93,8 @@ type PlaygroundProps = {
   referencesHeading?: string;
   inputClassName?: string;
   theme?: Theme;
-  useDarkTheme?: boolean;
+  isDark?: boolean;
+  includeBranding?: boolean;
 };
 
 // The playground is used in three scenarios:
@@ -113,7 +118,8 @@ export const Playground: FC<PlaygroundProps> = ({
   referencesHeading,
   inputClassName,
   theme,
-  useDarkTheme,
+  isDark,
+  includeBranding,
 }) => {
   const [prompt, setPrompt] = useState<string | undefined>('');
   const [answer, setAnswer] = useState('');
@@ -125,7 +131,7 @@ export const Playground: FC<PlaygroundProps> = ({
   const _didCompleteFirstQuery = useRef<boolean>(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const _iDontKnowMessage = iDontKnowMessage || I_DONT_KNOW;
-  const colors = useDarkTheme ? theme?.colors.dark : theme?.colors.light;
+  const colors = isDark ? theme?.colors.dark : theme?.colors.light;
 
   useEffect(() => {
     if (!playing || !demoResponse || !demoPrompt) {
@@ -290,6 +296,8 @@ export const Playground: FC<PlaygroundProps> = ({
     }
   }, [loading, answer, didCompleteFirstQuery]);
 
+  const showProgress = loading && (!references || references.length === 0);
+
   return (
     <div
       className="relative flex h-full flex-col overflow-hidden border shadow-2xl"
@@ -366,7 +374,9 @@ export const Playground: FC<PlaygroundProps> = ({
           color: colors?.foreground,
         }}
       >
-        {loading && !(answer.length > 0) && <Caret color={colors?.primary} />}
+        {loading && !(answer.length > 0) && (
+          <Caret className="mt-4" color={colors?.primary} />
+        )}
         {/* Need a container for ReactMarkdown to be able to access
             :last-child and display the caret */}
         <div>
@@ -479,47 +489,75 @@ export const Playground: FC<PlaygroundProps> = ({
           <div ref={answerContainerRef} />
         </div>
       </div>
-      {loading && !(answer.length > 0) && (
-        <div className="relative flex-none">
+      {(loading || references.length > 0) && (
+        <>
           <div
-            className="animate-progress absolute left-0 bottom-0 h-[3px]"
+            className="animate-slide-up relative flex-none transform border-t pt-4 text-sm text-neutral-500"
             style={{
-              backgroundImage: `linear-gradient(to right,${colors?.primaryHighlight},${colors?.secondaryHighlight})`,
+              borderColor: colors?.border,
+              backgroundColor: colors?.secondary,
+              height:
+                (theme?.size === 'sm' ? 1 : 1.05) * (showProgress ? 50 : 95),
+              transition: 'height 500ms ease',
             }}
-          ></div>
-        </div>
+          >
+            {showProgress && (
+              <div
+                className={`animate-progress absolute left-0 top-[-2px] h-[2px]`}
+                style={{
+                  backgroundImage: `linear-gradient(to right,${colors?.primaryHighlight},${colors?.secondaryHighlight})`,
+                }}
+              />
+            )}
+            <div
+              className={cn('px-8 font-semibold', {
+                'text-xs': theme?.size === 'sm',
+                'text-sm': theme?.size === 'base',
+              })}
+              style={{ color: colors?.foreground }}
+            >
+              {showProgress ? 'Gathering sources...' : referencesHeading}
+            </div>
+            {/* Bottom padding is here, to prevent clipping items when then are animated up */}
+            <div className="hidden-scrollbar mt-3 flex w-full flex-row items-center gap-2 overflow-x-auto overflow-y-visible px-8 pb-8">
+              {(references || []).map((r, i) => (
+                <div
+                  key={`reference-${r}`}
+                  className={
+                    'animate-slide-up cursor-pointer whitespace-nowrap rounded-md border px-2 py-1 text-sm font-medium transition hover:opacity-60'
+                  }
+                  style={{
+                    borderColor: colors?.border,
+                    backgroundColor: colors?.muted,
+                    color: colors?.primary,
+                    animationDelay: `${100 * i}ms`,
+                  }}
+                >
+                  {r}
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
       )}
-      {references.length > 0 && (
+      {includeBranding && (
         <div
-          className="animate-slide-up flex-none border-t pt-4 pb-8 text-sm text-neutral-500"
+          className="z-20 justify-center border-t px-8 py-2 text-center text-xs font-medium"
           style={{
             borderColor: colors?.border,
-            backgroundColor: colors?.secondary,
+            backgroundColor: colors?.muted,
+            color: colors?.mutedForeground,
           }}
         >
-          <div
-            className="px-8 text-xs font-semibold"
-            style={{ color: colors?.foreground }}
+          Powered by{' '}
+          <a
+            href="https://markprompt.com"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: colors?.primary }}
           >
-            {referencesHeading}
-          </div>
-          <div className="hidden-scrollbar mt-3 flex w-full flex-row items-center gap-2 overflow-x-auto px-8">
-            {references.map((r) => (
-              <div
-                key={`reference-${r}`}
-                className={
-                  'cursor-pointer whitespace-nowrap rounded-md border px-2 py-1 text-sm font-medium transition hover:opacity-60'
-                }
-                style={{
-                  borderColor: colors?.border,
-                  backgroundColor: colors?.muted,
-                  color: colors?.primary,
-                }}
-              >
-                {r}
-              </div>
-            ))}
-          </div>
+            Markprompt
+          </a>
         </div>
       )}
     </div>
