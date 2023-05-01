@@ -109,6 +109,7 @@ const Onboarding = () => {
     setDark,
     placeholder,
     referencesHeading,
+    loadingHeading,
   } = useConfigContext();
 
   const startTraining = useCallback(async () => {
@@ -308,8 +309,9 @@ const Onboarding = () => {
                       }
                       theme={theme}
                       placeholder={placeholder}
-                      referencesHeading={referencesHeading}
                       isDark={isDark}
+                      referencesHeading={referencesHeading}
+                      loadingHeading={loadingHeading}
                       includeBranding={includeBranding}
                       // isDemoMode
                       // noAnimation

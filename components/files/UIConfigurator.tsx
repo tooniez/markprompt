@@ -53,6 +53,8 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
     setPlaceholder,
     referencesHeading,
     setReferencesHeading,
+    loadingHeading,
+    setLoadingHeading,
     setIncludeBranding,
   } = useConfigContext();
 
@@ -98,16 +100,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
           <AccordionTrigger>Advanced configuration</AccordionTrigger>
           <AccordionContent>
             <div className="flex flex-col gap-2">
-              <Row label="References heading">
-                <Input
-                  inputSize="sm"
-                  value={referencesHeading}
-                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                    setReferencesHeading(event.target.value);
-                  }}
-                />
-              </Row>
-              <Row className="mt-4" label="Size">
+              <Row label="Size">
                 <ToggleGroup.Root
                   className="grid w-full grid-cols-2 overflow-hidden rounded border border-neutral-800 bg-neutral-1000 text-xs font-medium text-neutral-300"
                   type="single"
@@ -175,9 +168,9 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
               <Row label="Border">
                 <ThemeColorPicker colors={colors} colorKey="border" />
               </Row>
-              <Row label="Input">
+              {/* <Row label="Input">
                 <ThemeColorPicker colors={colors} colorKey="input" />
-              </Row>
+              </Row> */}
               {/* Primary colors for buttons */}
               <Row label="Primary">
                 <ThemeColorPicker colors={colors} colorKey="primary" />
@@ -201,16 +194,16 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
               <Row label="Primary highlight">
                 <ThemeColorPicker colors={colors} colorKey="primaryHighlight" />
               </Row>
-              <Row label="Primary highlight">
+              <Row label="Secondary highlight">
                 <ThemeColorPicker
                   colors={colors}
                   colorKey="secondaryHighlight"
                 />
               </Row>
               {/* Border radius for card, input and buttons */}
-              <Row label="Ring">
+              {/* <Row label="Ring">
                 <ThemeColorPicker colors={colors} colorKey="ring" />
-              </Row>
+              </Row> */}
               {/* Border radius for card, input and buttons */}
               <Row label="Radius">
                 <Input
@@ -230,6 +223,24 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                     } catch {
                       //
                     }
+                  }}
+                />
+              </Row>
+              <Row className="mt-4" label="References heading">
+                <Input
+                  inputSize="sm"
+                  value={referencesHeading}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    setReferencesHeading(event.target.value);
+                  }}
+                />
+              </Row>
+              <Row className="mt-4" label="Loading heading">
+                <Input
+                  inputSize="sm"
+                  value={loadingHeading}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    setLoadingHeading(event.target.value);
                   }}
                 />
               </Row>

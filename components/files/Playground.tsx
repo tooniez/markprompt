@@ -91,6 +91,7 @@ type PlaygroundProps = {
   model?: OpenAIModelId;
   placeholder?: string;
   referencesHeading?: string;
+  loadingHeading?: string;
   inputClassName?: string;
   theme?: Theme;
   isDark?: boolean;
@@ -116,6 +117,7 @@ export const Playground: FC<PlaygroundProps> = ({
   model,
   placeholder,
   referencesHeading,
+  loadingHeading,
   inputClassName,
   theme,
   isDark,
@@ -516,7 +518,24 @@ export const Playground: FC<PlaygroundProps> = ({
               })}
               style={{ color: colors?.foreground }}
             >
-              {showProgress ? 'Gathering sources...' : referencesHeading}
+              <div className="relative">
+                <span
+                  className={cn('transition', {
+                    'opacity-0': showProgress,
+                    'opacity-100': !showProgress,
+                  })}
+                >
+                  {referencesHeading}
+                </span>
+                <span
+                  className={cn('absolute inset-0 transition', {
+                    'opacity-0': !showProgress,
+                    'opacity-100': showProgress,
+                  })}
+                >
+                  {loadingHeading}
+                </span>
+              </div>
             </div>
             {/* Bottom padding is here, to prevent clipping items when then are animated up */}
             <div className="hidden-scrollbar mt-3 flex w-full flex-row items-center gap-2 overflow-x-auto overflow-y-visible px-8 pb-8">

@@ -1,13 +1,10 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import {
   createContext,
-  Dispatch,
   FC,
   PropsWithChildren,
-  SetStateAction,
   useCallback,
   useContext,
-  useState,
 } from 'react';
 
 import useProject from '../hooks/use-project';
@@ -26,6 +23,7 @@ export type State = {
   isDark: boolean;
   placeholder: string;
   referencesHeading: string;
+  loadingHeading: string;
   includeBranding: boolean;
   setColor: (colorKey: ThemeColorKeys, value: string) => void;
   setTheme: (theme: Theme) => void;
@@ -33,6 +31,7 @@ export type State = {
   setSize: (size: Theme['size']) => void;
   setPlaceholder: (placeholder: string) => void;
   setReferencesHeading: (referencesHeading: string) => void;
+  setLoadingHeading: (loadingHeading: string) => void;
   setIncludeBranding: (includeBranding: boolean) => void;
 };
 
@@ -42,6 +41,7 @@ const initialState: State = {
   isDark: false,
   placeholder: '',
   referencesHeading: '',
+  loadingHeading: '',
   includeBranding: true,
   setColor: () => {},
   setTheme: () => {},
@@ -49,6 +49,7 @@ const initialState: State = {
   setSize: () => {},
   setPlaceholder: () => {},
   setReferencesHeading: () => {},
+  setLoadingHeading: () => {},
   setIncludeBranding: () => {},
 };
 
@@ -73,6 +74,11 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
   const [referencesHeading, setReferencesHeading] = useLocalStorage<string>(
     `${project?.id ?? 'undefined'}:playground-references-heading`,
     'Summary generated from the following sources:',
+  );
+
+  const [loadingHeading, setLoadingHeading] = useLocalStorage<string>(
+    `${project?.id ?? 'undefined'}:playground-loading-heading`,
+    'Gathering sources...',
   );
 
   const [includeBranding, setIncludeBranding] = useLocalStorage<boolean>(
@@ -128,6 +134,7 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
         isDark,
         placeholder,
         referencesHeading,
+        loadingHeading,
         includeBranding,
         colors: isDark ? theme.colors.dark : theme.colors.light,
         setTheme: updateOrCreateCustomTheme,
@@ -136,6 +143,7 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
         setSize,
         setPlaceholder,
         setReferencesHeading,
+        setLoadingHeading,
         setIncludeBranding,
       }}
       {...props}
