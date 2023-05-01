@@ -483,6 +483,18 @@ export const Playground: FC<PlaygroundProps> = ({
                   {...props}
                 />
               ),
+              img: (props) => (
+                <WithCaret
+                  Component="img"
+                  style={{
+                    backgroundColor: colors?.muted,
+                    borderColor: colors?.border,
+                    borderRadius: theme?.dimensions.radius,
+                  }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
             }}
             remarkPlugins={[remarkGfm]}
           >
