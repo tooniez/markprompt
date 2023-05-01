@@ -377,14 +377,17 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             };
 
             const robotsTxtInfo = await fetchRobotsTxtInfo(origin);
-            const sitemapUrls = (
-              (await fetchSitemapUrls(origin, robotsTxtInfo.sitemap)) || []
-            ).filter((url) => {
-              // Only include the url with the same root as baseUrl, e.g.
-              // example.com/docs should not inculde example.com/blog links.
-              return url.startsWith(baseUrl);
-            });
-            if (sitemapUrls !== undefined) {
+            const sitemapUrlsOrUndefined = await fetchSitemapUrls(
+              origin,
+              robotsTxtInfo.sitemap,
+            );
+
+            if (sitemapUrlsOrUndefined !== undefined) {
+              const sitemapUrls = sitemapUrlsOrUndefined.filter((url) => {
+                // Only include the url with the same root as baseUrl, e.g.
+                // example.com/docs should not inculde example.com/blog links.
+                return url.startsWith(baseUrl);
+              });
               const numAllowance =
                 numWebsitePagesPerProjectAllowance === 'unlimited'
                   ? sitemapUrls.length
@@ -410,6 +413,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 numWebsitePagesPerProjectAllowance === 'unlimited'
                   ? 1_000_000
                   : numWebsitePagesPerProjectAllowance;
+
               while (
                 linksToProcess.length > 0 &&
                 numLinksSentForProcessing < _numWebsitePagesPerProjectAllowance
