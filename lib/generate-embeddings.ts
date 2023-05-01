@@ -13,7 +13,11 @@ import { filter } from 'unist-util-filter';
 
 import { CONTEXT_TOKENS_CUTOFF, MIN_CONTENT_LENGTH } from '@/lib/constants';
 import { createEmbedding } from '@/lib/openai.edge';
-import { createChecksum, getFileType } from '@/lib/utils';
+import {
+  createChecksum,
+  getFileType,
+  splitIntoSubstringsOfMaxLength,
+} from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.node';
 import {
   DbFile,
@@ -145,35 +149,50 @@ const splitHtmlIntoSections = (content: string): string[] => {
 };
 
 const TOKEN_CUTOFF_ADJUSTED = CONTEXT_TOKENS_CUTOFF * 0.8;
+const APPROX_CHARS_PER_TOKEN = 4;
+const MAX_CHUNK_LENGTH = TOKEN_CUTOFF_ADJUSTED * APPROX_CHARS_PER_TOKEN;
 
 const splitWithinTokenCutoff = (section: string): string[] => {
   // GPT3Tokenizer is slow, especially on large text. Use the approximated
   // value instead (1 token ~= 4 characters), and add a little extra
   // buffer.
-  if (section.length / 4 < TOKEN_CUTOFF_ADJUSTED) {
+  if (section.length < MAX_CHUNK_LENGTH) {
     return [section];
   }
 
   const subSections: string[] = [];
   const lines = section.split('\n');
-  let accTokenCounter = 0;
   let accLines = '';
 
-  const i = 0;
-  for (const line of lines) {
-    const lineTokenCount = line.length / 4;
-    if (accTokenCounter + lineTokenCount < TOKEN_CUTOFF_ADJUSTED) {
-      accLines = accLines + '\n' + line;
-      accTokenCounter = accTokenCounter + lineTokenCount;
-    } else {
+  const pushChunk = (accLines: string) => {
+    if (accLines.length < MAX_CHUNK_LENGTH) {
       subSections.push(accLines);
+    } else {
+      // If a single line is longer than the token limit, chunk it
+      // up further.
+      const lineChunks = splitIntoSubstringsOfMaxLength(
+        accLines,
+        MAX_CHUNK_LENGTH,
+      );
+      for (const chunk of lineChunks) {
+        subSections.push(chunk);
+      }
+    }
+  };
+
+  for (const line of lines) {
+    const accLinesLength = accLines.length;
+    const lineLength = line.length;
+    if (accLinesLength + lineLength >= MAX_CHUNK_LENGTH) {
+      pushChunk(accLines);
       accLines = line;
-      accTokenCounter = 0;
+    } else {
+      accLines = accLines + '\n' + line;
     }
   }
 
   if (accLines) {
-    subSections.push(accLines);
+    pushChunk(accLines);
   }
 
   return subSections;
@@ -202,10 +221,10 @@ const processFile = (file: FileData): FileSectionData => {
   // the token limit. This is especially important for plain text files
   // with no heading separators, or Markdown files with very
   // large sections. We don't want these to be ignored.
-  const trimmedSections = sections.reduce((acc: string[], value: string) => {
-    const subsections = splitWithinTokenCutoff(value);
-    return [...acc, ...subsections];
+  const trimmedSections = sections.flatMap((section: string) => {
+    return splitWithinTokenCutoff(section);
   }, [] as string[]);
+
   return { sections: trimmedSections, meta };
 };
 
@@ -333,6 +352,7 @@ export const generateFileEmbeddings = async (
       );
 
       embeddingsTokenCount += embeddingResult.usage?.total_tokens ?? 0;
+
       embeddingsData.push({
         file_id: fileId,
         content: input,

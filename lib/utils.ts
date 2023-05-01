@@ -618,3 +618,28 @@ export const completeHrefWithBaseUrl = (baseUrl: string, href: string) => {
     return `${baseUrl}/${href}`;
   }
 };
+
+export const splitIntoSubstringsOfMaxLength = (
+  line: string,
+  maxLength: number,
+) => {
+  const words = line.split(' ');
+  const result = [];
+  let currentSubstring = '';
+
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    if (currentSubstring.length + word.length <= maxLength) {
+      currentSubstring += (currentSubstring.length > 0 ? ' ' : '') + word;
+    } else {
+      result.push(currentSubstring);
+      currentSubstring = word;
+    }
+  }
+
+  if (currentSubstring.length > 0) {
+    result.push(currentSubstring);
+  }
+
+  return result;
+};
