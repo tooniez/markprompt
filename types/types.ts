@@ -124,6 +124,8 @@ export type WebsiteSourceDataType = { url: string };
 
 export type RobotsTxtInfo = { sitemap?: string; disallowedPaths: string[] };
 
+export type ReferenceInfo = { name: string; href: string };
+
 export class ApiError extends Error {
   readonly code: number;
 

@@ -22,7 +22,12 @@ import useOnboarding from '@/lib/hooks/use-onboarding';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useUser from '@/lib/hooks/use-user';
-import { getIconForSource, getLabelForSource } from '@/lib/utils';
+import {
+  getIconForSource,
+  getLabelForSource,
+  getNameFromPath,
+  removeFileExtension,
+} from '@/lib/utils';
 import { SourceType } from '@/types/types';
 
 import FilesAddSourceDialog from '../dialogs/sources/Files';
@@ -343,6 +348,23 @@ const Onboarding = () => {
                       //   'Publishing',
                       //   'Components',
                       // ]}
+                      getReferenceInfo={(path: string) => {
+                        const file = files?.find((f) => f.path === path);
+                        if (file) {
+                          let name = path;
+                          const metaTitle = (file.meta as any).title;
+                          if (metaTitle) {
+                            name = metaTitle;
+                          } else {
+                            name = removeFileExtension(getNameFromPath(path));
+                          }
+
+                          return {
+                            name,
+                            href: path,
+                          };
+                        }
+                      }}
                     />
                     <div className="flex flex-none flex-row justify-end">
                       <div

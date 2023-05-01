@@ -235,7 +235,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                   }}
                 />
               </Row>
-              <Row className="mt-4" label="Loading heading">
+              <Row label="Loading heading">
                 <Input
                   inputSize="sm"
                   value={loadingHeading}

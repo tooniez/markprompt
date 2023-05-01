@@ -15,7 +15,7 @@ import remarkGfm from 'remark-gfm';
 import { I_DONT_KNOW, STREAM_SEPARATOR } from '@/lib/constants';
 import { Theme } from '@/lib/themes';
 import { getAppOrigin, timeout } from '@/lib/utils';
-import { OpenAIModelId } from '@/types/types';
+import { OpenAIModelId, ReferenceInfo } from '@/types/types';
 
 type CaretProps = {
   color?: string;
@@ -96,6 +96,7 @@ type PlaygroundProps = {
   theme?: Theme;
   isDark?: boolean;
   includeBranding?: boolean;
+  getReferenceInfo: (refId: string) => ReferenceInfo | undefined;
 };
 
 // The playground is used in three scenarios:
@@ -122,6 +123,7 @@ export const Playground: FC<PlaygroundProps> = ({
   theme,
   isDark,
   includeBranding,
+  getReferenceInfo,
 }) => {
   const [prompt, setPrompt] = useState<string | undefined>('');
   const [answer, setAnswer] = useState('');
@@ -551,22 +553,30 @@ export const Playground: FC<PlaygroundProps> = ({
             </div>
             {/* Bottom padding is here, to prevent clipping items when then are animated up */}
             <div className="hidden-scrollbar mt-3 flex w-full flex-row items-center gap-2 overflow-x-auto overflow-y-visible px-8 pb-8">
-              {(references || []).map((r, i) => (
-                <div
-                  key={`reference-${r}`}
-                  className={
-                    'animate-slide-up cursor-pointer whitespace-nowrap rounded-md border px-2 py-1 text-sm font-medium transition hover:opacity-60'
-                  }
-                  style={{
-                    borderColor: colors?.border,
-                    backgroundColor: colors?.muted,
-                    color: colors?.primary,
-                    animationDelay: `${100 * i}ms`,
-                  }}
-                >
-                  {r}
-                </div>
-              ))}
+              {(references || []).map((r, i) => {
+                const refInfo = getReferenceInfo(r);
+                if (!refInfo) {
+                  return <></>;
+                }
+
+                return (
+                  <a
+                    key={`reference-${r}`}
+                    className={
+                      'animate-slide-up block max-w-[33%] truncate whitespace-nowrap rounded-md border px-2 py-1 text-sm font-medium transition'
+                    }
+                    href={refInfo.href}
+                    style={{
+                      borderColor: colors?.border,
+                      backgroundColor: colors?.muted,
+                      color: colors?.primary,
+                      animationDelay: `${100 * i}ms`,
+                    }}
+                  >
+                    {refInfo.name}
+                  </a>
+                );
+              })}
             </div>
           </div>
         </>
