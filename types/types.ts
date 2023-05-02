@@ -94,6 +94,16 @@ export const geLLMInfoFromModel = (model: OpenAIModelIdWithType): LLMInfo => {
   return { vendor: 'openai', model };
 };
 
+export type ModelConfig = {
+  model: OpenAIModelId;
+  promptTemplate: string;
+  temperature: number;
+  topP: number;
+  frequencyPenalty: number;
+  presencePenalty: number;
+  maxTokens: number;
+};
+
 export type DbUser = Database['public']['Tables']['users']['Row'];
 export type Team = Database['public']['Tables']['teams']['Row'];
 export type Project = Database['public']['Tables']['projects']['Row'];

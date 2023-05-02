@@ -10,7 +10,9 @@ import { Theme, ThemeColorKeys, ThemeColors } from '@/lib/themes';
 
 import { ThemePicker } from './ThemePicker';
 import { Row } from '../onboarding/Onboarding';
+import { UpgradeCTA } from '../team/PlanPicker';
 import { AccordionContent, AccordionTrigger } from '../ui/Accordion';
+import { ButtonOrLinkWrapper } from '../ui/Button';
 import ColorPickerInput from '../ui/ColorPickerInput';
 import Input from '../ui/Input';
 import { Tag } from '../ui/Tag';
@@ -23,11 +25,6 @@ type ThemeColorPickerProps = {
 const ThemeColorPicker: FC<ThemeColorPickerProps> = ({ colors, colorKey }) => {
   const { setColor } = useConfigContext();
 
-  console.log(
-    'colors[colorKey]',
-    colorKey,
-    JSON.stringify(colors[colorKey], null, 2),
-  );
   return (
     <ColorPickerInput
       color={colors[colorKey] || 'FFFFFF'}
@@ -82,7 +79,13 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
         label={
           <>
             Include branding{' '}
-            {!_canRemoveBranding && <Tag color="fuchsia">Pro</Tag>}
+            {!_canRemoveBranding && (
+              <UpgradeCTA showDialog>
+                <ButtonOrLinkWrapper>
+                  <Tag color="fuchsia">Pro</Tag>
+                </ButtonOrLinkWrapper>
+              </UpgradeCTA>
+            )}
           </>
         }
       >
@@ -95,7 +98,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
           <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
         </Switch.Root>
       </Row>
-      <Accordion.Root className="mt-4 w-full" type="single" collapsible>
+      <Accordion.Root className="mt-2 w-full" type="single" collapsible>
         <Accordion.Item value="options">
           <AccordionTrigger>Advanced configuration</AccordionTrigger>
           <AccordionContent>

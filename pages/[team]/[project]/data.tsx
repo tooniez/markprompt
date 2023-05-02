@@ -2,7 +2,6 @@ import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import {
   DotsHorizontalIcon,
-  DoubleArrowUpIcon,
   GlobeIcon,
   UploadIcon,
 } from '@radix-ui/react-icons';
@@ -29,7 +28,8 @@ import { isPresent } from 'ts-is-present';
 
 import ConfirmDialog from '@/components/dialogs/Confirm';
 import { FileDnd } from '@/components/files/FileDnd';
-import { GitHubIcon } from '@/components/icons/GitHub';
+import { UpgradeNote } from '@/components/files/UpgradeNote';
+import * as GitHub from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Button from '@/components/ui/Button';
@@ -510,21 +510,11 @@ const Data = () => {
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-4">
         <div className="flex w-full flex-col gap-2">
           {!loadingFiles && !canAddMoreWebsitePages && (
-            <div className="mb-4 flex flex-col gap-4 rounded-md border border-dashed border-fuchsia-500/20 bg-fuchsia-900/20 p-4 text-xs leading-relaxed text-fuchsia-400">
+            <UpgradeNote className="mb-4">
               You have reached your quota of indexed website pages (
               {numWebsitePagesPerProjectAllowance}) for this plan. Please
               upgrade your plan to index more website pages.
-              <div className="flex justify-end">
-                <Button
-                  href={`/settings/${team?.slug}/plans`}
-                  buttonSize="xs"
-                  variant="borderedFuchsia"
-                  light
-                >
-                  Upgrade plan
-                </Button>
-              </div>
-            </div>
+            </UpgradeNote>
           )}
           {sources.length > 0 && (
             <>
@@ -547,7 +537,7 @@ const Data = () => {
           <div className="flex flex-col gap-2 rounded-md border border-dashed border-neutral-800 p-4">
             <GitHubAddSourceDialog>
               <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
-                <GitHubIcon className="h-4 w-4 flex-none" />
+                <GitHub.GitHubIcon className="h-4 w-4 flex-none" />
                 <span className="truncate">Connect GitHub repo</span>
               </button>
             </GitHubAddSourceDialog>

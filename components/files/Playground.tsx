@@ -15,7 +15,7 @@ import remarkGfm from 'remark-gfm';
 import { I_DONT_KNOW, STREAM_SEPARATOR } from '@/lib/constants';
 import { Theme } from '@/lib/themes';
 import { getAppOrigin, timeout } from '@/lib/utils';
-import { OpenAIModelId, ReferenceInfo } from '@/types/types';
+import { ModelConfig, OpenAIModelId, ReferenceInfo } from '@/types/types';
 
 type CaretProps = {
   color?: string;
@@ -62,7 +62,6 @@ const WithCaret: FC<WithCaretProps> = ({
   //   };
   // }, {});
 
-  // console.log('stringifiedProps', JSON.stringify(rest, null, 2));
   return (
     <Component
       // {...stringifiedProps}
@@ -88,7 +87,7 @@ type PlaygroundProps = {
   demoReferences?: string[];
   noAnimation?: boolean;
   iDontKnowMessage?: string;
-  model?: OpenAIModelId;
+  modelConfig?: ModelConfig;
   placeholder?: string;
   referencesHeading?: string;
   loadingHeading?: string;
@@ -115,7 +114,7 @@ export const Playground: FC<PlaygroundProps> = ({
   demoReferences,
   noAnimation,
   iDontKnowMessage,
-  model,
+  modelConfig,
   placeholder,
   referencesHeading,
   loadingHeading,
@@ -218,7 +217,7 @@ export const Playground: FC<PlaygroundProps> = ({
             body: JSON.stringify({
               prompt,
               iDontKnowMessage: _iDontKnowMessage,
-              model,
+              ...modelConfig,
               projectKey,
             }),
           },
@@ -272,7 +271,7 @@ export const Playground: FC<PlaygroundProps> = ({
       projectKey,
       forceUseProdAPI,
       _iDontKnowMessage,
-      model,
+      modelConfig,
       setAnswerAnimated,
     ],
   );

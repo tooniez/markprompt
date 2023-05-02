@@ -7,8 +7,11 @@ import {
   useContext,
 } from 'react';
 
+import { ModelConfig, OpenAIModelId } from '@/types/types';
+
 import useProject from '../hooks/use-project';
 import { useLocalStorage } from '../hooks/utils/use-localstorage';
+import { DEFAULT_PROMPT_TEMPLATE } from '../prompt';
 import {
   defaultTheme,
   findMatchingTheme,
@@ -25,6 +28,7 @@ export type State = {
   referencesHeading: string;
   loadingHeading: string;
   includeBranding: boolean;
+  modelConfig: ModelConfig;
   setColor: (colorKey: ThemeColorKeys, value: string) => void;
   setTheme: (theme: Theme) => void;
   setDark: (dark: boolean) => void;
@@ -33,6 +37,8 @@ export type State = {
   setReferencesHeading: (referencesHeading: string) => void;
   setLoadingHeading: (loadingHeading: string) => void;
   setIncludeBranding: (includeBranding: boolean) => void;
+  setModelConfig: (modelConfig: ModelConfig) => void;
+  resetModelConfigDefaults: () => void;
 };
 
 const initialState: State = {
@@ -43,6 +49,15 @@ const initialState: State = {
   referencesHeading: '',
   loadingHeading: '',
   includeBranding: true,
+  modelConfig: {
+    model: 'gpt-4',
+    temperature: 0.1,
+    topP: 1,
+    frequencyPenalty: 0,
+    presencePenalty: 0,
+    maxTokens: 500,
+    promptTemplate: DEFAULT_PROMPT_TEMPLATE,
+  },
   setColor: () => {},
   setTheme: () => {},
   setDark: () => {},
@@ -51,6 +66,8 @@ const initialState: State = {
   setReferencesHeading: () => {},
   setLoadingHeading: () => {},
   setIncludeBranding: () => {},
+  setModelConfig: () => {},
+  resetModelConfigDefaults: () => {},
 };
 
 const ConfigContextProvider = (props: PropsWithChildren) => {
@@ -84,6 +101,11 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
   const [includeBranding, setIncludeBranding] = useLocalStorage<boolean>(
     `${project?.id ?? 'undefined'}:includeBranding`,
     true,
+  );
+
+  const [modelConfig, setModelConfig] = useLocalStorage<ModelConfig>(
+    `${project?.id ?? 'undefined'}:modelConfig`,
+    initialState.modelConfig,
   );
 
   const updateOrCreateCustomTheme = useCallback(
@@ -127,6 +149,10 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
     [theme, updateOrCreateCustomTheme],
   );
 
+  const resetModelConfigDefaults = useCallback(() => {
+    setModelConfig(initialState.modelConfig);
+  }, [setModelConfig]);
+
   return (
     <ConfigContext.Provider
       value={{
@@ -136,6 +162,7 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
         referencesHeading,
         loadingHeading,
         includeBranding,
+        modelConfig,
         colors: isDark ? theme.colors.dark : theme.colors.light,
         setTheme: updateOrCreateCustomTheme,
         setColor,
@@ -145,6 +172,8 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
         setReferencesHeading,
         setLoadingHeading,
         setIncludeBranding,
+        setModelConfig,
+        resetModelConfigDefaults,
       }}
       {...props}
     />

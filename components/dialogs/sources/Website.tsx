@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { ChangeEvent, FC, ReactNode, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
+import { UpgradeCTA } from '@/components/team/PlanPicker';
 import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
@@ -50,11 +51,13 @@ const _addSource = async (
 type WebsiteSourceProps = {
   clearPrevious?: boolean;
   onDidAddSource: () => void;
+  openPricingAsDialog?: boolean;
 };
 
 const WebsiteSource: FC<WebsiteSourceProps> = ({
   clearPrevious,
   onDidAddSource,
+  openPricingAsDialog,
 }) => {
   const { team } = useTeam();
   const { project } = useProject();
@@ -151,14 +154,15 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
                         {numWebsitePagesPerProjectAllowance}
                       </span>
                     </div>
-                    <Button
-                      className="flex-none"
-                      href={`/settings/${team?.slug}/plans`}
-                      buttonSize="sm"
-                      variant="plain"
-                    >
-                      Upgrade plan
-                    </Button>
+                    <UpgradeCTA showDialog={openPricingAsDialog}>
+                      <Button
+                        className="flex-none"
+                        buttonSize="sm"
+                        variant="plain"
+                      >
+                        Upgrade plan
+                      </Button>
+                    </UpgradeCTA>
                   </div>
                 )}
               </div>
@@ -172,9 +176,11 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
 
 const WebsiteAddSourceDialog = ({
   onDidAddSource,
+  openPricingAsDialog,
   children,
 }: {
   onDidAddSource?: () => void;
+  openPricingAsDialog?: boolean;
   children: ReactNode;
 }) => {
   const { team } = useTeam();
@@ -205,6 +211,7 @@ const WebsiteAddSourceDialog = ({
           </div>
           <div className="flex-grow">
             <WebsiteSource
+              openPricingAsDialog
               onDidAddSource={() => {
                 setWebsiteDialogOpen(false);
                 onDidAddSource?.();

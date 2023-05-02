@@ -3,25 +3,22 @@ import * as Select from '@radix-ui/react-select';
 import { FC } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
-import { defaultThemes, getTheme } from '@/lib/themes';
+import { OpenAIModelId, SUPPORTED_MODELS } from '@/types/types';
 
 import { SelectItem } from '../ui/Select';
 
-type ThemePickerProps = {
+type ModelPickerProps = {
   className?: string;
 };
 
-export const ThemePicker: FC<ThemePickerProps> = () => {
-  const { theme, setTheme } = useConfigContext();
+export const ModelPicker: FC<ModelPickerProps> = () => {
+  const { modelConfig, setModelConfig } = useConfigContext();
 
   return (
     <Select.Root
-      value={theme.isCustom ? 'Custom' : theme.name}
+      value={modelConfig.model}
       onValueChange={(value) => {
-        const selectedTheme = getTheme(value);
-        if (selectedTheme) {
-          setTheme(selectedTheme);
-        }
+        setModelConfig({ ...modelConfig, model: value as OpenAIModelId });
       }}
     >
       <Select.Trigger
@@ -42,11 +39,19 @@ export const ThemePicker: FC<ThemePickerProps> = () => {
           </Select.ScrollUpButton>
           <Select.Viewport>
             <Select.Group>
-              {theme.isCustom && <SelectItem value="Custom">Custom</SelectItem>}
-              {defaultThemes?.map((theme) => {
+              {SUPPORTED_MODELS.chat_completions.map((m) => {
                 return (
-                  <SelectItem key={`theme-${theme.name}`} value={theme.name}>
-                    {theme.name}
+                  <SelectItem key={m} value={m}>
+                    {m}
+                  </SelectItem>
+                );
+              })}
+            </Select.Group>
+            <Select.Group>
+              {SUPPORTED_MODELS.completions.map((m) => {
+                return (
+                  <SelectItem key={m} value={m}>
+                    {m}
                   </SelectItem>
                 );
               })}

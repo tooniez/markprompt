@@ -35,18 +35,30 @@ export const config = {
   runtime: 'edge',
 };
 
+const getValueIfDefined = <T>(value: T | undefined, fallback: T): T => {
+  if (typeof value === 'undefined') {
+    return fallback;
+  }
+  return value;
+};
+
 const getPayload = (
   prompt: string,
   model: OpenAIModelIdWithType,
+  temperature: number,
+  topP: number,
+  frequencyPenalty: number,
+  presencePenalty: number,
+  maxTokens: number,
   stream: boolean,
 ) => {
   const payload = {
     model: model.value,
-    temperature: 0.1,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-    max_tokens: 500,
+    temperature,
+    top_p: topP,
+    frequency_penalty: frequencyPenalty,
+    presence_penalty: presencePenalty,
+    max_tokens: maxTokens,
     stream,
     n: 1,
   };
@@ -297,7 +309,16 @@ export default async function handler(req: NextRequest) {
       .replace('{{PROMPT}}', sanitizedQuery),
   );
 
-  const payload = getPayload(fullPrompt, modelInfo.model, stream);
+  const payload = getPayload(
+    fullPrompt,
+    modelInfo.model,
+    params.temperature || 0.1,
+    params.topP || 1,
+    params.frequencyPenalty || 0,
+    params.presencePenalty || 0,
+    params.maxTokens || 500,
+    stream,
+  );
   const url = getCompletionsUrl(modelInfo.model);
 
   const res = await fetch(url, {

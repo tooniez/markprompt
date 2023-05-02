@@ -38,24 +38,30 @@ export const GitHubSample: FC<GitHubSampleProps> = ({
     if (!project?.id) {
       return;
     }
-    setIsTraining(true);
-    setError(undefined);
-    for (const source of sources) {
-      await deleteSource(project.id, source.id);
+    try {
+      setIsTraining(true);
+      setError(undefined);
+      for (const source of sources) {
+        await deleteSource(project.id, source.id);
+      }
+      const newSource = await addSource(project.id, 'github', { url: repoUrl });
+
+      await mutateSource();
+      await trainSource(
+        newSource,
+        () => {
+          mutateFiles();
+        },
+        (message: string) => {
+          toast.error(message);
+        },
+      );
+      setIsTraining(false);
+      onTrainingComplete();
+    } catch (e) {
+      console.error(e);
+      toast.error(`${e}`);
     }
-    const newSource = await addSource(project.id, 'github', { url: repoUrl });
-    await mutateSource();
-    await trainSource(
-      newSource,
-      () => {
-        mutateFiles();
-      },
-      (message: string) => {
-        toast.error(message);
-      },
-    );
-    setIsTraining(false);
-    onTrainingComplete();
   }, [
     project?.id,
     repoUrl,

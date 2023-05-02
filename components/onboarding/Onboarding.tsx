@@ -33,12 +33,12 @@ import { SourceType } from '@/types/types';
 import FilesAddSourceDialog from '../dialogs/sources/Files';
 import MotifAddSourceDialog from '../dialogs/sources/Motif';
 import WebsiteAddSourceDialog from '../dialogs/sources/Website';
+import { ModelConfigurator } from '../files/ModelConfigurator';
 import { Playground } from '../files/Playground';
 import { UIConfigurator } from '../files/UIConfigurator';
 import { GitHubIcon } from '../icons/GitHub';
 import { MarkpromptIcon } from '../icons/Markprompt';
 import { MotifIcon } from '../icons/Motif';
-import { AccordionContent, AccordionTrigger } from '../ui/Accordion';
 import Button from '../ui/Button';
 import { Tag } from '../ui/Tag';
 
@@ -56,12 +56,12 @@ export const Row = ({
 }: {
   label: string | ReactNode;
   className?: string;
-  children: ReactNode;
+  children?: ReactNode;
 }) => {
   return (
     <div className={cn(className, 'grid grid-cols-2 items-center gap-4')}>
       <div className="truncate py-1 text-sm text-neutral-300">{label}</div>
-      <div className="flex w-full justify-end">{children}</div>
+      {children && <div className="flex w-full justify-end">{children}</div>}
     </div>
   );
 };
@@ -101,16 +101,13 @@ const Onboarding = () => {
   const { files } = useFiles();
   const { finishOnboarding } = useOnboarding();
   const { sources, mutate: mutateSources } = useSources();
-  const {
-    state: trainingState,
-    stopGeneratingEmbeddings,
-    trainAllSources,
-  } = useTrainingContext();
+  const { state: trainingState, trainAllSources } = useTrainingContext();
   const {
     theme,
     colors,
     isDark,
     includeBranding,
+    modelConfig,
     setDark,
     placeholder,
     referencesHeading,
@@ -127,7 +124,7 @@ const Onboarding = () => {
       },
     );
     toast.success('Done training sources');
-  }, [trainAllSources, sources]);
+  }, [trainAllSources]);
 
   const _addSource = useCallback(
     async (sourceType: SourceType, data: any) => {
@@ -135,9 +132,14 @@ const Onboarding = () => {
         return;
       }
 
-      const newSource = await addSource(project.id, sourceType, data);
-      await mutateSources([...sources, newSource]);
-      await startTraining();
+      try {
+        const newSource = await addSource(project.id, sourceType, data);
+        await mutateSources([...sources, newSource]);
+        await startTraining();
+      } catch (e) {
+        console.error(e);
+        toast.error(`${e}`);
+      }
     },
     [project?.id, mutateSources, sources, startTraining],
   );
@@ -173,7 +175,10 @@ const Onboarding = () => {
                 <GitHubAddSourceDialog onDidAddSource={startTraining}>
                   <ConnectButton label="GitHub repo" Icon={GitHubIcon} />
                 </GitHubAddSourceDialog>
-                <WebsiteAddSourceDialog onDidAddSource={startTraining}>
+                <WebsiteAddSourceDialog
+                  onDidAddSource={startTraining}
+                  openPricingAsDialog
+                >
                   <ConnectButton label="Website" Icon={GlobeIcon} />
                 </WebsiteAddSourceDialog>
                 <MotifAddSourceDialog onDidAddSource={startTraining}>
@@ -315,39 +320,10 @@ const Onboarding = () => {
                       theme={theme}
                       placeholder={placeholder}
                       isDark={isDark}
+                      modelConfig={modelConfig}
                       referencesHeading={referencesHeading}
                       loadingHeading={loadingHeading}
                       includeBranding={includeBranding}
-                      // isDemoMode
-                      // noAnimation
-                      // playing={true}
-                      // demoPrompt="How do I publish a component?"
-                      // demoResponse={`To publish a component on Acme, follow these steps:
-
-                      // # Sign up
-
-                      // - At the root of your project, open or create a file named \`index.js\`, and add the following lines (you can add as many components as you need):
-
-                      // \`\`\`js
-                      // import Component1 from "/path/to/component1
-                      // import Component2 from "/path/to/component2
-
-                      // export {
-                      //   Component1,
-                      //   Component2,
-                      //   // ...
-                      // }
-                      // \`\`\`
-
-                      // - Then, head over to the Component Library, accessible via the sidebar.
-                      // - Navigate to the Publish tab, and set a new semantic version. It must be higher than the previous one.
-                      // - Hit "Publish".
-                      // `}
-                      // demoReferences={[
-                      //   'Getting Started',
-                      //   'Publishing',
-                      //   'Components',
-                      // ]}
                       getReferenceInfo={(path: string) => {
                         const file = files?.find((f) => f.path === path);
                         if (file) {
@@ -392,8 +368,9 @@ const Onboarding = () => {
               <h2 className="mb-4 text-lg font-bold">Design</h2>
               <UIConfigurator />
               <h2 className="mb-4 mt-12 text-lg font-bold">
-                Model configurator <Tag color="fuchsia">Pro</Tag>
+                Model configurator
               </h2>
+              <ModelConfigurator />
             </div>
           </div>
         </div>
