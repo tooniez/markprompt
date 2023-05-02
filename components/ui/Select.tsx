@@ -1,6 +1,6 @@
-import { CheckIcon } from '@radix-ui/react-icons';
 import * as Select from '@radix-ui/react-select';
 import cn from 'classnames';
+import { Check } from 'lucide-react';
 import { ReactNode, forwardRef } from 'react';
 
 export const SelectItem = forwardRef(
@@ -23,7 +23,7 @@ export const SelectItem = forwardRef(
       >
         <Select.ItemText>{children}</Select.ItemText>
         <Select.ItemIndicator className="absolute left-1 inline-flex justify-center">
-          <CheckIcon />
+          <Check className="h-3 w-3" />
         </Select.ItemIndicator>
       </Select.Item>
     );

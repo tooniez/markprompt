@@ -1,10 +1,6 @@
-import {
-  CheckIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from '@radix-ui/react-icons';
 import * as Select from '@radix-ui/react-select';
 import cn from 'classnames';
+import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { FC, forwardRef, ReactNode } from 'react';
 
 import { Playground } from '@/components/files/Playground';
@@ -31,7 +27,7 @@ const SelectItem: FC<SelectItemProps> = forwardRef(
       >
         <Select.ItemText>{children}</Select.ItemText>
         <Select.ItemIndicator className="absolute left-2 flex h-4 w-4 items-center justify-center text-neutral-100">
-          <CheckIcon />
+          <Check />
         </Select.ItemIndicator>
       </Select.Item>
     );
@@ -62,13 +58,13 @@ const PlaygroundPage = () => {
             >
               <Select.Value placeholder={model} />
               <Select.Icon className="text-neutral-500">
-                <ChevronDownIcon className="h-3 w-3" />
+                <ChevronDown className="h-3 w-3" />
               </Select.Icon>
             </Select.Trigger>
             <Select.Portal>
               <Select.Content className="z-30 overflow-hidden rounded-md border border-neutral-900 bg-neutral-1000 pb-4 shadow-2xl">
                 <Select.ScrollUpButton className="flex h-4 w-4 items-center justify-center text-fuchsia-500">
-                  <ChevronUpIcon />
+                  <ChevronUp />
                 </Select.ScrollUpButton>
                 <Select.Viewport>
                   <Select.Group>
@@ -98,7 +94,7 @@ const PlaygroundPage = () => {
                   </Select.Group>
                 </Select.Viewport>
                 <Select.ScrollDownButton className="flex h-4 w-full cursor-pointer items-center justify-center text-neutral-500">
-                  <ChevronDownIcon />
+                  <ChevronDown />
                 </Select.ScrollDownButton>
               </Select.Content>
             </Select.Portal>

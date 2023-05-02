@@ -1,5 +1,5 @@
 import Markdoc, { RenderableTreeNode } from '@markdoc/markdoc';
-import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { Search } from 'lucide-react';
 import React, { FC, createContext } from 'react';
 
 import LandingNavbar from './LandingNavbar';
@@ -47,7 +47,7 @@ export const DocsLayout: FC<DocsLayoutProps> = ({ content, toc }: any) => {
                       className="flex w-full transform flex-row items-center gap-2 rounded-md border border-neutral-900 p-2 text-left text-sm text-neutral-500 outline-none transition duration-300 hover:bg-neutral-1000"
                       aria-label="Ask docs"
                     >
-                      <MagnifyingGlassIcon className="h-4 w-4 flex-none text-neutral-500" />
+                      <Search className="h-4 w-4 flex-none text-neutral-500" />
                       <div className="flex-grow truncate">Ask docs...</div>
                     </button>
                   </DocsPrompt>

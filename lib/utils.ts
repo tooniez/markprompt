@@ -1,13 +1,9 @@
 import { createHash } from 'crypto';
 
-import {
-  DoubleArrowUpIcon,
-  GlobeIcon,
-  UploadIcon,
-} from '@radix-ui/react-icons';
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
 import dayjs from 'dayjs';
+import { ChevronsUp, Globe, Upload } from 'lucide-react';
 import minimatch from 'minimatch';
 import { customAlphabet } from 'nanoid';
 import pako from 'pako';
@@ -677,11 +673,11 @@ export const getIconForSource = (sourceType: SourceType) => {
     case 'motif':
       return MotifIcon;
     case 'website':
-      return GlobeIcon;
+      return Globe;
     case 'file-upload':
-      return UploadIcon;
+      return Upload;
     case 'api-upload':
-      return DoubleArrowUpIcon;
+      return ChevronsUp;
     default:
       return GitHubIcon;
   }

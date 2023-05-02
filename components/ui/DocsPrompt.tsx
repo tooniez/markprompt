@@ -1,5 +1,5 @@
-import { Cross2Icon } from '@radix-ui/react-icons';
 import * as Popover from '@radix-ui/react-popover';
+import { X } from 'lucide-react';
 import { FC, ReactNode, useState } from 'react';
 
 import { Playground } from '../files/Playground';
@@ -32,7 +32,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children }) => {
               className="absolute top-5 right-3 z-20 rounded p-1 outline-none backdrop-blur transition hover:bg-neutral-900"
               aria-label="Close"
             >
-              <Cross2Icon className="h-4 w-4 text-neutral-300" />
+              <X className="h-4 w-4 text-neutral-300" />
             </Popover.Close>
           </div>
         </Popover.Content>

@@ -1,5 +1,5 @@
-import { ClipboardIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 import cn from 'classnames';
+import { Clipboard, Info } from 'lucide-react';
 import { FC, ReactNode } from 'react';
 import { toast } from 'react-hot-toast';
 
@@ -99,7 +99,7 @@ const AddFiles: FC<AddFilesProps> = ({ onTrainingComplete, onNext }) => {
                 toast.success('Copied!');
               }}
             >
-              <ClipboardIcon className="h-4 w-4 text-neutral-500" />
+              <Clipboard className="h-4 w-4 text-neutral-500" />
             </div>
             <div className="hidden-scrollbar w-full overflow-x-auto px-4">
               <Code
@@ -131,7 +131,7 @@ const AddFiles: FC<AddFilesProps> = ({ onTrainingComplete, onNext }) => {
               },
             )}
           >
-            <InfoCircledIcon className="h-4 w-4" />
+            <Info className="h-4 w-4" />
             <a
               className="subtle-underline"
               target="_blank"

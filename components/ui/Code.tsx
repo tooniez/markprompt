@@ -1,4 +1,4 @@
-import { ClipboardIcon } from '@radix-ui/react-icons';
+import { Clipboard } from 'lucide-react';
 import Highlight, { defaultProps, Language } from 'prism-react-renderer';
 import { FC } from 'react';
 import { toast } from 'react-hot-toast';
@@ -47,7 +47,7 @@ export const CodePanel: FC<CodeProps> = ({ code, language, className }) => {
           toast.success('Copied!');
         }}
       >
-        <ClipboardIcon className="h-4 w-4 text-neutral-500" />
+        <Clipboard className="h-4 w-4 text-neutral-500" />
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 import * as Progress from '@radix-ui/react-progress';
 import cn from 'classnames';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import { ChevronsUpDown, Check } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import useSWR from 'swr';
 
@@ -114,7 +114,7 @@ const Usage = () => {
                 aria-label="Select team"
               >
                 {monthRange[selectedMonthIndex].format('MMMM')}
-                <CaretSortIcon className="h-4 w-4" />
+                <ChevronsUpDown className="h-3 w-3" />
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
@@ -136,7 +136,7 @@ const Usage = () => {
                       <>
                         {checked && (
                           <DropdownMenu.ItemIndicator className="dropdown-menu-item-indicator">
-                            <CheckIcon className="h-4 w-4" />
+                            <Check className="h-3 w-3" />
                           </DropdownMenu.ItemIndicator>
                         )}
                         {month.format('MMMM')}

@@ -1,4 +1,3 @@
-// import { Cross2Icon, GlobeIcon, UploadIcon } from '@radix-ui/react-icons';
 import cn from 'classnames';
 import {
   Upload,

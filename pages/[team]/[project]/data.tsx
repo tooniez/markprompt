@@ -1,10 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import {
-  DotsHorizontalIcon,
-  GlobeIcon,
-  UploadIcon,
-} from '@radix-ui/react-icons';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import {
   SortingState,
@@ -20,6 +15,7 @@ import cn from 'classnames';
 import dayjs from 'dayjs';
 // Cf. https://github.com/iamkun/dayjs/issues/297#issuecomment-1202327426
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { MoreHorizontal, Globe, Upload } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { FC, useMemo, useState } from 'react';
@@ -183,7 +179,7 @@ const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
             className="flex-none select-none p-1 text-neutral-500 opacity-50 outline-none transition hover:opacity-100"
             aria-label="Source options"
           >
-            <DotsHorizontalIcon />
+            <MoreHorizontal />
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
@@ -556,13 +552,13 @@ const Data = () => {
                   },
                 )}
               >
-                <GlobeIcon className="h-4 w-4 flex-none" />
+                <Globe className="h-4 w-4 flex-none" />
                 <span className="truncate">Connect website</span>
               </button>
             </WebsiteAddSourceDialog>
             <FilesAddSourceDialog>
               <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
-                <UploadIcon className="h-4 w-4 flex-none" />
+                <Upload className="h-4 w-4 flex-none" />
                 <span className="truncate">Upload files</span>
               </button>
             </FilesAddSourceDialog>

@@ -1,5 +1,5 @@
-import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import * as Select from '@radix-ui/react-select';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { FC } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
@@ -29,13 +29,13 @@ export const ModelPicker: FC<ModelPickerProps> = () => {
           <Select.Value placeholder="Pick a theme…" />
         </div>
         <Select.Icon className="flex-none text-neutral-500">
-          <ChevronDownIcon />
+          <ChevronDown className="h-4 w-4" />
         </Select.Icon>
       </Select.Trigger>
       <Select.Portal>
         <Select.Content className="overflow-hidden rounded-md border border-neutral-800 bg-neutral-900">
           <Select.ScrollUpButton className="flex h-10 items-center justify-center">
-            <ChevronUpIcon />
+            <ChevronUp className="h-4 w-4" />
           </Select.ScrollUpButton>
           <Select.Viewport>
             <Select.Group>
@@ -58,7 +58,7 @@ export const ModelPicker: FC<ModelPickerProps> = () => {
             </Select.Group>
           </Select.Viewport>
           <Select.ScrollDownButton className="flex items-center justify-center p-2">
-            <ChevronDownIcon />
+            <ChevronDown className="h-4 w-4" />
           </Select.ScrollDownButton>
         </Select.Content>
       </Select.Portal>{' '}

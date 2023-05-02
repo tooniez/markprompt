@@ -63,15 +63,12 @@ textarea {
   @apply rounded-md border border-neutral-800 bg-neutral-900;
 }
 
-.button-ring,
-button:not(.no-ring),
-a:not(.no-ring) {
+.button-ring {
   @apply transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/50;
 }
 
 .button-ring-light,
-.light-playground a,
-.light-playground button {
+.light-playground a {
   @apply focus:ring-black/20 !important;
 }
 

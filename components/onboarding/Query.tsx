@@ -1,6 +1,6 @@
-import { ClipboardIcon } from '@radix-ui/react-icons';
 import cn from 'classnames';
-import { FC, ReactNode, useState } from 'react';
+import { Clipboard } from 'lucide-react';
+import { FC, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import useFiles from '@/lib/hooks/use-files';
@@ -90,7 +90,7 @@ const Query: FC<QueryProps> = ({ goBack, didCompleteFirstQuery, isReady }) => {
                         toast.success('Copied!');
                       }}
                     >
-                      <ClipboardIcon className="h-4 w-4 text-neutral-500" />
+                      <Clipboard className="h-4 w-4 text-neutral-500" />
                     </div>
                   </div>
                 </div>
@@ -108,7 +108,7 @@ const Query: FC<QueryProps> = ({ goBack, didCompleteFirstQuery, isReady }) => {
                         toast.success('Copied!');
                       }}
                     >
-                      <ClipboardIcon className="h-4 w-4 text-neutral-500" />
+                      <Clipboard className="h-4 w-4 text-neutral-500" />
                     </div>
                   </div>
                 </div>

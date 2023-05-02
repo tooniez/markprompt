@@ -1,5 +1,4 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { ArchiveIcon } from '@radix-ui/react-icons';
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { track } from '@vercel/analytics';
 import {
@@ -11,6 +10,7 @@ import {
   FormikValues,
 } from 'formik';
 import { groupBy } from 'lodash-es';
+import { Package2 } from 'lucide-react';
 import Link from 'next/link';
 import { FC, ReactNode, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -252,7 +252,7 @@ export const GitHubSource: FC<GitHubSourceProps> = ({
                                 key={repo.url}
                                 className="flex flex-row items-center gap-3"
                               >
-                                <ArchiveIcon className="h-4 w-4 flex-none text-neutral-500" />
+                                <Package2 className="h-4 w-4 flex-none text-neutral-500" />
                                 <span className="flex-grow text-sm font-medium text-neutral-300">
                                   {repo.name}
                                 </span>
