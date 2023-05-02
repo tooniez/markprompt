@@ -28,7 +28,7 @@ export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
       )}
     >
       <div className="flex-none">
-        <Link href="/">
+        <Link href="/" className="outline-none">
           <MarkpromptIcon className="mx-auto h-8 w-8 text-white" />
         </Link>
       </div>
@@ -62,8 +62,11 @@ export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
                   closeOnClickOutside
                   Component={
                     <NavigationMenu.Item>
-                      <NavigationMenu.Link asChild>
-                        <button className="focus-visible:ring-1' block h-full rounded-md px-2 py-1.5 text-sm text-neutral-300 outline-none ring-white ring-offset-0 transition duration-200 hover:bg-neutral-900 hover:text-neutral-100 focus-visible:text-neutral-100">
+                      <NavigationMenu.Link
+                        asChild
+                        className="button-ring block h-full rounded-md px-2 py-1.5 text-sm text-neutral-300 hover:bg-neutral-900 hover:text-neutral-100 focus-visible:text-neutral-100"
+                      >
+                        <button className="text-neutral-300hover:bg-neutral-900 block h-full rounded-md px-2 py-1.5 text-sm hover:text-neutral-100 focus-visible:text-neutral-100">
                           Help
                         </button>
                       </NavigationMenu.Link>
@@ -75,7 +78,7 @@ export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
             <NavigationMenu.Item>
               <NavigationMenu.Link
                 asChild
-                className="block h-full rounded-md px-2 py-1.5 text-sm text-neutral-300 outline-none ring-white ring-offset-0 transition duration-200 hover:bg-neutral-900 hover:text-neutral-100 focus-visible:text-neutral-100 focus-visible:ring-1"
+                className="button-ring block h-full rounded-md px-2 py-1.5 text-sm text-neutral-300 hover:bg-neutral-900 hover:text-neutral-100 focus-visible:text-neutral-100"
               >
                 <a target="_blank" rel="noreferrer" href="/docs">
                   Docs

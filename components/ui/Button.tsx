@@ -17,6 +17,7 @@ export type ButtonVariant =
 
 export const ButtonOrLinkWrapper: FC<ButtonProps> = ({
   href,
+  className,
   children,
   Component = 'button',
   ...props
@@ -24,7 +25,7 @@ export const ButtonOrLinkWrapper: FC<ButtonProps> = ({
   const Comp: any = href ? 'a' : Component;
 
   return (
-    <Comp {...props} {...(href ? { href } : {})}>
+    <Comp className={className} {...props} {...(href ? { href } : {})}>
       {children}
     </Comp>
   );
@@ -83,7 +84,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           !noStyle &&
           cn(
             className,
-            'relative flex select-none flex-row items-center justify-center whitespace-nowrap rounded-md border transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 disabled:cursor-not-allowed',
+            'button-ring relative flex select-none flex-row items-center justify-center whitespace-nowrap rounded-md border disabled:cursor-not-allowed',
             {
               'border-transparent bg-white text-neutral-900 hover:bg-neutral-300 disabled:bg-neutral-900 disabled:text-neutral-500 hover:disabled:bg-neutral-900':
                 variant === 'cta',
@@ -97,7 +98,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 variant === 'plain',
               'border-neutral-800 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
                 variant === 'bordered',
-              'border-neutral-900/10 text-neutral-900 hover:bg-neutral-100 disabled:opacity-50':
+              'button-ring-light border-neutral-900/10 text-neutral-900 hover:bg-neutral-100 disabled:opacity-50':
                 variant === 'borderedWhite',
               'border-transparent text-neutral-100 hover:bg-neutral-1000 disabled:text-neutral-500 hover:disabled:bg-opacity-100':
                 variant === 'ghost',

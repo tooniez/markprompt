@@ -1,7 +1,7 @@
-import { ChatBubbleIcon, Cross2Icon } from '@radix-ui/react-icons';
 import * as Popover from '@radix-ui/react-popover';
 import { Chat } from '@team-plain/react-chat-ui';
 import cn from 'classnames';
+import { MessageSquare, X } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
 import colors from 'tailwindcss/colors';
 
@@ -68,7 +68,7 @@ export const ChatWindow = ({
               aria-label="Start chat"
             >
               <div className="relative">
-                <Cross2Icon
+                <X
                   className={cn(
                     'absolute inset-0 h-5 w-5 transform text-neutral-300 duration-300',
                     {
@@ -76,7 +76,7 @@ export const ChatWindow = ({
                     },
                   )}
                 />
-                <ChatBubbleIcon
+                <MessageSquare
                   className={cn(
                     'h-5 w-5 transform text-neutral-300 duration-300',
                     {
@@ -105,7 +105,7 @@ export const ChatWindow = ({
               className="absolute top-3 right-3 z-20 rounded p-1 backdrop-blur transition hover:bg-neutral-100"
               aria-label="Close"
             >
-              <Cross2Icon className="h-4 w-4 text-neutral-900" />
+              <X className="h-4 w-4 text-neutral-900" />
             </Popover.Close>
           </div>
         </Popover.Content>

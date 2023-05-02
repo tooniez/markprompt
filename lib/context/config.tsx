@@ -25,6 +25,7 @@ export type State = {
   colors: ThemeColors;
   isDark: boolean;
   placeholder: string;
+  iDontKnowMessage: string;
   referencesHeading: string;
   loadingHeading: string;
   includeBranding: boolean;
@@ -34,6 +35,7 @@ export type State = {
   setDark: (dark: boolean) => void;
   setSize: (size: Theme['size']) => void;
   setPlaceholder: (placeholder: string) => void;
+  setIDontKnowMessage: (iDontKnowMessage: string) => void;
   setReferencesHeading: (referencesHeading: string) => void;
   setLoadingHeading: (loadingHeading: string) => void;
   setIncludeBranding: (includeBranding: boolean) => void;
@@ -46,6 +48,7 @@ const initialState: State = {
   colors: defaultTheme.colors.light,
   isDark: false,
   placeholder: '',
+  iDontKnowMessage: '',
   referencesHeading: '',
   loadingHeading: '',
   includeBranding: true,
@@ -63,6 +66,7 @@ const initialState: State = {
   setDark: () => {},
   setSize: () => {},
   setPlaceholder: () => {},
+  setIDontKnowMessage: () => {},
   setReferencesHeading: () => {},
   setLoadingHeading: () => {},
   setIncludeBranding: () => {},
@@ -74,37 +78,42 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
   const { project } = useProject();
 
   const [theme, setTheme] = useLocalStorage<Theme>(
-    `${project?.id ?? 'undefined'}:playground-theme`,
+    `${project?.id ?? 'undefined'}:config:theme`,
     defaultTheme,
   );
 
   const [isDark, setDark] = useLocalStorage<boolean>(
-    `${project?.id ?? 'undefined'}:playground-model-dark`,
+    `${project?.id ?? 'undefined'}:config:model-dark`,
     false,
   );
 
   const [placeholder, setPlaceholder] = useLocalStorage<string>(
-    `${project?.id ?? 'undefined'}:playground-placeholder`,
+    `${project?.id ?? 'undefined'}:config:placeholder`,
     'Ask me anything…',
   );
 
+  const [iDontKnowMessage, setIDontKnowMessage] = useLocalStorage<string>(
+    `${project?.id ?? 'undefined'}:config:i-dont-know-message`,
+    'Sorry, I am not sure how to answer that.',
+  );
+
   const [referencesHeading, setReferencesHeading] = useLocalStorage<string>(
-    `${project?.id ?? 'undefined'}:playground-references-heading`,
+    `${project?.id ?? 'undefined'}:config:references-heading`,
     'Summary generated from the following sources:',
   );
 
   const [loadingHeading, setLoadingHeading] = useLocalStorage<string>(
-    `${project?.id ?? 'undefined'}:playground-loading-heading`,
+    `${project?.id ?? 'undefined'}:config:loading-heading`,
     'Gathering sources...',
   );
 
   const [includeBranding, setIncludeBranding] = useLocalStorage<boolean>(
-    `${project?.id ?? 'undefined'}:includeBranding`,
+    `${project?.id ?? 'undefined'}:config:include-branding`,
     true,
   );
 
   const [modelConfig, setModelConfig] = useLocalStorage<ModelConfig>(
-    `${project?.id ?? 'undefined'}:modelConfig`,
+    `${project?.id ?? 'undefined'}:config:model-config`,
     initialState.modelConfig,
   );
 
@@ -159,6 +168,7 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
         theme,
         isDark,
         placeholder,
+        iDontKnowMessage,
         referencesHeading,
         loadingHeading,
         includeBranding,
@@ -169,6 +179,7 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
         setDark,
         setSize,
         setPlaceholder,
+        setIDontKnowMessage,
         setReferencesHeading,
         setLoadingHeading,
         setIncludeBranding,

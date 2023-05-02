@@ -109,7 +109,7 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 href="/docs#templates"
                 target="_blank"
                 rel="noreferrer"
-                className="flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap text-xs text-neutral-300"
+                className="button-ring flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
               >
                 <Info className="h-4 w-4 text-neutral-300" />
                 <span className="subtle-underline">

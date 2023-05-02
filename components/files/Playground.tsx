@@ -15,7 +15,7 @@ import remarkGfm from 'remark-gfm';
 import { I_DONT_KNOW, STREAM_SEPARATOR } from '@/lib/constants';
 import { Theme } from '@/lib/themes';
 import { getAppOrigin, timeout } from '@/lib/utils';
-import { ModelConfig, OpenAIModelId, ReferenceInfo } from '@/types/types';
+import { ModelConfig, ReferenceInfo } from '@/types/types';
 
 type CaretProps = {
   color?: string;
@@ -353,7 +353,7 @@ export const Playground: FC<PlaygroundProps> = ({
             />
           </form>
         </div>
-        <button className="-mr-1 flex-none rounded p-1 transition hover:opacity-60">
+        <button className="button-ring-light -mr-1 flex-none rounded p-1 transition hover:opacity-60">
           <X
             className={cn({
               'h-5 w-5': theme?.size === 'base',
@@ -396,6 +396,14 @@ export const Playground: FC<PlaygroundProps> = ({
               span: (props) => (
                 <WithCaret
                   Component="span"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              a: (props) => (
+                <WithCaret
+                  Component="a"
                   style={{ color: colors?.foreground }}
                   caretColor={colors?.primary}
                   {...props}
@@ -591,6 +599,7 @@ export const Playground: FC<PlaygroundProps> = ({
         >
           Powered by{' '}
           <a
+            className="button-ring button-ring-light rounded"
             href="https://markprompt.com"
             target="_blank"
             rel="noreferrer"

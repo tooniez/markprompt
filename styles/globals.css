@@ -48,7 +48,7 @@ textarea {
 }
 
 .input-base-noborder {
-  @apply border-transparent;
+  @apply border-transparent focus:border-transparent focus:outline-none focus:ring-0 !important;
 }
 
 .input-base-border {
@@ -61,6 +61,15 @@ textarea {
 
 .input-wrapper {
   @apply rounded-md border border-neutral-800 bg-neutral-900;
+}
+
+button,
+.button-ring {
+  @apply transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/50;
+}
+
+.button-ring-light {
+  @apply focus:ring-black/20 !important;
 }
 
 .shadow-up {

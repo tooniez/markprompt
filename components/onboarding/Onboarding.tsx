@@ -1,6 +1,16 @@
-import { Cross2Icon, GlobeIcon, UploadIcon } from '@radix-ui/react-icons';
+// import { Cross2Icon, GlobeIcon, UploadIcon } from '@radix-ui/react-icons';
 import cn from 'classnames';
-import { Code, Moon, Share, Sun, MessageCircle } from 'lucide-react';
+import {
+  Upload,
+  Globe,
+  X,
+  ArrowDown,
+  Code,
+  Moon,
+  Share,
+  Sun,
+  MessageCircle,
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import {
@@ -18,15 +28,14 @@ import { ManagedConfigContext, useConfigContext } from '@/lib/context/config';
 import { useTrainingContext } from '@/lib/context/training';
 import emitter, { EVENT_OPEN_CHAT } from '@/lib/events';
 import useFiles from '@/lib/hooks/use-files';
-import useOnboarding from '@/lib/hooks/use-onboarding';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
-import useUser from '@/lib/hooks/use-user';
 import {
   getIconForSource,
   getLabelForSource,
   getNameFromPath,
   removeFileExtension,
+  showConfetti,
 } from '@/lib/utils';
 import { SourceType } from '@/types/types';
 
@@ -39,8 +48,9 @@ import { UIConfigurator } from '../files/UIConfigurator';
 import { GitHubIcon } from '../icons/GitHub';
 import { MarkpromptIcon } from '../icons/Markprompt';
 import { MotifIcon } from '../icons/Motif';
+import { SpinnerIcon } from '../icons/Spinner';
 import Button from '../ui/Button';
-import { Tag } from '../ui/Tag';
+import { PulseDot } from '../ui/PulseDot';
 
 const GitHubAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/GitHub'),
@@ -80,10 +90,10 @@ const ConnectButton = forwardRef<HTMLButtonElement, ConnectButtonProps>(
         {...props}
         onClick={onClick}
         ref={ref}
-        className="relative w-full rounded-lg border border-neutral-900 transition hover:bg-neutral-1000"
+        className="button-ring relative w-full rounded-lg border border-neutral-900 transition hover:bg-neutral-1000"
       >
         <div className="flex flex-row items-center gap-4 p-4 sm:p-3">
-          <Icon className="h-5 w-5 flex-none text-white" />
+          <Icon className="h-4 w-4 flex-none text-neutral-300" />
           <span className="flex-grow truncate text-left text-sm font-medium leading-tight text-neutral-300">
             {label}
           </span>
@@ -96,11 +106,13 @@ const ConnectButton = forwardRef<HTMLButtonElement, ConnectButtonProps>(
 ConnectButton.displayName = 'ConnectButton';
 
 const Onboarding = () => {
-  const { user, mutate: mutateUser } = useUser();
   const { project } = useProject();
-  const { files } = useFiles();
-  const { finishOnboarding } = useOnboarding();
-  const { sources, mutate: mutateSources } = useSources();
+  const { files, mutate: mutateFiles, loading: loadingFiles } = useFiles();
+  const {
+    sources,
+    mutate: mutateSources,
+    loading: loadingSources,
+  } = useSources();
   const { state: trainingState, trainAllSources } = useTrainingContext();
   const {
     theme,
@@ -110,6 +122,7 @@ const Onboarding = () => {
     modelConfig,
     setDark,
     placeholder,
+    iDontKnowMessage,
     referencesHeading,
     loadingHeading,
   } = useConfigContext();
@@ -123,8 +136,12 @@ const Onboarding = () => {
         toast.error(errorMessage);
       },
     );
-    toast.success('Done training sources');
-  }, [trainAllSources]);
+    mutateFiles();
+    showConfetti();
+    toast.success(
+      'Done training sources. You can now ask questions to your content!',
+    );
+  }, [trainAllSources, mutateFiles]);
 
   const _addSource = useCallback(
     async (sourceType: SourceType, data: any) => {
@@ -135,16 +152,21 @@ const Onboarding = () => {
       try {
         const newSource = await addSource(project.id, sourceType, data);
         await mutateSources([...sources, newSource]);
-        await startTraining();
+        // setTimeout(async () => {
+        //   await startTraining();
+        // }, 1000);
       } catch (e) {
         console.error(e);
         toast.error(`${e}`);
       }
     },
-    [project?.id, mutateSources, sources, startTraining],
+    [project?.id, mutateSources, sources],
   );
 
+  const hasConnectedSources = sources && sources.length > 0;
   const isTrained = files && files.length > 0;
+  const isLoading = loadingSources || loadingFiles;
+  const isShowingOverlay = !isLoading && (!hasConnectedSources || !isTrained);
 
   return (
     <>
@@ -152,12 +174,14 @@ const Onboarding = () => {
         <title>Get started | Markprompt</title>
       </Head>
       <NavLayout animated={false}>
-        {/* [var(--onboarding-footer-height)] */}
         <div className="fixed top-[var(--app-navbar-height)] bottom-0 left-0 right-0 grid grid-cols-1 sm:grid-cols-4">
           <div className="relative h-full">
             <div className="absolute inset-x-0 top-0 bottom-[var(--onboarding-footer-height)] overflow-y-auto p-6">
               <h1 className="text-xl font-bold text-neutral-300">
                 Connect source{' '}
+                {!isLoading && (!sources || sources.length === 0) && (
+                  <PulseDot className="translate-x-[-4px] translate-y-[-8px] transform" />
+                )}
               </h1>
               <p className="mt-2 text-sm font-normal text-neutral-500">
                 Missing a source?{' '}
@@ -179,13 +203,13 @@ const Onboarding = () => {
                   onDidAddSource={startTraining}
                   openPricingAsDialog
                 >
-                  <ConnectButton label="Website" Icon={GlobeIcon} />
+                  <ConnectButton label="Website" Icon={Globe} />
                 </WebsiteAddSourceDialog>
                 <MotifAddSourceDialog onDidAddSource={startTraining}>
                   <ConnectButton label="Motif project" Icon={MotifIcon} />
                 </MotifAddSourceDialog>
                 <FilesAddSourceDialog onDidAddSource={startTraining}>
-                  <ConnectButton label="Upload files" Icon={UploadIcon} />
+                  <ConnectButton label="Upload files" Icon={Upload} />
                 </FilesAddSourceDialog>
               </div>
               <p className="mt-6 text-sm text-neutral-500">
@@ -194,7 +218,7 @@ const Onboarding = () => {
               <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-1">
                 <ConnectButton
                   label="Markprompt docs"
-                  Icon={MarkpromptIcon}
+                  Icon={GitHubIcon}
                   onClick={async () => {
                     await _addSource('github', { url: SAMPLE_REPO_URL });
                   }}
@@ -218,7 +242,7 @@ const Onboarding = () => {
                             {getLabelForSource(source)}
                           </p>
                           <button
-                            className="p-1 outline-none"
+                            className="button-ring rounded-md p-1 outline-none"
                             onClick={async () => {
                               if (!project?.id) {
                                 return;
@@ -228,7 +252,7 @@ const Onboarding = () => {
                               toast.success('The source has been removed');
                             }}
                           >
-                            <Cross2Icon className="h-3 w-3 text-sky-400" />
+                            <X className="h-3 w-3 text-sky-400" />
                           </button>
                         </div>
                       );
@@ -256,114 +280,150 @@ const Onboarding = () => {
               </Button>
             </div>
           </div>
-          <div className="col-span-2 h-full overflow-hidden">
-            {project && (
-              <div
-                className={cn(
-                  'grid-background h-full border-l border-r border-neutral-900',
-                  {
-                    'grid-background-dark bg-neutral-900': isDark,
-                    'grid-background-light bg-neutral-100': !isDark,
-                  },
-                )}
-              >
-                <div className="relative flex h-full flex-col gap-4">
-                  <div
-                    className={cn(
-                      'flex h-[var(--onboarding-footer-height)] flex-none flex-row items-center gap-2 px-6 shadow-lg',
-                      {
-                        'border-b border-neutral-900 bg-neutral-1100': isDark,
-                        'border-neutral-200 bg-white': !isDark,
-                      },
-                    )}
-                  >
-                    <div className="flex-grow">
-                      <button
-                        className={cn('rounded p-2 transition', {
-                          'text-neutral-300 hover:bg-white/10': isDark,
-                          'text-neutral-700 hover:bg-black/10': !isDark,
-                        })}
-                        onClick={() => setDark(!isDark)}
-                      >
-                        {isDark ? (
-                          <Sun className="h-5 w-5" />
-                        ) : (
-                          <Moon className="h-5 w-5" />
-                        )}
-                      </button>
-                    </div>
-                    <Button
-                      disabled={!isTrained}
-                      buttonSize="sm"
-                      variant={isDark ? 'plain' : 'borderedWhite'}
-                      Icon={Share}
-                    >
-                      Share
-                    </Button>
-                    <Button
-                      disabled={!isTrained}
-                      buttonSize="sm"
-                      variant={isDark ? 'plain' : 'borderedWhite'}
-                      Icon={Code}
-                    >
-                      Get code
-                    </Button>
+          <div className="relative col-span-2">
+            <div
+              className={cn(
+                'absolute inset-0 z-30 flex items-center justify-center bg-black/80 p-8 shadow-xl transition duration-300',
+                {
+                  'opacity-100': isShowingOverlay,
+                  'pointer-events-none opacity-0': !isShowingOverlay,
+                },
+              )}
+            >
+              <div className="flex w-min flex-row items-center gap-2 whitespace-nowrap rounded-full bg-black/50 py-3 pl-3 pr-5 text-sm text-white backdrop-blur">
+                {trainingState.state !== 'idle' ? (
+                  <SpinnerIcon className="ml-1 h-4 w-4 animate-spin" />
+                ) : (
+                  <div className="rotate-90 transform">
+                    <ArrowDown className="h-4 w-4 animate-bounce" />
                   </div>
-                  <div className="absolute inset-x-0 top-[var(--onboarding-footer-height)] bottom-0 flex flex-col gap-4 px-16 py-8">
-                    <Playground
-                      projectKey={project.private_dev_api_key}
-                      // didCompleteFirstQuery={didCompleteFirstQuery}
-                      // autoScrollDisabled={!isReady}
-                      iDontKnowMessage={
-                        'Sorry, I am not sure how to answer that. But we are all set training your files!'
-                      }
-                      theme={theme}
-                      placeholder={placeholder}
-                      isDark={isDark}
-                      modelConfig={modelConfig}
-                      referencesHeading={referencesHeading}
-                      loadingHeading={loadingHeading}
-                      includeBranding={includeBranding}
-                      getReferenceInfo={(path: string) => {
-                        const file = files?.find((f) => f.path === path);
-                        if (file) {
-                          let name = path;
-                          const metaTitle = (file.meta as any).title;
-                          if (metaTitle) {
-                            name = metaTitle;
-                          } else {
-                            name = removeFileExtension(getNameFromPath(path));
-                          }
-
-                          return {
-                            name,
-                            href: path,
-                          };
-                        }
-                      }}
-                    />
-                    <div className="flex flex-none flex-row justify-end">
-                      <div
-                        className="rounded-full border p-3"
-                        style={{
-                          backgroundColor: colors.primary,
-                          borderColor: colors.border,
-                        }}
+                )}
+                {!hasConnectedSources ? (
+                  <>Start by connecting one or more sources</>
+                ) : trainingState.state !== 'idle' ? (
+                  <>Processing your content</>
+                ) : (
+                  <>Great! Now hit &apos;Process sources&apos;</>
+                )}
+              </div>
+            </div>
+            <div
+              className={cn('h-full w-full overflow-hidden', {
+                'pointer-events-none': !hasConnectedSources || !isTrained,
+              })}
+            >
+              {project && (
+                <div
+                  className={cn(
+                    'grid-background h-full border-l border-r border-neutral-900',
+                    {
+                      'grid-background-dark bg-neutral-900': isDark,
+                      'grid-background-light bg-neutral-100': !isDark,
+                    },
+                  )}
+                >
+                  <div className="relative flex h-full flex-col gap-4">
+                    <div
+                      className={cn(
+                        'flex h-[var(--onboarding-footer-height)] flex-none flex-row items-center gap-2 px-6 shadow-lg',
+                        {
+                          'border-b border-neutral-900 bg-neutral-1100': isDark,
+                          'border-neutral-200 bg-white': !isDark,
+                        },
+                      )}
+                    >
+                      <div className="flex-grow">
+                        <button
+                          className={cn('button-ring rounded p-2 transition', {
+                            'text-neutral-300 hover:bg-white/10': isDark,
+                            'button-ring-light text-neutral-700 hover:bg-black/10 focus:ring-black/20':
+                              !isDark,
+                          })}
+                          onClick={() => setDark(!isDark)}
+                        >
+                          {isDark ? (
+                            <Sun className="h-5 w-5" />
+                          ) : (
+                            <Moon className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
+                      <Button
+                        disabled={!isTrained}
+                        buttonSize="sm"
+                        variant={isDark ? 'plain' : 'borderedWhite'}
+                        Icon={Share}
                       >
-                        <MessageCircle
-                          className="h-5 w-5"
+                        Share
+                      </Button>
+                      <Button
+                        disabled={!isTrained}
+                        buttonSize="sm"
+                        variant={isDark ? 'plain' : 'borderedWhite'}
+                        Icon={Code}
+                      >
+                        Get code
+                      </Button>
+                    </div>
+                    <div className="absolute inset-x-0 top-[var(--onboarding-footer-height)] bottom-0 flex flex-col gap-4 px-16 py-8">
+                      <Playground
+                        projectKey={project.private_dev_api_key}
+                        // didCompleteFirstQuery={didCompleteFirstQuery}
+                        // autoScrollDisabled={!isReady}
+                        iDontKnowMessage={iDontKnowMessage}
+                        theme={theme}
+                        placeholder={placeholder}
+                        isDark={isDark}
+                        modelConfig={modelConfig}
+                        referencesHeading={referencesHeading}
+                        loadingHeading={loadingHeading}
+                        includeBranding={includeBranding}
+                        getReferenceInfo={(path: string) => {
+                          const file = files?.find((f) => f.path === path);
+                          if (file) {
+                            let name = path;
+                            const metaTitle = (file.meta as any).title;
+                            if (metaTitle) {
+                              name = metaTitle;
+                            } else {
+                              name = removeFileExtension(getNameFromPath(path));
+                            }
+
+                            return {
+                              name,
+                              href: path,
+                            };
+                          }
+                        }}
+                      />
+                      <div className="flex flex-none flex-row justify-end">
+                        <div
+                          className="rounded-full border p-3"
                           style={{
-                            color: colors.primaryForeground,
+                            backgroundColor: colors.primary,
+                            borderColor: colors.border,
                           }}
-                        />
+                        >
+                          <MessageCircle
+                            className="h-5 w-5"
+                            style={{
+                              color: colors.primaryForeground,
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-          <div className="relative h-full">
+          <div
+            className={cn('relative h-full transition', {
+              'pointer-events-none opacity-30':
+                !sources || sources.length === 0,
+            })}
+          >
             <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto p-6">
               <h2 className="mb-4 text-lg font-bold">Design</h2>
               <UIConfigurator />

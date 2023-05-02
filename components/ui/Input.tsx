@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { FC, ReactNode, useMemo } from 'react';
+import { FC, ReactNode } from 'react';
 
 export const NoAutoInput = (props: any) => {
   return (
@@ -89,15 +89,20 @@ const Input: FC<InputProps> = ({
       <input
         {...props}
         value={typeof props.value !== 'undefined' ? props.value : ''}
-        className={cn(className, 'input-base max-w-full focus:outline-none', {
-          'input-base-border input-focus':
-            !hasRightAccessory && !hasLeftAccessory,
-          'input-base-noborder': hasRightAccessory || hasLeftAccessory,
-          'w-full flex-grow': hasRightAccessory || hasLeftAccessory,
-          'px-2 py-2 text-sm': inputSize === 'base',
-          'px-2 py-1.5 text-sm': inputSize === 'sm',
-          'input-glow-color': variant === 'glow',
-        })}
+        className={cn(
+          className,
+          'input-base max-w-full focus:border-transparent',
+          {
+            'input-base-border input-focus':
+              !hasRightAccessory && !hasLeftAccessory,
+            'input-base-noborder focus:outline-none':
+              hasRightAccessory || hasLeftAccessory,
+            'w-full flex-grow': hasRightAccessory || hasLeftAccessory,
+            'px-2 py-2 text-sm': inputSize === 'base',
+            'px-2 py-1.5 text-sm': inputSize === 'sm',
+            'input-glow-color': variant === 'glow',
+          },
+        )}
       />
     </InputWrapper>
   );

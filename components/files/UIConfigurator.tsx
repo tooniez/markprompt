@@ -47,8 +47,10 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
     setSize,
     includeBranding,
     placeholder,
+    iDontKnowMessage,
     setPlaceholder,
     referencesHeading,
+    setIDontKnowMessage,
     setReferencesHeading,
     loadingHeading,
     setLoadingHeading,
@@ -81,7 +83,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
             Include branding{' '}
             {!_canRemoveBranding && (
               <UpgradeCTA showDialog>
-                <ButtonOrLinkWrapper>
+                <ButtonOrLinkWrapper className="ml-1 rounded-full">
                   <Tag color="fuchsia">Pro</Tag>
                 </ButtonOrLinkWrapper>
               </UpgradeCTA>
@@ -229,7 +231,16 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                   }}
                 />
               </Row>
-              <Row className="mt-4" label="References heading">
+              <Row className="mt-4" label="Don't know message">
+                <Input
+                  inputSize="sm"
+                  value={iDontKnowMessage}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    setIDontKnowMessage(event.target.value);
+                  }}
+                />
+              </Row>
+              <Row label="References heading">
                 <Input
                   inputSize="sm"
                   value={referencesHeading}

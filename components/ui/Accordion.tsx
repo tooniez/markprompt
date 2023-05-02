@@ -1,6 +1,6 @@
 import * as Accordion from '@radix-ui/react-accordion';
-import { ChevronDownIcon } from '@radix-ui/react-icons';
 import cn from 'classnames';
+import { ChevronDown } from 'lucide-react';
 import { ReactNode, forwardRef } from 'react';
 
 export const AccordionTrigger = forwardRef(
@@ -15,14 +15,14 @@ export const AccordionTrigger = forwardRef(
     <Accordion.Header className="w-full transition hover:opacity-70">
       <Accordion.Trigger
         className={cn(
-          'accordion-trigger flex w-full flex-row items-center justify-between gap-2 text-sm font-medium text-neutral-500',
+          'accordion-trigger flex w-full flex-row items-center justify-between gap-2 rounded-md text-sm font-medium text-neutral-500',
           className,
         )}
         {...props}
         ref={forwardedRef}
       >
         {children}
-        <ChevronDownIcon
+        <ChevronDown
           className="accordion-chevron h-4 w-4 -rotate-90 transform text-neutral-500 transition"
           aria-hidden
         />

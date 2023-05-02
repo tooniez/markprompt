@@ -58,7 +58,7 @@ export const SliderInput: FC<SliderInputProps> = ({
           <Slider.Track className="relative h-1 flex-grow rounded-full bg-white/20">
             <Slider.Range className="absolute h-full rounded-full bg-white" />
           </Slider.Track>
-          <Slider.Thumb className="block h-5 w-5 rounded-full border-4 border-neutral-1100 bg-white outline-white transition active:bg-fuchsia-500 active:ring-2" />
+          <Slider.Thumb className="block h-5 w-5 rounded-full border-4 border-neutral-1100 bg-white ring-offset-0 transition duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-500 active:bg-fuchsia-500 active:ring-2" />
         </Slider.Root>
       </div>
     </div>
