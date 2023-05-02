@@ -303,7 +303,12 @@ export const Playground: FC<PlaygroundProps> = ({
 
   return (
     <div
-      className="relative flex h-full flex-col overflow-hidden border shadow-2xl"
+      className={cn(
+        'relative flex h-full flex-col overflow-hidden border shadow-2xl',
+        {
+          'light-playground': !isDark,
+        },
+      )}
       style={{
         backgroundColor: colors?.background,
         borderColor: colors?.border,
@@ -353,7 +358,14 @@ export const Playground: FC<PlaygroundProps> = ({
             />
           </form>
         </div>
-        <button className="button-ring-light -mr-1 flex-none rounded p-1 transition hover:opacity-60">
+        <button
+          className={cn(
+            '-mr-1 flex-none rounded p-1 transition hover:opacity-60',
+            {
+              'button-ring-light': !isDark,
+            },
+          )}
+        >
           <X
             className={cn({
               'h-5 w-5': theme?.size === 'base',
@@ -559,7 +571,7 @@ export const Playground: FC<PlaygroundProps> = ({
               </div>
             </div>
             {/* Bottom padding is here, to prevent clipping items when then are animated up */}
-            <div className="hidden-scrollbar mt-3 flex w-full flex-row items-center gap-2 overflow-x-auto overflow-y-visible px-8 pb-8">
+            <div className="hidden-scrollbar mt-1 flex w-full flex-row items-center gap-2 overflow-x-auto overflow-y-visible px-8 pt-2 pb-8">
               {(references || []).map((r, i) => {
                 const refInfo = getReferenceInfo(r);
                 if (!refInfo) {
@@ -569,9 +581,12 @@ export const Playground: FC<PlaygroundProps> = ({
                 return (
                   <a
                     key={`reference-${r}`}
-                    className={
-                      'animate-slide-up block max-w-[33%] truncate whitespace-nowrap rounded-md border px-2 py-1 text-sm font-medium transition'
-                    }
+                    className={cn(
+                      'button-ring animate-slide-up block max-w-[33%] truncate whitespace-nowrap rounded-md border px-2 py-1 text-sm font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/50',
+                      {
+                        'button-ring-light': !isDark,
+                      },
+                    )}
                     href={refInfo.href}
                     style={{
                       borderColor: colors?.border,
@@ -599,7 +614,9 @@ export const Playground: FC<PlaygroundProps> = ({
         >
           Powered by{' '}
           <a
-            className="button-ring button-ring-light rounded"
+            className={cn('button-ring rounded', {
+              'button-ring-light': !isDark,
+            })}
             href="https://markprompt.com"
             target="_blank"
             rel="noreferrer"

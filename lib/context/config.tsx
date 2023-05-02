@@ -99,12 +99,12 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
 
   const [referencesHeading, setReferencesHeading] = useLocalStorage<string>(
     `${project?.id ?? 'undefined'}:config:references-heading`,
-    'Summary generated from the following sources:',
+    'Answer generated from the following pages:',
   );
 
   const [loadingHeading, setLoadingHeading] = useLocalStorage<string>(
     `${project?.id ?? 'undefined'}:config:loading-heading`,
-    'Gathering sources...',
+    'Fetching relevant pages...',
   );
 
   const [includeBranding, setIncludeBranding] = useLocalStorage<boolean>(
