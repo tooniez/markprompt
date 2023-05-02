@@ -239,7 +239,7 @@ export default async function handler(req: NextRequest) {
     // so we just convert to any.
     embedding: promptEmbedding as any,
     match_threshold: 0.4,
-    match_count: 20,
+    match_count: 50,
     min_content_length: 30,
   });
 
