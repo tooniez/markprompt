@@ -238,8 +238,8 @@ export default async function handler(req: NextRequest) {
     // entry (which is a vector type in the function definition),
     // so we just convert to any.
     embedding: promptEmbedding as any,
-    match_threshold: 0.4,
-    match_count: 50,
+    match_threshold: params.sectionsMatchThreshold || 0.5,
+    match_count: params.sectionsMatchCount || 10,
     min_content_length: 30,
   });
 
