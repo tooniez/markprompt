@@ -9,8 +9,8 @@ import useTeam from '@/lib/hooks/use-team';
 import { canConfigureModel } from '@/lib/stripe/tiers';
 
 import { ModelPicker } from './ModelPicker';
+import { Row } from './PlaygroundDashboard';
 import { UpgradeNote } from './UpgradeNote';
-import { Row } from '../onboarding/Onboarding';
 import { AccordionContent, AccordionTrigger } from '../ui/Accordion';
 import Button from '../ui/Button';
 import { SliderInput } from '../ui/SliderInput';

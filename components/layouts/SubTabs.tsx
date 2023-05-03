@@ -14,8 +14,8 @@ const SubTabs: FC<SubTabsProps> = ({ items }) => {
   const { asPath } = useRouter();
 
   return (
-    <NavigationMenu.Root>
-      <NavigationMenu.List className="flex flex-row items-center gap-2 border-b border-neutral-900 px-2 py-1">
+    <NavigationMenu.Root className="h-full">
+      <NavigationMenu.List className="flex h-[var(--app-tabbar-height)] flex-row items-center gap-2 border-b border-neutral-900 px-2 py-1">
         {items.map((item, i) => (
           <NavigationMenu.Item key={`tab-item-${i}`}>
             <NavigationMenu.Link

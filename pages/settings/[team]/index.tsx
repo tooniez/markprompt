@@ -217,7 +217,7 @@ const TeamSettingsPage = () => {
                     Subscribe to product updates
                   </label>
                   <Switch.Root
-                    className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600"
+                    className="switch-root"
                     id="product-updates"
                     checked={!!user.subscribe_to_product_updates}
                     onCheckedChange={async (checked: boolean) => {
@@ -227,7 +227,7 @@ const TeamSettingsPage = () => {
                       await mutateUser();
                     }}
                   >
-                    <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
+                    <Switch.Thumb className="switch-thumb" />
                   </Switch.Root>
                 </div>
               </form>

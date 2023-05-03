@@ -8,6 +8,7 @@ import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayou
 import useProject from '@/lib/hooks/use-project';
 import { useLocalStorage } from '@/lib/hooks/utils/use-localstorage';
 import { OpenAIModelId, SUPPORTED_MODELS } from '@/types/types';
+import PlaygroundDashboard from '@/components/files/PlaygroundDashboard';
 
 type SelectItemProps = {
   className?: string;
@@ -45,7 +46,10 @@ const PlaygroundPage = () => {
 
   return (
     <ProjectSettingsLayout title="Playground" noHeading>
-      <div className="panel-glow-color relative mx-auto h-[calc(100vh-240px)] max-w-screen-md rounded-lg border border-neutral-900 bg-neutral-1000 px-8 py-6">
+      <div className="fixed top-[calc(var(--app-navbar-height)+var(--app-tabbar-height))] bottom-0 left-0 right-0">
+        <PlaygroundDashboard />
+      </div>
+      {/* <div className="panel-glow-color relative mx-auto h-[calc(100vh-240px)] max-w-screen-md rounded-lg border border-neutral-900 bg-neutral-1000 px-8 py-6">
         {project && (
           <Playground projectKey={project.private_dev_api_key} model={model} />
         )}
@@ -100,7 +104,7 @@ const PlaygroundPage = () => {
             </Select.Portal>
           </Select.Root>
         </div>
-      </div>
+      </div> */}
     </ProjectSettingsLayout>
   );
 };

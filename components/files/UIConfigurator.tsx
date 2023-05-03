@@ -8,8 +8,8 @@ import useTeam from '@/lib/hooks/use-team';
 import { canRemoveBranding } from '@/lib/stripe/tiers';
 import { Theme, ThemeColorKeys, ThemeColors } from '@/lib/themes';
 
+import { Row } from './PlaygroundDashboard';
 import { ThemePicker } from './ThemePicker';
-import { Row } from '../onboarding/Onboarding';
 import { UpgradeCTA } from '../team/PlanPicker';
 import { AccordionContent, AccordionTrigger } from '../ui/Accordion';
 import { ButtonOrLinkWrapper } from '../ui/Button';
@@ -77,28 +77,24 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
           }}
         />
       </Row>
-      <Row
-        label={
-          <>
-            Include branding{' '}
-            {!_canRemoveBranding && (
-              <UpgradeCTA showDialog>
-                <ButtonOrLinkWrapper className="ml-1 rounded-full">
-                  <Tag color="fuchsia">Pro</Tag>
-                </ButtonOrLinkWrapper>
-              </UpgradeCTA>
-            )}
-          </>
-        }
-      >
-        <Switch.Root
-          className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 disabled:cursor-not-allowed data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600 disabled:data-[state='checked']:opacity-40"
-          checked={includeBranding || !_canRemoveBranding}
-          disabled={!_canRemoveBranding}
-          onCheckedChange={(b: boolean) => setIncludeBranding(b)}
-        >
-          <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
-        </Switch.Root>
+      <Row label="Include branding">
+        <div className="flex flex-row items-center justify-end gap-2">
+          {!_canRemoveBranding && (
+            <UpgradeCTA showDialog>
+              <ButtonOrLinkWrapper className="mr-1 flex flex-none items-center rounded-full">
+                <Tag color="fuchsia">Enterprise</Tag>
+              </ButtonOrLinkWrapper>
+            </UpgradeCTA>
+          )}
+          <Switch.Root
+            className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 disabled:cursor-not-allowed data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600 disabled:data-[state='checked']:opacity-40"
+            checked={includeBranding || !_canRemoveBranding}
+            disabled={!_canRemoveBranding}
+            onCheckedChange={(b: boolean) => setIncludeBranding(b)}
+          >
+            <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
+          </Switch.Root>
+        </div>
       </Row>
       <Accordion.Root className="mt-2 w-full" type="single" collapsible>
         <Accordion.Item value="options">

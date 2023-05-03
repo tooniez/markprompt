@@ -39,7 +39,7 @@ export const NavSubtabsLayout: FC<NavSubtabsLayoutProps> = ({
       <NavLayout>
         {!!user?.has_completed_onboarding && !loadingUser && (
           <>
-            <div className="fixed inset-x-0 z-10 bg-neutral-1100 pt-14">
+            <div className="fixed inset-x-0 top-[var(--app-navbar-height)] z-10 h-[var(--app-tabbar-height)] bg-neutral-1100">
               {subTabItems && <SubTabs items={subTabItems} />}
             </div>
             <div

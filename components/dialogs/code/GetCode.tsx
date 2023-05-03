@@ -1,11 +1,34 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import * as Switch from '@radix-ui/react-switch';
 import * as Tabs from '@radix-ui/react-tabs';
+import Link from 'next/link';
 import { ReactNode, useState } from 'react';
 
 import { CodePanel } from '@/components/ui/Code';
+import { Note } from '@/components/ui/Note';
 import { useConfigContext } from '@/lib/context/config';
 import useProject from '@/lib/hooks/use-project';
+import useTeam from '@/lib/hooks/use-team';
 import { Theme, ThemeColorKeys } from '@/lib/themes';
+import Button from '@/components/ui/Button';
+import { Book } from 'lucide-react';
+
+export const KeyNote = ({
+  className,
+}: {
+  className?: string;
+  projectKey?: string;
+  textKey?: string;
+}) => {
+  return (
+    <Note className={className} size="sm" type="warning">
+      The code is diplayed with your project key, and needs to be run from a
+      whitelisted domain. If you wish to test your code on a non-whitelisted
+      domain, such as localhost, use the test key instead. Do not share the test
+      key publicly.
+    </Note>
+  );
+};
 
 const vanillaJSCode = (projectKey: string) => {
   return `<script src='https://cdn.markprompt.com/script.js' data-project-key='${projectKey}' defer></script>`.trim();
@@ -200,14 +223,44 @@ ${darkKeys
 }`.trim();
 };
 
+const getDescription = (
+  teamSlug: string,
+  projectSlug: string,
+  isTestMode: boolean,
+) => {
+  if (isTestMode) {
+    return 'Showing code with the test key, which can be used for non-public sites, e.g. on localhost. Do not share code with a test key publicly.';
+  } else {
+    return (
+      <>
+        Showing code with the production key. Use from a whitelisted domain. You
+        can add whitelisted domains in the{' '}
+        <Link
+          className="subtle-underline"
+          href={`/${teamSlug}/${projectSlug}/settings`}
+        >
+          project settings
+        </Link>
+        .
+      </>
+    );
+  }
+};
+
 const GetCode = ({ children }: { children: ReactNode }) => {
+  const { team } = useTeam();
   const { project } = useProject();
   const { theme, placeholder } = useConfigContext();
+  const [testMode, setTestMode] = useState(false);
   const [codeDialogOpen, setCodeDialogOpen] = useState(false);
 
-  if (!project) {
+  if (!team || !project) {
     return <></>;
   }
+
+  const apiKey = testMode
+    ? project.private_dev_api_key
+    : project.public_api_key;
 
   return (
     <Dialog.Root open={codeDialogOpen} onOpenChange={setCodeDialogOpen}>
@@ -215,12 +268,32 @@ const GetCode = ({ children }: { children: ReactNode }) => {
       <Dialog.Portal>
         <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
         <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[800px] w-[90%] max-w-[700px] flex-col">
-          <Dialog.Title className="dialog-title-xl flex-none">
-            Copy code
+          <Dialog.Title className="dialog-title-xl flex flex-none flex-row items-center gap-2">
+            <div className="flex-grow truncate">Copy code</div>
+            <Button variant="ghost" buttonSize="sm">
+              Docs
+            </Button>
+            <div className="flex flex-none flex-row items-center gap-2">
+              <label
+                className="flex-grow truncate text-sm font-normal text-neutral-500"
+                htmlFor="product-updates"
+              >
+                Test mode
+              </label>
+              <Switch.Root
+                className="switch-root"
+                id="test-mode"
+                checked={testMode}
+                onCheckedChange={setTestMode}
+              >
+                <Switch.Thumb className="switch-thumb" />
+              </Switch.Root>
+            </div>
           </Dialog.Title>
-          <Dialog.Description className="dialog-description-xl flex-none border-b border-neutral-900 pb-4">
-            Copy the code below and add it to your website or JavaScript
-            application.
+          <Dialog.Description className="dialog-description-xl mt-2 flex-none border-b border-neutral-900 pb-4">
+            <Note type="warning" size="sm">
+              {getDescription(team.slug, project.slug, testMode)}
+            </Note>
           </Dialog.Description>
           <div className="flex h-full w-full flex-grow p-6">
             <Tabs.Root className="tabs-root" defaultValue="vanilla">
@@ -236,24 +309,37 @@ const GetCode = ({ children }: { children: ReactNode }) => {
                 </Tabs.Trigger>
               </Tabs.List>
               <Tabs.Content
-                className="tabs-content relative w-full max-w-full flex-grow overflow-y-auto"
+                className="tabs-content relative w-full max-w-full flex-grow"
                 value="vanilla"
               >
-                <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 h-full w-full max-w-full overflow-y-auto">
+                <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 w-full max-w-full overflow-y-auto py-4">
                   <h3>Usage</h3>
                   <p>Add the following script tag to your HTML page:</p>
                   <CodePanel
-                    className="w-full"
+                    className="mb-4"
                     language="markup"
-                    code={vanillaJSCode(project.public_api_key)}
+                    code={vanillaJSCode(apiKey)}
                   />
                 </div>
               </Tabs.Content>
               <Tabs.Content
-                className="tabs-content relative w-full max-w-full flex-grow overflow-y-auto"
+                className="tabs-content relative w-full max-w-full flex-grow"
                 value="react"
               >
-                <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 h-full w-full max-w-full overflow-y-auto">
+                <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 w-full max-w-full overflow-y-auto py-4">
+                  <Note size="sm" type="info" className="mb-4">
+                    Check out the starter template for a fully working example
+                    in Next.js:{' '}
+                    <a
+                      href="https://github.com/motifland/markprompt-starter-template"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="subtle-underline"
+                    >
+                      Markprompt starter template
+                    </a>
+                    .
+                  </Note>
                   <h3>Installation</h3>
                   <CodePanel
                     className="w-full"
@@ -262,9 +348,8 @@ const GetCode = ({ children }: { children: ReactNode }) => {
                   />
                   <h3>Usage</h3>
                   <CodePanel
-                    className="w-full"
                     language="jsx"
-                    code={reactCode(project.public_api_key, placeholder)}
+                    code={reactCode(apiKey, placeholder)}
                     noPreWrap
                   />
                   <h3>Stylesheet</h3>
@@ -277,10 +362,10 @@ const GetCode = ({ children }: { children: ReactNode }) => {
                 </div>
               </Tabs.Content>
               <Tabs.Content
-                className="tabs-content relative w-full max-w-full flex-grow overflow-y-auto"
+                className="tabs-content relative w-full max-w-full flex-grow"
                 value="webcomponent"
               >
-                <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 h-full w-full max-w-full overflow-y-auto">
+                <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 w-full max-w-full overflow-y-auto py-4">
                   <h3>Usage</h3>
                   <p>Add the following script tag to your HTML page:</p>
                   <CodePanel
@@ -295,7 +380,7 @@ const GetCode = ({ children }: { children: ReactNode }) => {
                   <CodePanel
                     className="w-full"
                     language="markup"
-                    code={webComponentCode(project.public_api_key)}
+                    code={webComponentCode(apiKey)}
                   />
                   <h3>Stylesheet</h3>
                   <CodePanel
