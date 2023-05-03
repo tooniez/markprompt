@@ -59,7 +59,6 @@ const ProjectSettingsPage = () => {
   const { project, mutate: mutateProject } = useProject();
   const { domains, mutate: mutateDomains } = useDomains();
   const { tokens, mutate: mutateTokens } = useTokens();
-  const { githubAccessToken } = useOAuth();
   const [loading, setLoading] = useState(false);
   const [isRefreshingDevProjectKey, setIsRefreshingDevProjectKey] =
     useState(false);

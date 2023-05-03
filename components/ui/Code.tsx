@@ -9,14 +9,25 @@ type CodeProps = {
   code: string;
   language: Language;
   className?: string;
+  noPreWrap?: boolean;
 };
 
-export const Code: FC<CodeProps> = ({ code, language, className }) => {
+export const Code: FC<CodeProps> = ({
+  code,
+  language,
+  noPreWrap,
+  className,
+}) => {
   return (
     <div className={className}>
       <Highlight {...defaultProps} code={code} language={language}>
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <pre className={`${className} whitespace-pre-wrap`} style={style}>
+          //  style={style}
+          <pre
+            className={`${className} ${
+              !noPreWrap ? 'whitespace-pre-wrap' : ''
+            }`}
+          >
             {tokens.map((line, i) => (
               <div key={`code-line-${i}`} {...getLineProps({ line, key: i })}>
                 {line.map((token, key) => (
@@ -34,11 +45,21 @@ export const Code: FC<CodeProps> = ({ code, language, className }) => {
   );
 };
 
-export const CodePanel: FC<CodeProps> = ({ code, language, className }) => {
+export const CodePanel: FC<CodeProps> = ({
+  code,
+  language,
+  noPreWrap,
+  className,
+}) => {
   return (
-    <div className="not-prose relative my-6 w-full rounded-lg border border-neutral-900 bg-neutral-1000 p-4 text-sm">
+    <div className="not-prose relative w-full rounded-lg border border-neutral-900 bg-neutral-1000 p-4 text-sm">
       <div className="overflow-x-auto">
-        <Code language={language} code={code} className={className} />
+        <Code
+          language={language}
+          code={code}
+          className={className}
+          noPreWrap={noPreWrap}
+        />
       </div>
       <div
         className="absolute right-[12px] top-[12px] cursor-pointer rounded bg-neutral-1000/80 p-2 backdrop-blur transition dark:hover:bg-neutral-900"

@@ -163,7 +163,9 @@ const ComponentPage = () => {
           </a>
           , paste the following in an MDX, JSX or TSX file:
         </p>
-        <CodePanel code={motifCode} language="jsx" />
+        <div className="my-6">
+          <CodePanel code={motifCode} language="jsx" />
+        </div>
         <p>
           replacing{' '}
           <code className="text-sm font-normal text-lime-400">
@@ -174,12 +176,16 @@ const ComponentPage = () => {
         </p>
         <h3>Node</h3> */}
         <p>Install Markprompt via NPM (Yarn and PNPM also work):</p>
-        <CodePanel code={npmCode} language="bash" />
+        <div className="my-6">
+          <CodePanel code={npmCode} language="bash" />
+        </div>
         <p>
           In your React application, paste the following in an MDX, JSX or TSX
           file:
         </p>
-        <CodePanel code={jsxCode} language="jsx" />
+        <div className="my-6">
+          <CodePanel code={jsxCode} language="jsx" />
+        </div>
         <p>
           replacing{' '}
           <code className="text-sm font-normal text-lime-400">
@@ -299,7 +305,9 @@ const ComponentPage = () => {
           </tbody>
         </table>
         <p>Example:</p>
-        <CodePanel code={propsExample} language="jsx" />
+        <div className="my-6">
+          <CodePanel code={propsExample} language="jsx" />
+        </div>
         <h2>API access</h2>
         <p>
           If you want to build your own custom component, or use completions in

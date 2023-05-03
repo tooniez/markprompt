@@ -38,6 +38,7 @@ import {
 } from '@/lib/utils';
 import { SourceType } from '@/types/types';
 
+import GetCode from '../dialogs/code/GetCode';
 import FilesAddSourceDialog from '../dialogs/sources/Files';
 import MotifAddSourceDialog from '../dialogs/sources/Motif';
 import WebsiteAddSourceDialog from '../dialogs/sources/Website';
@@ -45,7 +46,6 @@ import { ModelConfigurator } from '../files/ModelConfigurator';
 import { Playground } from '../files/Playground';
 import { UIConfigurator } from '../files/UIConfigurator';
 import { GitHubIcon } from '../icons/GitHub';
-import { MarkpromptIcon } from '../icons/Markprompt';
 import { MotifIcon } from '../icons/Motif';
 import { SpinnerIcon } from '../icons/Spinner';
 import Button from '../ui/Button';
@@ -355,14 +355,16 @@ const Onboarding = () => {
                       >
                         Share
                       </Button>
-                      <Button
-                        disabled={!isTrained}
-                        buttonSize="sm"
-                        variant={isDark ? 'plain' : 'borderedWhite'}
-                        Icon={Code}
-                      >
-                        Get code
-                      </Button>
+                      <GetCode>
+                        <Button
+                          disabled={!isTrained}
+                          buttonSize="sm"
+                          variant={isDark ? 'plain' : 'borderedWhite'}
+                          Icon={Code}
+                        >
+                          Get code
+                        </Button>
+                      </GetCode>
                     </div>
                     <div className="absolute inset-x-0 top-[var(--onboarding-footer-height)] bottom-0 flex flex-col gap-4 px-16 py-8">
                       <Playground
