@@ -137,8 +137,12 @@ export default async function handler(
       'main',
       accessToken?.access_token || undefined,
     );
+  } catch (e) {
+    console.error('Error fetching main branch:', e);
+  }
 
-    if (githubRes.status !== 200) {
+  if (githubRes?.status !== 200) {
+    try {
       // If main branch doesn't exist, fallback to master
       githubRes = await fetchRepo(
         req.body.owner,
@@ -146,9 +150,9 @@ export default async function handler(
         'master',
         accessToken?.access_token || undefined,
       );
+    } catch (e) {
+      console.error('Error fetching master branch:', e);
     }
-  } catch {
-    // Handle below
   }
 
   if (githubRes?.status !== 200) {

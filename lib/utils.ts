@@ -206,8 +206,12 @@ export const decompress = (compressedString: Buffer): string => {
   return pako.inflate(compressedString, { to: 'string' });
 };
 
+export const getFileExtension = (pathOrName: string): string | undefined => {
+  return pathOrName.match(/\.(\w*)$/)?.[1];
+};
+
 export const getFileType = (name: string): FileType => {
-  const extension = name.match(/\.(\w*)$/)?.[1];
+  const extension = getFileExtension(name);
   switch (extension) {
     case 'mdoc':
       return 'mdoc';
@@ -220,6 +224,13 @@ export const getFileType = (name: string): FileType => {
     default:
       return 'txt';
   }
+};
+
+const SUPPORTED_EXTENSIONS = ['md', 'mdx', 'mdoc', 'txt', 'html', 'htm'];
+
+export const isSupportedFileType = (pathOrName: string): boolean => {
+  const extension = getFileExtension(pathOrName);
+  return !!(extension && SUPPORTED_EXTENSIONS.includes(extension));
 };
 
 export const pluralize = (value: number, singular: string, plural: string) => {
@@ -421,7 +432,11 @@ export const shouldIncludeFileWithPath = (
   includeGlobs: string[],
   excludeGlobs: string[],
 ) => {
-  if (path.startsWith('.') || path.includes('/.')) {
+  if (
+    path.startsWith('.') ||
+    path.includes('/.') ||
+    !isSupportedFileType(path)
+  ) {
     // Exclude unsupported files and dotfiles
     return false;
   }
@@ -429,6 +444,7 @@ export const shouldIncludeFileWithPath = (
   if (matchesGlobs(path, includeGlobs)) {
     return !matchesGlobs(path, excludeGlobs);
   }
+
   return false;
 };
 
