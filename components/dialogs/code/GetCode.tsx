@@ -4,14 +4,13 @@ import * as Tabs from '@radix-ui/react-tabs';
 import Link from 'next/link';
 import { ReactNode, useState } from 'react';
 
+import Button from '@/components/ui/Button';
 import { CodePanel } from '@/components/ui/Code';
 import { Note } from '@/components/ui/Note';
 import { useConfigContext } from '@/lib/context/config';
 import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
 import { Theme, ThemeColorKeys } from '@/lib/themes';
-import Button from '@/components/ui/Button';
-import { Book } from 'lucide-react';
 
 export const KeyNote = ({
   className,

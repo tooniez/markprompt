@@ -360,7 +360,7 @@ export const Playground: FC<PlaygroundProps> = ({
         </div>
         <button
           className={cn(
-            '-mr-1 flex-none rounded p-1 transition hover:opacity-60',
+            'button-ring -mr-1 flex-none rounded p-1 transition hover:opacity-60',
             {
               'button-ring-light': !isDark,
             },
@@ -408,6 +408,14 @@ export const Playground: FC<PlaygroundProps> = ({
               span: (props) => (
                 <WithCaret
                   Component="span"
+                  style={{ color: colors?.foreground }}
+                  caretColor={colors?.primary}
+                  {...props}
+                />
+              ),
+              strong: (props) => (
+                <WithCaret
+                  Component="string"
                   style={{ color: colors?.foreground }}
                   caretColor={colors?.primary}
                   {...props}
