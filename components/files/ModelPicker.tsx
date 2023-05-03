@@ -33,7 +33,7 @@ export const ModelPicker: FC<ModelPickerProps> = () => {
         </Select.Icon>
       </Select.Trigger>
       <Select.Portal>
-        <Select.Content className="overflow-hidden rounded-md border border-neutral-800 bg-neutral-900">
+        <Select.Content className="z-30 overflow-hidden rounded-md border border-neutral-800 bg-neutral-900">
           <Select.ScrollUpButton className="flex h-10 items-center justify-center">
             <ChevronUp className="h-4 w-4" />
           </Select.ScrollUpButton>

@@ -43,7 +43,7 @@ export const defaultTheme: Theme = {
       mutedForeground: '#737373',
       border: '#E5E5E5',
       input: '#FFFFFF',
-      primary: '#6366f1',
+      primary: '#0ea5e9',
       primaryForeground: '#FFFFFF',
       secondary: '#FAFAFA',
       secondaryForeground: '#171717',
@@ -58,7 +58,7 @@ export const defaultTheme: Theme = {
       mutedForeground: '#737373',
       border: '#262626',
       input: '#FFFFFF',
-      primary: '#6366f1',
+      primary: '#0ea5e9',
       primaryForeground: '#FFFFFF',
       secondary: '#0E0E0E',
       secondaryForeground: '#FFFFFF',
@@ -72,43 +72,72 @@ export const defaultTheme: Theme = {
   },
 };
 
+const indigoTheme: Theme = {
+  name: 'Indigo',
+  size: 'sm',
+  colors: {
+    light: {
+      ...defaultTheme.colors.light,
+      primary: '#6366f1',
+      primaryHighlight: '#EC4899',
+      secondaryHighlight: '#A855F7',
+    },
+    dark: {
+      ...defaultTheme.colors.dark,
+      primary: '#6366f1',
+      primaryHighlight: '#EC4899',
+      secondaryHighlight: '#A855F7',
+    },
+  },
+  dimensions: {
+    radius: 8,
+  },
+};
+
 const tealTheme: Theme = {
   name: 'Teal',
   size: 'sm',
   colors: {
     light: {
-      background: '#FFFFFF',
-      foreground: '#FFFFFF',
-      muted: '#FFFFFF',
-      mutedForeground: '#FFFFFF',
-      border: '#FFFFFF',
-      input: '#FFFFFF',
-      primary: '#FFFFFF',
-      primaryForeground: '#FFFFFF',
-      secondary: '#FFFFFF',
-      secondaryForeground: '#FFFFFF',
-      primaryHighlight: '#EC4899',
-      secondaryHighlight: '#A855F7',
-      ring: '#FFFFFF',
+      ...defaultTheme.colors.light,
+      primary: '#14b8a6',
+      primaryHighlight: '#a3e635',
+      secondaryHighlight: '#22d3ee',
     },
     dark: {
-      background: '#FFFFFF',
-      foreground: '#FFFFFF',
-      muted: '#FFFFFF',
-      mutedForeground: '#FFFFFF',
-      border: '#FFFFFF',
-      input: '#FFFFFF',
-      primary: '#FFFFFF',
-      primaryForeground: '#FFFFFF',
-      secondary: '#FFFFFF',
-      secondaryForeground: '#FFFFFF',
-      primaryHighlight: '#EC4899',
-      secondaryHighlight: '#A855F7',
-      ring: '#FFFFFF',
+      ...defaultTheme.colors.dark,
+      primary: '#14b8a6',
+      primaryHighlight: '#a3e635',
+      secondaryHighlight: '#22d3ee',
     },
   },
   dimensions: {
     radius: 8,
+  },
+};
+
+const monoTheme: Theme = {
+  name: 'Mono',
+  size: 'sm',
+  colors: {
+    light: {
+      ...defaultTheme.colors.light,
+      primary: '#000000',
+      primaryHighlight: '#D4D4D4',
+      secondaryHighlight: '#525252',
+      border: '#000000',
+    },
+    dark: {
+      ...defaultTheme.colors.dark,
+      primary: '#FFFFFF',
+      primaryForeground: '#000000',
+      primaryHighlight: '#D4D4D4',
+      secondaryHighlight: '#525252',
+      border: '#FFFFFF',
+    },
+  },
+  dimensions: {
+    radius: 0,
   },
 };
 
@@ -160,4 +189,4 @@ export const findMatchingTheme = (themeValues: Omit<Theme, 'name'>) => {
   });
 };
 
-export const defaultThemes = [defaultTheme, tealTheme];
+export const defaultThemes = [defaultTheme, indigoTheme, tealTheme, monoTheme];

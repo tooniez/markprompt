@@ -376,7 +376,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                   >
                     Share
                   </Button>
-                  <GetCode>
+                  <GetCode isOnboarding={!isOnboarding}>
                     <Button
                       disabled={!isTrained}
                       buttonSize="sm"

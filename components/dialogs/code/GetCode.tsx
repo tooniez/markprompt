@@ -226,7 +226,7 @@ const getDescription = (
   teamSlug: string,
   projectSlug: string,
   isTestMode: boolean,
-  isOnboarded: boolean,
+  isOnboarding: boolean,
 ) => {
   if (isTestMode) {
     return 'Showing code with the test key, which can be used for non-public sites, for instance on localhost. Do not share code with a test key publicly. For public sites, use a production key from a whitelisted domain.';
@@ -236,7 +236,7 @@ const getDescription = (
         Showing code with the production key. Production keys can only be used
         when called from a whitelisted domain. You can add whitelisted domains
         in the{' '}
-        {isOnboarded ? (
+        {!isOnboarding ? (
           <Link
             className="subtle-underline"
             href={`/${teamSlug}/${projectSlug}/settings`}
@@ -252,7 +252,13 @@ const getDescription = (
   }
 };
 
-const GetCode = ({ children }: { children: ReactNode }) => {
+const GetCode = ({
+  isOnboarding,
+  children,
+}: {
+  isOnboarding: boolean;
+  children: ReactNode;
+}) => {
   const { team } = useTeam();
   const { project } = useProject();
   const { theme, placeholder } = useConfigContext();
@@ -297,7 +303,7 @@ const GetCode = ({ children }: { children: ReactNode }) => {
           </Dialog.Title>
           <Dialog.Description className="dialog-description-xl mt-2 flex-none border-b border-neutral-900 pb-4">
             <Note type="warning" size="sm">
-              {getDescription(team.slug, project.slug, testMode)}
+              {getDescription(team.slug, project.slug, testMode, isOnboarding)}
             </Note>
           </Dialog.Description>
           <div className="flex h-full w-full flex-grow p-6">
