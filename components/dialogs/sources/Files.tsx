@@ -21,7 +21,7 @@ const FilesAddSourceDialog = ({
         <Dialog.Content className="animate-dialog-slide-in dialog-content h-[90%] max-h-[400px] w-[90%] max-w-[600px]">
           <FileDnd
             onTrainingComplete={() => {
-              toast.success('Processing complete');
+              toast.success('Processing complete.');
               setTimeout(async () => {
                 setFileDialogOpen(false);
                 onDidAddSource?.();

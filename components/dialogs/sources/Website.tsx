@@ -50,14 +50,14 @@ const _addSource = async (
 
 type WebsiteSourceProps = {
   clearPrevious?: boolean;
-  onDidAddSource: () => void;
   openPricingAsDialog?: boolean;
+  onDidAddSource: () => void;
 };
 
 const WebsiteSource: FC<WebsiteSourceProps> = ({
   clearPrevious,
-  onDidAddSource,
   openPricingAsDialog,
+  onDidAddSource,
 }) => {
   const { team } = useTeam();
   const { project } = useProject();
@@ -211,7 +211,7 @@ const WebsiteAddSourceDialog = ({
           </div>
           <div className="flex-grow">
             <WebsiteSource
-              openPricingAsDialog
+              openPricingAsDialog={openPricingAsDialog}
               onDidAddSource={() => {
                 setWebsiteDialogOpen(false);
                 onDidAddSource?.();

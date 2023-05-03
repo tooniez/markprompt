@@ -3,6 +3,7 @@ import cn from 'classnames';
 import Link from 'next/link';
 import { FC } from 'react';
 
+import useFiles from '@/lib/hooks/use-files';
 import useOnboarding from '@/lib/hooks/use-onboarding';
 import useUser from '@/lib/hooks/use-user';
 
@@ -18,6 +19,7 @@ type AppNavbarProps = {
 
 export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
   const { user, loading: loadingUser } = useUser();
+  const { files } = useFiles();
   const { finishOnboarding } = useOnboarding();
 
   return (
@@ -44,20 +46,22 @@ export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
           <NavigationMenu.List className="flex flex-row items-center gap-2 px-2 py-1">
             {!loadingUser && !user?.has_completed_onboarding && (
               <>
-                <NavigationMenu.Item>
-                  <NavigationMenu.Link asChild>
-                    <Button
-                      className="mr-4"
-                      variant="plain"
-                      buttonSize="sm"
-                      onClick={() => {
-                        finishOnboarding();
-                      }}
-                    >
-                      Skip onboarding →
-                    </Button>
-                  </NavigationMenu.Link>
-                </NavigationMenu.Item>
+                {(!files || files.length === 0) && (
+                  <NavigationMenu.Item>
+                    <NavigationMenu.Link asChild>
+                      <Button
+                        className="mr-4"
+                        variant="plain"
+                        buttonSize="sm"
+                        onClick={() => {
+                          finishOnboarding();
+                        }}
+                      >
+                        Skip onboarding →
+                      </Button>
+                    </NavigationMenu.Link>
+                  </NavigationMenu.Item>
+                )}
                 <ChatWindow
                   closeOnClickOutside
                   Component={

@@ -15,21 +15,25 @@ export type ButtonVariant =
   | 'borderedWhite'
   | 'borderedFuchsia';
 
-export const ButtonOrLinkWrapper: FC<ButtonProps> = ({
-  href,
-  className,
-  children,
-  Component = 'button',
-  ...props
-}) => {
-  const Comp: any = href ? 'a' : Component;
+export const ButtonOrLinkWrapper = forwardRef(
+  (
+    { href, className, children, Component = 'button', ...props }: ButtonProps,
+    forwardedRef,
+  ) => {
+    const Comp: any = href ? 'a' : Component;
 
-  return (
-    <Comp className={className} {...props} {...(href ? { href } : {})}>
-      {children}
-    </Comp>
-  );
-};
+    return (
+      <Comp
+        ref={forwardedRef}
+        className={className}
+        {...props}
+        {...(href ? { href } : {})}
+      >
+        {children}
+      </Comp>
+    );
+  },
+);
 
 ButtonOrLinkWrapper.displayName = 'ButtonOrLinkWrapper';
 

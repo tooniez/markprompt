@@ -24,6 +24,7 @@ import { isPresent } from 'ts-is-present';
 
 import ConfirmDialog from '@/components/dialogs/Confirm';
 import { FileDnd } from '@/components/files/FileDnd';
+import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import * as GitHub from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
@@ -31,11 +32,7 @@ import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayou
 import Button from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { deleteFiles, deleteSource } from '@/lib/api';
-import {
-  TrainingState,
-  getTrainingStateMessage,
-  useTrainingContext,
-} from '@/lib/context/training';
+import { useTrainingContext } from '@/lib/context/training';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
@@ -48,9 +45,8 @@ import {
   getUrlPath,
   isUrl,
   pluralize,
-  truncate,
 } from '@/lib/utils';
-import { Project, Source, SourceType } from '@/types/types';
+import { Project, Source } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
@@ -97,67 +93,6 @@ const getBasePath = (pathWithFile: string) => {
   } else {
     return parts.slice(0, -1).join('/').replace(/^\//, '');
   }
-};
-
-const getStatusMessage = (
-  trainingState: TrainingState,
-  isDeleting: boolean,
-  numSelected: number,
-  numFiles: number,
-) => {
-  if (trainingState.state === 'idle' && !isDeleting) {
-    if (numSelected > 0) {
-      return `${pluralize(numSelected, 'file', 'files')} selected`;
-    } else {
-      return `${pluralize(numFiles, 'file', 'files')} trained`;
-    }
-  }
-
-  if (trainingState.state === 'loading') {
-    return getTrainingStateMessage(trainingState, numFiles);
-  } else if (isDeleting) {
-    return `Deleting ${pluralize(numSelected, 'file', 'files')}`;
-  }
-};
-
-type StatusMessageProps = {
-  trainingState: TrainingState;
-  isDeleting: boolean;
-  numFiles: number;
-  numSelected: number;
-  playgroundPath: string;
-};
-
-const StatusMessage: FC<StatusMessageProps> = ({
-  trainingState,
-  isDeleting,
-  numFiles,
-  numSelected,
-  playgroundPath,
-}) => {
-  return (
-    <div
-      className={cn('flex flex-row items-center whitespace-nowrap text-xs', {
-        'text-neutral-500': trainingState.state !== 'loading',
-        'text-fuchsia-600': trainingState.state === 'loading',
-      })}
-    >
-      <p className={cn({ 'animate-pulse': trainingState.state === 'loading' })}>
-        {truncate(
-          getStatusMessage(trainingState, isDeleting, numSelected, numFiles) ||
-            '',
-          80,
-        )}
-      </p>
-      {trainingState.state === 'idle' && numSelected === 0 && numFiles > 0 && (
-        <Link href={playgroundPath}>
-          <span className="subtle-underline ml-3 whitespace-nowrap transition hover:text-neutral-300">
-            Query in playground
-          </span>
-        </Link>
-      )}
-    </div>
-  );
 };
 
 type SourceItemProps = {
@@ -422,7 +357,7 @@ const Data = () => {
           />
           {trainingState.state !== 'idle' && (
             <p
-              className={cn('text-xs text-neutral-500', {
+              className={cn('whitespace-nowrap text-xs text-neutral-500', {
                 'subtle-underline cursor-pointer':
                   trainingState.state !== 'cancel_requested',
               })}
@@ -493,7 +428,7 @@ const Data = () => {
                     },
                   );
                   await mutateFiles();
-                  toast.success('Processing complete');
+                  toast.success('Processing complete.');
                 }}
               >
                 Train
@@ -568,7 +503,7 @@ const Data = () => {
           <div className="h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100 sm:col-span-3">
             <FileDnd
               onTrainingComplete={() => {
-                toast.success('Processing complete');
+                toast.success('Processing complete.');
               }}
             />
           </div>

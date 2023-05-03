@@ -111,5 +111,5 @@ export const ChatOutsideOnboarding = () => {
     return <></>;
   }
 
-  return <ChatWindow />;
+  return <ChatWindow closeOnClickOutside />;
 };

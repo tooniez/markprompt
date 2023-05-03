@@ -124,7 +124,7 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 variant="plain"
                 onClick={() => {
                   resetModelConfigDefaults();
-                  toast.success('Model defaults restored');
+                  toast.success('Model defaults restored.');
                 }}
               >
                 Restore model defaults

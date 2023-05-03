@@ -8,7 +8,8 @@
   --scroll-margin-top: 120px;
   --app-navbar-height: 56px;
   --app-tabbar-height: 42px;
-  --onboarding-footer-height: 60px;
+  --playground-navbar-height: 60px;
+  --onboarding-footer-height: 72px;
 }
 
 html,
@@ -179,6 +180,14 @@ textarea {
 
 .supabase-auth-ui_ui-button {
   @apply rounded-md border-0 px-4 py-2 text-sm font-semibold transition !important;
+}
+
+.animated-max-height {
+  -webkit-transition: max-height 300ms;
+  -moz-transition: max-height 300ms;
+  -ms-transition: max-height 300ms;
+  -o-transition: max-height 300ms;
+  transition: max-height 300ms;
 }
 
 button[type='submit'].supabase-auth-ui_ui-button {

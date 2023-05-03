@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
+  FC,
   JSXElementConstructor,
   ReactNode,
   forwardRef,
@@ -36,6 +37,7 @@ import {
 } from '@/lib/utils';
 import { SourceType } from '@/types/types';
 
+import StatusMessage from './StatusMessage';
 import GetCode from '../dialogs/code/GetCode';
 import FilesAddSourceDialog from '../dialogs/sources/Files';
 import MotifAddSourceDialog from '../dialogs/sources/Motif';
@@ -102,7 +104,13 @@ const ConnectButton = forwardRef<HTMLButtonElement, ConnectButtonProps>(
 
 ConnectButton.displayName = 'ConnectButton';
 
-const PlaygroundDashboard = () => {
+type PlaygroundDashboardProps = {
+  isOnboarding?: boolean;
+};
+
+const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
+  isOnboarding,
+}) => {
   const { project } = useProject();
   const { files, mutate: mutateFiles, loading: loadingFiles } = useFiles();
   const {
@@ -134,11 +142,15 @@ const PlaygroundDashboard = () => {
       },
     );
     mutateFiles();
-    showConfetti();
-    toast.success(
-      'Done training sources. You can now ask questions to your content!',
-    );
-  }, [trainAllSources, mutateFiles]);
+    if (isOnboarding) {
+      showConfetti();
+      toast.success(
+        'Done processing sources. You can now ask questions to your content!',
+      );
+    } else {
+      toast.success('Done processing sources.');
+    }
+  }, [trainAllSources, mutateFiles, isOnboarding]);
 
   const _addSource = useCallback(
     async (sourceType: SourceType, data: any) => {
@@ -163,12 +175,14 @@ const PlaygroundDashboard = () => {
   const hasConnectedSources = sources && sources.length > 0;
   const isTrained = files && files.length > 0;
   const isLoading = loadingSources || loadingFiles;
-  const isShowingOverlay = !isLoading && (!hasConnectedSources || !isTrained);
+  const isTraining = trainingState.state !== 'idle';
+  const isShowingOverlay =
+    isTraining || (!isLoading && (!hasConnectedSources || !isTrained));
 
   return (
     <div className="absolute inset-0 grid grid-cols-1 sm:grid-cols-4">
       <div className="relative h-full">
-        <div className="absolute inset-x-0 top-0 bottom-[var(--onboarding-footer-height)] overflow-y-auto p-6">
+        <div className="absolute inset-x-0 top-0 bottom-[var(--playground-navbar-height)] overflow-y-auto p-6">
           <h1 className="text-xl font-bold text-neutral-300">
             Connect source{' '}
             {!isLoading && (!sources || sources.length === 0) && (
@@ -193,7 +207,7 @@ const PlaygroundDashboard = () => {
             </GitHubAddSourceDialog>
             <WebsiteAddSourceDialog
               onDidAddSource={startTraining}
-              openPricingAsDialog
+              openPricingAsDialog={isOnboarding}
             >
               <ConnectButton label="Website" Icon={Globe} />
             </WebsiteAddSourceDialog>
@@ -241,7 +255,8 @@ const PlaygroundDashboard = () => {
                           }
                           await deleteSource(project.id, source.id);
                           await mutateSources();
-                          toast.success('The source has been removed');
+                          await mutateFiles();
+                          toast.success('The source has been removed.');
                         }}
                       >
                         <X className="h-3 w-3 text-sky-400" />
@@ -255,16 +270,23 @@ const PlaygroundDashboard = () => {
         </div>
         <div
           className={cn(
-            'absolute inset-x-0 bottom-0 z-20 flex h-[var(--onboarding-footer-height)] transform justify-center border-t border-neutral-900 bg-neutral-1100 px-6 py-3 transition duration-300',
+            'absolute inset-x-0 bottom-0 z-20 flex transform flex-col justify-center gap-2 border-t border-neutral-900 bg-neutral-1100 px-6 py-3 transition duration-300',
             {
               'translate-y-0 opacity-100': sources.length > 0,
               'translate-y-[20px] opacity-0': sources.length === 0,
             },
           )}
         >
+          {trainingState.state !== 'idle' && (
+            <StatusMessage
+              trainingState={trainingState}
+              numFiles={files?.length || 0}
+              numSelected={0}
+            />
+          )}
           <Button
             className="w-full"
-            variant={isTrained ? 'plain' : 'fuchsia'}
+            variant={isTrained ? 'plain' : 'glow'}
             loading={trainingState.state !== 'idle'}
             onClick={startTraining}
           >
@@ -282,22 +304,28 @@ const PlaygroundDashboard = () => {
             },
           )}
         >
-          <div className="flex w-min flex-row items-center gap-2 whitespace-nowrap rounded-full bg-black/50 py-3 pl-3 pr-5 text-sm text-white backdrop-blur">
-            {trainingState.state !== 'idle' ? (
-              <SpinnerIcon className="ml-1 h-4 w-4 animate-spin" />
-            ) : (
-              <div className="rotate-90 transform">
-                <ArrowDown className="h-4 w-4 animate-bounce" />
-              </div>
-            )}
-            {!hasConnectedSources ? (
-              <>Start by connecting one or more sources</>
-            ) : trainingState.state !== 'idle' ? (
-              <>Processing your content</>
-            ) : (
-              <>Great! Now hit &apos;Process sources&apos;</>
-            )}
-          </div>
+          {isShowingOverlay && (
+            <div className="flex w-min flex-row items-center gap-2 whitespace-nowrap rounded-full border border-neutral-900 bg-black/50 py-3 pl-3 pr-5 text-sm text-white backdrop-blur">
+              {trainingState.state !== 'idle' ? (
+                <SpinnerIcon className="ml-1 h-4 w-4 animate-spin" />
+              ) : (
+                <div className="rotate-90 transform">
+                  <ArrowDown className="h-4 w-4 animate-bounce" />
+                </div>
+              )}
+              {!hasConnectedSources ? (
+                <>
+                  {isOnboarding
+                    ? 'Start by connecting one or more sources'
+                    : 'Connect one or more sources'}
+                </>
+              ) : trainingState.state !== 'idle' ? (
+                <>Processing sources</>
+              ) : (
+                <>Great! Now hit &apos;Process sources&apos;</>
+              )}
+            </div>
+          )}
         </div>
         <div
           className={cn('h-full w-full overflow-hidden', {
@@ -317,7 +345,7 @@ const PlaygroundDashboard = () => {
               <div className="relative flex h-full flex-col gap-4">
                 <div
                   className={cn(
-                    'flex h-[var(--onboarding-footer-height)] flex-none flex-row items-center gap-2 px-6 shadow-lg',
+                    'flex h-[var(--playground-navbar-height)] flex-none flex-row items-center gap-2 px-6 shadow-lg',
                     {
                       'border-b border-neutral-900 bg-neutral-1100': isDark,
                       'border-neutral-200 bg-white': !isDark,
@@ -359,7 +387,7 @@ const PlaygroundDashboard = () => {
                     </Button>
                   </GetCode>
                 </div>
-                <div className="absolute inset-x-0 top-[var(--onboarding-footer-height)] bottom-0 flex flex-col gap-4 px-16 py-8">
+                <div className="absolute inset-x-0 top-[var(--playground-navbar-height)] bottom-0 flex flex-col gap-4 px-16 py-8">
                   <Playground
                     projectKey={project.private_dev_api_key}
                     // didCompleteFirstQuery={didCompleteFirstQuery}
