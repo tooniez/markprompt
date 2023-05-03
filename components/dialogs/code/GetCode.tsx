@@ -226,21 +226,27 @@ const getDescription = (
   teamSlug: string,
   projectSlug: string,
   isTestMode: boolean,
+  isOnboarded: boolean,
 ) => {
   if (isTestMode) {
-    return 'Showing code with the test key, which can be used for non-public sites, e.g. on localhost. Do not share code with a test key publicly.';
+    return 'Showing code with the test key, which can be used for non-public sites, for instance on localhost. Do not share code with a test key publicly. For public sites, use a production key from a whitelisted domain.';
   } else {
     return (
       <>
-        Showing code with the production key. Use from a whitelisted domain. You
-        can add whitelisted domains in the{' '}
-        <Link
-          className="subtle-underline"
-          href={`/${teamSlug}/${projectSlug}/settings`}
-        >
-          project settings
-        </Link>
-        .
+        Showing code with the production key. Production keys can only be used
+        when called from a whitelisted domain. You can add whitelisted domains
+        in the{' '}
+        {isOnboarded ? (
+          <Link
+            className="subtle-underline"
+            href={`/${teamSlug}/${projectSlug}/settings`}
+          >
+            project settings
+          </Link>
+        ) : (
+          <>project settings</>
+        )}
+        . For local development, use a test key.
       </>
     );
   }
@@ -327,17 +333,21 @@ const GetCode = ({ children }: { children: ReactNode }) => {
               >
                 <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 w-full max-w-full overflow-y-auto py-4">
                   <Note size="sm" type="info" className="mb-4">
-                    Check out the starter template for a fully working example
-                    in Next.js:{' '}
-                    <a
-                      href="https://github.com/motifland/markprompt-starter-template"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="subtle-underline"
-                    >
-                      Markprompt starter template
-                    </a>
-                    .
+                    <p>
+                      Check out the starter template for a fully working example
+                      in Next.js:
+                    </p>
+                    <p className="pt-2 pb-1">
+                      <a
+                        href="https://github.com/motifland/markprompt-starter-template"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="subtle-underline"
+                      >
+                        Markprompt starter template
+                      </a>{' '}
+                      →
+                    </p>
                   </Note>
                   <h3>Installation</h3>
                   <CodePanel
