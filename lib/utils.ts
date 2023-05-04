@@ -230,6 +230,10 @@ const SUPPORTED_EXTENSIONS = ['md', 'mdx', 'mdoc', 'txt', 'html', 'htm'];
 
 export const isSupportedFileType = (pathOrName: string): boolean => {
   const extension = getFileExtension(pathOrName);
+  if (!extension) {
+    // If there is no extension, consider it as supported (e.g. a URL).
+    return true;
+  }
   return !!(extension && SUPPORTED_EXTENSIONS.includes(extension));
 };
 

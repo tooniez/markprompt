@@ -179,7 +179,13 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           config.exclude || [],
         )
       ) {
-        console.info('Skipping', path);
+        console.info(
+          'Skipping',
+          path,
+          '(not in included paths)',
+          JSON.stringify(config.include || []),
+          JSON.stringify(config.exclude || []),
+        );
         return;
       }
 
@@ -201,7 +207,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
       // Check the checksum (or SHA if GitHub file), and skip if equals.
       if (prevChecksum === currentChecksum) {
-        console.info('Skipping', path);
+        console.info('Skipping', path, '(already processed)');
         return;
       }
 
