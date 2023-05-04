@@ -10,7 +10,7 @@ import { Note } from '@/components/ui/Note';
 import { useConfigContext } from '@/lib/context/config';
 import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
-import { Theme, ThemeColorKeys } from '@/lib/themes';
+import { Theme, ThemeColorKeys, ThemeDimensionKeys } from '@/lib/themes';
 
 export const KeyNote = ({
   className,
@@ -35,30 +35,38 @@ const vanillaJSCode = (projectKey: string) => {
 
 const npmInstallReactCode = 'npm install @markprompt/react';
 
-const reactCode = (projectKey: string, placeholder: string) => {
+const reactCode = (
+  projectKey: string,
+  placeholder: string,
+  isTestKey: boolean,
+) => {
   return `import React from 'react';
 import * as Markprompt from '@markprompt/react';
 import './style.css';
 
 function Component() {
+  ${
+    isTestKey
+      ? '// Do not share this key publicly.'
+      : '// Use from a whitelisted domain.'
+  }
   return (
-    {/* Use from a whitelisted domain. */}
     <Markprompt.Root projectKey="${projectKey}">
       <Markprompt.Trigger
         aria-label="Open Markprompt"
-        className="markprompt-button"
+        className="MarkpromptButton"
       >
-        <MarkpromptIcon className="markprompt-icon" />
+        <MarkpromptIcon className="MarkpromptIcon" />
       </Markprompt.Trigger>
       <Markprompt.Portal>
-        <Markprompt.Overlay className="markprompt-overlay" />
-        <Markprompt.Content className="markprompt-content">
-          <Markprompt.Close className="markprompt-close">
+        <Markprompt.Overlay className="MarkpromptOverlay" />
+        <Markprompt.Content className="MarkpromptContent">
+          <Markprompt.Close className="MarkpromptClose">
             <CloseIcon />
           </Markprompt.Close>
           <Markprompt.Form>
             <Markprompt.Prompt
-              className="markprompt-prompt"
+              className="MarkpromptPrompt"
               placeholder="${placeholder}"
             />
           </Markprompt.Form>
@@ -78,19 +86,23 @@ export default Component;
 };
 
 const reactStylesheet = (theme: Theme) => {
-  const lightKeys = Object.keys(theme.colors.light) as ThemeColorKeys[];
-  const darkKeys = Object.keys(theme.colors.dark) as ThemeColorKeys[];
+  const lightColorKeys = Object.keys(theme.colors.light) as ThemeColorKeys[];
+  const darkColorKeys = Object.keys(theme.colors.dark) as ThemeColorKeys[];
+  const dimensionKeys = Object.keys(theme.dimensions) as ThemeDimensionKeys[];
 
   return `/* style.css */
 
 :root {
-${lightKeys
-  .map((key) => `  --markprompt-${key}: ${theme.colors.dark[key]};`)
+${lightColorKeys
+  .map((key) => `  --markprompt-${key}: ${theme.colors.light[key]};`)
+  .join('\n')}
+${dimensionKeys
+  .map((key) => `  --markprompt-${key}: ${theme.dimensions[key]};`)
   .join('\n')}
 }
 
 .dark {
-${darkKeys
+${darkColorKeys
   .map((key) => `  --markprompt-${key}: ${theme.colors.dark[key]};`)
   .join('\n')}
 }
@@ -99,21 +111,21 @@ button {
   all: unset;
 }
 
-.markprompt-button {
+.MarkpromptButton {
   display: flex;
   cursor: pointer;
 }
 
-.markprompt-button:hover {
+.MarkpromptButton:hover {
   color: white;
 }
 
-.markprompt-icon {
+.MarkpromptIcon {
   width: 3rem;
   height: auto;
 }
 
-.markprompt-overlay {
+.MarkpromptOverlay {
   position: fixed;
   inset: 0;
   animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -129,7 +141,7 @@ button {
   }
 }
 
-.markprompt-content {
+.MarkpromptContent {
   background-color: var(--gray10);
   border-radius: 6px;
   box-shadow: hsl(206 22% 7% / 35%) 0px 10px 38px -10px,
@@ -157,7 +169,7 @@ button {
   }
 }
 
-.markprompt-close {
+.MarkpromptClose {
   position: absolute;
   top: -2rem;
   right: 0rem;
@@ -171,15 +183,15 @@ button {
   cursor: pointer;
 }
 
-.markprompt-close:hover {
+.MarkpromptClose:hover {
   color: white;
 }
 
-.markprompt-title {
+.MarkpromptTitle {
   margin-block-start: 0;
 }
 
-.markprompt-prompt {
+.MarkpromptPrompt {
   background-color: var(--blackA8);
   border: none;
   border-radius: 4px;
@@ -189,11 +201,11 @@ button {
   color: var(--gray6);
 }
 
-.markprompt-prompt::placeholder {
+.MarkpromptPrompt::placeholder {
   color: var(--gray8);
 }
 
-.markprompt-prompt:focus {
+.MarkpromptPrompt:focus {
   outline: 2px solid var(--blackA9);
 }
 `.trim();
@@ -206,17 +218,21 @@ const webComponentCode = (projectKey: string) =>
   `<markprompt-content projectKey="${projectKey}" />`;
 
 const webComponentStylesheet = (theme: Theme) => {
-  const lightKeys = Object.keys(theme.colors.light) as ThemeColorKeys[];
-  const darkKeys = Object.keys(theme.colors.dark) as ThemeColorKeys[];
+  const lightColorKeys = Object.keys(theme.colors.light) as ThemeColorKeys[];
+  const darkColorKeys = Object.keys(theme.colors.dark) as ThemeColorKeys[];
+  const dimensionKeys = Object.keys(theme.dimensions) as ThemeDimensionKeys[];
 
   return `markprompt-content {
-${lightKeys
-  .map((key) => `  --markprompt-${key}: ${theme.colors.dark[key]};`)
+${lightColorKeys
+  .map((key) => `  --markprompt-${key}: ${theme.colors.light[key]};`)
+  .join('\n')}
+${dimensionKeys
+  .map((key) => `  --markprompt-${key}: ${theme.dimensions[key]};`)
   .join('\n')}
 }
 
 markprompt-content.dark {
-${darkKeys
+${darkColorKeys
   .map((key) => `  --markprompt-${key}: ${theme.colors.dark[key]};`)
   .join('\n')}
 }`.trim();
@@ -364,7 +380,7 @@ const GetCode = ({
                   <h3>Usage</h3>
                   <CodePanel
                     language="jsx"
-                    code={reactCode(apiKey, placeholder)}
+                    code={reactCode(apiKey, placeholder, testMode)}
                     noPreWrap
                   />
                   <h3>Stylesheet</h3>

@@ -7,7 +7,7 @@ import {
   useContext,
 } from 'react';
 
-import { ModelConfig, OpenAIModelId } from '@/types/types';
+import { ModelConfig } from '@/types/types';
 
 import useProject from '../hooks/use-project';
 import { useLocalStorage } from '../hooks/utils/use-localstorage';
@@ -74,6 +74,15 @@ const initialState: State = {
   resetModelConfigDefaults: () => {},
 };
 
+const DEFAULT_VALUES = {
+  placeholder: 'Ask me anything…',
+  iDontKnowMessage: 'Sorry, I am not sure how to answer that.',
+  referencesHeading: 'Answer generated from the following pages:',
+  loadingHeading: 'Fetching relevant pages...',
+  includeBranding: true,
+  isDark: false,
+};
+
 const ConfigContextProvider = (props: PropsWithChildren) => {
   const { project } = useProject();
 
@@ -84,32 +93,32 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
 
   const [isDark, setDark] = useLocalStorage<boolean>(
     `${project?.id ?? 'undefined'}:config:model-dark`,
-    false,
+    DEFAULT_VALUES.isDark,
   );
 
   const [placeholder, setPlaceholder] = useLocalStorage<string>(
     `${project?.id ?? 'undefined'}:config:placeholder`,
-    'Ask me anything…',
+    DEFAULT_VALUES.placeholder,
   );
 
   const [iDontKnowMessage, setIDontKnowMessage] = useLocalStorage<string>(
     `${project?.id ?? 'undefined'}:config:i-dont-know-message`,
-    'Sorry, I am not sure how to answer that.',
+    DEFAULT_VALUES.iDontKnowMessage,
   );
 
   const [referencesHeading, setReferencesHeading] = useLocalStorage<string>(
     `${project?.id ?? 'undefined'}:config:references-heading`,
-    'Answer generated from the following pages:',
+    DEFAULT_VALUES.referencesHeading,
   );
 
   const [loadingHeading, setLoadingHeading] = useLocalStorage<string>(
     `${project?.id ?? 'undefined'}:config:loading-heading`,
-    'Fetching relevant pages...',
+    DEFAULT_VALUES.loadingHeading,
   );
 
   const [includeBranding, setIncludeBranding] = useLocalStorage<boolean>(
     `${project?.id ?? 'undefined'}:config:include-branding`,
-    true,
+    DEFAULT_VALUES.includeBranding,
   );
 
   const [modelConfig, setModelConfig] = useLocalStorage<ModelConfig>(

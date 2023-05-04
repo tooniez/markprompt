@@ -345,7 +345,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
               <div className="relative flex h-full flex-col gap-4">
                 <div
                   className={cn(
-                    'flex h-[var(--playground-navbar-height)] flex-none flex-row items-center gap-2 px-6 shadow-lg',
+                    'z-10 flex h-[var(--playground-navbar-height)] flex-none flex-row items-center gap-2 px-4 shadow-lg',
                     {
                       'border-b border-neutral-900 bg-neutral-1100': isDark,
                       'border-neutral-200 bg-white': !isDark,
@@ -387,11 +387,17 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                     </Button>
                   </GetCode>
                 </div>
-                <div className="absolute inset-x-0 top-[var(--playground-navbar-height)] bottom-0 flex flex-col gap-4 px-16 py-8">
+                <div
+                  className="pointer-events-none absolute inset-0 z-0"
+                  style={{
+                    backgroundColor: isDark
+                      ? theme.colors.dark.overlay
+                      : theme.colors.light.overlay,
+                  }}
+                />
+                <div className="absolute inset-x-0 top-[var(--playground-navbar-height)] bottom-0 z-10 flex flex-col gap-4 px-16 py-8">
                   <Playground
                     projectKey={project.private_dev_api_key}
-                    // didCompleteFirstQuery={didCompleteFirstQuery}
-                    // autoScrollDisabled={!isReady}
                     iDontKnowMessage={iDontKnowMessage}
                     theme={theme}
                     placeholder={placeholder}

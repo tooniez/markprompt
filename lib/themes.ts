@@ -11,11 +11,12 @@ export type ThemeColors = {
   secondaryForeground: string;
   primaryHighlight: string;
   secondaryHighlight: string;
+  overlay: string;
   ring: string;
 };
 
 type ThemeDimensions = {
-  radius: number;
+  radius: string;
 };
 
 export type ThemeColorKeys = keyof ThemeColors;
@@ -49,6 +50,7 @@ export const defaultTheme: Theme = {
       secondaryForeground: '#171717',
       primaryHighlight: '#EC4899',
       secondaryHighlight: '#A855F7',
+      overlay: '#00000010',
       ring: '#0EA5E9',
     },
     dark: {
@@ -64,11 +66,12 @@ export const defaultTheme: Theme = {
       secondaryForeground: '#FFFFFF',
       primaryHighlight: '#EC4899',
       secondaryHighlight: '#A855F7',
+      overlay: '#00000040',
       ring: '#FFFFFF',
     },
   },
   dimensions: {
-    radius: 8,
+    radius: '8px',
   },
 };
 
@@ -90,7 +93,7 @@ const indigoTheme: Theme = {
     },
   },
   dimensions: {
-    radius: 8,
+    radius: '8px',
   },
 };
 
@@ -112,7 +115,7 @@ const tealTheme: Theme = {
     },
   },
   dimensions: {
-    radius: 8,
+    radius: '8px',
   },
 };
 
@@ -137,7 +140,7 @@ const monoTheme: Theme = {
     },
   },
   dimensions: {
-    radius: 0,
+    radius: '8px',
   },
 };
 

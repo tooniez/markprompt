@@ -201,6 +201,9 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                   colorKey="secondaryHighlight"
                 />
               </Row>
+              <Row label="Overlay">
+                <ThemeColorPicker colors={colors} colorKey="overlay" />
+              </Row>
               {/* Border radius for card, input and buttons */}
               {/* <Row label="Ring">
                 <ThemeColorPicker colors={colors} colorKey="ring" />
@@ -209,11 +212,10 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
               <Row label="Radius">
                 <Input
                   inputSize="sm"
-                  rightAccessory="px"
                   value={theme.dimensions.radius}
                   onChange={(event: ChangeEvent<HTMLInputElement>) => {
                     try {
-                      const radius = parseInt(event.target.value);
+                      const radius = event.target.value;
                       setTheme({
                         ...theme,
                         dimensions: {

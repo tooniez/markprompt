@@ -1,6 +1,8 @@
 import * as Popover from '@radix-ui/react-popover';
 import { ChangeEvent, FC, useState } from 'react';
-import { HexColorPicker } from 'react-colorful';
+import { RgbaColorPicker } from 'react-colorful';
+
+import { hexToRgba, rgbaToHex } from '@/lib/utils';
 
 import Input from './Input';
 
@@ -25,9 +27,9 @@ const ColorDialog = ({
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content className="animate-menu-up z-30 mt-2 mr-6 rounded-lg border border-neutral-900 bg-neutral-1000 shadow-2xl sm:w-full">
-          <HexColorPicker
-            color={color}
-            onChange={(color) => setColor(color.slice(1))}
+          <RgbaColorPicker
+            color={hexToRgba(color)}
+            onChange={(color) => setColor(rgbaToHex(color))}
           />
         </Popover.Content>
       </Popover.Portal>

@@ -690,3 +690,31 @@ export const removeFileExtension = (fileName: string) => {
   }
   return fileName.substring(0, lastDotIndex);
 };
+
+type RGBA = {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+};
+export const hexToRgba = (hex: string): RGBA => {
+  const hexValue = hex.replace('#', '');
+  const r = parseInt(hexValue.substring(0, 2), 16);
+  const g = parseInt(hexValue.substring(2, 4), 16);
+  const b = parseInt(hexValue.substring(4, 6), 16);
+  let a = 1;
+  if (hexValue.length === 8) {
+    a = parseInt(hexValue.substring(6, 8), 16);
+  }
+  return { r, g, b, a };
+};
+
+export const rgbaToHex = ({ r, g, b, a }: RGBA) => {
+  const _r = r.toString(16).padStart(2, '0');
+  const _g = g.toString(16).padStart(2, '0');
+  const _b = b.toString(16).padStart(2, '0');
+  const _a = Math.round(a * 255)
+    .toString(16)
+    .padStart(2, '0');
+  return '#' + _r + _g + _b + _a;
+};
