@@ -574,16 +574,13 @@ export const toNormalizedUrl = (url: string, useInsecureSchema?: boolean) => {
     url = (useInsecureSchema ? 'http://' : 'https://') + url;
   }
 
-  // Remove any query parameters
-  const queryIndex = url.indexOf('?');
-  if (queryIndex !== -1) {
-    url = url.substring(0, queryIndex);
+  try {
+    const parsedUrl = new URL(url);
+    return `${parsedUrl.protocol}//${parsedUrl.hostname}${parsedUrl.pathname}`;
+  } catch {
+    // Do nothing, just return the URL as is.
+    return url;
   }
-
-  // Remove any trailing slashes
-  url = url.replace(/\/+$/gi, '');
-
-  return url;
 };
 
 export const getUrlHostname = (url: string) => {
