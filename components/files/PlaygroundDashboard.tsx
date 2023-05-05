@@ -108,9 +108,10 @@ const ConnectButton = forwardRef<HTMLButtonElement, ConnectButtonProps>(
 );
 
 export const Lines = ({ width, height }: { width: number; height: number }) => {
-  const path = `M0 1h${Math.round(width * 0.3)}a4 4 0 014 4v${
+  const path = `M0 1h${Math.round(width * 0.7)}a4 4 0 014 4v${
     height - 10
-  }a4 4 0 004 4h${Math.round(width * 0.7)}`;
+  }a4 4 0 004 4h${Math.round(width * 0.3)}`;
+  const path1 = `M0 0h${width}v${height}H0z`;
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} fill="none">
@@ -121,19 +122,19 @@ export const Lines = ({ width, height }: { width: number; height: number }) => {
         strokeLinecap="round"
         strokeWidth="2"
       />
+      {/* <path d={path} fill="url(#pulse)" strokeLinecap="round" strokeWidth="2" /> */}
       <defs>
         <motion.linearGradient
-          // animate={{
-          //   x1: [width * 2, 0],
-          //   // x2: [0, width],
-          //   y1: [height, 0],
-          //   // y1: [height, height / 2],
-          //   // y2: [height * 2, height],
-          // }}
-          // transition={{
-          //   duration: 2,
-          //   repeat: Infinity,
-          // }}
+          animate={{
+            x1: [0, -width],
+            x2: [0, 0],
+            y1: [height, -height],
+            y2: [2 * height, 0],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+          }}
           id="pulse"
           gradientUnits="userSpaceOnUse"
         >
@@ -255,7 +256,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     <div className="absolute inset-0 grid grid-cols-1 sm:grid-cols-4">
       <div className="relative h-full">
         <div className="absolute inset-x-0 top-0 bottom-[var(--playground-navbar-height)] overflow-y-auto p-6">
-          <h1 className="text-xl font-bold text-neutral-300">
+          <h1 className="relative truncate whitespace-nowrap text-xl font-bold text-neutral-300">
             Connect source{' '}
             {!isLoading && (!sources || sources.length === 0) && (
               <PulseDot className="translate-x-[-4px] translate-y-[-8px] transform" />
