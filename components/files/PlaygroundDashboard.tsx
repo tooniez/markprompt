@@ -1,4 +1,5 @@
 import cn from 'classnames';
+import { motion } from 'framer-motion';
 import {
   Upload,
   Globe,
@@ -17,8 +18,12 @@ import {
   ReactNode,
   forwardRef,
   useCallback,
+  useEffect,
+  useRef,
+  useState,
 } from 'react';
 import { toast } from 'react-hot-toast';
+import colors from 'tailwindcss/colors';
 
 import { addSource, deleteSource } from '@/lib/api';
 import { SAMPLE_REPO_URL } from '@/lib/constants';
@@ -102,6 +107,45 @@ const ConnectButton = forwardRef<HTMLButtonElement, ConnectButtonProps>(
   },
 );
 
+export const Lines = ({ width, height }: { width: number; height: number }) => {
+  const path = `M0 1h${Math.round(width * 0.3)}a4 4 0 014 4v${
+    height - 10
+  }a4 4 0 004 4h${Math.round(width * 0.7)}`;
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} fill="none">
+      <path d={path} stroke="#000000" strokeOpacity="0.2" />
+      <path
+        d={path}
+        stroke="url(#pulse)"
+        strokeLinecap="round"
+        strokeWidth="2"
+      />
+      <defs>
+        <motion.linearGradient
+          // animate={{
+          //   x1: [width * 2, 0],
+          //   // x2: [0, width],
+          //   y1: [height, 0],
+          //   // y1: [height, height / 2],
+          //   // y2: [height * 2, height],
+          // }}
+          // transition={{
+          //   duration: 2,
+          //   repeat: Infinity,
+          // }}
+          id="pulse"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor={colors.fuchsia['500']} stopOpacity="0" />
+          <stop stopColor={colors.fuchsia['500']} />
+          <stop offset="1" stopColor={colors.red['500']} stopOpacity="0" />
+        </motion.linearGradient>
+      </defs>
+    </svg>
+  );
+};
+
 ConnectButton.displayName = 'ConnectButton';
 
 type PlaygroundDashboardProps = {
@@ -131,6 +175,8 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     referencesHeading,
     loadingHeading,
   } = useConfigContext();
+  const [pathDivSize, setPathDivSize] = useState({ width: 0, height: 0 });
+  const pathDivRef = useRef<HTMLDivElement>(null);
 
   const startTraining = useCallback(async () => {
     await trainAllSources(
@@ -178,6 +224,32 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   const isTraining = trainingState.state !== 'idle';
   const isShowingOverlay =
     isTraining || (!isLoading && (!hasConnectedSources || !isTrained));
+
+  useEffect(() => {
+    if (!isShowingOverlay) {
+      return;
+    }
+
+    const observer = new ResizeObserver(() => {
+      if (!pathDivRef.current) {
+        return;
+      }
+      const rect = pathDivRef.current?.getBoundingClientRect();
+      const width = Math.round(rect.width);
+      const height = Math.round(rect.height);
+      console.log('width', width, height);
+      setPathDivSize({
+        width,
+        height,
+      });
+    });
+
+    pathDivRef.current && observer.observe(pathDivRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isShowingOverlay]);
 
   return (
     <div className="absolute inset-0 grid grid-cols-1 sm:grid-cols-4">
@@ -297,13 +369,24 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       <div className="relative col-span-2">
         <div
           className={cn(
-            'absolute inset-0 z-30 flex items-center justify-center bg-black/80 p-8 shadow-xl transition duration-300',
+            'absolute inset-0 z-30 flex flex-row items-center bg-black/80 shadow-xl transition duration-300',
             {
               'opacity-100': isShowingOverlay,
               'pointer-events-none opacity-0': !isShowingOverlay,
             },
           )}
         >
+          <div className="relative h-full w-[33%] flex-none">
+            <div
+              ref={pathDivRef}
+              className="visible absolute top-[30px] bottom-[30px] left-0 w-full"
+            >
+              <Lines
+                width={pathDivSize.width}
+                height={pathDivSize.height / 2}
+              />
+            </div>
+          </div>
           {isShowingOverlay && (
             <div className="flex w-min flex-row items-center gap-2 whitespace-nowrap rounded-full border border-neutral-900 bg-black/50 py-3 pl-3 pr-5 text-sm text-white backdrop-blur">
               {trainingState.state !== 'idle' ? (

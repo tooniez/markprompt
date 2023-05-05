@@ -179,13 +179,6 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           config.exclude || [],
         )
       ) {
-        console.info(
-          'Skipping',
-          path,
-          '(not in included paths)',
-          JSON.stringify(config.include || []),
-          JSON.stringify(config.exclude || []),
-        );
         return;
       }
 
