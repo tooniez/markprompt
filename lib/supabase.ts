@@ -158,13 +158,23 @@ export const getProjectTeam = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
 ): Promise<Team | undefined> => {
-  const { data } = await supabase
-    .from('teams')
-    .select('*')
-    .eq('project_id', projectId)
+  const { data: projectData } = await supabase
+    .from('projects')
+    .select('team_id')
+    .eq('id', projectId)
     .limit(1)
     .maybeSingle();
-  return data || undefined;
+  if (projectData?.team_id) {
+    const { data: teamData } = await supabase
+      .from('teams')
+      .select('*')
+      .eq('id', projectData.team_id)
+      .limit(1)
+      .maybeSingle();
+    return teamData || undefined;
+  }
+
+  return undefined;
 };
 
 export const getFilesInTeam = async (
