@@ -17,7 +17,6 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { MoreHorizontal, Globe, Upload } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
@@ -114,7 +113,7 @@ const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
             className="flex-none select-none p-1 text-neutral-500 opacity-50 outline-none transition hover:opacity-100"
             aria-label="Source options"
           >
-            <MoreHorizontal />
+            <MoreHorizontal className="h-4 w-4" />
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>

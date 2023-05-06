@@ -107,14 +107,33 @@ const ConnectButton = forwardRef<HTMLButtonElement, ConnectButtonProps>(
   },
 );
 
-export const Lines = ({ width, height }: { width: number; height: number }) => {
-  const path = `M0 1h${Math.round(width * 0.7)}a4 4 0 014 4v${
-    height - 10
-  }a4 4 0 004 4h${Math.round(width * 0.3)}`;
-  const path1 = `M0 0h${width}v${height}H0z`;
+export const Lines = ({
+  top,
+  width,
+  height,
+  topLeft,
+}: {
+  top: number;
+  width: number;
+  height: number;
+  topLeft: boolean;
+}) => {
+  let path;
+  if (topLeft) {
+    path = `M1 ${top}h${Math.round(width * 0.7)}a4 4 0 014 4v${
+      height - 10
+    }a4 4 0 004 4h${Math.round(width * 0.3)}`;
+  } else {
+    path = `M1 ${top + height}h${Math.round(width * 0.7)}a4 4 0 004-4v${
+      -height - 2
+    }a4 4 0 014-4h${Math.round(width * 0.3)}`;
+  }
 
+  // const path1 = `M0 0h${width}v${height}H0z`;
+
+  // console.log('topLeft', JSON.stringify(topLeft, null, 2));
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} fill="none">
+    <svg viewBox={`0 0 ${width} ${4 * height}`} fill="none">
       <path d={path} stroke="#000000" strokeOpacity="0.2" />
       <path
         d={path}
@@ -122,17 +141,25 @@ export const Lines = ({ width, height }: { width: number; height: number }) => {
         strokeLinecap="round"
         strokeWidth="2"
       />
-      {/* <path d={path} fill="url(#pulse)" strokeLinecap="round" strokeWidth="2" /> */}
       <defs>
         <motion.linearGradient
-          animate={{
-            x1: [0, -width],
-            x2: [0, 0],
-            y1: [height, -height],
-            y2: [2 * height, 0],
-          }}
+          animate={
+            topLeft
+              ? {
+                  x1: [0, -2 * width],
+                  y1: [3 * height, -height],
+                  x2: [0, -width],
+                  y2: [4 * height, 0],
+                }
+              : {
+                  x1: [0, -2 * width],
+                  y1: [-2 * height, 2 * height],
+                  x2: [0, -width],
+                  y2: [-3 * height, height],
+                }
+          }
           transition={{
-            duration: 2,
+            duration: 4,
             repeat: Infinity,
           }}
           id="pulse"
@@ -380,22 +407,44 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
           <div className="relative h-full w-[33%] flex-none">
             <div
               ref={pathDivRef}
-              className="visible absolute top-[30px] bottom-[30px] left-0 w-full"
+              className={cn(
+                'absolute top-[20px] bottom-[20px] left-0 w-full transition duration-500',
+              )}
             >
-              <Lines
-                width={pathDivSize.width}
-                height={pathDivSize.height / 2}
-              />
+              {!hasConnectedSources && !isTraining && (
+                <div className="absolute inset-0 transition duration-500">
+                  <Lines
+                    top={20}
+                    topLeft
+                    width={pathDivSize.width}
+                    height={pathDivSize.height / 2 - 50}
+                  />
+                </div>
+              )}
+              {hasConnectedSources && !isTraining && (
+                <div className="absolute inset-0 transition duration-500">
+                  <Lines
+                    topLeft={false}
+                    top={pathDivSize.height / 2 + 40}
+                    width={pathDivSize.width}
+                    height={pathDivSize.height / 2 - 52}
+                  />
+                </div>
+              )}
             </div>
           </div>
           {isShowingOverlay && (
-            <div className="flex w-min flex-row items-center gap-2 whitespace-nowrap rounded-full border border-neutral-900 bg-black/50 py-3 pl-3 pr-5 text-sm text-white backdrop-blur">
-              {trainingState.state !== 'idle' ? (
+            <div
+              className={cn(
+                'transfrom flex w-min flex-row items-center gap-2 whitespace-nowrap rounded-full border border-neutral-900 bg-black/50 py-3 px-5 text-sm text-white backdrop-blur transition duration-500',
+                {
+                  'translate-y-[-30px]': !hasConnectedSources,
+                  'translate-y-[30px]': hasConnectedSources,
+                },
+              )}
+            >
+              {trainingState.state !== 'idle' && (
                 <SpinnerIcon className="ml-1 h-4 w-4 animate-spin" />
-              ) : (
-                <div className="rotate-90 transform">
-                  <ArrowDown className="h-4 w-4 animate-bounce" />
-                </div>
               )}
               {!hasConnectedSources ? (
                 <>
@@ -427,35 +476,11 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
               )}
             >
               <div className="relative flex h-full flex-col gap-4">
-                <div
-                  className={cn(
-                    'z-10 flex h-[var(--playground-navbar-height)] flex-none flex-row items-center gap-2 px-4 shadow-lg',
-                    {
-                      'border-b border-neutral-900 bg-neutral-1100': isDark,
-                      'border-neutral-200 bg-white': !isDark,
-                    },
-                  )}
-                >
-                  <div className="flex-grow">
-                    <button
-                      className={cn('button-ring rounded p-2 transition', {
-                        'text-neutral-300 hover:bg-white/10': isDark,
-                        'button-ring-light text-neutral-700 hover:bg-black/10 focus:ring-black/20':
-                          !isDark,
-                      })}
-                      onClick={() => setDark(!isDark)}
-                    >
-                      {isDark ? (
-                        <Sun className="h-5 w-5" />
-                      ) : (
-                        <Moon className="h-5 w-5" />
-                      )}
-                    </button>
-                  </div>
+                {/* <div className="z-10 flex h-[var(--playground-navbar-height)] flex-none flex-row items-center gap-2 border-b border-neutral-900 bg-neutral-1100 px-4 shadow-lg">
                   <Button
                     disabled={!isTrained}
                     buttonSize="sm"
-                    variant={isDark ? 'plain' : 'borderedWhite'}
+                    variant="plain"
                     Icon={Share}
                   >
                     Share
@@ -464,13 +489,13 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                     <Button
                       disabled={!isTrained}
                       buttonSize="sm"
-                      variant={isDark ? 'plain' : 'borderedWhite'}
+                      variant="plain"
                       Icon={Code}
                     >
                       Get code
                     </Button>
                   </GetCode>
-                </div>
+                </div> */}
                 <div
                   className="pointer-events-none absolute inset-0 z-0"
                   style={{
@@ -479,7 +504,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                       : theme.colors.light.overlay,
                   }}
                 />
-                <div className="absolute inset-x-0 top-[var(--playground-navbar-height)] bottom-0 z-10 flex flex-col gap-4 px-16 py-8">
+                <div className="absolute inset-x-0 top-4 bottom-0 z-10 flex flex-col gap-4 px-16 py-8">
                   <Playground
                     projectKey={project.private_dev_api_key}
                     iDontKnowMessage={iDontKnowMessage}
@@ -532,14 +557,36 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       </div>
       <div
         className={cn('relative h-full transition', {
-          'pointer-events-none opacity-30': !sources || sources.length === 0,
+          'pointer-events-none opacity-30': !files || files.length === 0,
         })}
       >
-        <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto p-6">
-          <h2 className="mb-4 text-lg font-bold">Design</h2>
-          <UIConfigurator />
-          <h2 className="mb-4 mt-12 text-lg font-bold">Model configurator</h2>
-          <ModelConfigurator />
+        <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto pb-20">
+          <div className="sticky inset-x-0 top-0 z-10 grid grid-cols-2 items-center justify-end gap-4 border-b border-neutral-900 bg-neutral-1100 py-4 px-6 shadow-lg">
+            <Button
+              disabled={!isTrained}
+              buttonSize="sm"
+              variant="plain"
+              Icon={Share}
+            >
+              Share
+            </Button>
+            <GetCode isOnboarding={!isOnboarding}>
+              <Button
+                disabled={!isTrained}
+                buttonSize="sm"
+                variant="plain"
+                Icon={Code}
+              >
+                Get code
+              </Button>
+            </GetCode>
+          </div>
+          <div className="px-6 pt-4">
+            <h2 className="mb-4 text-lg font-bold">Design</h2>
+            <UIConfigurator />
+            <h2 className="mb-4 mt-12 text-lg font-bold">Model configurator</h2>
+            <ModelConfigurator />
+          </div>
         </div>
       </div>
     </div>

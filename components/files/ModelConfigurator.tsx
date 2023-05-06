@@ -42,6 +42,32 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                   plan.
                 </UpgradeNote>
               )}
+
+              <Row className="mt-4" label="Prompt template" />
+              <div className="-mt-1 flex w-full">
+                <NoAutoTextArea
+                  value={modelConfig.promptTemplate}
+                  className="h-[400px] w-full"
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    setModelConfig({
+                      ...modelConfig,
+                      promptTemplate: event.target.value,
+                    });
+                  }}
+                />
+              </div>
+              <Link
+                href="/docs#templates"
+                target="_blank"
+                rel="noreferrer"
+                className="button-ring flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
+              >
+                <Info className="h-4 w-4 text-neutral-300" />
+                <span className="subtle-underline">
+                  Learn more about templates
+                </span>
+              </Link>
+
               <SliderInput
                 label="Temperature"
                 min={0}
@@ -92,31 +118,6 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                   setModelConfig({ ...modelConfig, maxTokens: value });
                 }}
               />
-              <Row label="Prompt template" />
-              <div className="-mt-1 flex w-full">
-                <NoAutoTextArea
-                  value={modelConfig.promptTemplate}
-                  className="h-[400px] w-full"
-                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                    setModelConfig({
-                      ...modelConfig,
-                      promptTemplate: event.target.value,
-                    });
-                  }}
-                />
-              </div>
-              <Link
-                href="/docs#templates"
-                target="_blank"
-                rel="noreferrer"
-                className="button-ring flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
-              >
-                <Info className="h-4 w-4 text-neutral-300" />
-                <span className="subtle-underline">
-                  Learn more about templates
-                </span>
-              </Link>
-
               <div className="mt-2 border-t border-neutral-900 pt-2" />
 
               <Button
