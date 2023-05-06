@@ -108,35 +108,37 @@ const ConnectButton = forwardRef<HTMLButtonElement, ConnectButtonProps>(
 );
 
 export const Lines = ({
-  top,
   width,
   height,
-  topLeft,
+  position,
 }: {
-  top: number;
   width: number;
   height: number;
-  topLeft: boolean;
+  position: 'top-left' | 'bottom-left' | 'top';
 }) => {
   let path;
-  if (topLeft) {
-    path = `M1 ${top}h${Math.round(width * 0.7)}a4 4 0 014 4v${
-      height - 10
+  if (position === 'top-left') {
+    path = `M1 1h${Math.round(width * 0.7)}a4 4 0 014 4v${
+      height - 7
     }a4 4 0 004 4h${Math.round(width * 0.3)}`;
-  } else {
-    path = `M1 ${top + height}h${Math.round(width * 0.7)}a4 4 0 004-4v${
-      -height - 2
+  } else if (position === 'bottom-left') {
+    path = `M1 ${height}h${Math.round(width * 0.7)}a4 4 0 004-4v${
+      -height + 10
     }a4 4 0 014-4h${Math.round(width * 0.3)}`;
+  } else if (position === 'top') {
+    path = `M1 1v${Math.round(
+      height * 0.7,
+    )}a4 4 0 004 4h${width}a4 4 0 014 4v${Math.round(height * 0.3)}`;
   }
 
   // const path1 = `M0 0h${width}v${height}H0z`;
 
-  // console.log('topLeft', JSON.stringify(topLeft, null, 2));
   return (
     <svg viewBox={`0 0 ${width} ${4 * height}`} fill="none">
       <path d={path} stroke="#000000" strokeOpacity="0.2" />
       <path
         d={path}
+        // d={path1}
         stroke="url(#pulse)"
         strokeLinecap="round"
         strokeWidth="2"
@@ -144,18 +146,25 @@ export const Lines = ({
       <defs>
         <motion.linearGradient
           animate={
-            topLeft
+            position === 'top-left'
               ? {
                   x1: [0, -2 * width],
                   y1: [3 * height, -height],
                   x2: [0, -width],
-                  y2: [4 * height, 0],
+                  y2: [4 * height, -height],
+                }
+              : position === 'bottom-left'
+              ? {
+                  x1: [0, -2 * width],
+                  y1: [-2 * height, 2 * height],
+                  x2: [0, -width],
+                  y2: [-3 * height, 2 * height],
                 }
               : {
                   x1: [0, -2 * width],
                   y1: [-2 * height, 2 * height],
                   x2: [0, -width],
-                  y2: [-3 * height, height],
+                  y2: [-3 * height, 2 * height],
                 }
           }
           transition={{
@@ -197,14 +206,27 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     isDark,
     includeBranding,
     modelConfig,
-    setDark,
     placeholder,
     iDontKnowMessage,
     referencesHeading,
     loadingHeading,
   } = useConfigContext();
-  const [pathDivSize, setPathDivSize] = useState({ width: 0, height: 0 });
-  const pathDivRef = useRef<HTMLDivElement>(null);
+  const [overlayDimensions, setOverlayDimensions] = useState({
+    previewContainerWidth: 0,
+    previewContainerHeight: 0,
+    playgroundWidth: 0,
+    playgroundHeight: 0,
+    playgroundLeft: 0,
+    playgroundTop: 0,
+    overlayMessageLeft: 0,
+    overlayMessageTop: 0,
+    overlayMessageWidth: 0,
+    overlayMessageHeight: 0,
+  });
+  const [didPerformFirstQuery, setDidPerformFirstQuery] = useState(false);
+  const playgroundRef = useRef<HTMLDivElement>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const overlayMessageRef = useRef<HTMLDivElement>(null);
 
   const startTraining = useCallback(async () => {
     await trainAllSources(
@@ -235,9 +257,6 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       try {
         const newSource = await addSource(project.id, sourceType, data);
         await mutateSources([...sources, newSource]);
-        // setTimeout(async () => {
-        //   await startTraining();
-        // }, 1000);
       } catch (e) {
         console.error(e);
         toast.error(`${e}`);
@@ -254,25 +273,71 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     isTraining || (!isLoading && (!hasConnectedSources || !isTrained));
 
   useEffect(() => {
-    if (!isShowingOverlay) {
-      return;
-    }
-
     const observer = new ResizeObserver(() => {
-      if (!pathDivRef.current) {
+      if (!previewContainerRef.current) {
         return;
       }
-      const rect = pathDivRef.current?.getBoundingClientRect();
-      const width = Math.round(rect.width);
-      const height = Math.round(rect.height);
-      console.log('width', width, height);
-      setPathDivSize({
-        width,
-        height,
+
+      const previewContainerRect =
+        previewContainerRef.current?.getBoundingClientRect();
+      const previewContainerWidth = Math.round(
+        previewContainerRect?.width || 0,
+      );
+      const previewContainerHeight = Math.round(
+        previewContainerRect?.height || 0,
+      );
+
+      const playgroundRect = playgroundRef.current?.getBoundingClientRect();
+
+      const playgroundTop =
+        (playgroundRect?.top || 0) - (previewContainerRect.top || 0);
+      const playgroundLeft =
+        (playgroundRect?.left || 0) - (previewContainerRect.left || 0);
+      const playgroundWidth = playgroundRect?.width || 0;
+      const playgroundHeight = playgroundRect?.height || 0;
+
+      const overlayMessageRect =
+        overlayMessageRef.current?.getBoundingClientRect();
+
+      const overlayMessageLeft =
+        (overlayMessageRect?.left || 0) - (previewContainerRect.left || 0);
+      const overlayMessageTop =
+        (overlayMessageRect?.top || 0) - (previewContainerRect.top || 0);
+      const overlayMessageWidth = overlayMessageRect?.width || 0;
+      const overlayMessageHeight = overlayMessageRect?.height || 0;
+
+      console.log(
+        'TOP',
+        JSON.stringify(
+          {
+            playgroundLeft,
+            playgroundTop,
+            playgroundWidth,
+            playgroundHeight,
+          },
+          null,
+          2,
+        ),
+      );
+
+      setOverlayDimensions({
+        previewContainerWidth,
+        previewContainerHeight,
+        playgroundLeft,
+        playgroundTop,
+        playgroundWidth,
+        playgroundHeight,
+        overlayMessageLeft,
+        overlayMessageTop,
+        overlayMessageWidth,
+        overlayMessageHeight,
       });
     });
 
-    pathDivRef.current && observer.observe(pathDivRef.current);
+    playgroundRef.current && observer.observe(playgroundRef.current);
+    previewContainerRef.current &&
+      observer.observe(previewContainerRef.current);
+    overlayMessageRef.current && observer.observe(overlayMessageRef.current);
 
     return () => {
       observer.disconnect();
@@ -396,50 +461,87 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       </div>
       <div className="relative col-span-2">
         <div
+          ref={previewContainerRef}
           className={cn(
-            'absolute inset-0 z-30 flex flex-row items-center bg-black/80 shadow-xl transition duration-300',
-            {
-              'opacity-100': isShowingOverlay,
-              'pointer-events-none opacity-0': !isShowingOverlay,
-            },
+            'absolute inset-0 z-30 flex items-center justify-center transition duration-300',
           )}
         >
-          <div className="relative h-full w-[33%] flex-none">
-            <div
-              ref={pathDivRef}
-              className={cn(
-                'absolute top-[20px] bottom-[20px] left-0 w-full transition duration-500',
-              )}
-            >
-              {!hasConnectedSources && !isTraining && (
-                <div className="absolute inset-0 transition duration-500">
-                  <Lines
-                    top={20}
-                    topLeft
-                    width={pathDivSize.width}
-                    height={pathDivSize.height / 2 - 50}
-                  />
-                </div>
-              )}
-              {hasConnectedSources && !isTraining && (
-                <div className="absolute inset-0 transition duration-500">
-                  <Lines
-                    topLeft={false}
-                    top={pathDivSize.height / 2 + 40}
-                    width={pathDivSize.width}
-                    height={pathDivSize.height / 2 - 52}
-                  />
-                </div>
-              )}
-            </div>
+          <div
+            className={cn('absolute inset-0 z-0 bg-black/80 ', {
+              'opacity-100': isShowingOverlay,
+              'pointer-events-none opacity-0': !isShowingOverlay,
+            })}
+          />
+          <div className="absolute inset-0 flex-none">
+            {!hasConnectedSources && !isTraining && (
+              <div
+                className="absolute inset-0 transition duration-500"
+                style={{
+                  top: 40,
+                  width: overlayDimensions.overlayMessageLeft,
+                  height:
+                    overlayDimensions.overlayMessageTop -
+                    40 +
+                    overlayDimensions.overlayMessageHeight / 2,
+                }}
+              >
+                <Lines
+                  position="top-left"
+                  width={overlayDimensions.overlayMessageLeft}
+                  height={
+                    overlayDimensions.overlayMessageTop -
+                    40 +
+                    overlayDimensions.overlayMessageHeight / 2
+                  }
+                />
+              </div>
+            )}
+            {hasConnectedSources && !isTraining && !isTrained && (
+              <div
+                className="absolute inset-0 overflow-visible transition duration-500"
+                style={{
+                  top: overlayDimensions.previewContainerHeight / 2 + 29,
+                  width: overlayDimensions.overlayMessageLeft,
+                  height: overlayDimensions.previewContainerHeight / 2 - 61,
+                }}
+              >
+                <Lines
+                  position="bottom-left"
+                  width={overlayDimensions.overlayMessageLeft}
+                  height={overlayDimensions.previewContainerHeight / 2 - 61}
+                />
+              </div>
+            )}
+            {isTrained && !isTraining && !didPerformFirstQuery && (
+              <div
+                className="absolute inset-0 border border-red-400 transition duration-500"
+                style={{
+                  top: overlayDimensions.playgroundTop + 48,
+                  left: overlayDimensions.playgroundLeft + 28,
+                  width: overlayDimensions.playgroundWidth / 2 - 28,
+                  height:
+                    overlayDimensions.overlayMessageTop -
+                    overlayDimensions.playgroundTop -
+                    48,
+                }}
+              >
+                {/* <Lines
+                  position="top"
+                  width={overlayDimensions.width / 2 - 160}
+                  height={overlayDimensions.overlayMessageY}
+                /> */}
+              </div>
+            )}
           </div>
-          {isShowingOverlay && (
+          {(isShowingOverlay || !didPerformFirstQuery) && (
             <div
+              ref={overlayMessageRef}
               className={cn(
-                'transfrom flex w-min flex-row items-center gap-2 whitespace-nowrap rounded-full border border-neutral-900 bg-black/50 py-3 px-5 text-sm text-white backdrop-blur transition duration-500',
+                'transfrom flex w-min flex-row items-center gap-2 whitespace-nowrap rounded-full bg-black/50 py-3 px-5 text-sm text-white backdrop-blur transition duration-500',
                 {
-                  'translate-y-[-30px]': !hasConnectedSources,
-                  'translate-y-[30px]': hasConnectedSources,
+                  'border border-neutral-900': !isTrained,
+                  'translate-y-[-30px]': !hasConnectedSources || isTrained,
+                  'translate-y-[30px]': hasConnectedSources && !isTrained,
                 },
               )}
             >
@@ -454,8 +556,10 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                 </>
               ) : trainingState.state !== 'idle' ? (
                 <>Processing sources</>
-              ) : (
+              ) : !isTrained ? (
                 <>Great! Now hit &apos;Process sources&apos;</>
+              ) : (
+                <>Now ask a question to your content</>
               )}
             </div>
           )}
@@ -476,26 +580,6 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
               )}
             >
               <div className="relative flex h-full flex-col gap-4">
-                {/* <div className="z-10 flex h-[var(--playground-navbar-height)] flex-none flex-row items-center gap-2 border-b border-neutral-900 bg-neutral-1100 px-4 shadow-lg">
-                  <Button
-                    disabled={!isTrained}
-                    buttonSize="sm"
-                    variant="plain"
-                    Icon={Share}
-                  >
-                    Share
-                  </Button>
-                  <GetCode isOnboarding={!isOnboarding}>
-                    <Button
-                      disabled={!isTrained}
-                      buttonSize="sm"
-                      variant="plain"
-                      Icon={Code}
-                    >
-                      Get code
-                    </Button>
-                  </GetCode>
-                </div> */}
                 <div
                   className="pointer-events-none absolute inset-0 z-0"
                   style={{
@@ -506,6 +590,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                 />
                 <div className="absolute inset-x-0 top-4 bottom-0 z-10 flex flex-col gap-4 px-16 py-8">
                   <Playground
+                    ref={playgroundRef}
                     projectKey={project.private_dev_api_key}
                     iDontKnowMessage={iDontKnowMessage}
                     theme={theme}

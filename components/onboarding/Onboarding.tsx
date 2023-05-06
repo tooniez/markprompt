@@ -47,9 +47,9 @@ const Onboarding = () => {
               height: 'var(--onboarding-footer-height)',
             }}
           >
-            <p>You are all set!</p>
+            <p className="text-sm">You are all set!</p>
             <Button
-              variant="fuchsia"
+              variant="cta"
               onClick={() => {
                 finishOnboarding();
               }}
