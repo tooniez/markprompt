@@ -48,6 +48,7 @@ import { GitHubIcon } from '../icons/GitHub';
 import { MotifIcon } from '../icons/Motif';
 import { SpinnerIcon } from '../icons/Spinner';
 import Button from '../ui/Button';
+import { InfoTooltip } from '../ui/InfoTooltip';
 import { PulseDot } from '../ui/PulseDot';
 
 const GitHubAddSourceDialog = dynamic(
@@ -59,16 +60,25 @@ const GitHubAddSourceDialog = dynamic(
 
 export const Row = ({
   label,
+  tip,
   className,
   children,
 }: {
   label: string | ReactNode;
+  tip?: string;
   className?: string;
   children?: ReactNode;
 }) => {
   return (
     <div className={cn(className, 'grid grid-cols-2 items-center gap-4')}>
-      <div className="truncate py-1 text-sm text-neutral-300">{label}</div>
+      <div className="flex flex-row items-center gap-2 py-1 text-sm text-neutral-300">
+        <span className="flex-none truncate">{label}</span>
+        {tip && (
+          <span className="flex-grow">
+            <InfoTooltip message={tip} dimmed />
+          </span>
+        )}
+      </div>
       {children && <div className="flex w-full justify-end">{children}</div>}
     </div>
   );
@@ -684,7 +694,9 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                       ref={playgroundRef}
                       onStateChanged={setIsLoadingResponse}
                       didCompleteFirstQuery={() => {
-                        showConfetti();
+                        if (isOnboarding) {
+                          showConfetti();
+                        }
                         setDidCompleteFirstQuery(true);
                       }}
                       onCloseClick={() => {

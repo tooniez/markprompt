@@ -7,6 +7,7 @@ import { Row } from '../files/PlaygroundDashboard';
 
 type SliderInputProps = {
   label: string;
+  tip?: string;
   min: number;
   max: number;
   step: number;
@@ -16,18 +17,19 @@ type SliderInputProps = {
 };
 
 export const SliderInput: FC<SliderInputProps> = ({
-  className,
   label,
+  tip,
   min,
   max,
   step,
   value,
   setValue,
+  className,
   ...props
 }) => {
   return (
     <div className={cn(className, 'flex flex-col gap-2')}>
-      <Row label={label}>
+      <Row label={label} tip={tip}>
         <Input
           {...props}
           value={value}

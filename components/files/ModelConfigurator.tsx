@@ -60,16 +60,16 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 href="/docs#templates"
                 target="_blank"
                 rel="noreferrer"
-                className="button-ring flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
+                className="button-ring mb-4 flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
               >
                 <Info className="h-4 w-4 text-neutral-300" />
                 <span className="subtle-underline">
                   Learn more about templates
                 </span>
               </Link>
-
               <SliderInput
                 label="Temperature"
+                tip={`Determines how confident the model can be in choosing the next word. The higher the value, the more "creative" and random the result. Choose a low value, like 0.1, for most predictable results.`}
                 min={0}
                 max={1}
                 step={0.1}
@@ -80,7 +80,8 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
               />
               <SliderInput
                 label="Top P"
-                min={0.1}
+                tip="An alternative to temperature controlling the diversity of the responses."
+                min={0}
                 max={1}
                 step={0.01}
                 value={modelConfig.topP}
@@ -90,8 +91,9 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
               />
               <SliderInput
                 label="Frequency penalty"
+                tip="Parameter for controlling how often the model is allowed to repeat itself. Positive values penalize repetition, negative values encourage it."
                 min={0}
-                max={1}
+                max={2}
                 step={0.1}
                 value={modelConfig.frequencyPenalty}
                 setValue={(value) => {
@@ -100,8 +102,9 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
               />
               <SliderInput
                 label="Presence penalty"
+                tip="Parameter for controlling the likelihood of generating repetitive or common phrases in a response. By adjusting the presence penalty value, users can influence the model's output to be more diverse and creative. A higher presence penalty discourages the model from using the same tokens or phrases repeatedly, promoting more varied and unique responses. A lower presence penalty values allow the model to generate completions with more frequent or familiar phrases."
                 min={0}
-                max={1}
+                max={2}
                 step={0.1}
                 value={modelConfig.presencePenalty}
                 setValue={(value) => {
@@ -110,6 +113,7 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
               />
               <SliderInput
                 label="Max tokens"
+                tip="The maximum number of tokens to generate in the completion. One token is approximately four characters."
                 min={50}
                 max={1024}
                 step={1}
@@ -119,7 +123,6 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 }}
               />
               <div className="mt-2 border-t border-neutral-900 pt-2" />
-
               <Button
                 buttonSize="sm"
                 variant="plain"
