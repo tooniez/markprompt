@@ -1,6 +1,14 @@
 import cn from 'classnames';
 import { motion } from 'framer-motion';
-import { Upload, Globe, X, Code, Share, MessageCircle } from 'lucide-react';
+import {
+  Upload,
+  Globe,
+  X,
+  Code,
+  Share,
+  MessageCircle,
+  Stars,
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
   FC,
@@ -271,6 +279,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     overlayMessageHeight: 0,
   });
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
+  const [isPlaygroundVisible, setPlaygroundVisible] = useState(true);
   const playgroundRef = useRef<HTMLDivElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const overlayMessageRef = useRef<HTMLDivElement>(null);
@@ -331,7 +340,13 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       return 'Now ask a question to your content';
     }
     if (didCompleteFirstQuery) {
-      return 'Get the code, configure the design and model,\nor continue to the dashboard';
+      return (
+        <span>
+          <Stars className="mr-1 mt-[-2px] inline-block h-4 w-4 text-amber-400" />
+          You are all set! Get the embed code, configure the design and model,
+          or continue to the dashboard
+        </span>
+      );
     }
     return undefined;
   }, [
@@ -609,7 +624,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
             <div
               ref={overlayMessageRef}
               className={cn(
-                'transfrom flex max-w-[360px] flex-row flex-wrap items-center gap-2 rounded-full bg-black/50 py-3 px-5 text-center text-sm text-white backdrop-blur transition duration-500',
+                'transfrom flex max-w-[400px] flex-row flex-wrap items-center gap-2 rounded-full bg-black/50 py-3 px-5 text-center text-sm text-white backdrop-blur transition duration-500',
 
                 {
                   'translate-y-[-30px]':
@@ -655,46 +670,60 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                   }}
                 />
                 <div className="absolute inset-x-0 top-4 bottom-0 z-10 flex flex-col gap-4 px-16 py-8">
-                  <Playground
-                    ref={playgroundRef}
-                    onStateChanged={setIsLoadingResponse}
-                    didCompleteFirstQuery={() => {
-                      showConfetti();
-                      setDidCompleteFirstQuery(true);
-                    }}
-                    projectKey={project.private_dev_api_key}
-                    iDontKnowMessage={iDontKnowMessage}
-                    theme={theme}
-                    placeholder={placeholder}
-                    isDark={isDark}
-                    modelConfig={modelConfig}
-                    referencesHeading={referencesHeading}
-                    loadingHeading={loadingHeading}
-                    includeBranding={includeBranding}
-                    getReferenceInfo={(path: string) => {
-                      const file = files?.find((f) => f.path === path);
-                      if (file) {
-                        let name = path;
-                        const metaTitle = (file.meta as any).title;
-                        if (metaTitle) {
-                          name = metaTitle;
-                        } else {
-                          name = removeFileExtension(getNameFromPath(path));
-                        }
+                  <div
+                    className={cn('h-full w-full transform transition', {
+                      'animate-slide-up-fast': isPlaygroundVisible,
+                      'animate-slide-down-fast pointer-events-none':
+                        !isPlaygroundVisible,
+                    })}
+                  >
+                    <Playground
+                      ref={playgroundRef}
+                      onStateChanged={setIsLoadingResponse}
+                      didCompleteFirstQuery={() => {
+                        showConfetti();
+                        setDidCompleteFirstQuery(true);
+                      }}
+                      onCloseClick={() => {
+                        setPlaygroundVisible(false);
+                      }}
+                      projectKey={project.private_dev_api_key}
+                      iDontKnowMessage={iDontKnowMessage}
+                      theme={theme}
+                      placeholder={placeholder}
+                      isDark={isDark}
+                      modelConfig={modelConfig}
+                      referencesHeading={referencesHeading}
+                      loadingHeading={loadingHeading}
+                      includeBranding={includeBranding}
+                      getReferenceInfo={(path: string) => {
+                        const file = files?.find((f) => f.path === path);
+                        if (file) {
+                          let name = path;
+                          const metaTitle = (file.meta as any).title;
+                          if (metaTitle) {
+                            name = metaTitle;
+                          } else {
+                            name = removeFileExtension(getNameFromPath(path));
+                          }
 
-                        return {
-                          name,
-                          href: path,
-                        };
-                      }
-                    }}
-                  />
+                          return {
+                            name,
+                            href: path,
+                          };
+                        }
+                      }}
+                    />
+                  </div>
                   <div className="flex flex-none flex-row justify-end">
                     <div
-                      className="rounded-full border p-3"
+                      className="cursor-pointer rounded-full border p-3 hover:bg-opacity-90"
                       style={{
                         backgroundColor: colors.primary,
                         borderColor: colors.border,
+                      }}
+                      onClick={() => {
+                        setPlaygroundVisible(true);
                       }}
                     >
                       <MessageCircle
@@ -717,15 +746,15 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
         })}
       >
         <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto pb-20">
-          <div className="sticky inset-x-0 top-0 z-10 grid grid-cols-2 items-center justify-end gap-4 border-b border-neutral-900 bg-neutral-1100 py-4 px-6 shadow-lg">
-            <Button
+          <div className="sticky inset-x-0 top-0 z-10 grid grid-cols-1 items-center justify-end gap-4 border-b border-neutral-900 bg-neutral-1100 py-4 px-6 shadow-lg">
+            {/* <Button
               disabled={!isTrained}
               buttonSize="sm"
               variant="plain"
               Icon={Share}
             >
               Share
-            </Button>
+            </Button> */}
             <GetCode isOnboarding={!isOnboarding}>
               <Button
                 disabled={!isTrained}

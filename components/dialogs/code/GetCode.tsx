@@ -11,6 +11,7 @@ import { useConfigContext } from '@/lib/context/config';
 import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
 import { Theme, ThemeColorKeys, ThemeDimensionKeys } from '@/lib/themes';
+import { Project, Team } from '@/types/types';
 
 export const KeyNote = ({
   className,
@@ -245,11 +246,11 @@ const getDescription = (
   isOnboarding: boolean,
 ) => {
   if (isTestMode) {
-    return 'Showing code with the test key, which can be used for non-public sites, for instance on localhost. Do not share code with a test key publicly. For public sites, use a production key from a whitelisted domain.';
+    return 'Showing code with your test key, which can be used for non-public sites, for instance on localhost. Do not share code with a test key publicly. For public sites, use a production key from a whitelisted domain.';
   } else {
     return (
       <>
-        Showing code with the production key. Production keys can only be used
+        Showing code with your production key. Production keys can only be used
         when called from a whitelisted domain. You can add whitelisted domains
         in the{' '}
         {!isOnboarding ? (
@@ -266,6 +267,26 @@ const getDescription = (
       </>
     );
   }
+};
+
+export const TestKeyNote = ({
+  team,
+  project,
+  testMode,
+  isOnboarding,
+  className,
+}: {
+  team: Team;
+  project: Project;
+  testMode: boolean;
+  isOnboarding: boolean;
+  className: string;
+}) => {
+  return (
+    <Note type="warning" size="sm" className={className}>
+      {getDescription(team.slug, project.slug, testMode, isOnboarding)}
+    </Note>
+  );
 };
 
 const GetCode = ({
@@ -318,9 +339,7 @@ const GetCode = ({
             </div>
           </Dialog.Title>
           <Dialog.Description className="dialog-description-xl mt-2 flex-none border-b border-neutral-900 pb-4">
-            <Note type="warning" size="sm">
-              {getDescription(team.slug, project.slug, testMode, isOnboarding)}
-            </Note>
+            Use the code below in your HTML pages or web application.
           </Dialog.Description>
           <div className="flex h-full w-full flex-grow p-6">
             <Tabs.Root className="tabs-root" defaultValue="vanilla">
@@ -332,7 +351,7 @@ const GetCode = ({
                   React
                 </Tabs.Trigger>
                 <Tabs.Trigger className="tabs-trigger" value="webcomponent">
-                  Web component
+                  Web Component
                 </Tabs.Trigger>
               </Tabs.List>
               <Tabs.Content
@@ -342,10 +361,13 @@ const GetCode = ({
                 <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 w-full max-w-full overflow-y-auto py-4">
                   <h3>Usage</h3>
                   <p>Add the following script tag to your HTML page:</p>
-                  <CodePanel
-                    className="mb-4"
-                    language="markup"
-                    code={vanillaJSCode(apiKey)}
+                  <CodePanel language="markup" code={vanillaJSCode(apiKey)} />
+                  <TestKeyNote
+                    className="mt-4"
+                    team={team}
+                    project={project}
+                    testMode={testMode}
+                    isOnboarding={isOnboarding}
                   />
                 </div>
               </Tabs.Content>
@@ -378,6 +400,13 @@ const GetCode = ({
                     code={npmInstallReactCode}
                   />
                   <h3>Usage</h3>
+                  <TestKeyNote
+                    className="mb-4"
+                    team={team}
+                    project={project}
+                    testMode={testMode}
+                    isOnboarding={isOnboarding}
+                  />
                   <CodePanel
                     language="jsx"
                     code={reactCode(apiKey, placeholder, testMode)}
@@ -412,6 +441,13 @@ const GetCode = ({
                     className="w-full"
                     language="markup"
                     code={webComponentCode(apiKey)}
+                  />
+                  <TestKeyNote
+                    className="mt-4"
+                    team={team}
+                    project={project}
+                    testMode={testMode}
+                    isOnboarding={isOnboarding}
                   />
                   <h3>Stylesheet</h3>
                   <CodePanel

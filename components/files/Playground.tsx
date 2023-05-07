@@ -81,6 +81,7 @@ type PlaygroundProps = {
   forceUseProdAPI?: boolean;
   onStateChanged?: (loading: boolean) => void;
   didCompleteFirstQuery?: () => void;
+  onCloseClick?: () => void;
   onDark?: boolean;
   autoScrollDisabled?: boolean;
   isDemoMode?: boolean;
@@ -112,6 +113,7 @@ export const Playground = forwardRef(
       forceUseProdAPI,
       onStateChanged,
       didCompleteFirstQuery,
+      onCloseClick,
       autoScrollDisabled,
       isDemoMode,
       playing,
@@ -378,6 +380,7 @@ export const Playground = forwardRef(
                 'button-ring-light': !isDark,
               },
             )}
+            onClick={onCloseClick}
           >
             <X
               className={cn({
