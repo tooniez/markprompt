@@ -1,16 +1,6 @@
 import cn from 'classnames';
 import { motion } from 'framer-motion';
-import {
-  Upload,
-  Globe,
-  X,
-  ArrowDown,
-  Code,
-  Moon,
-  Share,
-  Sun,
-  MessageCircle,
-} from 'lucide-react';
+import { Upload, Globe, X, Code, Share, MessageCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
   FC,
@@ -19,6 +9,7 @@ import {
   forwardRef,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -27,6 +18,7 @@ import colors from 'tailwindcss/colors';
 
 import { addSource, deleteSource } from '@/lib/api';
 import { SAMPLE_REPO_URL } from '@/lib/constants';
+import { useAppContext } from '@/lib/context/app';
 import { useConfigContext } from '@/lib/context/config';
 import { useTrainingContext } from '@/lib/context/training';
 import emitter, { EVENT_OPEN_CHAT } from '@/lib/events';
@@ -107,14 +99,53 @@ const ConnectButton = forwardRef<HTMLButtonElement, ConnectButtonProps>(
   },
 );
 
+type LinesPosition = 'top-left' | 'bottom-left' | 'top' | 'right';
+
+export const LinesContainer = ({
+  width,
+  height,
+  top,
+  left,
+  position,
+  isDark,
+  onOverlay,
+}: {
+  width: number;
+  height: number;
+  top: number;
+  left: number;
+  position: LinesPosition;
+  isDark?: boolean;
+  onOverlay?: boolean;
+}) => {
+  return (
+    <div
+      className="absolute inset-0 transition duration-500"
+      style={{ top, left, width, height }}
+    >
+      <Lines
+        width={width}
+        height={height}
+        position={position}
+        isDark={!!isDark}
+        onOverlay={!!onOverlay}
+      />
+    </div>
+  );
+};
+
 export const Lines = ({
   width,
   height,
   position,
+  isDark,
+  onOverlay,
 }: {
   width: number;
   height: number;
-  position: 'top-left' | 'bottom-left' | 'top';
+  position: LinesPosition;
+  isDark: boolean;
+  onOverlay?: boolean;
 }) => {
   let path;
   if (position === 'top-left') {
@@ -126,19 +157,27 @@ export const Lines = ({
       -height + 10
     }a4 4 0 014-4h${Math.round(width * 0.3)}`;
   } else if (position === 'top') {
-    path = `M1 1v${Math.round(
-      height * 0.7,
-    )}a4 4 0 004 4h${width}a4 4 0 014 4v${Math.round(height * 0.3)}`;
+    path = `M1 0v${Math.round(height * 0.7 - 8)}a4 4 0 004 4h${
+      width - 10
+    }a4 4 0 014 4v${Math.round(height * 0.3)}`;
+  } else if (position === 'right') {
+    path = `M${width} 1H${Math.round(width * 0.3)}a4 4 0 00-4 4v${
+      height - 10
+    }a4 4 0 01-4 4H0`;
   }
 
   // const path1 = `M0 0h${width}v${height}H0z`;
 
   return (
     <svg viewBox={`0 0 ${width} ${4 * height}`} fill="none">
-      <path d={path} stroke="#000000" strokeOpacity="0.2" />
       <path
         d={path}
-        // d={path1}
+        stroke={
+          onOverlay ? '#00000060' : isDark ? colors.neutral['800'] : '#00000020'
+        }
+      />
+      <path
+        d={path}
         stroke="url(#pulse)"
         strokeLinecap="round"
         strokeWidth="2"
@@ -160,11 +199,18 @@ export const Lines = ({
                   x2: [0, -width],
                   y2: [-3 * height, 2 * height],
                 }
-              : {
+              : position === 'top'
+              ? {
                   x1: [0, -2 * width],
-                  y1: [-2 * height, 2 * height],
+                  y1: [3 * height, -height],
                   x2: [0, -width],
-                  y2: [-3 * height, 2 * height],
+                  y2: [4 * height, -height],
+                }
+              : {
+                  x1: [0, 2 * width],
+                  y1: [3 * height, -height],
+                  x2: [0, width],
+                  y2: [4 * height, -height],
                 }
           }
           transition={{
@@ -194,6 +240,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
 }) => {
   const { project } = useProject();
   const { files, mutate: mutateFiles, loading: loadingFiles } = useFiles();
+  const { didCompleteFirstQuery, setDidCompleteFirstQuery } = useAppContext();
   const {
     sources,
     mutate: mutateSources,
@@ -223,7 +270,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     overlayMessageWidth: 0,
     overlayMessageHeight: 0,
   });
-  const [didPerformFirstQuery, setDidPerformFirstQuery] = useState(false);
+  const [isLoadingResponse, setIsLoadingResponse] = useState(false);
   const playgroundRef = useRef<HTMLDivElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const overlayMessageRef = useRef<HTMLDivElement>(null);
@@ -238,15 +285,8 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       },
     );
     mutateFiles();
-    if (isOnboarding) {
-      showConfetti();
-      toast.success(
-        'Done processing sources. You can now ask questions to your content!',
-      );
-    } else {
-      toast.success('Done processing sources.');
-    }
-  }, [trainAllSources, mutateFiles, isOnboarding]);
+    toast.success('Done processing sources.');
+  }, [trainAllSources, mutateFiles]);
 
   const _addSource = useCallback(
     async (sourceType: SourceType, data: any) => {
@@ -269,10 +309,53 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   const isTrained = files && files.length > 0;
   const isLoading = loadingSources || loadingFiles;
   const isTraining = trainingState.state !== 'idle';
+
+  const overlayMessage = useMemo(() => {
+    if (!project || isLoading || isLoadingResponse) {
+      return undefined;
+    }
+    if (!hasConnectedSources) {
+      if (isOnboarding) {
+        return 'Start by connecting one or more sources';
+      } else {
+        return 'Connect one or more sources';
+      }
+    }
+    if (trainingState.state !== 'idle') {
+      return 'Processing sources';
+    }
+    if (!isTrained && hasConnectedSources) {
+      return "Great! Now hit 'Process sources'";
+    }
+    if (isTrained && !didCompleteFirstQuery) {
+      return 'Now ask a question to your content';
+    }
+    if (didCompleteFirstQuery) {
+      return 'Get the code, configure the design and model,\nor continue to the dashboard';
+    }
+    return undefined;
+  }, [
+    hasConnectedSources,
+    isOnboarding,
+    isTrained,
+    project,
+    trainingState.state,
+    isLoading,
+    didCompleteFirstQuery,
+    isLoadingResponse,
+  ]);
+
+  const isShowingOnboardingMessages = !!overlayMessage;
+  const isShowingLines = isShowingOnboardingMessages && !isTraining;
   const isShowingOverlay =
-    isTraining || (!isLoading && (!hasConnectedSources || !isTrained));
+    project &&
+    (isTraining || (!isLoading && (!hasConnectedSources || !isTrained)));
 
   useEffect(() => {
+    if (!isShowingOnboardingMessages) {
+      return;
+    }
+
     const observer = new ResizeObserver(() => {
       if (!previewContainerRef.current) {
         return;
@@ -290,9 +373,9 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       const playgroundRect = playgroundRef.current?.getBoundingClientRect();
 
       const playgroundTop =
-        (playgroundRect?.top || 0) - (previewContainerRect.top || 0);
+        (playgroundRect?.top || 0) - (previewContainerRect?.top || 0);
       const playgroundLeft =
-        (playgroundRect?.left || 0) - (previewContainerRect.left || 0);
+        (playgroundRect?.left || 0) - (previewContainerRect?.left || 0);
       const playgroundWidth = playgroundRect?.width || 0;
       const playgroundHeight = playgroundRect?.height || 0;
 
@@ -300,25 +383,11 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
         overlayMessageRef.current?.getBoundingClientRect();
 
       const overlayMessageLeft =
-        (overlayMessageRect?.left || 0) - (previewContainerRect.left || 0);
+        (overlayMessageRect?.left || 0) - (previewContainerRect?.left || 0);
       const overlayMessageTop =
-        (overlayMessageRect?.top || 0) - (previewContainerRect.top || 0);
+        (overlayMessageRect?.top || 0) - (previewContainerRect?.top || 0);
       const overlayMessageWidth = overlayMessageRect?.width || 0;
       const overlayMessageHeight = overlayMessageRect?.height || 0;
-
-      console.log(
-        'TOP',
-        JSON.stringify(
-          {
-            playgroundLeft,
-            playgroundTop,
-            playgroundWidth,
-            playgroundHeight,
-          },
-          null,
-          2,
-        ),
-      );
 
       setOverlayDimensions({
         previewContainerWidth,
@@ -342,7 +411,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     return () => {
       observer.disconnect();
     };
-  }, [isShowingOverlay]);
+  }, [isShowingOnboardingMessages]);
 
   return (
     <div className="absolute inset-0 grid grid-cols-1 sm:grid-cols-4">
@@ -463,7 +532,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
         <div
           ref={previewContainerRef}
           className={cn(
-            'absolute inset-0 z-30 flex items-center justify-center transition duration-300',
+            'pointer-events-none absolute inset-0 z-30 flex items-center justify-center transition duration-300',
           )}
         >
           <div
@@ -472,95 +541,92 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
               'pointer-events-none opacity-0': !isShowingOverlay,
             })}
           />
-          <div className="absolute inset-0 flex-none">
-            {!hasConnectedSources && !isTraining && (
-              <div
-                className="absolute inset-0 transition duration-500"
-                style={{
-                  top: 40,
-                  width: overlayDimensions.overlayMessageLeft,
-                  height:
-                    overlayDimensions.overlayMessageTop -
-                    40 +
-                    overlayDimensions.overlayMessageHeight / 2,
-                }}
-              >
-                <Lines
+          {isShowingLines && (
+            <div className="pointer-events-none absolute inset-0 flex-none">
+              {!hasConnectedSources && !isTraining && (
+                <LinesContainer
                   position="top-left"
+                  isDark={isDark}
+                  onOverlay={true}
+                  top={40}
+                  left={0}
                   width={overlayDimensions.overlayMessageLeft}
-                  height={
-                    overlayDimensions.overlayMessageTop -
-                    40 +
-                    overlayDimensions.overlayMessageHeight / 2
-                  }
+                  height={overlayDimensions.previewContainerHeight / 2 - 72}
                 />
-              </div>
-            )}
-            {hasConnectedSources && !isTraining && !isTrained && (
-              <div
-                className="absolute inset-0 overflow-visible transition duration-500"
-                style={{
-                  top: overlayDimensions.previewContainerHeight / 2 + 29,
-                  width: overlayDimensions.overlayMessageLeft,
-                  height: overlayDimensions.previewContainerHeight / 2 - 61,
-                }}
-              >
-                <Lines
+              )}
+              {hasConnectedSources && !isTrained && (
+                <LinesContainer
                   position="bottom-left"
+                  isDark={isDark}
+                  onOverlay={true}
+                  top={overlayDimensions.previewContainerHeight / 2 + 29}
+                  left={0}
                   width={overlayDimensions.overlayMessageLeft}
                   height={overlayDimensions.previewContainerHeight / 2 - 61}
                 />
-              </div>
-            )}
-            {isTrained && !isTraining && !didPerformFirstQuery && (
-              <div
-                className="absolute inset-0 border border-red-400 transition duration-500"
-                style={{
-                  top: overlayDimensions.playgroundTop + 48,
-                  left: overlayDimensions.playgroundLeft + 28,
-                  width: overlayDimensions.playgroundWidth / 2 - 28,
-                  height:
+              )}
+              {isTrained && !didCompleteFirstQuery && !isLoadingResponse && (
+                <LinesContainer
+                  position="top"
+                  isDark={isDark}
+                  onOverlay={false}
+                  top={
+                    overlayDimensions.playgroundTop +
+                    (theme.size === 'sm' ? 48 : 51)
+                  }
+                  left={overlayDimensions.playgroundLeft + 90}
+                  width={overlayDimensions.playgroundWidth / 2 - 90}
+                  height={
                     overlayDimensions.overlayMessageTop -
                     overlayDimensions.playgroundTop -
-                    48,
-                }}
-              >
-                {/* <Lines
-                  position="top"
-                  width={overlayDimensions.width / 2 - 160}
-                  height={overlayDimensions.overlayMessageY}
-                /> */}
-              </div>
-            )}
-          </div>
-          {(isShowingOverlay || !didPerformFirstQuery) && (
+                    (theme.size === 'sm' ? 47 : 50)
+                  }
+                />
+              )}
+              {isTrained &&
+                isOnboarding &&
+                didCompleteFirstQuery &&
+                !isLoadingResponse && (
+                  <LinesContainer
+                    position="right"
+                    isDark={isDark}
+                    top={32}
+                    left={
+                      overlayDimensions.overlayMessageLeft +
+                      overlayDimensions.overlayMessageWidth
+                    }
+                    width={
+                      overlayDimensions.previewContainerWidth -
+                      overlayDimensions.overlayMessageLeft -
+                      overlayDimensions.overlayMessageWidth
+                    }
+                    height={overlayDimensions.previewContainerHeight / 2 - 32}
+                  />
+                )}
+            </div>
+          )}
+          {overlayMessage && (
             <div
               ref={overlayMessageRef}
               className={cn(
-                'transfrom flex w-min flex-row items-center gap-2 whitespace-nowrap rounded-full bg-black/50 py-3 px-5 text-sm text-white backdrop-blur transition duration-500',
+                'transfrom flex max-w-[360px] flex-row flex-wrap items-center gap-2 rounded-full bg-black/50 py-3 px-5 text-center text-sm text-white backdrop-blur transition duration-500',
+
                 {
-                  'border border-neutral-900': !isTrained,
-                  'translate-y-[-30px]': !hasConnectedSources || isTrained,
-                  'translate-y-[30px]': hasConnectedSources && !isTrained,
+                  'translate-y-[-30px]':
+                    !hasConnectedSources &&
+                    !isTrained &&
+                    trainingState.state === 'idle',
+                  'translate-y-[30px]':
+                    hasConnectedSources &&
+                    !isTrained &&
+                    trainingState.state === 'idle',
                 },
               )}
             >
               {trainingState.state !== 'idle' && (
                 <SpinnerIcon className="ml-1 h-4 w-4 animate-spin" />
               )}
-              {!hasConnectedSources ? (
-                <>
-                  {isOnboarding
-                    ? 'Start by connecting one or more sources'
-                    : 'Connect one or more sources'}
-                </>
-              ) : trainingState.state !== 'idle' ? (
-                <>Processing sources</>
-              ) : !isTrained ? (
-                <>Great! Now hit &apos;Process sources&apos;</>
-              ) : (
-                <>Now ask a question to your content</>
-              )}
+              <>{overlayMessage}</>
             </div>
           )}
         </div>
@@ -591,6 +657,11 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                 <div className="absolute inset-x-0 top-4 bottom-0 z-10 flex flex-col gap-4 px-16 py-8">
                   <Playground
                     ref={playgroundRef}
+                    onStateChanged={setIsLoadingResponse}
+                    didCompleteFirstQuery={() => {
+                      showConfetti();
+                      setDidCompleteFirstQuery(true);
+                    }}
                     projectKey={project.private_dev_api_key}
                     iDontKnowMessage={iDontKnowMessage}
                     theme={theme}

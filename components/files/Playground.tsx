@@ -79,6 +79,7 @@ const WithCaret: FC<WithCaretProps> = ({
 type PlaygroundProps = {
   projectKey?: string;
   forceUseProdAPI?: boolean;
+  onStateChanged?: (loading: boolean) => void;
   didCompleteFirstQuery?: () => void;
   onDark?: boolean;
   autoScrollDisabled?: boolean;
@@ -109,6 +110,7 @@ export const Playground = forwardRef(
     {
       projectKey,
       forceUseProdAPI,
+      onStateChanged,
       didCompleteFirstQuery,
       autoScrollDisabled,
       isDemoMode,
@@ -187,6 +189,10 @@ export const Playground = forwardRef(
         }
       };
     }, [playing, demoResponse, demoPrompt, demoReferences, noAnimation]);
+
+    useEffect(() => {
+      onStateChanged?.(!!loading);
+    }, [loading, onStateChanged]);
 
     const setAnswerAnimated = useCallback(async (answer: string) => {
       const responseChunks = answer.split(' ');

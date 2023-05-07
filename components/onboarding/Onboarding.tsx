@@ -2,7 +2,7 @@ import cn from 'classnames';
 import Head from 'next/head';
 
 import { NavLayout } from '@/components/layouts/NavLayout';
-import useFiles from '@/lib/hooks/use-files';
+import { useAppContext } from '@/lib/context/app';
 import useOnboarding from '@/lib/hooks/use-onboarding';
 
 import PlaygroundDashboard from '../files/PlaygroundDashboard';
@@ -10,8 +10,7 @@ import Button from '../ui/Button';
 
 const Onboarding = () => {
   const { finishOnboarding } = useOnboarding();
-  const { files } = useFiles();
-  const isDone = files && files.length > 0;
+  const { didCompleteFirstQuery } = useAppContext();
 
   return (
     <>
@@ -24,11 +23,11 @@ const Onboarding = () => {
             className={cn(
               'animated-max-height absolute inset-x-0 top-0 h-full flex-grow transform transition duration-300',
               {
-                'border-b border-neutral-900': isDone,
+                'border-b border-neutral-900': didCompleteFirstQuery,
               },
             )}
             style={{
-              maxHeight: isDone
+              maxHeight: didCompleteFirstQuery
                 ? 'calc(100% - var(--onboarding-footer-height))'
                 : '100%',
             }}
@@ -39,8 +38,9 @@ const Onboarding = () => {
             className={cn(
               'absolute inset-x-0 bottom-0 flex flex-none transform flex-row items-center justify-end gap-4 px-6 py-6 transition delay-300 duration-500',
               {
-                'pointer-events-none translate-y-[10px] opacity-0': !isDone,
-                ' bottom-0 opacity-100': isDone,
+                'pointer-events-none translate-y-[10px] opacity-0':
+                  !didCompleteFirstQuery,
+                ' bottom-0 opacity-100': didCompleteFirstQuery,
               },
             )}
             style={{

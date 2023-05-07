@@ -387,8 +387,6 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 // example.com/docs should not inculde example.com/blog links.
                 return url.startsWith(baseUrl);
               });
-              console.log('baseUrl', JSON.stringify(baseUrl, null, 2));
-              console.log('sitemapUrls', JSON.stringify(sitemapUrls, null, 2));
               const numAllowance =
                 numWebsitePagesPerProjectAllowance === 'unlimited'
                   ? sitemapUrls.length
