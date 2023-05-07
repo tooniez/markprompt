@@ -1,15 +1,8 @@
 import cn from 'classnames';
 import { motion } from 'framer-motion';
-import {
-  Upload,
-  Globe,
-  X,
-  Code,
-  Share,
-  MessageCircle,
-  Stars,
-} from 'lucide-react';
+import { Upload, Globe, X, Code, MessageCircle, Stars } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import {
   FC,
   JSXElementConstructor,
@@ -33,6 +26,7 @@ import emitter, { EVENT_OPEN_CHAT } from '@/lib/events';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
+import useTeam from '@/lib/hooks/use-team';
 import {
   getIconForSource,
   getLabelForSource,
@@ -246,6 +240,7 @@ type PlaygroundDashboardProps = {
 const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   isOnboarding,
 }) => {
+  const { team } = useTeam();
   const { project } = useProject();
   const { files, mutate: mutateFiles, loading: loadingFiles } = useFiles();
   const { didCompleteFirstQuery, setDidCompleteFirstQuery } = useAppContext();
@@ -339,7 +334,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     if (isTrained && !didCompleteFirstQuery) {
       return 'Now ask a question to your content';
     }
-    if (didCompleteFirstQuery) {
+    if (didCompleteFirstQuery && isOnboarding) {
       return (
         <span>
           <Stars className="mr-1 mt-[-2px] inline-block h-4 w-4 text-amber-400" />
@@ -514,6 +509,14 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                   );
                 })}
               </div>
+              {!isOnboarding && (
+                <Link
+                  href={`/${team?.slug}/${project?.slug}/data`}
+                  className="subtle-underline mt-4 inline-block text-xs text-neutral-500"
+                >
+                  Go to data browser
+                </Link>
+              )}
             </>
           )}
         </div>

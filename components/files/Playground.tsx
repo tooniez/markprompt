@@ -99,7 +99,7 @@ type PlaygroundProps = {
   theme?: Theme;
   isDark?: boolean;
   includeBranding?: boolean;
-  getReferenceInfo: (refId: string) => ReferenceInfo | undefined;
+  getReferenceInfo?: (refId: string) => ReferenceInfo | undefined;
 };
 
 // The playground is used in three scenarios:
@@ -597,7 +597,7 @@ export const Playground = forwardRef(
               {/* Bottom padding is here, to prevent clipping items when then are animated up */}
               <div className="hidden-scrollbar mt-1 flex w-full flex-row items-center gap-2 overflow-x-auto overflow-y-visible px-8 pt-2 pb-8">
                 {(references || []).map((r, i) => {
-                  const refInfo = getReferenceInfo(r);
+                  const refInfo = getReferenceInfo?.(r);
                   if (!refInfo) {
                     return <></>;
                   }
