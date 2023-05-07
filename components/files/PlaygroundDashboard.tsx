@@ -72,7 +72,7 @@ export const Row = ({
   return (
     <div className={cn(className, 'grid grid-cols-2 items-center gap-4')}>
       <div className="flex flex-row items-center gap-2 py-1 text-sm text-neutral-300">
-        <span className="flex-none truncate">{label}</span>
+        <span className="truncate">{label}</span>
         {tip && (
           <span className="flex-grow">
             <InfoTooltip message={tip} dimmed />
