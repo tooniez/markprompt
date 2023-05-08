@@ -16,12 +16,14 @@ import { Blurs } from '@/components/ui/Blurs';
 import Button from '@/components/ui/Button';
 import { Code } from '@/components/ui/Code';
 import { Pattern } from '@/components/ui/Pattern';
+import { CONFIG_DEFAULT_VALUES } from '@/lib/context/config';
 import {
   modelLabels,
   PricedModel,
   TierDetails,
   TIERS,
 } from '@/lib/stripe/tiers';
+import { defaultTheme } from '@/lib/themes';
 
 import { SharedHead } from './SharedHead';
 import { AnalyticsExample } from '../examples/analytics';
@@ -320,14 +322,22 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             <AngeListIcon className="w-[120px] text-neutral-500" />
             <ReploIcon className="w-[120px] text-neutral-500" />
           </div>
-          <div className="shadow-box relative mx-auto mt-24 h-[500px] w-full max-w-screen-sm rounded-2xl border border-primary-500/20 p-8 shadow-primary-500/10">
+          <div className="shadow-box relative mx-auto mt-24 h-[500px] w-full max-w-screen-sm overflow-hidden rounded-2xl shadow-primary-500/10">
             <Playground
-              onDark
               isDemoMode
+              isDark={true}
+              theme={{ ...defaultTheme, dimensions: { radius: '16px' } }}
               playing={autoplayPlayground}
               demoPrompt={demoPrompt}
               demoResponse={demoResponse}
               demoReferences={demoReferences}
+              placeholder={CONFIG_DEFAULT_VALUES.placeholder}
+              iDontKnowMessage={CONFIG_DEFAULT_VALUES.iDontKnowMessage}
+              referencesHeading={CONFIG_DEFAULT_VALUES.referencesHeading}
+              loadingHeading={CONFIG_DEFAULT_VALUES.loadingHeading}
+              getReferenceInfo={(id) => {
+                return { name: id, href: undefined };
+              }}
             />
             <div
               ref={playgroundAnchorRef}
@@ -338,11 +348,11 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             As easy as 1, 2
           </h2>
           <p className="mx-auto mt-4 max-w-screen-md text-center text-lg dark:text-neutral-500">
-            Sync your Markdown/Markdoc/MDX/HTML files from a GitHub repo, drag
-            and drop them in the dashboard, or upload them programmatically.
-            Wait a little for the training to complete, then use our React
-            component, or fetch completions via our streaming API. Use the model
-            that suits your needs—all OpenAI{' '}
+            Sync your Markdown/Markdoc/MDX/HTML/text files from a GitHub repo or
+            a website, drag and drop them in the dashboard, or upload them
+            programmatically. Wait a little for the training to complete, then
+            use our React component, or fetch completions via our streaming API.
+            Use the model that suits your needs—all OpenAI{' '}
             <a
               href="https://platform.openai.com/docs/models/moderation"
               className="subtle-underline"

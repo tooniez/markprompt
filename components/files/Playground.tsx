@@ -174,6 +174,7 @@ export const Playground = forwardRef(
           await timeout(2000);
         }
         const responseChunks = demoResponse.split(' ');
+        setReferences(demoReferences || []);
         for (const chunk of responseChunks) {
           setAnswer((a) => a + chunk + ' ');
           if (!noAnimation) {
@@ -182,7 +183,6 @@ export const Playground = forwardRef(
         }
         setLoading(false);
         await timeout(500);
-        setReferences(demoReferences || []);
       }, 200);
 
       return () => {

@@ -760,7 +760,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
           'pointer-events-none opacity-30': !files || files.length === 0,
         })}
       >
-        <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto pb-20">
+        <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto pb-24">
           <div className="sticky inset-x-0 top-0 z-10 grid grid-cols-1 items-center justify-end gap-4 border-b border-neutral-900 bg-neutral-1100 py-4 px-6 shadow-lg">
             {/* <Button
               disabled={!isTrained}

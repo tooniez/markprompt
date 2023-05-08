@@ -74,7 +74,7 @@ const initialState: State = {
   resetModelConfigDefaults: () => {},
 };
 
-const DEFAULT_VALUES = {
+export const CONFIG_DEFAULT_VALUES = {
   placeholder: 'Ask me anything…',
   iDontKnowMessage: 'Sorry, I am not sure how to answer that.',
   referencesHeading: 'Answer generated from the following pages:',
@@ -93,32 +93,32 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
 
   const [isDark, setDark] = useLocalStorage<boolean>(
     `${project?.id ?? 'undefined'}:config:model-dark`,
-    DEFAULT_VALUES.isDark,
+    CONFIG_DEFAULT_VALUES.isDark,
   );
 
   const [placeholder, setPlaceholder] = useLocalStorage<string>(
     `${project?.id ?? 'undefined'}:config:placeholder`,
-    DEFAULT_VALUES.placeholder,
+    CONFIG_DEFAULT_VALUES.placeholder,
   );
 
   const [iDontKnowMessage, setIDontKnowMessage] = useLocalStorage<string>(
     `${project?.id ?? 'undefined'}:config:i-dont-know-message`,
-    DEFAULT_VALUES.iDontKnowMessage,
+    CONFIG_DEFAULT_VALUES.iDontKnowMessage,
   );
 
   const [referencesHeading, setReferencesHeading] = useLocalStorage<string>(
     `${project?.id ?? 'undefined'}:config:references-heading`,
-    DEFAULT_VALUES.referencesHeading,
+    CONFIG_DEFAULT_VALUES.referencesHeading,
   );
 
   const [loadingHeading, setLoadingHeading] = useLocalStorage<string>(
     `${project?.id ?? 'undefined'}:config:loading-heading`,
-    DEFAULT_VALUES.loadingHeading,
+    CONFIG_DEFAULT_VALUES.loadingHeading,
   );
 
   const [includeBranding, setIncludeBranding] = useLocalStorage<boolean>(
     `${project?.id ?? 'undefined'}:config:include-branding`,
-    DEFAULT_VALUES.includeBranding,
+    CONFIG_DEFAULT_VALUES.includeBranding,
   );
 
   const [modelConfig, setModelConfig] = useLocalStorage<ModelConfig>(
