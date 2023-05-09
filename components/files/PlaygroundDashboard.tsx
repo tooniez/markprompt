@@ -676,11 +676,15 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
               <div className="relative flex h-full flex-col gap-4">
                 <div
                   className="pointer-events-none absolute inset-0 z-0"
-                  style={{
-                    backgroundColor: isDark
-                      ? theme.colors.dark.overlay
-                      : theme.colors.light.overlay,
-                  }}
+                  style={
+                    isPlaygroundVisible
+                      ? {
+                          backgroundColor: isDark
+                            ? theme.colors.dark.overlay
+                            : theme.colors.light.overlay,
+                        }
+                      : {}
+                  }
                 />
                 <div className="absolute inset-x-0 top-4 bottom-0 z-10 flex flex-col gap-4 px-16 py-8">
                   <div
@@ -770,7 +774,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
             >
               Share
             </Button> */}
-            <GetCode isOnboarding={!isOnboarding}>
+            <GetCode isOnboarding={!!isOnboarding}>
               <Button
                 disabled={!isTrained}
                 buttonSize="sm"
