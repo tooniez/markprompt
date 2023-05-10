@@ -228,6 +228,10 @@ export const getMonthlyQueryAllowance = (team: Team) => {
   }
 };
 
+export const isAtLeastPro = (team: Team): boolean => {
+  return team.is_enterprise_plan || !!team.stripe_price_id;
+};
+
 export const getNumWebsitePagesPerProjectAllowance = (
   team: Team,
 ): number | 'unlimited' => {
@@ -242,4 +246,12 @@ export const getNumWebsitePagesPerProjectAllowance = (
   } else {
     return TIERS.hobby.prices[0].numWebsitePagesPerProject;
   }
+};
+
+export const canRemoveBranding = (team: Team) => {
+  return team.is_enterprise_plan;
+};
+
+export const canConfigureModel = (team: Team) => {
+  return isAtLeastPro(team);
 };

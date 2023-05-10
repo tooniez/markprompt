@@ -3,6 +3,7 @@ import { createHash } from 'crypto';
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
 import dayjs from 'dayjs';
+import { ChevronsUp, Globe, Upload } from 'lucide-react';
 import minimatch from 'minimatch';
 import { customAlphabet } from 'nanoid';
 import pako from 'pako';
@@ -15,6 +16,8 @@ import {
   uniqueNamesGenerator,
 } from 'unique-names-generator';
 
+import { GitHubIcon } from '@/components/icons/GitHub';
+import { MotifIcon } from '@/components/icons/Motif';
 import {
   DateCountHistogramEntry,
   FileType,
@@ -23,6 +26,7 @@ import {
   LLMInfo,
   MotifSourceDataType,
   Source,
+  SourceType,
   TimeInterval,
   WebsiteSourceDataType,
 } from '@/types/types';
@@ -570,16 +574,13 @@ export const toNormalizedUrl = (url: string, useInsecureSchema?: boolean) => {
     url = (useInsecureSchema ? 'http://' : 'https://') + url;
   }
 
-  // Remove any query parameters
-  const queryIndex = url.indexOf('?');
-  if (queryIndex !== -1) {
-    url = url.substring(0, queryIndex);
+  try {
+    const parsedUrl = new URL(url);
+    return `${parsedUrl.protocol}//${parsedUrl.hostname}${parsedUrl.pathname}`;
+  } catch {
+    // Do nothing, just return the URL as is.
+    return url;
   }
-
-  // Remove any trailing slashes
-  url = url.replace(/\/+$/gi, '');
-
-  return url;
 };
 
 export const getUrlHostname = (url: string) => {
@@ -662,4 +663,55 @@ export const splitIntoSubstringsOfMaxLength = (
   }
 
   return result;
+};
+
+export const getIconForSource = (sourceType: SourceType) => {
+  switch (sourceType) {
+    case 'motif':
+      return MotifIcon;
+    case 'website':
+      return Globe;
+    case 'file-upload':
+      return Upload;
+    case 'api-upload':
+      return ChevronsUp;
+    default:
+      return GitHubIcon;
+  }
+};
+
+export const removeFileExtension = (fileName: string) => {
+  const lastDotIndex = fileName.lastIndexOf('.');
+  if (lastDotIndex === -1) {
+    return fileName;
+  }
+  return fileName.substring(0, lastDotIndex);
+};
+
+type RGBA = {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+};
+export const hexToRgba = (hex: string): RGBA => {
+  const hexValue = hex.replace('#', '');
+  const r = parseInt(hexValue.substring(0, 2), 16);
+  const g = parseInt(hexValue.substring(2, 4), 16);
+  const b = parseInt(hexValue.substring(4, 6), 16);
+  let a = 1;
+  if (hexValue.length === 8) {
+    a = parseInt(hexValue.substring(6, 8), 16);
+  }
+  return { r, g, b, a };
+};
+
+export const rgbaToHex = ({ r, g, b, a }: RGBA) => {
+  const _r = r.toString(16).padStart(2, '0');
+  const _g = g.toString(16).padStart(2, '0');
+  const _b = b.toString(16).padStart(2, '0');
+  const _a = Math.round(a * 255)
+    .toString(16)
+    .padStart(2, '0');
+  return '#' + _r + _g + _b + _a;
 };

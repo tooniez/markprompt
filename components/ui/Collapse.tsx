@@ -1,6 +1,6 @@
 import * as Accordion from '@radix-ui/react-accordion';
-import { ChevronDownIcon } from '@radix-ui/react-icons';
 import cn from 'classnames';
+import { ChevronDown } from 'lucide-react';
 import React, { FC, forwardRef, ReactNode } from 'react';
 
 type CollapseGroupProps = {
@@ -39,7 +39,7 @@ const AccordionTrigger = forwardRef(
     <Accordion.Header className="flex w-full">
       <Accordion.Trigger
         className={cn(
-          'collapse-trigger flex w-full flex-row items-center gap-4 py-3 text-base outline-none transition hover:opacity-80',
+          'collapse-trigger no-ring flex w-full flex-row items-center gap-4 py-3 text-base outline-none transition hover:opacity-80',
           className,
         )}
         {...props}
@@ -48,7 +48,7 @@ const AccordionTrigger = forwardRef(
         <div className="flex-grow truncate text-left text-neutral-300">
           {children}
         </div>
-        <ChevronDownIcon
+        <ChevronDown
           className="collapse-chevron h-5 w-5 flex-none -rotate-90 text-neutral-500 transition duration-300"
           aria-hidden
         />

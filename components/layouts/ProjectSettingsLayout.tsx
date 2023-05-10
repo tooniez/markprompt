@@ -19,7 +19,6 @@ export const ProjectSettingsLayout: FC<NavSubtabsLayoutProps> = (props) => {
       { label: 'Data', href: `${basePath}/data` },
       // { label: 'Analytics', href: `${basePath}/analytics` },
       { label: 'Playground', href: `${basePath}/playground` },
-      { label: 'Component', href: `${basePath}/component` },
       { label: 'Settings', href: `${basePath}/settings` },
     ];
   }, [team?.slug, project?.slug]);

@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { FC, ReactNode, useMemo } from 'react';
+import { FC, ReactNode } from 'react';
 
 export const NoAutoInput = (props: any) => {
   return (
@@ -18,23 +18,38 @@ type InputWrapperProps = {
   variant?: 'plain' | 'glow';
   children?: ReactNode;
   className?: string;
-  rightLabel?: string;
+  rightAccessory?: string | ReactNode;
 } & any;
 
 const InputWrapper: FC<InputWrapperProps> = ({
   children,
   className,
-  rightLabel,
+  leftAccessory,
+  rightAccessory,
 }) => {
-  if (rightLabel) {
+  if (rightAccessory || leftAccessory) {
     return (
       <div
-        className={cn(className, 'input-wrapper', 'flex flex-row items-center')}
+        className={cn(
+          className,
+          'input-wrapper group flex flex-row items-center transition focus-within:border-transparent focus-within:outline-none focus-within:ring-2 focus-within:ring-white/50',
+        )}
       >
+        {typeof leftAccessory === 'string' ? (
+          <div className="flex-none whitespace-nowrap px-2 text-sm text-neutral-500">
+            {leftAccessory}
+          </div>
+        ) : (
+          <>{leftAccessory}</>
+        )}
         <div className="flex-grow">{children}</div>
-        <div className="flex-none whitespace-nowrap px-2 text-sm text-neutral-500">
-          {rightLabel}
-        </div>
+        {typeof rightAccessory === 'string' ? (
+          <div className="flex-none whitespace-nowrap px-2 text-sm text-neutral-500">
+            {rightAccessory}
+          </div>
+        ) : (
+          <>{rightAccessory}</>
+        )}
       </div>
     );
   }
@@ -48,7 +63,8 @@ type InputProps = {
   children?: ReactNode;
   className?: string;
   wrapperClassName?: string;
-  rightLabel?: string;
+  leftAccessory?: string | ReactNode;
+  rightAccessory?: string | ReactNode;
 } & any;
 
 const Input: FC<InputProps> = ({
@@ -56,26 +72,37 @@ const Input: FC<InputProps> = ({
   variant,
   className,
   wrapperClassName,
-  rightLabel,
+  leftAccessory,
+  rightAccessory,
   ...props
 }) => {
   const inputSize = s ?? 'base';
-  const hasLegend = !!rightLabel;
+  const hasLeftAccessory = !!leftAccessory;
+  const hasRightAccessory = !!rightAccessory;
 
   return (
-    <InputWrapper className={wrapperClassName} rightLabel={rightLabel}>
+    <InputWrapper
+      className={wrapperClassName}
+      leftAccessory={leftAccessory}
+      rightAccessory={rightAccessory}
+    >
       <input
         {...props}
-        // value={props.value || undefined}
-        value={props.value || ''}
-        className={cn(className, 'input-base', {
-          'input-base-border': !hasLegend,
-          'input-base-noborder': hasLegend,
-          'w-full flex-grow': hasLegend,
-          'px-2 py-2 text-sm': inputSize === 'base',
-          'px-2 py-1.5 text-sm': inputSize === 'sm',
-          'input-glow-color': variant === 'glow',
-        })}
+        value={typeof props.value !== 'undefined' ? props.value : ''}
+        className={cn(
+          className,
+          'input-base max-w-full focus:border-transparent',
+          {
+            'input-base-border input-focus':
+              !hasRightAccessory && !hasLeftAccessory,
+            'input-base-noborder focus:outline-none':
+              hasRightAccessory || hasLeftAccessory,
+            'w-full flex-grow': hasRightAccessory || hasLeftAccessory,
+            'px-2 py-2 text-sm': inputSize === 'base',
+            'px-2 py-1.5 text-sm': inputSize === 'sm',
+            'input-glow-color': variant === 'glow',
+          },
+        )}
       />
     </InputWrapper>
   );

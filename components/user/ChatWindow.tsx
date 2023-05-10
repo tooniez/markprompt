@@ -1,9 +1,11 @@
-import { ChatBubbleIcon, Cross2Icon } from '@radix-ui/react-icons';
 import * as Popover from '@radix-ui/react-popover';
 import { Chat } from '@team-plain/react-chat-ui';
 import cn from 'classnames';
-import { useState } from 'react';
+import { MessageSquare, X } from 'lucide-react';
+import { ReactNode, useEffect, useState } from 'react';
 import colors from 'tailwindcss/colors';
+
+import emitter, { EVENT_OPEN_CHAT } from '@/lib/events';
 
 export const plainTheme = {
   input: {
@@ -33,43 +35,69 @@ export const plainTheme = {
   },
 };
 
-export const ChatWindow = () => {
+export const ChatWindow = ({
+  closeOnClickOutside,
+  Component,
+}: {
+  closeOnClickOutside?: boolean;
+  Component?: ReactNode;
+}) => {
   const [chatOpen, setChatOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = () => {
+      setChatOpen(true);
+    };
+
+    emitter.on(EVENT_OPEN_CHAT, handler);
+
+    return () => {
+      emitter.off(EVENT_OPEN_CHAT, handler);
+    };
+  }, []);
 
   return (
     <Popover.Root open={chatOpen} onOpenChange={setChatOpen}>
       <Popover.Trigger asChild>
-        <div className="fixed right-8 bottom-8">
-          <button
-            className="transform rounded-full border border-neutral-800 bg-neutral-900 p-3 outline-none transition duration-300 hover:bg-neutral-1000"
-            aria-label="Start chat"
-          >
-            <div className="relative">
-              <Cross2Icon
-                className={cn(
-                  'absolute inset-0 h-5 w-5 transform text-neutral-300 duration-300',
-                  {
-                    'opacity-0': !chatOpen,
-                  },
-                )}
-              />
-              <ChatBubbleIcon
-                className={cn(
-                  'h-5 w-5 transform text-neutral-300 duration-300',
-                  {
-                    'opacity-0': chatOpen,
-                  },
-                )}
-              />
-            </div>
-          </button>
-        </div>
+        {Component ? (
+          Component
+        ) : (
+          <div className="fixed right-8 bottom-8">
+            <button
+              className="transform rounded-full border border-neutral-800 bg-neutral-900 p-3 outline-none transition duration-300 hover:bg-neutral-1000"
+              aria-label="Start chat"
+            >
+              <div className="relative">
+                <X
+                  className={cn(
+                    'absolute inset-0 h-5 w-5 transform text-neutral-300 duration-300',
+                    {
+                      'opacity-0': !chatOpen,
+                    },
+                  )}
+                />
+                <MessageSquare
+                  className={cn(
+                    'h-5 w-5 transform text-neutral-300 duration-300',
+                    {
+                      'opacity-0': chatOpen,
+                    },
+                  )}
+                />
+              </div>
+            </button>
+          </div>
+        )}
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
           className="animate-chat-window z-20 mr-4 mb-4 w-[calc(100vw-32px)] sm:w-full"
           side="bottom"
-          onInteractOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => {
+            if (!closeOnClickOutside) {
+              e.preventDefault();
+            }
+          }}
         >
           <div className="relative mt-4 h-[calc(100vh-240px)] max-h-[560px] w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-2xl sm:w-[400px] [&_textarea]:ring-0">
             <Chat />
@@ -77,7 +105,7 @@ export const ChatWindow = () => {
               className="absolute top-3 right-3 z-20 rounded p-1 backdrop-blur transition hover:bg-neutral-100"
               aria-label="Close"
             >
-              <Cross2Icon className="h-4 w-4 text-neutral-900" />
+              <X className="h-4 w-4 text-neutral-900" />
             </Popover.Close>
           </div>
         </Popover.Content>

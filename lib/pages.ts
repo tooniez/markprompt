@@ -30,7 +30,7 @@ export const getMarkdocStaticProps = async (pageId: string) => {
       collapse: collapseTag,
     },
     variables: {
-      defaultPromptTemplate: DEFAULT_PROMPT_TEMPLATE,
+      defaultPromptTemplate: DEFAULT_PROMPT_TEMPLATE.template,
     },
   };
 

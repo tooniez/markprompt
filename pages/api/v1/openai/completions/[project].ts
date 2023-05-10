@@ -19,7 +19,7 @@ import { createEmbedding, createModeration } from '@/lib/openai.edge';
 import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
-import { getBYOOpenAIKey } from '@/lib/supabase';
+import { getBYOOpenAIKey, getTeamStripeInfo } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import { stringToLLMInfo } from '@/lib/utils';
 import { safeParseInt } from '@/lib/utils.edge';
@@ -35,18 +35,30 @@ export const config = {
   runtime: 'edge',
 };
 
+const getValueIfDefined = <T>(value: T | undefined, fallback: T): T => {
+  if (typeof value === 'undefined') {
+    return fallback;
+  }
+  return value;
+};
+
 const getPayload = (
   prompt: string,
   model: OpenAIModelIdWithType,
+  temperature: number,
+  topP: number,
+  frequencyPenalty: number,
+  presencePenalty: number,
+  maxTokens: number,
   stream: boolean,
 ) => {
   const payload = {
     model: model.value,
-    temperature: 0.1,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-    max_tokens: 500,
+    temperature,
+    top_p: topP,
+    frequency_penalty: frequencyPenalty,
+    presence_penalty: presencePenalty,
+    max_tokens: maxTokens,
     stream,
     n: 1,
   };
@@ -115,7 +127,7 @@ export default async function handler(req: NextRequest) {
     return new Response(`Method ${req.method} Not Allowed`, { status: 405 });
   }
 
-  const params = await req.json();
+  let params = await req.json();
   const modelInfo = stringToLLMInfo(params.model);
   const prompt = (params.prompt as string).substring(0, MAX_PROMPT_LENGTH);
   const iDontKnowMessage =
@@ -164,6 +176,22 @@ export default async function handler(req: NextRequest) {
   }
 
   const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
+
+  const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
+  if (!teamStripeInfo) {
+    // Custom model configurations are part of the Pro and Enterprise plans.
+    params = {
+      ...params,
+      sectionsMatchThreshold: undefined,
+      sectionsMatchCount: undefined,
+      promptTemplate: undefined,
+      temperature: undefined,
+      topP: undefined,
+      frequencyPenalty: undefined,
+      presencePenalty: undefined,
+      maxTokens: undefined,
+    };
+  }
 
   const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
 
@@ -291,13 +319,22 @@ export default async function handler(req: NextRequest) {
   }
 
   const fullPrompt = stripIndent(
-    ((params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE)
+    ((params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE.template)
       .replace('{{I_DONT_KNOW}}', iDontKnowMessage || I_DONT_KNOW)
       .replace('{{CONTEXT}}', contextText)
       .replace('{{PROMPT}}', sanitizedQuery),
   );
 
-  const payload = getPayload(fullPrompt, modelInfo.model, stream);
+  const payload = getPayload(
+    fullPrompt,
+    modelInfo.model,
+    params.temperature || 0.1,
+    params.topP || 1,
+    params.frequencyPenalty || 0,
+    params.presencePenalty || 0,
+    params.maxTokens || 500,
+    stream,
+  );
   const url = getCompletionsUrl(modelInfo.model);
 
   const res = await fetch(url, {

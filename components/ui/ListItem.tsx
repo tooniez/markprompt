@@ -20,7 +20,7 @@ export const ListItem = ({
       })}
     >
       {variant === 'discreet' && (
-        <CheckIcon className="h-3 w-3 text-neutral-500" />
+        <CheckIcon className="h-3 w-3 flex-none text-neutral-500" />
       )}
       {variant !== 'discreet' && (
         <div className="h-4 w-4 flex-none rounded-full bg-primary-700/50 p-[3px]">

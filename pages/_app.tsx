@@ -17,7 +17,9 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Toaster } from '@/components/ui/Toaster';
 import { ChatWindow, plainTheme } from '@/components/user/ChatWindow';
 import { ManagedAppContext } from '@/lib/context/app';
+import { ManagedConfigContext } from '@/lib/context/config';
 import { ManagedTrainingContext } from '@/lib/context/training';
+import useUser from '@/lib/hooks/use-user';
 import { getAppHost } from '@/lib/utils.edge';
 
 interface CustomAppProps<P = any> extends AppProps<P> {
@@ -68,7 +70,10 @@ export default function App({ Component, pageProps }: CustomAppProps) {
           <ManagedPlainProvider>
             <ManagedAppContext>
               <ManagedTrainingContext>
-                <Component {...pageProps}></Component>
+                <ManagedConfigContext>
+                  <Component {...pageProps}></Component>
+                  <ChatOutsideOnboarding />
+                </ManagedConfigContext>
               </ManagedTrainingContext>
             </ManagedAppContext>
           </ManagedPlainProvider>
@@ -94,7 +99,17 @@ export const ManagedPlainProvider = ({ children }: { children: ReactNode }) => {
       theme={plainTheme}
     >
       {children}
-      <ChatWindow />
     </PlainProvider>
   );
+};
+
+export const ChatOutsideOnboarding = () => {
+  const { user } = useUser();
+
+  // Don't show chat in the bottom left during onboarding.
+  if (user && !user.has_completed_onboarding) {
+    return <></>;
+  }
+
+  return <ChatWindow closeOnClickOutside />;
 };

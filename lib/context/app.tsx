@@ -13,13 +13,20 @@ import useProjects from '../hooks/use-projects';
 import useTeam from '../hooks/use-team';
 import useTeams from '../hooks/use-teams';
 import useUser from '../hooks/use-user';
+import { useLocalStorage } from '../hooks/utils/use-localstorage';
 
 export type State = {
   isOnboarding: boolean;
+  didCompleteFirstQuery: boolean;
+  setDidCompleteFirstQuery: (value: boolean) => void;
 };
 
 const initialContextState: State = {
   isOnboarding: false,
+  didCompleteFirstQuery: false,
+  setDidCompleteFirstQuery: () => {
+    // Do nothing
+  },
 };
 
 const publicRoutes = ['/login', '/signin', '/legal'];
@@ -31,6 +38,12 @@ const AppContextProvider = (props: PropsWithChildren) => {
   const { teams, loading: loadingTeams, mutate: mutateTeams } = useTeams();
   const { team } = useTeam();
   const { projects, mutate: mutateProjects } = useProjects();
+
+  const [didCompleteFirstQuery, setDidCompleteFirstQuery] =
+    useLocalStorage<boolean>(
+      `${user?.id ?? 'undefined'}:onboarding:didCompleteFirstQuery`,
+      false,
+    );
 
   // Create personal team if it doesn't exist
   useEffect(() => {
@@ -146,6 +159,8 @@ const AppContextProvider = (props: PropsWithChildren) => {
     <AppContext.Provider
       value={{
         isOnboarding: !loadingUser && !user?.has_completed_onboarding,
+        didCompleteFirstQuery,
+        setDidCompleteFirstQuery,
       }}
       {...props}
     />

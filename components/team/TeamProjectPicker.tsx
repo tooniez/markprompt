@@ -1,6 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { CheckIcon, CaretSortIcon } from '@radix-ui/react-icons';
 import { Session, useSession } from '@supabase/auth-helpers-react';
 import cn from 'classnames';
 import {
@@ -11,6 +10,7 @@ import {
   FormikErrors,
   FormikValues,
 } from 'formik';
+import { ChevronsUpDown, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FC, useState } from 'react';
@@ -58,10 +58,10 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
     <DropdownMenu.Root open={isOpen} onOpenChange={setOpen}>
       <DropdownMenu.Trigger asChild>
         <button
-          className="rounded p-1 outline-none transition dark:text-neutral-300 dark:hover:bg-neutral-900"
+          className="no-ring rounded p-1 outline-none transition dark:text-neutral-300 dark:hover:bg-neutral-900"
           aria-label="Select team"
         >
-          <CaretSortIcon className="h-4 w-4" />
+          <ChevronsUpDown className="h-3 w-3" />
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
@@ -83,7 +83,7 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
                 <>
                   {checked && (
                     <DropdownMenu.ItemIndicator className="dropdown-menu-item-indicator">
-                      <CheckIcon className="h-4 w-4" />
+                      <Check className="h-3 w-3" />
                     </DropdownMenu.ItemIndicator>
                   )}
                   <Link href={`/${t.slug}`}>{t.name}</Link>
@@ -145,7 +145,7 @@ const ProjectPicker = () => {
                 <>
                   {checked && (
                     <DropdownMenu.ItemIndicator className="dropdown-menu-item-indicator">
-                      <CheckIcon className="h-4 w-4" />
+                      <Check className="h-3 w-3" />
                     </DropdownMenu.ItemIndicator>
                   )}
                   <Link href={`/${team.slug}/${p.slug}`}>{p.name}</Link>

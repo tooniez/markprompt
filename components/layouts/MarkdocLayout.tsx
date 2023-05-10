@@ -18,6 +18,9 @@ import React, {
   useState,
 } from 'react';
 
+import { CONFIG_DEFAULT_VALUES } from '@/lib/context/config';
+import { defaultTheme } from '@/lib/themes';
+
 import { Playground } from '../files/Playground';
 import { CodePanel } from '../ui/Code';
 
@@ -175,7 +178,11 @@ export const Fence = (props: MarkdocCodeFenceProps) => {
     code = children.join('\\n').trim();
   }
 
-  return <CodePanel code={code} language={language} />;
+  return (
+    <div className="my-6">
+      <CodePanel code={code} language={language} />
+    </div>
+  );
 };
 
 export const DocsPlayground = () => {
@@ -199,7 +206,7 @@ export const DocsPlayground = () => {
       )}
       <div
         className={cn(
-          'absolute inset-16 rounded-xl border border-dashed bg-neutral-1000 px-8 py-4 opacity-0 dark:border-neutral-800',
+          'absolute inset-16 overflow-hidden rounded-xl border-dashed bg-neutral-1000 opacity-0',
           {
             'animate-prompt-window': promptOpen,
             'pointer-events-none': !promptOpen,
@@ -213,6 +220,18 @@ export const DocsPlayground = () => {
               ? process.env.NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY
               : process.env.NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY_TEST
           }
+          isDark={true}
+          theme={{ ...defaultTheme, dimensions: { radius: '8px' } }}
+          placeholder={CONFIG_DEFAULT_VALUES.placeholder}
+          iDontKnowMessage={CONFIG_DEFAULT_VALUES.iDontKnowMessage}
+          referencesHeading={CONFIG_DEFAULT_VALUES.referencesHeading}
+          loadingHeading={CONFIG_DEFAULT_VALUES.loadingHeading}
+          getReferenceInfo={(id) => {
+            return { name: id, href: undefined };
+          }}
+          onCloseClick={() => {
+            setPromptOpen(false);
+          }}
         />
       </div>
     </div>

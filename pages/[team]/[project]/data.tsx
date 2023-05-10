@@ -1,11 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import {
-  DotsHorizontalIcon,
-  DoubleArrowUpIcon,
-  GlobeIcon,
-  UploadIcon,
-} from '@radix-ui/react-icons';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import {
   SortingState,
@@ -21,25 +15,23 @@ import cn from 'classnames';
 import dayjs from 'dayjs';
 // Cf. https://github.com/iamkun/dayjs/issues/297#issuecomment-1202327426
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { MoreHorizontal, Globe, Upload } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
 import ConfirmDialog from '@/components/dialogs/Confirm';
 import { FileDnd } from '@/components/files/FileDnd';
-import { GitHubIcon } from '@/components/icons/GitHub';
+import StatusMessage from '@/components/files/StatusMessage';
+import { UpgradeNote } from '@/components/files/UpgradeNote';
+import * as GitHub from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Button from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { deleteFiles, deleteSource } from '@/lib/api';
-import {
-  TrainingState,
-  getTrainingStateMessage,
-  useTrainingContext,
-} from '@/lib/context/training';
+import { useTrainingContext } from '@/lib/context/training';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
@@ -47,32 +39,39 @@ import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import {
   getFileNameForSourceAtPath,
+  getIconForSource,
   getLabelForSource,
   getUrlPath,
   isUrl,
   pluralize,
-  truncate,
 } from '@/lib/utils';
-import { Project, Source, SourceType } from '@/types/types';
+import { Project, Source } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
-const GitHubSource = dynamic(
+const GitHubAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/GitHub'),
   {
     loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
   },
 );
 
-const MotifSource = dynamic(
+const MotifAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Motif'),
   {
     loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
   },
 );
 
-const WebsiteSource = dynamic(
+const WebsiteAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Website'),
+  {
+    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
+  },
+);
+
+const FilesAddSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/Files'),
   {
     loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
   },
@@ -95,82 +94,6 @@ const getBasePath = (pathWithFile: string) => {
   }
 };
 
-const getStatusMessage = (
-  trainingState: TrainingState,
-  isDeleting: boolean,
-  numSelected: number,
-  numFiles: number,
-) => {
-  if (trainingState.state === 'idle' && !isDeleting) {
-    if (numSelected > 0) {
-      return `${pluralize(numSelected, 'file', 'files')} selected`;
-    } else {
-      return `${pluralize(numFiles, 'file', 'files')} trained`;
-    }
-  }
-
-  if (trainingState.state === 'loading') {
-    return getTrainingStateMessage(trainingState, numFiles);
-  } else if (isDeleting) {
-    return `Deleting ${pluralize(numSelected, 'file', 'files')}`;
-  }
-};
-
-type StatusMessageProps = {
-  trainingState: TrainingState;
-  isDeleting: boolean;
-  numFiles: number;
-  numSelected: number;
-  playgroundPath: string;
-};
-
-const StatusMessage: FC<StatusMessageProps> = ({
-  trainingState,
-  isDeleting,
-  numFiles,
-  numSelected,
-  playgroundPath,
-}) => {
-  return (
-    <div
-      className={cn('flex flex-row items-center whitespace-nowrap text-xs', {
-        'text-neutral-500': trainingState.state !== 'loading',
-        'text-fuchsia-600': trainingState.state === 'loading',
-      })}
-    >
-      <p className={cn({ 'animate-pulse': trainingState.state === 'loading' })}>
-        {truncate(
-          getStatusMessage(trainingState, isDeleting, numSelected, numFiles) ||
-            '',
-          80,
-        )}
-      </p>
-      {trainingState.state === 'idle' && numSelected === 0 && numFiles > 0 && (
-        <Link href={playgroundPath}>
-          <span className="subtle-underline ml-3 whitespace-nowrap transition hover:text-neutral-300">
-            Query in playground
-          </span>
-        </Link>
-      )}
-    </div>
-  );
-};
-
-export const getIconForSource = (sourceType: SourceType) => {
-  switch (sourceType) {
-    case 'motif':
-      return MotifIcon;
-    case 'website':
-      return GlobeIcon;
-    case 'file-upload':
-      return UploadIcon;
-    case 'api-upload':
-      return DoubleArrowUpIcon;
-    default:
-      return GitHubIcon;
-  }
-};
-
 type SourceItemProps = {
   source: Source;
   onRemoveSelected: () => void;
@@ -190,7 +113,7 @@ const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
             className="flex-none select-none p-1 text-neutral-500 opacity-50 outline-none transition hover:opacity-100"
             aria-label="Source options"
           >
-            <DotsHorizontalIcon />
+            <MoreHorizontal className="h-4 w-4" />
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
@@ -290,10 +213,6 @@ const Data = () => {
   } = useUsage();
   const [rowSelection, setRowSelection] = useState({});
   const [isDeleting, setIsDeleting] = useState(false);
-  const [fileDialogOpen, setFileDialogOpen] = useState(false);
-  const [githubDialogOpen, setGithubDialogOpen] = useState(false);
-  const [motifDialogOpen, setMotifDialogOpen] = useState(false);
-  const [websiteDialogOpen, setWebsiteDialogOpen] = useState(false);
   const [sourceToRemove, setSourceToRemove] = useState<Source | undefined>(
     undefined,
   );
@@ -417,6 +336,7 @@ const Data = () => {
   const hasFiles = files && files.length > 0;
   const canTrain = hasFiles || hasNonFileSources(sources);
   const canAddMoreWebsitePages =
+    !team ||
     numWebsitePagesPerProjectAllowance === 'unlimited' ||
     numWebsitePagesInProject < numWebsitePagesPerProjectAllowance;
 
@@ -436,7 +356,7 @@ const Data = () => {
           />
           {trainingState.state !== 'idle' && (
             <p
-              className={cn('text-xs text-neutral-500', {
+              className={cn('whitespace-nowrap text-xs text-neutral-500', {
                 'subtle-underline cursor-pointer':
                   trainingState.state !== 'cancel_requested',
               })}
@@ -507,7 +427,7 @@ const Data = () => {
                     },
                   );
                   await mutateFiles();
-                  toast.success('Processing complete');
+                  toast.success('Processing complete.');
                 }}
               >
                 Train
@@ -520,21 +440,11 @@ const Data = () => {
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-4">
         <div className="flex w-full flex-col gap-2">
           {!loadingFiles && !canAddMoreWebsitePages && (
-            <div className="mb-4 flex flex-col gap-4 rounded-md border border-dashed border-fuchsia-500/20 bg-fuchsia-900/20 p-4 text-xs leading-relaxed text-fuchsia-400">
+            <UpgradeNote className="mb-4">
               You have reached your quota of indexed website pages (
               {numWebsitePagesPerProjectAllowance}) for this plan. Please
               upgrade your plan to index more website pages.
-              <div className="flex justify-end">
-                <Button
-                  href={`/settings/${team?.slug}/plans`}
-                  buttonSize="xs"
-                  variant="borderedFuchsia"
-                  light
-                >
-                  Upgrade plan
-                </Button>
-              </div>
-            </div>
+            </UpgradeNote>
           )}
           {sources.length > 0 && (
             <>
@@ -555,160 +465,44 @@ const Data = () => {
             </>
           )}
           <div className="flex flex-col gap-2 rounded-md border border-dashed border-neutral-800 p-4">
-            <Dialog.Root
-              open={githubDialogOpen}
-              onOpenChange={setGithubDialogOpen}
-            >
-              <Dialog.Trigger asChild>
-                <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
-                  <GitHubIcon className="h-4 w-4 flex-none" />
-                  <span className="truncate">Connect GitHub repo</span>
-                </button>
-              </Dialog.Trigger>
-              <Dialog.Portal>
-                <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-                <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[600px] w-[90%] max-w-[500px] flex-col">
-                  <Dialog.Title className="dialog-title flex-none">
-                    Connect GitHub repo
-                  </Dialog.Title>
-                  <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-                    <p>
-                      Sync files from a GitHub repo. You can specify which files
-                      to include and exclude from the repository in the{' '}
-                      <Link
-                        className="subtle-underline"
-                        href={`/${team?.slug}/${project?.slug}/settings`}
-                      >
-                        project configuration
-                      </Link>
-                      .
-                    </p>
-                    <p>
-                      <span className="font-semibold">Note</span>: Syncing large
-                      repositories (&gt;100 Mb) is not yet supported. In this
-                      case, we recommend using file uploads or the{' '}
-                      <a
-                        className="subtle-underline"
-                        href="https://markprompt.com/docs#train-content"
-                      >
-                        train API
-                      </a>
-                      .
-                    </p>
-                  </div>
-                  <div className="flex-grow">
-                    <GitHubSource
-                      onDidRequestClose={() => {
-                        setGithubDialogOpen(false);
-                      }}
-                    />
-                  </div>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
-            <Dialog.Root
-              open={motifDialogOpen}
-              onOpenChange={setMotifDialogOpen}
-            >
-              <Dialog.Trigger asChild>
-                <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
-                  <MotifIcon className="h-4 w-4 flex-none" />
-                  <span className="truncate">Connect Motif project</span>
-                </button>
-              </Dialog.Trigger>
-              <Dialog.Portal>
-                <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-                <Dialog.Content className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[500px] flex-col border">
-                  <Dialog.Title className="dialog-title flex-none">
-                    Connect Motif project
-                  </Dialog.Title>
-                  <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-                    <p>
-                      Sync all public pages from your Motif project. You can
-                      specify which files to include and exclude from the
-                      repository in the{' '}
-                      <Link
-                        className="subtle-underline"
-                        href={`/${team?.slug}/${project?.slug}/settings`}
-                      >
-                        project configuration
-                      </Link>
-                      .
-                    </p>
-                  </div>
-                  <div className="flex-grow">
-                    <MotifSource
-                      onDidRequestClose={() => {
-                        setMotifDialogOpen(false);
-                      }}
-                    />
-                  </div>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
-            <Dialog.Root
-              open={websiteDialogOpen}
-              onOpenChange={setWebsiteDialogOpen}
-            >
-              <Dialog.Trigger asChild>
-                <button
-                  className={cn(
-                    'flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400',
-                    {
-                      'pointer-events-none opacity-50': !canAddMoreWebsitePages,
-                    },
-                  )}
-                >
-                  <GlobeIcon className="h-4 w-4 flex-none" />
-                  <span className="truncate">Connect website</span>
-                </button>
-              </Dialog.Trigger>
-              <Dialog.Portal>
-                <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-                <Dialog.Content className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[500px] flex-col border">
-                  <Dialog.Title className="dialog-title flex-none">
-                    Connect website
-                  </Dialog.Title>
-                  <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-                    <p>
-                      Sync pages from a website. You can specify which files to
-                      include and exclude from the website in the{' '}
-                      <Link
-                        className="subtle-underline"
-                        href={`/${team?.slug}/${project?.slug}/settings`}
-                      >
-                        project configuration
-                      </Link>
-                      .
-                    </p>
-                  </div>
-                  <div className="flex-grow">
-                    <WebsiteSource
-                      onDidRequestClose={() => {
-                        setWebsiteDialogOpen(false);
-                      }}
-                    />
-                  </div>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
-            <button
-              className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400"
-              onClick={() => setFileDialogOpen(true)}
-            >
-              <UploadIcon className="h-4 w-4 flex-none" />
-              <span className="truncate">Upload files</span>
-            </button>
+            <GitHubAddSourceDialog>
+              <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
+                <GitHub.GitHubIcon className="h-4 w-4 flex-none" />
+                <span className="truncate">Connect GitHub repo</span>
+              </button>
+            </GitHubAddSourceDialog>
+            <MotifAddSourceDialog>
+              <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
+                <MotifIcon className="h-4 w-4 flex-none" />
+                <span className="truncate">Connect Motif project</span>
+              </button>
+            </MotifAddSourceDialog>
+            <WebsiteAddSourceDialog>
+              <button
+                className={cn(
+                  'flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400',
+                  {
+                    'pointer-events-none opacity-50': !canAddMoreWebsitePages,
+                  },
+                )}
+              >
+                <Globe className="h-4 w-4 flex-none" />
+                <span className="truncate">Connect website</span>
+              </button>
+            </WebsiteAddSourceDialog>
+            <FilesAddSourceDialog>
+              <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
+                <Upload className="h-4 w-4 flex-none" />
+                <span className="truncate">Upload files</span>
+              </button>
+            </FilesAddSourceDialog>
           </div>
         </div>
         {!loadingFiles && !hasFiles && (
           <div className="h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100 sm:col-span-3">
             <FileDnd
               onTrainingComplete={() => {
-                toast.success('Processing complete');
-                setTimeout(async () => {
-                  setFileDialogOpen(false);
-                }, 1000);
+                toast.success('Processing complete.');
               }}
             />
           </div>
@@ -808,21 +602,6 @@ const Data = () => {
           </div>
         )}
       </div>
-      <Dialog.Root open={fileDialogOpen} onOpenChange={setFileDialogOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-          <Dialog.Content className="animate-dialog-slide-in dialog-content h-[90%] max-h-[400px] w-[90%] max-w-[600px]">
-            <FileDnd
-              onTrainingComplete={() => {
-                toast.success('Processing complete');
-                setTimeout(async () => {
-                  setFileDialogOpen(false);
-                }, 1000);
-              }}
-            />
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
       <Dialog.Root
         open={!!sourceToRemove}
         onOpenChange={() => setSourceToRemove(undefined)}

@@ -1,6 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import cn from 'classnames';
-import dynamic from 'next/dynamic';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
@@ -19,16 +18,10 @@ import { MarkpromptConfigType } from '@/lib/schema';
 import { getGitHubOwnerRepoString, pluralize } from '@/lib/utils';
 import { ApiError, GitHubSourceDataType, Source } from '@/types/types';
 
+import { GitHubSource } from '../dialogs/sources/GitHub';
 import { GitHubIcon } from '../icons/GitHub';
 import Button from '../ui/Button';
 import { ToggleMessage } from '../ui/ToggleMessage';
-
-const GitHubSource = dynamic(
-  () => import('@/components/dialogs/sources/GitHub'),
-  {
-    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
-  },
-);
 
 type GitHubProps = {
   onTrainingComplete: () => void;
@@ -187,7 +180,7 @@ export const GitHub: FC<GitHubProps> = ({
                   <div className="flex-grow">
                     <GitHubSource
                       clearPrevious
-                      onDidRequestClose={() => {
+                      onDidAddSource={() => {
                         setGithubDialogOpen(false);
                       }}
                     />
@@ -215,8 +208,8 @@ export const GitHub: FC<GitHubProps> = ({
                     () => {
                       mutateFiles();
                     },
-                    (message: string) => {
-                      toast.error(message);
+                    (errorMessage: string) => {
+                      toast.error(errorMessage);
                     },
                   );
                   onTrainingComplete();

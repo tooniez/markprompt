@@ -17,7 +17,7 @@ const ProfileMenu = () => {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <button
-          className="select-none outline-none transition hover:opacity-70"
+          className="button-ring select-none rounded-full outline-none transition hover:opacity-70"
           aria-label="Profile"
         >
           {session?.user?.user_metadata?.avatar_url ? (

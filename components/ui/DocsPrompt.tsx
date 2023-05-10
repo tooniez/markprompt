@@ -1,6 +1,9 @@
-import { Cross2Icon } from '@radix-ui/react-icons';
 import * as Popover from '@radix-ui/react-popover';
 import { FC, ReactNode, useState } from 'react';
+
+import { CONFIG_DEFAULT_VALUES } from '@/lib/context/config';
+import { defaultTheme } from '@/lib/themes';
+import { capitalize, removeFileExtension } from '@/lib/utils';
 
 import { Playground } from '../files/Playground';
 
@@ -16,9 +19,8 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children }) => {
       <Popover.Trigger asChild>{children}</Popover.Trigger>
       <Popover.Portal>
         <Popover.Content className="animate-chat-window z-30 mr-4 mb-4 w-[calc(100vw-32px)] sm:w-full">
-          <div className="relative mt-4 h-[calc(100vh-240px)] max-h-[560px] w-full overflow-hidden rounded-lg border border-neutral-900 bg-neutral-1000 p-4 shadow-2xl sm:w-[400px]">
+          <div className="relative mt-4 h-[calc(100vh-240px)] max-h-[560px] w-full overflow-hidden rounded-lg bg-neutral-1000 shadow-2xl sm:w-[400px]">
             <Playground
-              placeholder="Ask the Markprompt docs..."
               forceUseProdAPI
               inputClassName="pr-8"
               projectKey={
@@ -27,13 +29,22 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children }) => {
                   : process.env
                       .NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY_TEST
               }
+              isDark={true}
+              theme={{ ...defaultTheme, dimensions: { radius: '8px' } }}
+              placeholder="Ask the Markprompt docs..."
+              iDontKnowMessage={CONFIG_DEFAULT_VALUES.iDontKnowMessage}
+              referencesHeading={CONFIG_DEFAULT_VALUES.referencesHeading}
+              loadingHeading={CONFIG_DEFAULT_VALUES.loadingHeading}
+              getReferenceInfo={(id) => {
+                return {
+                  name: capitalize(removeFileExtension(id)),
+                  href: `/${removeFileExtension(id)}`,
+                };
+              }}
+              onCloseClick={() => {
+                setPromptOpen(false);
+              }}
             />
-            <Popover.Close
-              className="absolute top-5 right-3 z-20 rounded p-1 outline-none backdrop-blur transition hover:bg-neutral-900"
-              aria-label="Close"
-            >
-              <Cross2Icon className="h-4 w-4 text-neutral-300" />
-            </Popover.Close>
           </div>
         </Popover.Content>
       </Popover.Portal>

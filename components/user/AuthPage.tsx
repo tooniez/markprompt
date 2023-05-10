@@ -79,7 +79,7 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
           <Button asLink className="w-full" variant="plain" href="/">
             Go to app
           </Button>
-          <Button className="w-full" variant="ghost" onClick={signOut}>
+          <Button className="w-full" variant="bordered" onClick={signOut}>
             Sign out
           </Button>
         </div>

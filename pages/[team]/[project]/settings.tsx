@@ -1,10 +1,4 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import {
-  CopyIcon,
-  Cross2Icon,
-  SymbolIcon,
-  TrashIcon,
-} from '@radix-ui/react-icons';
 import cn from 'classnames';
 import {
   ErrorMessage,
@@ -14,6 +8,7 @@ import {
   FormikErrors,
   FormikValues,
 } from 'formik';
+import { Clipboard, X, RefreshCcw, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import Router, { useRouter } from 'next/router';
 import { useCallback, useState } from 'react';
@@ -64,7 +59,6 @@ const ProjectSettingsPage = () => {
   const { project, mutate: mutateProject } = useProject();
   const { domains, mutate: mutateDomains } = useDomains();
   const { tokens, mutate: mutateTokens } = useTokens();
-  const { githubAccessToken } = useOAuth();
   const [loading, setLoading] = useState(false);
   const [isRefreshingDevProjectKey, setIsRefreshingDevProjectKey] =
     useState(false);
@@ -220,7 +214,7 @@ const ProjectSettingsPage = () => {
                         setDomainToRemove(domain);
                       }}
                     >
-                      <Cross2Icon className="h-4 w-4" />
+                      <X className="h-4 w-4" />
                     </div>
                   </div>
                 </div>
@@ -338,7 +332,7 @@ const ProjectSettingsPage = () => {
                     toast.success('Project API key copied to clipboard.');
                   }}
                 >
-                  <CopyIcon className="h-4 w-4" />
+                  <Clipboard className="h-4 w-4 text-neutral-500" />
                 </div>
               </div>
             </div>
@@ -361,15 +355,6 @@ const ProjectSettingsPage = () => {
                 </div>
                 <div className="flex-grow" />
                 <div
-                  className="flex-none cursor-pointer rounded-md p-1 text-neutral-300 transition hover:bg-neutral-800"
-                  onClick={() => {
-                    copyToClipboard(project.private_dev_api_key);
-                    toast.success('Project API key copied to clipboard.');
-                  }}
-                >
-                  <CopyIcon className="h-4 w-4" />
-                </div>
-                <div
                   className={cn(
                     'flex-none cursor-pointer rounded-md p-1 text-neutral-300 transition',
                     {
@@ -385,7 +370,16 @@ const ProjectSettingsPage = () => {
                     setIsRefreshingDevProjectKey(false);
                   }}
                 >
-                  <SymbolIcon className="h-4 w-4" />
+                  <RefreshCcw className="h-4 w-4 text-neutral-500" />
+                </div>
+                <div
+                  className="flex-none cursor-pointer rounded-md p-1 text-neutral-300 transition hover:bg-neutral-800"
+                  onClick={() => {
+                    copyToClipboard(project.private_dev_api_key);
+                    toast.success('Project API key copied to clipboard.');
+                  }}
+                >
+                  <Clipboard className="h-4 w-4 text-neutral-500" />
                 </div>
               </div>
             </div>
@@ -422,19 +416,19 @@ const ProjectSettingsPage = () => {
                   <div
                     className="flex-none cursor-pointer rounded-md p-1 text-neutral-300 transition hover:bg-neutral-800"
                     onClick={() => {
-                      copyToClipboard(token.value);
-                      toast.success('Copied to clipboard.');
+                      setTokenToRemove(token);
                     }}
                   >
-                    <CopyIcon className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4 text-neutral-500" />
                   </div>
                   <div
                     className="flex-none cursor-pointer rounded-md p-1 text-neutral-300 transition hover:bg-neutral-800"
                     onClick={() => {
-                      setTokenToRemove(token);
+                      copyToClipboard(token.value);
+                      toast.success('Copied to clipboard.');
                     }}
                   >
-                    <TrashIcon className="h-4 w-4" />
+                    <Clipboard className="h-4 w-4 text-neutral-500" />
                   </div>
                 </div>
               );
