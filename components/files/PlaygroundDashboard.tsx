@@ -637,7 +637,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
             <div
               ref={overlayMessageRef}
               className={cn(
-                'transfrom flex max-w-[400px] flex-row flex-wrap items-center gap-2 rounded-full bg-black/50 py-3 px-5 text-center text-sm text-white backdrop-blur transition duration-500',
+                'transfrom flex max-w-[400px] flex-row flex-wrap items-center gap-2 rounded-full bg-black/80 py-3 px-5 text-center text-sm text-white backdrop-blur transition duration-500',
 
                 {
                   'translate-y-[-30px]':
