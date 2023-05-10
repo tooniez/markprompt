@@ -8,6 +8,10 @@ export const getAppHost = (subdomain?: string, forceProduction?: boolean) => {
   return subdomain ? `${subdomain}.${host}` : host;
 };
 
+export const removeSchema = (origin: string) => {
+  return origin.replace(/(^\w+:|^)\/\//, '');
+};
+
 export const safeParseInt = (value: any, defaultValue = 0) => {
   try {
     return parseInt(value);

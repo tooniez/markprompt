@@ -22,7 +22,7 @@ import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import { getBYOOpenAIKey, getTeamStripeInfo } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import { stringToLLMInfo } from '@/lib/utils';
-import { safeParseInt } from '@/lib/utils.edge';
+import { removeSchema, safeParseInt } from '@/lib/utils.edge';
 import { getAppHost } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
@@ -34,6 +34,12 @@ import {
 
 export const config = {
   runtime: 'edge',
+};
+
+const isRequestFromMarkprompt = (req: NextRequest) => {
+  const requesterOrigin = req.headers.get('origin');
+  const requesterHost = requesterOrigin && removeSchema(requesterOrigin);
+  return requesterHost === getAppHost();
 };
 
 const getValueIfDefined = <T>(value: T | undefined, fallback: T): T => {
@@ -142,11 +148,10 @@ export default async function handler(req: NextRequest) {
 
   const { pathname, searchParams } = new URL(req.url);
 
-  const hostname = req.headers.get('host');
-  const isMarkpromptHost =
-    hostname === getAppHost('api') || hostname === getAppHost();
+  const _isRequestFromMarkprompt = isRequestFromMarkprompt(req);
+
   console.log('-------------------------------------------');
-  console.log(hostname, getAppHost('api'), hostname === getAppHost());
+  console.log('_isRequestFromMarkprompt', _isRequestFromMarkprompt);
 
   const lastPathComponent = pathname.split('/').slice(-1)[0];
   let projectIdParam = undefined;
@@ -184,7 +189,7 @@ export default async function handler(req: NextRequest) {
 
   const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
 
-  if (!isMarkpromptHost) {
+  if (!_isRequestFromMarkprompt) {
     // Custom model configurations are part of the Pro and Enterprise plans
     // when used outside of the Markprompt dashboard.
     const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
