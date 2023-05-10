@@ -30,6 +30,7 @@ import {
   OpenAIModelIdWithType,
   Project,
 } from '@/types/types';
+import { getAppHost } from '@/lib/utils.edge';
 
 export const config = {
   runtime: 'edge',
@@ -141,6 +142,9 @@ export default async function handler(req: NextRequest) {
 
   const { pathname, searchParams } = new URL(req.url);
 
+  const hostname = req.headers.get('host');
+  const isMarkpromptHost = hostname === getAppHost('api');
+
   const lastPathComponent = pathname.split('/').slice(-1)[0];
   let projectIdParam = undefined;
   // TODO: need to investigate the difference between a request
@@ -177,20 +181,24 @@ export default async function handler(req: NextRequest) {
 
   const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
 
-  const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
-  if (!teamStripeInfo) {
-    // Custom model configurations are part of the Pro and Enterprise plans.
-    params = {
-      ...params,
-      sectionsMatchThreshold: undefined,
-      sectionsMatchCount: undefined,
-      promptTemplate: undefined,
-      temperature: undefined,
-      topP: undefined,
-      frequencyPenalty: undefined,
-      presencePenalty: undefined,
-      maxTokens: undefined,
-    };
+  if (!isMarkpromptHost) {
+    // Custom model configurations are part of the Pro and Enterprise plans
+    // when used outside of the Markprompt dashboard.
+    const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
+    if (!teamStripeInfo) {
+      // Custom model configurations are part of the Pro and Enterprise plans.
+      params = {
+        ...params,
+        sectionsMatchThreshold: undefined,
+        sectionsMatchCount: undefined,
+        promptTemplate: undefined,
+        temperature: undefined,
+        topP: undefined,
+        frequencyPenalty: undefined,
+        presencePenalty: undefined,
+        maxTokens: undefined,
+      };
+    }
   }
 
   const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
