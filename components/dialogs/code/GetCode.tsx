@@ -783,9 +783,9 @@ const GetCode = ({
           <div className="flex h-full w-full flex-grow p-6">
             <Tabs.Root className="tabs-root" defaultValue="vanilla">
               <Tabs.List className="tabs-list" aria-label="Get code">
-                <Tabs.Trigger className="tabs-trigger" value="vanilla">
+                {/* <Tabs.Trigger className="tabs-trigger" value="vanilla">
                   Script
-                </Tabs.Trigger>
+                </Tabs.Trigger> */}
                 <Tabs.Trigger className="tabs-trigger" value="react">
                   React
                 </Tabs.Trigger>
@@ -793,7 +793,7 @@ const GetCode = ({
                   Web Component
                 </Tabs.Trigger>
               </Tabs.List>
-              <Tabs.Content
+              {/* <Tabs.Content
                 className="tabs-content relative w-full max-w-full flex-grow"
                 value="vanilla"
               >
@@ -809,7 +809,7 @@ const GetCode = ({
                     isOnboarding={isOnboarding}
                   />
                 </div>
-              </Tabs.Content>
+              </Tabs.Content> */}
               <Tabs.Content
                 className="tabs-content relative w-full max-w-full flex-grow"
                 value="react"
