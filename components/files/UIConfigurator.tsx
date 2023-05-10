@@ -99,7 +99,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
       <Accordion.Root className="mt-2 w-full" type="single" collapsible>
         <Accordion.Item value="options">
           <AccordionTrigger>Advanced configuration</AccordionTrigger>
-          <AccordionContent>
+          <AccordionContent className="pt-4">
             <div className="flex flex-col gap-2">
               <Row label="Size">
                 <ToggleGroup.Root

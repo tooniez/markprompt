@@ -29,7 +29,7 @@ export const Collapse: FC<CollapseProps> = ({ title, children }) => {
       value={title}
     >
       <AccordionTrigger>{title}</AccordionTrigger>
-      <AccordionContent>{children}</AccordionContent>
+      <AccordionContent className="pt-4">{children}</AccordionContent>
     </Accordion.Item>
   );
 };

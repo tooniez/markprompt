@@ -19,6 +19,7 @@ import {
   ThemeColorKeys,
   ThemeColors,
 } from '../themes';
+import { objectEquals } from '../utils';
 
 export type State = {
   theme: Theme;
@@ -72,6 +73,14 @@ const initialState: State = {
   setIncludeBranding: () => {},
   setModelConfig: () => {},
   resetModelConfigDefaults: () => {},
+};
+
+export const isDefaultCustomConfig = (config: ModelConfig) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { model: configModel, ...rest } = config;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { model: defaultModel, ...defaultRest } = initialState.modelConfig;
+  return objectEquals(rest, defaultRest);
 };
 
 export const CONFIG_DEFAULT_VALUES = {

@@ -42,11 +42,7 @@ export const AccordionContent = forwardRef(
     }: { children: ReactNode; className: string } & any,
     forwardedRef,
   ) => (
-    <Accordion.Content
-      className={cn('pt-4', className)}
-      {...props}
-      ref={forwardedRef}
-    >
+    <Accordion.Content className={className} {...props} ref={forwardedRef}>
       {children}
     </Accordion.Content>
   ),

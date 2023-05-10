@@ -1,8 +1,6 @@
 import cn from 'classnames';
 import { FC, ReactNode } from 'react';
 
-import useTeam from '@/lib/hooks/use-team';
-
 import { UpgradeCTA } from '../team/PlanPicker';
 import Button from '../ui/Button';
 

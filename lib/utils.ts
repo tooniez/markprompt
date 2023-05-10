@@ -715,3 +715,20 @@ export const rgbaToHex = ({ r, g, b, a }: RGBA) => {
     .padStart(2, '0');
   return '#' + _r + _g + _b + _a;
 };
+
+export const objectEquals = (object: any, otherObject: any) => {
+  const keys = Object.keys(object);
+  const otherKeys = Object.keys(otherObject);
+
+  if (keys.length !== otherKeys.length) {
+    return false;
+  }
+
+  for (const key of keys) {
+    if (object[key] !== otherObject[key]) {
+      return false;
+    }
+  }
+
+  return true;
+};

@@ -1,12 +1,13 @@
 import * as Accordion from '@radix-ui/react-accordion';
+import cn from 'classnames';
 import { Info } from 'lucide-react';
 import Link from 'next/link';
-import { ChangeEvent, FC } from 'react';
+import { ChangeEvent, FC, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 
-import { useConfigContext } from '@/lib/context/config';
+import { isDefaultCustomConfig, useConfigContext } from '@/lib/context/config';
 import useTeam from '@/lib/hooks/use-team';
-import { canConfigureModel, canRemoveBranding } from '@/lib/stripe/tiers';
+import { canConfigureModel } from '@/lib/stripe/tiers';
 
 import { ModelPicker } from './ModelPicker';
 import { Row } from './PlaygroundDashboard';
@@ -28,10 +29,31 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
   const { modelConfig, setModelConfig, resetModelConfigDefaults } =
     useConfigContext();
 
-  const _canRemoveBranding = team && canRemoveBranding(team);
+  const _canConfigureModel = team && canConfigureModel(team);
+
+  const _isDefaultConfig = useMemo(() => {
+    return isDefaultCustomConfig(modelConfig);
+  }, [modelConfig]);
+
+  const shouldShowCustomConfigNote =
+    team && !canConfigureModel(team) && !_isDefaultConfig;
 
   return (
     <div className="flex flex-col gap-2">
+      <Accordion.Root
+        type="single"
+        value={shouldShowCustomConfigNote ? 'note' : undefined}
+        collapsible
+      >
+        <Accordion.Item className="overflow-hidden" value="note">
+          <AccordionContent className="accordion-content-alt mb-4">
+            <UpgradeNote showDialog>
+              You can experiment with custom model configurations here. In order
+              to use them in production, please upgrade to the Pro plan.
+            </UpgradeNote>
+          </AccordionContent>
+        </Accordion.Item>
+      </Accordion.Root>
       <Row label="Model">
         <ModelPicker />
       </Row>
@@ -39,7 +61,7 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
         label={
           <div className="flex flex-row items-center gap-2">
             Prompt template
-            {!_canRemoveBranding && (
+            {!_canConfigureModel && (
               <UpgradeCTA showDialog>
                 <ButtonOrLinkWrapper className="mr-1 flex flex-none items-center rounded-full">
                   <Tag color="fuchsia">Pro</Tag>
@@ -51,7 +73,7 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
       >
         <TemplatePicker />
       </Row>
-      <div className="mt-1 flex w-full">
+      <div className="mt-1 flex w-full flex-col">
         <NoAutoTextArea
           value={modelConfig.promptTemplate}
           className="h-[400px] w-full"
@@ -62,30 +84,21 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
             });
           }}
         />
+        <Link
+          href="/docs#templates"
+          target="_blank"
+          rel="noreferrer"
+          className="button-ring mt-4 mb-4 flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
+        >
+          <Info className="h-4 w-4 text-neutral-300" />
+          <span className="subtle-underline">Learn more about templates</span>
+        </Link>
       </div>
       <Accordion.Root className="mt-2 w-full" type="single" collapsible>
         <Accordion.Item value="options">
           <AccordionTrigger>Advanced configuration</AccordionTrigger>
-          <AccordionContent>
+          <AccordionContent className="pt-4">
             <div className="flex flex-col gap-4">
-              {team && !canConfigureModel(team) && (
-                <UpgradeNote showDialog>
-                  You can experiment with custom model configurations here. In
-                  order to use them in production, please upgrade to the Pro
-                  plan.
-                </UpgradeNote>
-              )}
-              <Link
-                href="/docs#templates"
-                target="_blank"
-                rel="noreferrer"
-                className="button-ring mb-4 flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
-              >
-                <Info className="h-4 w-4 text-neutral-300" />
-                <span className="subtle-underline">
-                  Learn more about templates
-                </span>
-              </Link>
               <SliderInput
                 label="Temperature"
                 tip={`Determines how confident the model can be in choosing the next word. The higher the value, the more "creative" and random the result. Choose a low value, like 0.1, for most predictable results.`}
