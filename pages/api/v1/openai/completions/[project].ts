@@ -143,7 +143,8 @@ export default async function handler(req: NextRequest) {
   const { pathname, searchParams } = new URL(req.url);
 
   const hostname = req.headers.get('host');
-  const isMarkpromptHost = hostname === getAppHost('api');
+  const isMarkpromptHost =
+    hostname === getAppHost('api') || hostname === getAppHost();
 
   const lastPathComponent = pathname.split('/').slice(-1)[0];
   let projectIdParam = undefined;
