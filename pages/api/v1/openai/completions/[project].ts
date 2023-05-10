@@ -145,6 +145,8 @@ export default async function handler(req: NextRequest) {
   const hostname = req.headers.get('host');
   const isMarkpromptHost =
     hostname === getAppHost('api') || hostname === getAppHost();
+  console.log('-------------------------------------------');
+  console.log(hostname, getAppHost('api'), hostname === getAppHost());
 
   const lastPathComponent = pathname.split('/').slice(-1)[0];
   let projectIdParam = undefined;
