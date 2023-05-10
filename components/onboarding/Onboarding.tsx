@@ -1,14 +1,18 @@
+import * as Switch from '@radix-ui/react-switch';
 import cn from 'classnames';
 import Head from 'next/head';
 
 import { NavLayout } from '@/components/layouts/NavLayout';
 import { useAppContext } from '@/lib/context/app';
 import useOnboarding from '@/lib/hooks/use-onboarding';
+import useUser from '@/lib/hooks/use-user';
 
 import PlaygroundDashboard from '../files/PlaygroundDashboard';
 import Button from '../ui/Button';
+import { updateUser } from '@/lib/api';
 
 const Onboarding = () => {
+  const { user, mutate: mutateUser } = useUser();
   const { finishOnboarding } = useOnboarding();
   const { didCompleteFirstQuery } = useAppContext();
 
@@ -36,7 +40,7 @@ const Onboarding = () => {
           </div>
           <div
             className={cn(
-              'absolute inset-x-0 bottom-0 flex flex-none transform flex-row items-center justify-end gap-4 px-6 py-6 transition delay-300 duration-500',
+              'absolute inset-x-0 bottom-0 flex flex-none transform flex-row items-center justify-end gap-8 px-6 py-6 transition delay-300 duration-500',
               {
                 'pointer-events-none translate-y-[10px] opacity-0':
                   !didCompleteFirstQuery,
@@ -47,7 +51,29 @@ const Onboarding = () => {
               height: 'var(--onboarding-footer-height)',
             }}
           >
-            <p className="text-sm">You are all set!</p>
+            <form>
+              <div className="flex flex-row items-center gap-4">
+                <label
+                  className="flex-grow truncate text-sm text-neutral-300"
+                  htmlFor="product-updates"
+                >
+                  Subscribe to product updates
+                </label>
+                <Switch.Root
+                  className="switch-root"
+                  id="product-updates"
+                  checked={!!user?.subscribe_to_product_updates}
+                  onCheckedChange={async (checked: boolean) => {
+                    await updateUser({
+                      subscribe_to_product_updates: checked,
+                    });
+                    await mutateUser();
+                  }}
+                >
+                  <Switch.Thumb className="switch-thumb" />
+                </Switch.Root>
+              </div>
+            </form>
             <Button
               variant="cta"
               onClick={() => {
