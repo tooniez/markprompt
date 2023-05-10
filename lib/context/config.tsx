@@ -78,7 +78,7 @@ export const CONFIG_DEFAULT_VALUES = {
   placeholder: 'Ask me anything…',
   iDontKnowMessage: 'Sorry, I am not sure how to answer that.',
   referencesHeading: 'Answer generated from the following pages:',
-  loadingHeading: 'Fetching relevant pages...',
+  loadingHeading: 'Fetching relevant pages…',
   includeBranding: true,
   isDark: false,
 };

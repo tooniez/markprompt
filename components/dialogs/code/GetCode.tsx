@@ -11,7 +11,7 @@ import { useConfigContext } from '@/lib/context/config';
 import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
 import { Theme, ThemeColorKeys, ThemeDimensionKeys } from '@/lib/themes';
-import { Project, Team } from '@/types/types';
+import { OpenAIModelId, Project, Team } from '@/types/types';
 
 import { getProseClassCSS, getRootTextSize } from './prose';
 
@@ -41,8 +41,19 @@ const npmInstallReactCode =
 
 const reactCode = (
   projectKey: string,
-  placeholder: string,
   isTestKey: boolean,
+  includeBranding: boolean,
+  iDontKnowMessage: string,
+  placeholder: string,
+  loadingHeading: string,
+  referencesHeading: string,
+  model: OpenAIModelId,
+  promptTemplate: string,
+  temperature: number,
+  topP: number,
+  frequencyPenalty: number,
+  presencePenalty: number,
+  maxTokens: number,
 ) => {
   return `import * as Markprompt from '@markprompt/react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
@@ -58,19 +69,31 @@ function Component() {
   }
   return (
     <Markprompt.Root
-      projectKey="${projectKey}"
-      model="gpt-4"
+      projectKey="${projectKey}"${
+    !includeBranding ? `\n      includeBranding="false"` : ''
+  }
+      iDontKnowMessage="${iDontKnowMessage}"
+      placeholder="${placeholder}"
+      loadingHeading="${loadingHeading}"
+      referencesHeading="${referencesHeading}"
+      model="${model}"
+      promptTemplate={\`${promptTemplate}\`}
+      temperature={${temperature}}
+      topP={${topP}}
+      frequencyPenalty={${frequencyPenalty}}
+      presencePenalty={${presencePenalty}}
+      maxTokens={${maxTokens}}
     >
       <Markprompt.Trigger
         aria-label="Open Markprompt"
-        className={styles.MarkpromptButton}
+        className="MarkpromptButton"
       >
-        <ChatIcon className={styles.MarkpromptIcon} />
+        <ChatIcon className="MarkpromptIcon" />
       </Markprompt.Trigger>
       <Markprompt.Portal>
-        <Markprompt.Overlay className={styles.MarkpromptOverlay} />
-        <Markprompt.Content className={styles.MarkpromptContent}>
-          <Markprompt.Close className={styles.MarkpromptClose}>
+        <Markprompt.Overlay className="MarkpromptOverlay" />
+        <Markprompt.Content className="MarkpromptContent">
+          <Markprompt.Close className="MarkpromptClose">
             <CloseIcon />
           </Markprompt.Close>
 
@@ -90,11 +113,11 @@ function Component() {
           </VisuallyHidden>
 
           <Markprompt.Form>
-            <SearchIcon className={styles.MarkpromptSearchIcon} />
-            <Markprompt.Prompt className={styles.MarkpromptPrompt} />
+            <SearchIcon className="MarkpromptSearchIcon" />
+            <Markprompt.Prompt className="MarkpromptPrompt" />
           </Markprompt.Form>
 
-          <Markprompt.AutoScroller className={styles.MarkpromptAnswer}>
+          <Markprompt.AutoScroller className="MarkpromptAnswer">
             <Caret />
             <Markprompt.Answer />
           </Markprompt.AutoScroller>
@@ -113,7 +136,7 @@ const Caret = () => {
     return null;
   }
 
-  return <span className={styles.caret} />;
+  return <span className="caret" />;
 };
 
 const capitalize = (text: string) => {
@@ -138,7 +161,7 @@ const Reference = ({
   return (
     <li
       key={referenceId}
-      className={styles.reference}
+      className="reference"
       style={{
         animationDelay: \`\${100 * index}ms\`,
       }}
@@ -161,8 +184,8 @@ const References = () => {
   }
 
   return (
-    <div data-loading-state={adjustedState} className={styles.references}>
-      <div className={styles.progress} />
+    <div data-loading-state={adjustedState} className="references">
+      <div className="progress" />
       <p>Fetching relevant pages…</p>
       <p>Answer generated from the following sources:</p>
       <Markprompt.References RootElement="ul" ReferenceElement={Reference} />
@@ -706,7 +729,15 @@ const GetCode = ({
 }) => {
   const { team } = useTeam();
   const { project } = useProject();
-  const { theme, placeholder } = useConfigContext();
+  const {
+    theme,
+    placeholder,
+    modelConfig,
+    iDontKnowMessage,
+    referencesHeading,
+    loadingHeading,
+    includeBranding,
+  } = useConfigContext();
   const [testMode, setTestMode] = useState(false);
   const [codeDialogOpen, setCodeDialogOpen] = useState(false);
 
@@ -817,7 +848,22 @@ const GetCode = ({
                   />
                   <CodePanel
                     language="jsx"
-                    code={reactCode(apiKey, placeholder, testMode)}
+                    code={reactCode(
+                      apiKey,
+                      testMode,
+                      includeBranding,
+                      iDontKnowMessage,
+                      placeholder,
+                      loadingHeading,
+                      referencesHeading,
+                      modelConfig.model,
+                      modelConfig.promptTemplate,
+                      modelConfig.temperature,
+                      modelConfig.topP,
+                      modelConfig.frequencyPenalty,
+                      modelConfig.presencePenalty,
+                      modelConfig.maxTokens,
+                    )}
                     noPreWrap
                   />
                   <h3>Stylesheet</h3>
