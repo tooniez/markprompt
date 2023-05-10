@@ -31,6 +31,20 @@ export const getBYOOpenAIKey = async (
   return openAIKeyData?.openai_key || undefined;
 };
 
+export const getTeamStripeInfo = async (
+  supabaseAdmin: SupabaseClient<Database>,
+  projectId: Project['id'],
+): Promise<string | undefined> => {
+  const { data } = await supabaseAdmin
+    .from('teams')
+    .select('stripe_price_id, projects!inner (id)')
+    .match({ 'projects.id': projectId })
+    .limit(1)
+    .maybeSingle();
+
+  return data?.stripe_price_id || undefined;
+};
+
 export const setGitHubAuthState = async (
   supabase: SupabaseClient<Database>,
   userId: DbUser['id'],

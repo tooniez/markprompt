@@ -43,9 +43,9 @@ Question: "{{PROMPT}}"
 Answer in a friendly tone (including related code snippets if available):`,
 };
 
-const JAPANESE_PROMPT_TEMPLATE = {
+const CHINESE_PROMPT_TEMPLATE = {
   name: 'Simplified Chinese',
-  template: `You are a very enthusiastic company representative who loves to help people! Given the following sections from the documentation (preceded by a section id), answer the question using only that information, output in Markdown format. If you are unsure and the answer is not explicitly written in the documentation, say "{{I_DONT_KNOW}}".
+  template: `You are a very enthusiastic company representative who loves to help people! Given the following sections from the documentation (preceded by a section id), answer the question using only that information, output in Markdown format. If you are unsure and the answer is not explicitly written in the documentation, say "{{I_DONT_KNOW}}" in Simplified Chinese.
 
 Context sections:
 ---
@@ -86,7 +86,7 @@ export const predefinedPromptTemplates = [
   DEFAULT_PROMPT_TEMPLATE,
   BUSINESS_LOGIC_PROMPT_TEMPLATE,
   BRANDING_PROMPT_TEMPLATE,
-  JAPANESE_PROMPT_TEMPLATE,
+  CHINESE_PROMPT_TEMPLATE,
   HAIKU_PROMPT_TEMPLATE,
   PIRATE_PROMPT_TEMPLATE,
 ];

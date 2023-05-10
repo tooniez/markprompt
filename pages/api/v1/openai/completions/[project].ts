@@ -19,7 +19,7 @@ import { createEmbedding, createModeration } from '@/lib/openai.edge';
 import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
-import { getBYOOpenAIKey } from '@/lib/supabase';
+import { getBYOOpenAIKey, getTeamStripeInfo } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import { stringToLLMInfo } from '@/lib/utils';
 import { safeParseInt } from '@/lib/utils.edge';
@@ -127,7 +127,7 @@ export default async function handler(req: NextRequest) {
     return new Response(`Method ${req.method} Not Allowed`, { status: 405 });
   }
 
-  const params = await req.json();
+  let params = await req.json();
   const modelInfo = stringToLLMInfo(params.model);
   const prompt = (params.prompt as string).substring(0, MAX_PROMPT_LENGTH);
   const iDontKnowMessage =
@@ -176,6 +176,22 @@ export default async function handler(req: NextRequest) {
   }
 
   const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
+
+  const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
+  if (!teamStripeInfo) {
+    // Custom model configurations are part of the Pro and Enterprise plans.
+    params = {
+      ...params,
+      sectionsMatchThreshold: undefined,
+      sectionsMatchCount: undefined,
+      promptTemplate: undefined,
+      temperature: undefined,
+      topP: undefined,
+      frequencyPenalty: undefined,
+      presencePenalty: undefined,
+      maxTokens: undefined,
+    };
+  }
 
   const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
 
