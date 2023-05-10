@@ -150,9 +150,6 @@ export default async function handler(req: NextRequest) {
 
   const _isRequestFromMarkprompt = isRequestFromMarkprompt(req);
 
-  console.log('-------------------------------------------');
-  console.log('_isRequestFromMarkprompt', _isRequestFromMarkprompt);
-
   const lastPathComponent = pathname.split('/').slice(-1)[0];
   let projectIdParam = undefined;
   // TODO: need to investigate the difference between a request
