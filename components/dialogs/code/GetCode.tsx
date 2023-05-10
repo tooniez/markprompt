@@ -781,7 +781,7 @@ const GetCode = ({
             Use the code below in your HTML pages or web application.
           </Dialog.Description>
           <div className="flex h-full w-full flex-grow p-6">
-            <Tabs.Root className="tabs-root" defaultValue="vanilla">
+            <Tabs.Root className="tabs-root" defaultValue="react">
               <Tabs.List className="tabs-list" aria-label="Get code">
                 {/* <Tabs.Trigger className="tabs-trigger" value="vanilla">
                   Script
