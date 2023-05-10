@@ -54,6 +54,8 @@ const reactCode = (
   frequencyPenalty: number,
   presencePenalty: number,
   maxTokens: number,
+  sectionsMatchCount: number,
+  sectionsMatchThreshold: number,
 ) => {
   return `import * as Markprompt from '@markprompt/react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
@@ -83,6 +85,8 @@ function Component() {
       frequencyPenalty={${frequencyPenalty}}
       presencePenalty={${presencePenalty}}
       maxTokens={${maxTokens}}
+      sectionsMatchCount={${sectionsMatchCount}}
+      sectionsMatchThreshold={${sectionsMatchThreshold}}
     >
       <Markprompt.Trigger
         aria-label="Open Markprompt"
@@ -863,6 +867,8 @@ const GetCode = ({
                       modelConfig.frequencyPenalty,
                       modelConfig.presencePenalty,
                       modelConfig.maxTokens,
+                      modelConfig.sectionsMatchCount,
+                      modelConfig.sectionsMatchThreshold,
                     )}
                     noPreWrap
                   />

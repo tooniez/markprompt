@@ -61,6 +61,8 @@ const initialState: State = {
     presencePenalty: 0,
     maxTokens: 500,
     promptTemplate: DEFAULT_PROMPT_TEMPLATE.template,
+    sectionsMatchCount: 10,
+    sectionsMatchThreshold: 0.5,
   },
   setColor: () => {},
   setTheme: () => {},

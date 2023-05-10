@@ -102,6 +102,8 @@ export type ModelConfig = {
   frequencyPenalty: number;
   presencePenalty: number;
   maxTokens: number;
+  sectionsMatchCount: number;
+  sectionsMatchThreshold: number;
 };
 
 export type DbUser = Database['public']['Tables']['users']['Row'];

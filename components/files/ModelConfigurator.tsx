@@ -154,6 +154,31 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                   setModelConfig({ ...modelConfig, maxTokens: value });
                 }}
               />
+              <SliderInput
+                label="Context size"
+                tip="The maximum number of sections to include in the prompt context."
+                min={1}
+                max={50}
+                step={1}
+                value={modelConfig.sectionsMatchCount}
+                setValue={(value) => {
+                  setModelConfig({ ...modelConfig, sectionsMatchCount: value });
+                }}
+              />
+              <SliderInput
+                label="Context similarity"
+                tip="The similarity threshold between the input question and selected sections."
+                min={0}
+                max={1}
+                step={0.1}
+                value={modelConfig.sectionsMatchThreshold}
+                setValue={(value) => {
+                  setModelConfig({
+                    ...modelConfig,
+                    sectionsMatchThreshold: value,
+                  });
+                }}
+              />
               <div className="mt-2 border-t border-neutral-900 pt-2" />
               <Button
                 buttonSize="sm"

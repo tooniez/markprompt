@@ -194,14 +194,14 @@ export default async function handler(req: NextRequest) {
       // Custom model configurations are part of the Pro and Enterprise plans.
       params = {
         ...params,
-        sectionsMatchThreshold: undefined,
-        sectionsMatchCount: undefined,
         promptTemplate: undefined,
         temperature: undefined,
         topP: undefined,
         frequencyPenalty: undefined,
         presencePenalty: undefined,
         maxTokens: undefined,
+        sectionsMatchCount: undefined,
+        sectionsMatchThreshold: undefined,
       };
     }
   }
