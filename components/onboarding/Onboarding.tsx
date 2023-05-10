@@ -3,13 +3,13 @@ import cn from 'classnames';
 import Head from 'next/head';
 
 import { NavLayout } from '@/components/layouts/NavLayout';
+import { updateUser } from '@/lib/api';
 import { useAppContext } from '@/lib/context/app';
 import useOnboarding from '@/lib/hooks/use-onboarding';
 import useUser from '@/lib/hooks/use-user';
 
 import PlaygroundDashboard from '../files/PlaygroundDashboard';
 import Button from '../ui/Button';
-import { updateUser } from '@/lib/api';
 
 const Onboarding = () => {
   const { user, mutate: mutateUser } = useUser();
