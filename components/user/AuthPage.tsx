@@ -26,30 +26,53 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
         </Link>
       </div>
       {!session ? (
-        <div className="mx-auto mt-16 max-w-sm">
-          <Auth
-            view={type === 'signup' ? 'sign_up' : 'sign_in'}
-            redirectTo={getAppOrigin() + '/'}
-            onlyThirdPartyProviders
-            socialLayout="vertical"
-            providers={['github', 'google']}
-            supabaseClient={supabase}
-            appearance={{ theme: ThemeMinimal }}
-            theme="default"
-            localization={{
-              variables: {
-                sign_in: {
-                  email_label: 'Email',
-                  password_label: 'Password',
+        <>
+          <div className="mx-auto mt-16 max-w-sm">
+            <Auth
+              view={type === 'signup' ? 'sign_up' : 'sign_in'}
+              redirectTo={getAppOrigin() + '/'}
+              onlyThirdPartyProviders
+              socialLayout="vertical"
+              providers={['github', 'google']}
+              supabaseClient={supabase}
+              appearance={{ theme: ThemeMinimal }}
+              theme="default"
+              localization={{
+                variables: {
+                  sign_in: {
+                    email_label: 'Email',
+                    password_label: 'Password',
+                  },
+                  sign_up: {
+                    email_label: 'Email',
+                    password_label: 'Password',
+                  },
                 },
-                sign_up: {
-                  email_label: 'Email',
-                  password_label: 'Password',
-                },
-              },
-            }}
-          />
-        </div>
+              }}
+            />
+          </div>
+          <p className="mt-24 text-center text-sm text-neutral-500">
+            Have a custom company use case?{' '}
+            <a
+              className="subtle-underline"
+              href={`mailto:${process.env.NEXT_PUBLIC_SALES_EMAIL!}`}
+            >
+              Get enterprise assistance
+            </a>
+            .
+          </p>
+          <p className="mt-12 text-center text-sm text-neutral-500">
+            By signing in, you agree to our{' '}
+            <Link className="subtle-underline" href="/legal/terms">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link className="subtle-underline" href="/legal/privacy">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </>
       ) : (
         <div className="mx-auto flex max-w-sm flex-col items-center justify-center gap-2 p-8 pt-20 text-neutral-300">
           <p className="mb-4">You are already signed in.</p>
