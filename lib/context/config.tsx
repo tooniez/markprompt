@@ -59,7 +59,7 @@ const initialState: State = {
     frequencyPenalty: 0,
     presencePenalty: 0,
     maxTokens: 500,
-    promptTemplate: DEFAULT_PROMPT_TEMPLATE,
+    promptTemplate: DEFAULT_PROMPT_TEMPLATE.template,
   },
   setColor: () => {},
   setTheme: () => {},

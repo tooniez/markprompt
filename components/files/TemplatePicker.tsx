@@ -1,24 +1,36 @@
 import * as Select from '@radix-ui/react-select';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
-import { OpenAIModelId, SUPPORTED_MODELS } from '@/types/types';
+import {
+  DEFAULT_PROMPT_TEMPLATE,
+  predefinedPromptTemplates,
+} from '@/lib/prompt';
 
 import { SelectItem } from '../ui/Select';
 
-type ModelPickerProps = {
+type TemplatePickerProps = {
   className?: string;
 };
 
-export const ModelPicker: FC<ModelPickerProps> = () => {
+export const TemplatePicker: FC<TemplatePickerProps> = () => {
   const { modelConfig, setModelConfig } = useConfigContext();
+
+  const selectedTemplateName = useMemo(() => {
+    return predefinedPromptTemplates.find((t) => {
+      return t.template === modelConfig.promptTemplate;
+    })?.name;
+  }, [modelConfig.promptTemplate]);
 
   return (
     <Select.Root
-      value={modelConfig.model}
+      value={selectedTemplateName || 'Custom'}
       onValueChange={(value) => {
-        setModelConfig({ ...modelConfig, model: value as OpenAIModelId });
+        const promptTemplate =
+          predefinedPromptTemplates.find((t) => t.name === value)?.template ||
+          DEFAULT_PROMPT_TEMPLATE.template;
+        setModelConfig({ ...modelConfig, promptTemplate });
       }}
     >
       <Select.Trigger
@@ -26,7 +38,7 @@ export const ModelPicker: FC<ModelPickerProps> = () => {
         aria-label="Theme"
       >
         <div className="flex-grow truncate whitespace-nowrap text-left">
-          <Select.Value placeholder="Pick a model…" />
+          <Select.Value placeholder="Pick a template…" />
         </div>
         <Select.Icon className="flex-none text-neutral-500">
           <ChevronDown className="h-4 w-4" />
@@ -39,19 +51,16 @@ export const ModelPicker: FC<ModelPickerProps> = () => {
           </Select.ScrollUpButton>
           <Select.Viewport>
             <Select.Group>
-              {SUPPORTED_MODELS.chat_completions.map((m) => {
+              {!selectedTemplateName && (
+                <SelectItem value="Custom">Custom</SelectItem>
+              )}
+              {predefinedPromptTemplates?.map((template) => {
                 return (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                );
-              })}
-            </Select.Group>
-            <Select.Group>
-              {SUPPORTED_MODELS.completions.map((m) => {
-                return (
-                  <SelectItem key={m} value={m}>
-                    {m}
+                  <SelectItem
+                    key={`template-${template.name}`}
+                    value={template.name}
+                  >
+                    {template.name}
                   </SelectItem>
                 );
               })}

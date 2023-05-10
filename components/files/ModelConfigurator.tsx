@@ -6,14 +6,17 @@ import { toast } from 'react-hot-toast';
 
 import { useConfigContext } from '@/lib/context/config';
 import useTeam from '@/lib/hooks/use-team';
-import { canConfigureModel } from '@/lib/stripe/tiers';
+import { canConfigureModel, canRemoveBranding } from '@/lib/stripe/tiers';
 
 import { ModelPicker } from './ModelPicker';
 import { Row } from './PlaygroundDashboard';
+import { TemplatePicker } from './TemplatePicker';
 import { UpgradeNote } from './UpgradeNote';
+import { UpgradeCTA } from '../team/PlanPicker';
 import { AccordionContent, AccordionTrigger } from '../ui/Accordion';
-import Button from '../ui/Button';
+import Button, { ButtonOrLinkWrapper } from '../ui/Button';
 import { SliderInput } from '../ui/SliderInput';
+import { Tag } from '../ui/Tag';
 import { NoAutoTextArea } from '../ui/TextArea';
 
 type ModelConfiguratorProps = {
@@ -25,11 +28,41 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
   const { modelConfig, setModelConfig, resetModelConfigDefaults } =
     useConfigContext();
 
+  const _canRemoveBranding = team && canRemoveBranding(team);
+
   return (
     <div className="flex flex-col gap-2">
       <Row label="Model">
         <ModelPicker />
       </Row>
+      <Row
+        label={
+          <div className="flex flex-row items-center gap-2">
+            Prompt template
+            {!_canRemoveBranding && (
+              <UpgradeCTA showDialog>
+                <ButtonOrLinkWrapper className="mr-1 flex flex-none items-center rounded-full">
+                  <Tag color="fuchsia">Pro</Tag>
+                </ButtonOrLinkWrapper>
+              </UpgradeCTA>
+            )}
+          </div>
+        }
+      >
+        <TemplatePicker />
+      </Row>
+      <div className="mt-1 flex w-full">
+        <NoAutoTextArea
+          value={modelConfig.promptTemplate}
+          className="h-[400px] w-full"
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setModelConfig({
+              ...modelConfig,
+              promptTemplate: event.target.value,
+            });
+          }}
+        />
+      </div>
       <Accordion.Root className="mt-2 w-full" type="single" collapsible>
         <Accordion.Item value="options">
           <AccordionTrigger>Advanced configuration</AccordionTrigger>
@@ -42,20 +75,6 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                   plan.
                 </UpgradeNote>
               )}
-
-              <Row className="mt-4" label="Prompt template" />
-              <div className="-mt-1 flex w-full">
-                <NoAutoTextArea
-                  value={modelConfig.promptTemplate}
-                  className="h-[400px] w-full"
-                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                    setModelConfig({
-                      ...modelConfig,
-                      promptTemplate: event.target.value,
-                    });
-                  }}
-                />
-              </div>
               <Link
                 href="/docs#templates"
                 target="_blank"

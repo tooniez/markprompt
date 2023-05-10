@@ -28,7 +28,7 @@ export const ThemePicker: FC<ThemePickerProps> = () => {
         className="button-ring flex w-full flex-row items-center gap-2 rounded-md border border-neutral-900 py-1.5 px-3 text-sm outline-none"
         aria-label="Theme"
       >
-        <div className="flex-grow text-left">
+        <div className="flex-grow truncate whitespace-nowrap text-left">
           <Select.Value placeholder="Pick a theme…" />
         </div>
         <Select.Icon className="flex-none text-neutral-500">
