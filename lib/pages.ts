@@ -10,6 +10,7 @@ import {
   headingNode,
   noteTag,
   playgroundTag,
+  videoTag,
 } from '@/components/layouts/MarkdocLayout';
 
 import { DEFAULT_PROMPT_TEMPLATE } from './prompt';
@@ -28,6 +29,7 @@ export const getMarkdocStaticProps = async (pageId: string) => {
       note: noteTag,
       collapsegroup: collapseGroupTag,
       collapse: collapseTag,
+      video: videoTag,
     },
     variables: {
       defaultPromptTemplate: DEFAULT_PROMPT_TEMPLATE.template,

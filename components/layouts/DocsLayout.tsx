@@ -16,6 +16,7 @@ import { DocsPrompt } from '../ui/DocsPrompt';
 import { Heading } from '../ui/Heading';
 import { Note } from '../ui/Note';
 import { Pattern } from '../ui/Pattern';
+import { Video } from '../ui/Video';
 
 export const MarkdocContext = createContext<any>(undefined);
 
@@ -76,6 +77,7 @@ export const DocsLayout: FC<DocsLayoutProps> = ({ content, toc }: any) => {
                     Heading,
                     Note,
                     Playground: DocsPlayground,
+                    Video,
                   },
                 })}
               </ProseContainer>

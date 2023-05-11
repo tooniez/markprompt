@@ -21,6 +21,7 @@ import { Collapse, CollapseGroup } from '../ui/Collapse';
 import { Heading } from '../ui/Heading';
 import { Note } from '../ui/Note';
 import { Pattern } from '../ui/Pattern';
+import { Video } from '../ui/Video';
 
 dayjs.extend(localizedFormat);
 
@@ -162,6 +163,7 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
                     Heading,
                     Note,
                     Playground: DocsPlayground,
+                    Video,
                   },
                 })}
               </ProseContainer>

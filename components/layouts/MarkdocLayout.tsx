@@ -147,6 +147,16 @@ export const noteTag = {
   },
 };
 
+export const videoTag = {
+  render: 'Video',
+  children: ['paragraph', 'tag', 'list'],
+  attributes: {
+    src: {
+      type: String,
+    },
+  },
+};
+
 export const collapseGroupTag = {
   render: 'CollapseGroup',
   children: ['paragraph', 'tag', 'list'],
