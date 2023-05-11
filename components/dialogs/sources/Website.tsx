@@ -59,7 +59,6 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
   openPricingAsDialog,
   onDidAddSource,
 }) => {
-  const { team } = useTeam();
   const { project } = useProject();
   const { user } = useUser();
   const { numWebsitePagesPerProjectAllowance } = useUsage();

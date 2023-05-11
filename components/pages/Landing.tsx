@@ -267,7 +267,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           className="mx-auto block max-w-screen-xl text-center text-xs font-medium transition hover:opacity-80"
         >
           Read our Q&A with Tom Johnson on the future of docs and how Markprompt
-          fits →
+          fits in →
         </Link>
       </div>
       <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 sm:px-8">
