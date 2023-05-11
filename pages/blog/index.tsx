@@ -46,7 +46,7 @@ const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
                 <CloudinaryImage
                   src={firstEntry.frontmatter.cover}
                   alt={firstEntry.frontmatter.title || 'Cover image'}
-                  className="w-full rounded-lg border border-neutral-900"
+                  className="h-[400px] w-full rounded-lg border border-neutral-900"
                 />
               </div>
               <div className="prose prose-invert col-span-2 flex flex-col pt-12 sm:prose-lg">
