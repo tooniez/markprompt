@@ -38,7 +38,10 @@ export const config = {
 
 const isRequestFromMarkprompt = (req: NextRequest) => {
   const requesterOrigin = req.headers.get('origin');
+  console.log('!!!! requesterOrigin', requesterOrigin);
   const requesterHost = requesterOrigin && removeSchema(requesterOrigin);
+  console.log('!!!! requesterHost', requesterHost);
+  console.log('!!!! getAppHost()', getAppHost());
   return requesterHost === getAppHost();
 };
 
@@ -185,6 +188,10 @@ export default async function handler(req: NextRequest) {
   }
 
   const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
+
+  console.log('!!!! params before', JSON.stringify(params));
+  console.log('!!!! _isRequestFromMarkprompt', _isRequestFromMarkprompt);
+  console.log('!!!! _isRequestFromMarkprompt', _isRequestFromMarkprompt);
 
   if (!_isRequestFromMarkprompt) {
     // Custom model configurations are part of the Pro and Enterprise plans
