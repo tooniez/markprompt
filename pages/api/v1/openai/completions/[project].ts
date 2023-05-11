@@ -38,18 +38,8 @@ export const config = {
 
 const isRequestFromMarkprompt = (req: NextRequest) => {
   const requesterOrigin = req.headers.get('origin');
-  console.log('!!!! requesterOrigin', requesterOrigin);
   const requesterHost = requesterOrigin && removeSchema(requesterOrigin);
-  console.log('!!!! requesterHost', requesterHost);
-  console.log('!!!! getAppHost()', getAppHost());
   return requesterHost === getAppHost();
-};
-
-const getValueIfDefined = <T>(value: T | undefined, fallback: T): T => {
-  if (typeof value === 'undefined') {
-    return fallback;
-  }
-  return value;
 };
 
 const getPayload = (

@@ -1,7 +1,10 @@
 import * as Popover from '@radix-ui/react-popover';
 import { FC, ReactNode, useState } from 'react';
 
-import { CONFIG_DEFAULT_VALUES } from '@/lib/context/config';
+import {
+  CONFIG_DEFAULT_VALUES,
+  DEFAULT_MODEL_CONFIG,
+} from '@/lib/context/config';
 import { defaultTheme } from '@/lib/themes';
 import { capitalize, removeFileExtension } from '@/lib/utils';
 
@@ -32,6 +35,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children }) => {
               isDark={true}
               theme={{ ...defaultTheme, dimensions: { radius: '8px' } }}
               placeholder="Ask the Markprompt docs..."
+              modelConfig={DEFAULT_MODEL_CONFIG}
               iDontKnowMessage={CONFIG_DEFAULT_VALUES.iDontKnowMessage}
               referencesHeading={CONFIG_DEFAULT_VALUES.referencesHeading}
               loadingHeading={CONFIG_DEFAULT_VALUES.loadingHeading}

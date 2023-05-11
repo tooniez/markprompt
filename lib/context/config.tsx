@@ -44,6 +44,18 @@ export type State = {
   resetModelConfigDefaults: () => void;
 };
 
+export const DEFAULT_MODEL_CONFIG: ModelConfig = {
+  model: 'gpt-4',
+  temperature: 0.1,
+  topP: 1,
+  frequencyPenalty: 0,
+  presencePenalty: 0,
+  maxTokens: 500,
+  promptTemplate: DEFAULT_PROMPT_TEMPLATE.template,
+  sectionsMatchCount: 10,
+  sectionsMatchThreshold: 0.5,
+};
+
 const initialState: State = {
   theme: defaultTheme,
   colors: defaultTheme.colors.light,
@@ -53,17 +65,7 @@ const initialState: State = {
   referencesHeading: '',
   loadingHeading: '',
   includeBranding: true,
-  modelConfig: {
-    model: 'gpt-4',
-    temperature: 0.1,
-    topP: 1,
-    frequencyPenalty: 0,
-    presencePenalty: 0,
-    maxTokens: 500,
-    promptTemplate: DEFAULT_PROMPT_TEMPLATE.template,
-    sectionsMatchCount: 10,
-    sectionsMatchThreshold: 0.5,
-  },
+  modelConfig: DEFAULT_MODEL_CONFIG,
   setColor: () => {},
   setTheme: () => {},
   setDark: () => {},
