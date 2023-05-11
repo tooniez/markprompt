@@ -206,6 +206,13 @@ export default async function handler(req: NextRequest) {
     }
   }
 
+  console.log('===========================================');
+  console.log('===========================================');
+  console.log('===========================================');
+  console.log('===========================================');
+  console.log('===========================================');
+  console.log('params', JSON.stringify(params, null, 2));
+
   const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
 
   // Moderate the content
