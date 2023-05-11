@@ -35,10 +35,10 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children }) => {
               isDark={true}
               theme={{ ...defaultTheme, dimensions: { radius: '8px' } }}
               placeholder="Ask the Markprompt docs..."
-              modelConfig={DEFAULT_MODEL_CONFIG}
               iDontKnowMessage={CONFIG_DEFAULT_VALUES.iDontKnowMessage}
               referencesHeading={CONFIG_DEFAULT_VALUES.referencesHeading}
               loadingHeading={CONFIG_DEFAULT_VALUES.loadingHeading}
+              modelConfig={DEFAULT_MODEL_CONFIG}
               getReferenceInfo={(id) => {
                 return {
                   name: capitalize(removeFileExtension(id)),

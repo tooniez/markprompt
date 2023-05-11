@@ -236,6 +236,7 @@ export const DocsPlayground = () => {
           iDontKnowMessage={CONFIG_DEFAULT_VALUES.iDontKnowMessage}
           referencesHeading={CONFIG_DEFAULT_VALUES.referencesHeading}
           loadingHeading={CONFIG_DEFAULT_VALUES.loadingHeading}
+          modelConfig={DEFAULT_MODEL_CONFIG}
           getReferenceInfo={(id) => {
             return { name: id, href: undefined };
           }}
