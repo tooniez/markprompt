@@ -18,7 +18,10 @@ import React, {
   useState,
 } from 'react';
 
-import { CONFIG_DEFAULT_VALUES } from '@/lib/context/config';
+import {
+  CONFIG_DEFAULT_VALUES,
+  DEFAULT_MODEL_CONFIG,
+} from '@/lib/context/config';
 import { defaultTheme } from '@/lib/themes';
 
 import { Playground } from '../files/Playground';
