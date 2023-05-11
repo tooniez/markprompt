@@ -76,7 +76,7 @@ const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
               </div>
             </div>
           </Link>
-          <div className="mt-4 grid w-full max-w-full grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="mt-4 grid w-full max-w-full grid-cols-1 gap-8 sm:grid-cols-3">
             {otherEntries.map((entry: any, i: number) => {
               return (
                 <Link key={`blog-${i}`} href={`/blog/${entry.path}`}>
@@ -84,7 +84,7 @@ const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
                     <CloudinaryImage
                       src={entry.frontmatter.cover}
                       alt={entry.frontmatter.title || 'Cover image'}
-                      className="w-full rounded-lg border border-neutral-900"
+                      className="h-64 w-full rounded-lg border border-neutral-900 object-cover"
                     />
                     <h3 className="text-lg font-bold">
                       {entry.frontmatter.title}
