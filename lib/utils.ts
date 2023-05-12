@@ -31,7 +31,7 @@ import {
   WebsiteSourceDataType,
 } from '@/types/types';
 
-import { getAppHost, removeSchema } from './utils.edge';
+import { removeSchema } from './utils.edge';
 
 const lookup = [
   { value: 1, symbol: '' },
