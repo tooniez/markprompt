@@ -31,7 +31,7 @@ import {
   WebsiteSourceDataType,
 } from '@/types/types';
 
-import { getAppHost } from './utils.edge';
+import { getAppHost, removeSchema } from './utils.edge';
 
 const lookup = [
   { value: 1, symbol: '' },
@@ -141,15 +141,6 @@ export const getTimeIntervals = (
     end: startTimestamp + (i + 1) * coefficient,
   }));
   return { startTimestamp, endTimestamp, timeIntervals };
-};
-
-export const getAppOrigin = (subdomain?: string, forceProduction?: boolean) => {
-  const hostWithMaybeSubdomain = getAppHost(subdomain, forceProduction);
-  const schema =
-    forceProduction || process.env.NODE_ENV === 'production'
-      ? 'https://'
-      : 'http://';
-  return `${schema}${hostWithMaybeSubdomain}`;
 };
 
 const slugGeneratorConfig: Config = {
@@ -368,10 +359,6 @@ export const sampleTokenCountData: DateCountHistogramEntry[] = [
   },
 ];
 
-export const removeSchema = (origin: string) => {
-  return origin.replace(/(^\w+:|^)\/\//, '');
-};
-
 export const getAuthorizationToken = (header: string | undefined | null) => {
   return header?.replace('Bearer ', '').trim();
 };
@@ -391,10 +378,12 @@ export const isValidEmail = (email: string) => {
   return re.test(email);
 };
 
-export const generateKey = customAlphabet(
-  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-  32,
-);
+const ALPHABET =
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+export const generateKey = customAlphabet(ALPHABET, 32);
+
+export const generateShareKey = customAlphabet(ALPHABET, 8);
 
 const SK_TEST_PREFIX = 'sk_test_';
 

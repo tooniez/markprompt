@@ -7,7 +7,7 @@ import {
   Code,
   MessageCircle,
   Stars,
-  Share,
+  Share as ShareIcon,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -45,7 +45,8 @@ import {
 import { SourceType } from '@/types/types';
 
 import StatusMessage from './StatusMessage';
-import GetCode from '../dialogs/code/GetCode';
+import GetCode from '../dialogs/project/GetCode';
+import Share from '../dialogs/project/Share';
 import FilesAddSourceDialog from '../dialogs/sources/Files';
 import MotifAddSourceDialog from '../dialogs/sources/Motif';
 import WebsiteAddSourceDialog from '../dialogs/sources/Website';
@@ -774,14 +775,16 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       >
         <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto pb-24">
           <div className="sticky inset-x-0 top-0 z-10 grid grid-cols-1 items-center justify-end gap-4 border-b border-neutral-900 bg-neutral-1100 py-4 px-6 shadow-lg sm:grid-cols-2">
-            <Button
-              disabled={!isTrained}
-              buttonSize="sm"
-              variant="plain"
-              Icon={Share}
-            >
-              Share
-            </Button>
+            <Share>
+              <Button
+                disabled={!isTrained}
+                buttonSize="sm"
+                variant="plain"
+                Icon={ShareIcon}
+              >
+                Share
+              </Button>
+            </Share>
             <GetCode isOnboarding={!!isOnboarding}>
               <Button
                 disabled={!isTrained}

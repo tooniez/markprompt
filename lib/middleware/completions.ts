@@ -11,12 +11,8 @@ import {
   noTokenOrProjectKeyResponse,
 } from './common';
 import { checkCompletionsRateLimits } from '../rate-limits';
-import {
-  getAuthorizationToken,
-  isSKTestKey,
-  removeSchema,
-  truncateMiddle,
-} from '../utils';
+import { getAuthorizationToken, isSKTestKey, truncateMiddle } from '../utils';
+import { isAppHost, removeSchema } from '../utils.edge';
 
 // Admin access to Supabase, bypassing RLS.
 const supabaseAdmin = createClient<Database>(
@@ -51,7 +47,6 @@ export default async function CompletionsMiddleware(req: NextRequest) {
 
   if (requesterHost) {
     // Browser requests. Check that origin is not rate-limited.
-
     const rateLimitHostnameResult = await checkCompletionsRateLimits({
       value: requesterHost,
       type: 'hostname',
@@ -135,8 +130,9 @@ export default async function CompletionsMiddleware(req: NextRequest) {
     // Now that we have a project id, we need to check that the
     // the project has whitelisted the domain the request comes from.
     // Admin supabase needed here, as the projects table is subject to RLS.
-    // We bypass this check if the key is a test key.
-    if (!_isSKTestKey) {
+    // We bypass this check if the key is a test key or if the request
+    // comes from the app host (e.g. markprompt.com/s/[key]]).
+    if (!_isSKTestKey && !isAppHost(requesterHost!)) {
       const { count } = await supabaseAdmin
         .from('domains')
         .select('id', { count: 'exact' })
