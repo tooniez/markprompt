@@ -1,6 +1,14 @@
 import cn from 'classnames';
 import { motion } from 'framer-motion';
-import { Upload, Globe, X, Code, MessageCircle, Stars } from 'lucide-react';
+import {
+  Upload,
+  Globe,
+  X,
+  Code,
+  MessageCircle,
+  Stars,
+  Share,
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {
@@ -765,15 +773,15 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
         })}
       >
         <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto pb-24">
-          <div className="sticky inset-x-0 top-0 z-10 grid grid-cols-1 items-center justify-end gap-4 border-b border-neutral-900 bg-neutral-1100 py-4 px-6 shadow-lg">
-            {/* <Button
+          <div className="sticky inset-x-0 top-0 z-10 grid grid-cols-1 items-center justify-end gap-4 border-b border-neutral-900 bg-neutral-1100 py-4 px-6 shadow-lg sm:grid-cols-2">
+            <Button
               disabled={!isTrained}
               buttonSize="sm"
               variant="plain"
               Icon={Share}
             >
               Share
-            </Button> */}
+            </Button>
             <GetCode isOnboarding={!!isOnboarding}>
               <Button
                 disabled={!isTrained}
