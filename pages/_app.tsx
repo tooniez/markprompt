@@ -72,7 +72,8 @@ export default function App({ Component, pageProps }: CustomAppProps) {
               <ManagedTrainingContext>
                 <ManagedConfigContext>
                   <Component {...pageProps}></Component>
-                  <ChatOutsideOnboarding />
+                  {/* Temporarily removed Plain.com */}
+                  {/* <ChatOutsideOnboarding /> */}
                 </ManagedConfigContext>
               </ManagedTrainingContext>
             </ManagedAppContext>
