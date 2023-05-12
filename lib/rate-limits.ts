@@ -78,3 +78,25 @@ export const getEmbeddingsRateLimitResponse = (
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'us'
   } if you have any questions.`;
 };
+
+export const checkEmailRateLimits = async (ip: string) => {
+  // Impose a hard limit of 100 emails per minute.
+  const ratelimit = new Ratelimit({
+    redis: getRedisClient(),
+    limiter: Ratelimit.fixedWindow(100, '1 m'),
+    analytics: true,
+  });
+
+  const result = await ratelimit.limit(
+    rateLimitTypeToKey({ value: ip, type: 'ip' }),
+  );
+
+  // Calcualte the remaining time until generations are reset
+  const diff = Math.abs(
+    new Date(result.reset).getTime() - new Date().getTime(),
+  );
+  const hours = Math.floor(diff / 1000 / 60 / 60);
+  const minutes = Math.floor(diff / 1000 / 60) - hours * 60;
+
+  return { result, hours, minutes };
+};

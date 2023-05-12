@@ -383,6 +383,14 @@ export const isValidDomain = (domain: string) => {
   );
 };
 
+// Reference: https://github.com/manishsaraan/email-validator/blob/master/index.js
+export const isValidEmail = (email: string) => {
+  const re =
+    /^[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~](\.?[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+
+  return re.test(email);
+};
+
 export const generateKey = customAlphabet(
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
   32,

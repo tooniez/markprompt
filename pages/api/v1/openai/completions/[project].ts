@@ -179,10 +179,6 @@ export default async function handler(req: NextRequest) {
 
   const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
 
-  console.log('!!!! params before', JSON.stringify(params));
-  console.log('!!!! _isRequestFromMarkprompt', _isRequestFromMarkprompt);
-  console.log('!!!! _isRequestFromMarkprompt', _isRequestFromMarkprompt);
-
   if (!_isRequestFromMarkprompt) {
     // Custom model configurations are part of the Pro and Enterprise plans
     // when used outside of the Markprompt dashboard.
@@ -202,8 +198,6 @@ export default async function handler(req: NextRequest) {
       };
     }
   }
-
-  console.log('!!!! params', JSON.stringify(params));
 
   const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
 

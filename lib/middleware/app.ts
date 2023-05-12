@@ -14,6 +14,7 @@ const UNAUTHED_PATHS = [
   '/legal/terms',
   '/legal/privacy',
   '/api/subscriptions/webhook',
+  '/api/support/contact',
 ];
 
 export default async function AppMiddleware(req: NextRequest) {

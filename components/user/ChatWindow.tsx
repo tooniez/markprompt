@@ -1,11 +1,29 @@
+import * as Dialog from '@radix-ui/react-dialog';
 import * as Popover from '@radix-ui/react-popover';
 import { Chat } from '@team-plain/react-chat-ui';
 import cn from 'classnames';
+import {
+  ErrorMessage,
+  Field,
+  Form,
+  Formik,
+  FormikErrors,
+  FormikValues,
+} from 'formik';
 import { MessageSquare, X } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import colors from 'tailwindcss/colors';
 
 import emitter, { EVENT_OPEN_CHAT } from '@/lib/events';
+import useUser from '@/lib/hooks/use-user';
+import { isValidEmail } from '@/lib/utils';
+
+import Button from '../ui/Button';
+import { ErrorLabel } from '../ui/Forms';
+import { NoAutoInput } from '../ui/Input';
+import { CTABar } from '../ui/SettingsCard';
+import TextArea from '../ui/TextArea';
 
 export const plainTheme = {
   input: {
@@ -35,14 +53,14 @@ export const plainTheme = {
   },
 };
 
-export const ChatWindow = ({
+export const PlainChatWindow = ({
   closeOnClickOutside,
   Component,
 }: {
   closeOnClickOutside?: boolean;
   Component?: ReactNode;
 }) => {
-  const [chatOpen, setChatOpen] = useState(false);
+  const [isChatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     const handler = () => {
@@ -57,7 +75,7 @@ export const ChatWindow = ({
   }, []);
 
   return (
-    <Popover.Root open={chatOpen} onOpenChange={setChatOpen}>
+    <Popover.Root open={isChatOpen} onOpenChange={setChatOpen}>
       <Popover.Trigger asChild>
         {Component ? (
           Component
@@ -72,7 +90,7 @@ export const ChatWindow = ({
                   className={cn(
                     'absolute inset-0 h-5 w-5 transform text-neutral-300 duration-300',
                     {
-                      'opacity-0': !chatOpen,
+                      'opacity-0': !isChatOpen,
                     },
                   )}
                 />
@@ -80,7 +98,7 @@ export const ChatWindow = ({
                   className={cn(
                     'h-5 w-5 transform text-neutral-300 duration-300',
                     {
-                      'opacity-0': chatOpen,
+                      'opacity-0': isChatOpen,
                     },
                   )}
                 />
@@ -111,5 +129,163 @@ export const ChatWindow = ({
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
+  );
+};
+
+export const ChatWindow = ({
+  Component,
+}: {
+  closeOnClickOutside?: boolean;
+  Component?: ReactNode;
+}) => {
+  const { user } = useUser();
+  const [isChatOpen, setChatOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = () => {
+      setChatOpen(true);
+    };
+
+    emitter.on(EVENT_OPEN_CHAT, handler);
+
+    return () => {
+      emitter.off(EVENT_OPEN_CHAT, handler);
+    };
+  }, []);
+
+  return (
+    <Dialog.Root open={isChatOpen} onOpenChange={setChatOpen}>
+      <Dialog.Trigger asChild>
+        {Component ? (
+          Component
+        ) : (
+          <div className="fixed right-8 bottom-8">
+            <button
+              className="transform rounded-full border border-neutral-800 bg-neutral-900 p-3 outline-none transition duration-300 hover:bg-neutral-1000"
+              aria-label="Start chat"
+            >
+              <div className="relative">
+                <X
+                  className={cn(
+                    'absolute inset-0 h-5 w-5 transform text-neutral-300 duration-300',
+                    {
+                      'opacity-0': !isChatOpen,
+                    },
+                  )}
+                />
+                <MessageSquare
+                  className={cn(
+                    'h-5 w-5 transform text-neutral-300 duration-300',
+                    {
+                      'opacity-0': isChatOpen,
+                    },
+                  )}
+                />
+              </div>
+            </button>
+          </div>
+        )}
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
+        <Dialog.Content className="animate-dialog-slide-in dialog-content max-h-[90%] w-[90%] max-w-[540px]">
+          <Dialog.Title className="dialog-title">Contact Us</Dialog.Title>
+          <Dialog.Description className="dialog-description pb-4">
+            Share feedback, request a feature, report a bug, or contact sales.
+          </Dialog.Description>
+          <Formik
+            initialValues={{
+              email: '',
+              message: '',
+            }}
+            validateOnMount
+            validate={async (values) => {
+              const errors: FormikErrors<FormikValues> = {};
+              if (!user?.email) {
+                if (!isValidEmail(values.email)) {
+                  errors.email = 'Please enter a valid email address';
+                }
+              }
+              if (!values.message) {
+                errors.message = 'Please enter a message';
+              }
+              return errors;
+            }}
+            onSubmit={async (values, { setSubmitting }) => {
+              setSubmitting(true);
+              const email = user?.email || values.email;
+              await fetch('/api/support/contact', {
+                method: 'POST',
+                body: JSON.stringify({ ...values, email }),
+                headers: {
+                  'Content-Type': 'application/json',
+                  accept: 'application/json',
+                },
+              });
+              setSubmitting(false);
+              setChatOpen(false);
+              toast.success(
+                'Thank you for your message! We will respond by email shortly.',
+              );
+            }}
+          >
+            {({ isSubmitting, isValid }) => (
+              <Form>
+                <div className="flex flex-col gap-1 border-t border-neutral-900 p-4">
+                  {!user?.email && (
+                    <>
+                      <p className="mb-1 text-xs font-medium text-neutral-300">
+                        What is your email?
+                      </p>
+                      <Field
+                        className="max-w-[320px]"
+                        type="email"
+                        name="email"
+                        inputSize="sm"
+                        as={NoAutoInput}
+                        disabled={isSubmitting}
+                      />
+                      <ErrorMessage name="email" component={ErrorLabel} />
+                    </>
+                  )}
+                  <p
+                    className={cn('mb-1 text-xs font-medium text-neutral-300', {
+                      'mt-4': !user?.email,
+                    })}
+                  >
+                    How can we help?
+                  </p>
+                  <Field
+                    className="h-48"
+                    type="text"
+                    name="message"
+                    inputSize="sm"
+                    as={TextArea}
+                    disabled={isSubmitting}
+                  />
+                  <ErrorMessage name="message" component={ErrorLabel} />
+                </div>
+                <CTABar>
+                  <Dialog.Close asChild>
+                    <Button variant="plain" buttonSize="sm">
+                      Cancel
+                    </Button>
+                  </Dialog.Close>
+                  <Button
+                    disabled={!isValid}
+                    loading={isSubmitting}
+                    variant="cta"
+                    buttonSize="sm"
+                    type="submit"
+                  >
+                    Send
+                  </Button>
+                </CTABar>
+              </Form>
+            )}
+          </Formik>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };
