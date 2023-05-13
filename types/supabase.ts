@@ -148,6 +148,29 @@ export interface Database {
           team_id?: string
         }
       }
+      prompt_configs: {
+        Row: {
+          config: Json | null
+          created_at: string
+          id: string
+          project_id: string
+          share_key: string | null
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          id?: string
+          project_id: string
+          share_key?: string | null
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          id?: string
+          project_id?: string
+          share_key?: string | null
+        }
+      }
       sources: {
         Row: {
           data: Json | null

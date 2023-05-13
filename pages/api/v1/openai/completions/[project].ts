@@ -22,8 +22,7 @@ import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import { getBYOOpenAIKey, getTeamStripeInfo } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import { stringToLLMInfo } from '@/lib/utils';
-import { removeSchema, safeParseInt } from '@/lib/utils.edge';
-import { getAppHost } from '@/lib/utils.edge';
+import { getAppHost, removeSchema, safeParseInt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
   DbFile,

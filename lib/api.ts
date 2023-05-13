@@ -5,6 +5,7 @@ import {
   Domain,
   FileData,
   Project,
+  PromptConfig,
   Source,
   SourceType,
   Team,
@@ -38,6 +39,31 @@ export const updateProject = async (
   const res = await fetch(`/api/project/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(values),
+    headers: { 'Content-Type': 'application/json', accept: 'application/json' },
+  });
+  return getResponseOrThrow<Project>(res);
+};
+
+export const createPromptConfig = async (
+  id: Project['id'],
+  shareKey: string,
+  config: any,
+): Promise<PromptConfig> => {
+  const res = await fetch(`/api/project/${id}/prompt-configs`, {
+    method: 'POST',
+    body: JSON.stringify({ shareKey, config }),
+    headers: { 'Content-Type': 'application/json', accept: 'application/json' },
+  });
+  return getResponseOrThrow<PromptConfig>(res);
+};
+
+export const deletePromptConfig = async (
+  id: Project['id'],
+  promptConfigId: PromptConfig['id'],
+): Promise<Project> => {
+  const res = await fetch(`/api/project/${id}/prompt-configs`, {
+    method: 'DELETE',
+    body: JSON.stringify({ promptConfigId }),
     headers: { 'Content-Type': 'application/json', accept: 'application/json' },
   });
   return getResponseOrThrow<Project>(res);

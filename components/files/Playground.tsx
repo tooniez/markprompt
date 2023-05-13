@@ -16,7 +16,8 @@ import remarkGfm from 'remark-gfm';
 
 import { I_DONT_KNOW, STREAM_SEPARATOR } from '@/lib/constants';
 import { Theme } from '@/lib/themes';
-import { getAppOrigin, timeout } from '@/lib/utils';
+import { timeout } from '@/lib/utils';
+import { getAppOrigin } from '@/lib/utils.edge';
 import { ModelConfig, ReferenceInfo } from '@/types/types';
 
 type CaretProps = {
@@ -99,6 +100,7 @@ type PlaygroundProps = {
   theme?: Theme;
   isDark?: boolean;
   includeBranding?: boolean;
+  hideCloseButton?: boolean;
   getReferenceInfo?: (refId: string) => ReferenceInfo | undefined;
 };
 
@@ -130,6 +132,7 @@ export const Playground = forwardRef(
       theme,
       isDark,
       includeBranding,
+      hideCloseButton,
       getReferenceInfo,
     }: PlaygroundProps,
     forwardedRef: ForwardedRef<HTMLDivElement>,
@@ -373,23 +376,25 @@ export const Playground = forwardRef(
               />
             </form>
           </div>
-          <button
-            className={cn(
-              'button-ring -mr-1 flex-none rounded p-1 transition hover:opacity-60',
-              {
-                'button-ring-light': !isDark,
-              },
-            )}
-            onClick={onCloseClick}
-          >
-            <X
-              className={cn({
-                'h-5 w-5': theme?.size === 'base',
-                'h-4 w-4': theme?.size === 'sm',
-              })}
-              style={{ color: colors?.foreground }}
-            />
-          </button>
+          {!hideCloseButton && (
+            <button
+              className={cn(
+                'button-ring -mr-1 flex-none rounded p-1 transition hover:opacity-60',
+                {
+                  'button-ring-light': !isDark,
+                },
+              )}
+              onClick={onCloseClick}
+            >
+              <X
+                className={cn({
+                  'h-5 w-5': theme?.size === 'base',
+                  'h-4 w-4': theme?.size === 'sm',
+                })}
+                style={{ color: colors?.foreground }}
+              />
+            </button>
+          )}
         </div>
         <div
           ref={containerRef}
@@ -629,7 +634,7 @@ export const Playground = forwardRef(
         )}
         {includeBranding && (
           <div
-            className="z-20 justify-center border-t px-8 py-2 text-center text-xs font-medium"
+            className="z-0 justify-center border-t px-8 py-2 text-center text-xs font-medium"
             style={{
               borderColor: colors?.border,
               backgroundColor: colors?.muted,

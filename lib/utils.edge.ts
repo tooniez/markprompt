@@ -1,11 +1,20 @@
 // Edge utilities. Cannot run Node APIs.
 
 export const getAppHost = (subdomain?: string, forceProduction?: boolean) => {
-  const host =
-    forceProduction || process.env.NODE_ENV === 'production'
-      ? process.env.NEXT_PUBLIC_APP_HOSTNAME
-      : 'localhost:3000';
+  const isProd = forceProduction || process.env.NODE_ENV === 'production';
+  const host = isProd ? process.env.NEXT_PUBLIC_APP_HOSTNAME : 'localhost:3000';
   return subdomain ? `${subdomain}.${host}` : host;
+};
+
+export const getAppOrigin = (subdomain?: string, forceProduction?: boolean) => {
+  const host = getAppHost(subdomain, forceProduction);
+  const isProd = forceProduction || process.env.NODE_ENV === 'production';
+  const schema = isProd ? 'https://' : 'http://';
+  return `${schema}${host}`;
+};
+
+export const isAppHost = (host: string) => {
+  return host === getAppHost();
 };
 
 export const removeSchema = (origin: string) => {

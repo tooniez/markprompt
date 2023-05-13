@@ -8,7 +8,7 @@ import {
   FormikErrors,
   FormikValues,
 } from 'formik';
-import { Clipboard, X, RefreshCcw, Trash2 } from 'lucide-react';
+import { Clipboard, X, Trash2, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import Router, { useRouter } from 'next/router';
 import { useCallback, useState } from 'react';
@@ -46,9 +46,9 @@ import {
   copyToClipboard,
   generateSKTestKey,
   isValidDomain,
-  removeSchema,
   truncateMiddle,
 } from '@/lib/utils';
+import { removeSchema } from '@/lib/utils.edge';
 import { Domain, Project, Token } from '@/types/types';
 
 const ProjectSettingsPage = () => {
@@ -369,7 +369,7 @@ const ProjectSettingsPage = () => {
                     setIsRefreshingDevProjectKey(false);
                   }}
                 >
-                  <RefreshCcw className="h-4 w-4 text-neutral-500" />
+                  <RefreshCw className="h-4 w-4 text-neutral-500" />
                 </div>
                 <div
                   className="flex-none cursor-pointer rounded-md p-1 text-neutral-300 transition hover:bg-neutral-800"

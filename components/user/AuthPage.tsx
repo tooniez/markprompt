@@ -7,7 +7,7 @@ import { FC } from 'react';
 import { MarkpromptIcon } from '@/components/icons/Markprompt';
 import Button from '@/components/ui/Button';
 import useUser from '@/lib/hooks/use-user';
-import { getAppOrigin } from '@/lib/utils';
+import { getAppOrigin } from '@/lib/utils.edge';
 
 type AuthPageProps = {
   type: 'signin' | 'signup';

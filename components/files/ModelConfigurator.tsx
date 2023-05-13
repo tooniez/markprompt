@@ -46,7 +46,7 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
         collapsible
       >
         <Accordion.Item className="overflow-hidden" value="note">
-          <AccordionContent className="accordion-content-alt mb-4">
+          <AccordionContent className="mb-4">
             <UpgradeNote showDialog>
               You can experiment with custom model configurations here. In order
               to use them in production, please upgrade to the Pro plan.
