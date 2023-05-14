@@ -15,7 +15,7 @@ type Data =
 const allowedMethods = ['POST'];
 
 export const isProjectSlugAvailable = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   teamId: Team['id'],
   slug: string,
 ) => {

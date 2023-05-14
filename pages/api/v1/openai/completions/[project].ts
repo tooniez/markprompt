@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { stripIndent } from 'common-tags';
 import {
   createParser,
@@ -39,6 +39,32 @@ const isRequestFromMarkprompt = (req: NextRequest) => {
   const requesterOrigin = req.headers.get('origin');
   const requesterHost = requesterOrigin && removeSchema(requesterOrigin);
   return requesterHost === getAppHost();
+};
+
+const storePrompt = async (
+  supabase: SupabaseClient<Database>,
+  projectId: Project['id'],
+  prompt: string,
+  response: string | null,
+  embedding: any,
+  noResponse: boolean,
+) => {
+  return supabase.from('query_stats').insert([
+    {
+      project_id: projectId,
+      prompt,
+      ...(response ? { response } : {}),
+      embedding,
+      ...(noResponse ? { no_response: noResponse } : {}),
+    },
+  ]);
+};
+
+const isIDontKnowResponse = (
+  responseText: string,
+  iDontKnowMessage: string,
+) => {
+  return !responseText || responseText.endsWith(iDontKnowMessage);
 };
 
 const getPayload = (
@@ -289,6 +315,14 @@ export default async function handler(req: NextRequest) {
     console.error(
       `[COMPLETIONS] [LOAD-EMBEDDINGS] [${projectId}] - No relevant sections found`,
     );
+    await storePrompt(
+      supabaseAdmin,
+      projectId,
+      prompt,
+      null,
+      promptEmbedding,
+      true,
+    );
     return new Response('No relevant sections found', {
       status: 400,
     });
@@ -356,6 +390,14 @@ export default async function handler(req: NextRequest) {
   if (!stream) {
     if (!res.ok) {
       const message = await res.text();
+      await storePrompt(
+        supabaseAdmin,
+        projectId,
+        prompt,
+        null,
+        promptEmbedding,
+        true,
+      );
       return new Response(
         `Unable to retrieve completions response: ${message}`,
         { status: 400 },
@@ -366,6 +408,14 @@ export default async function handler(req: NextRequest) {
       const tokenCount = safeParseInt(json.usage.total_tokens, 0);
       await recordProjectTokenCount(projectId, modelInfo, tokenCount);
       const text = getCompletionsResponseText(json, modelInfo.model);
+      await storePrompt(
+        supabaseAdmin,
+        projectId,
+        prompt,
+        text,
+        promptEmbedding,
+        isIDontKnowResponse(text, iDontKnowMessage),
+      );
       return new Response(JSON.stringify({ text, references }), {
         status: 200,
       });
@@ -376,7 +426,7 @@ export default async function handler(req: NextRequest) {
 
   // All the text associated with this query, to estimate token
   // count.
-  let allText = fullPrompt;
+  let responseText = '';
   let didSendHeader = false;
 
   const encoder = new TextEncoder();
@@ -402,7 +452,9 @@ export default async function handler(req: NextRequest) {
             }
             const json = JSON.parse(data);
             const text = getChunkText(json, modelInfo.model);
-            allText += text;
+            if (text?.length > 0) {
+              responseText += text;
+            }
             if (counter < 2 && (text?.match(/\n/) || []).length) {
               // Prefix character (e.g. "\n\n"), do nothing
               return;
@@ -428,7 +480,7 @@ export default async function handler(req: NextRequest) {
       // const tokenizer = new GPT3Tokenizer({ type: 'gpt3' });
       // const allTextEncoded = tokenizer.encode(allText);
       // const tokenCount = allTextEncoded.text.length;
-
+      const allText = fullPrompt + responseText;
       const estimatedTokenCount = Math.round(allText.length / 4);
 
       if (!byoOpenAIKey) {
@@ -438,6 +490,15 @@ export default async function handler(req: NextRequest) {
           estimatedTokenCount,
         );
       }
+
+      await storePrompt(
+        supabaseAdmin,
+        projectId,
+        prompt,
+        responseText,
+        promptEmbedding,
+        isIDontKnowResponse(responseText, iDontKnowMessage),
+      );
 
       // We're done, wind down
       parser.reset();

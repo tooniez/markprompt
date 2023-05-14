@@ -19,6 +19,7 @@ import {
   splitIntoSubstringsOfMaxLength,
 } from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.node';
+import { Database } from '@/types/supabase';
 import {
   DbFile,
   FileData,
@@ -229,7 +230,7 @@ const processFile = (file: FileData): FileSectionData => {
 };
 
 const getFileAtPath = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   sourceId: Source['id'],
   path: string,
 ): Promise<DbFile['id'] | undefined> => {
@@ -247,7 +248,7 @@ const getFileAtPath = async (
 };
 
 const createFile = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   // TODO: remove once migration is safely completed. We set an explicit
   // value to prevent NULL values, because if a row has a NULL value,
   // somehow it won't be returned in the inner joined filter query.

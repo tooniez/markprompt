@@ -1,8 +1,7 @@
-import {
-  createMiddlewareSupabaseClient,
-  SupabaseClient,
-} from '@supabase/auth-helpers-nextjs';
+import { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { Database } from '@/types/supabase';
 
 export const noTokenResponse = new NextResponse(
   JSON.stringify({
@@ -34,7 +33,7 @@ export const noProjectForTokenResponse = new NextResponse(
 export const getProjectIdFromToken = async (
   req: NextRequest,
   res: NextResponse,
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   token: string,
 ) => {
   // In un-authed scenarios, supabase needs to have service_role

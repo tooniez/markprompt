@@ -171,6 +171,44 @@ export interface Database {
           share_key?: string | null
         }
       }
+      query_stats: {
+        Row: {
+          created_at: string
+          downvoted: boolean | null
+          embedding: string | null
+          id: string
+          no_response: boolean | null
+          processed: boolean
+          project_id: string
+          prompt: string | null
+          response: string | null
+          upvoted: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          downvoted?: boolean | null
+          embedding?: string | null
+          id?: string
+          no_response?: boolean | null
+          processed?: boolean
+          project_id: string
+          prompt?: string | null
+          response?: string | null
+          upvoted?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          downvoted?: boolean | null
+          embedding?: string | null
+          id?: string
+          no_response?: boolean | null
+          processed?: boolean
+          project_id?: string
+          prompt?: string | null
+          response?: string | null
+          upvoted?: boolean | null
+        }
+      }
       sources: {
         Row: {
           data: Json | null

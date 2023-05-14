@@ -16,7 +16,7 @@ const allowedMethods = ['POST'];
 const RESERVED_SLUGS = ['settings', 'legal', 'docs', 'api', 'app'];
 
 export const isTeamSlugAvailable = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   slug: string,
 ) => {
   if (RESERVED_SLUGS.includes(slug)) {
@@ -30,7 +30,7 @@ export const isTeamSlugAvailable = async (
 };
 
 export const getAvailableTeamSlug = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   baseSlug: string,
 ) => {
   let candidateSlug = baseSlug;

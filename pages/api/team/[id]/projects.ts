@@ -14,7 +14,7 @@ import { Project, Team } from '@/types/types';
 import { isProjectSlugAvailable } from '../../slug/is-project-slug-available';
 
 const getAvailableProjectSlug = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   teamId: Team['id'],
   name: Project['name'],
 ) => {
