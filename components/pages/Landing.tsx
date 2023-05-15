@@ -292,18 +292,19 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
                 <Button variant="cta" buttonSize="lg" href="/signup">
                   Start for free
                 </Button>
-                <Button
-                  className="hidden sm:block"
-                  variant="plain"
-                  buttonSize="lg"
-                  href="https://github.com/motifland/markprompt"
-                  Icon={GitHubIcon}
-                >
-                  Star on GitHub
-                  <span className="ml-2 text-neutral-600">
-                    {formatNumStars(stars)}
-                  </span>
-                </Button>
+                <div className="hidden sm:block">
+                  <Button
+                    variant="plain"
+                    buttonSize="lg"
+                    href="https://github.com/motifland/markprompt"
+                    Icon={GitHubIcon}
+                  >
+                    Star on GitHub
+                    <span className="ml-2 text-neutral-600">
+                      {formatNumStars(stars)}
+                    </span>
+                  </Button>
+                </div>
               </div>
               <p className="pt-8 text-left text-sm text-neutral-700 sm:pt-16 sm:text-base">
                 Live with
