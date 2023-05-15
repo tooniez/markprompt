@@ -270,30 +270,30 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           fits in →
         </Link>
       </div> */}
-
       <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 sm:px-8">
         <Pattern />
         <LandingNavbar />
         <div className="animate-slide-up">
-          <div className="grid h-[calc(100vh-100px)] grid-cols-1 gap-8 sm:grid-cols-5">
+          <div className="grid grid-cols-1 gap-8 sm:min-h-[calc(100vh-100px)] sm:grid-cols-5">
             <div className="col-span-3">
-              <h1 className="gradient-heading mt-28 text-left text-5xl leading-[48px] tracking-[-0.6px] sm:text-6xl sm:leading-[64px]">
+              <h1 className="gradient-heading mt-16 text-left text-4xl leading-[36px] tracking-[-0.6px] sm:mt-28 sm:text-6xl sm:leading-[64px]">
                 <Balancer>
                   Enterprise-grade AI chatbots for your website and docs
                 </Balancer>
               </h1>
-              <p className="z-20 mx-auto mt-4 max-w-screen-md text-left text-lg dark:text-neutral-500">
+              <p className="z-20 mx-auto mt-8 max-w-screen-md text-left text-base dark:text-neutral-500 sm:mt-4 sm:text-lg">
                 Connect any source of content, from public websites to private
                 GitHub repos, configure the design and tone, and paste the code
                 to your website. In minutes, you have a chatbot that answers all
                 your customers&apos; questions. If not, you will get notified
                 and can take action.
               </p>
-              <div className="flex flex-row items-center justify-start gap-4 pt-8">
+              <div className="flex flex-col items-start justify-start gap-4 pt-8 sm:flex-row sm:items-center">
                 <Button variant="cta" buttonSize="lg" href="/signup">
                   Start for free
                 </Button>
                 <Button
+                  className="hidden sm:block"
                   variant="plain"
                   buttonSize="lg"
                   href="https://github.com/motifland/markprompt"
@@ -305,14 +305,16 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
                   </span>
                 </Button>
               </div>
-              <p className="pt-16 text-left text-neutral-700">Live with</p>
-              <div className="flex flex-col items-center justify-start gap-8 pt-6 sm:flex-row sm:gap-12">
-                <CalIcon className="w-[90px] text-neutral-500" />
-                <AngeListIcon className="w-[90px] text-neutral-500" />
-                <ReploIcon className="w-[90px] text-neutral-500" />
+              <p className="pt-8 text-left text-sm text-neutral-700 sm:pt-16 sm:text-base">
+                Live with
+              </p>
+              <div className="flex flex-row items-center justify-start gap-8 overflow-x-auto pt-4 sm:items-center sm:gap-12 sm:pt-6">
+                <CalIcon className="w-[72px] text-neutral-500 sm:w-[90px]" />
+                <AngeListIcon className="w-[72px] text-neutral-500 sm:w-[90px]" />
+                <ReploIcon className="w-[72px] text-neutral-500 sm:w-[90px]" />
               </div>
             </div>
-            <div className="relative z-0 col-span-2 h-full">
+            <div className="relative z-0 col-span-2 hidden h-full sm:block">
               <div className="absolute top-0 bottom-0 left-[-100px] right-[-100px] mt-[-30%] overflow-visible">
                 <Spline scene="https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode" />
               </div>
