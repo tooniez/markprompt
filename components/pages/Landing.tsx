@@ -316,7 +316,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               </div>
             </div>
             <div className="relative z-0 col-span-2 hidden h-full sm:block">
-              <div className="absolute top-0 bottom-0 left-[-100px] right-[-100px] mt-[-30%]">
+              <div className="absolute top-0 left-[-100px] right-[-100px] h-[80%]">
                 <Spline scene="https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode" />
               </div>
             </div>
