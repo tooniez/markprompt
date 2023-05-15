@@ -154,7 +154,6 @@ export const TIERS: Record<Tier, TierDetails> = {
     name: 'Pro',
     description: 'For production',
     items: [
-      'Everything in Hobby, plus:',
       'Prompt templates',
       'Model customization',
       '1000 GPT-4 completions',
@@ -190,7 +189,6 @@ export const TIERS: Record<Tier, TierDetails> = {
     enterprise: true,
     description: 'For projects at scale',
     items: [
-      'Everything in Pro, plus:',
       'Teams',
       'Integrations',
       'Unbranded prompts',
