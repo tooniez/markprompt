@@ -179,6 +179,17 @@ export const playgroundTag = {
   render: 'Playground',
 };
 
+export const iconTags = {
+  iconCombine: { render: 'IconCombine' },
+  iconMessagesSquare: { render: 'IconMessagesSquare' },
+  iconFileBarChart: { render: 'IconFileBarChart' },
+  iconSliders: { render: 'IconSliders' },
+  iconUnplug: { render: 'IconUnplug' },
+  iconCode2: { render: 'IconCode2' },
+  iconKey: { render: 'IconKey' },
+  iconShieldCheck: { render: 'IconShieldCheck' },
+};
+
 export const Fence = (props: MarkdocCodeFenceProps) => {
   const { children, language } = props;
 
@@ -380,12 +391,25 @@ export const TableOfContents: FC<TableOfContentsProps> = ({
 };
 
 type ProseContainer = {
+  width?: 'base' | 'md' | 'lg' | 'xl';
   children?: ReactNode;
 };
 
-export const ProseContainer: FC<ProseContainer> = ({ children }) => {
+export const ProseContainer: FC<ProseContainer> = ({
+  width = 'base',
+  children,
+}) => {
   return (
-    <div className="prose prose-invert max-w-full prose-headings:text-neutral-300 prose-h1:mt-12 prose-p:text-neutral-400 prose-a:text-neutral-400 prose-strong:text-neutral-300 prose-code:rounded prose-code:border prose-code:border-neutral-900 prose-code:bg-neutral-1000 prose-code:px-1 prose-code:py-0.5 prose-code:text-neutral-400 prose-li:text-neutral-400 prose-thead:border-neutral-800 prose-tr:border-neutral-900 sm:max-w-screen-md md:px-8">
+    <div
+      className={cn(
+        'prose prose-invert prose-headings:text-neutral-300 prose-h1:mt-12 prose-p:text-neutral-400 prose-a:text-neutral-400 prose-strong:text-neutral-300 prose-code:rounded prose-code:border prose-code:border-neutral-900 prose-code:bg-neutral-1000 prose-code:px-1 prose-code:py-0.5 prose-code:text-neutral-400 prose-li:text-neutral-400 prose-thead:border-neutral-800 prose-tr:border-neutral-900 prose-hr:border-neutral-900 md:px-8',
+        {
+          'sm:max-w-screen-md': width === 'md',
+          'sm:max-w-screen-lg': width === 'lg',
+          'sm:max-w-screen-xl': width === 'xl',
+        },
+      )}
+    >
       {children}
     </div>
   );

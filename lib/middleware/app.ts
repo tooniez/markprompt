@@ -11,6 +11,7 @@ const UNAUTHED_PATHS = [
   '/blog/**/*',
   '/login',
   '/signup',
+  '/benefits',
   '/legal/terms',
   '/legal/privacy',
   '/api/subscriptions/webhook',

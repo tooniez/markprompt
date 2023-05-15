@@ -75,7 +75,7 @@
     "jsonwebtoken": "^9.0.0",
     "jszip": "^3.10.1",
     "lodash-es": "^4.17.21",
-    "lucide-react": "^0.187.0",
+    "lucide-react": "^0.216.0",
     "minimatch": "^8.0.3",
     "mitt": "^3.0.0",
     "nanoid": "^4.0.1",

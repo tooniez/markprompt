@@ -8,6 +8,7 @@ import {
   createTOC,
   fenceNode,
   headingNode,
+  iconTags,
   noteTag,
   playgroundTag,
   videoTag,
@@ -30,6 +31,7 @@ export const getMarkdocStaticProps = async (pageId: string) => {
       collapsegroup: collapseGroupTag,
       collapse: collapseTag,
       video: videoTag,
+      ...iconTags,
     },
     variables: {
       defaultPromptTemplate: DEFAULT_PROMPT_TEMPLATE.template,
