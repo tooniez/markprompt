@@ -273,7 +273,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
       <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 sm:px-8">
         <Pattern />
         <LandingNavbar />
-        <div className="animate-slide-up">
+        <div className="">
           <div className="grid grid-cols-1 gap-8 sm:min-h-[calc(100vh-100px)] sm:grid-cols-5">
             <div className="col-span-3">
               <h1 className="gradient-heading mt-16 text-left text-4xl leading-[36px] tracking-[-0.6px] sm:mt-28 sm:text-6xl sm:leading-[64px]">
@@ -316,7 +316,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               </div>
             </div>
             <div className="relative z-0 col-span-2 hidden h-full sm:block">
-              <div className="absolute top-0 bottom-0 left-[-100px] right-[-100px] mt-[-30%] overflow-visible">
+              <div className="absolute top-0 bottom-0 left-[-100px] right-[-100px] mt-[-30%]">
                 <Spline scene="https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode" />
               </div>
             </div>
