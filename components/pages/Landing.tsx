@@ -260,8 +260,8 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
 
   return (
     <>
-      <SharedHead title="Markprompt | Open Source GPT-4 platform for Markdown" />
-      <div className="z-40 bg-fuchsia-700 py-1.5 px-6 sm:px-8">
+      <SharedHead title="Markprompt | Enterprise-grade AI chatbots for your website and docs" />
+      {/* <div className="z-40 bg-fuchsia-700 py-1.5 px-6 sm:px-8">
         <Link
           href="/blog/markprompt-qa"
           className="mx-auto block max-w-screen-xl text-center text-xs font-medium transition hover:opacity-80"
@@ -269,7 +269,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           Read our Q&A with Tom Johnson on the future of docs and how Markprompt
           fits in →
         </Link>
-      </div>
+      </div> */}
       <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 sm:px-8">
         <Pattern />
         <LandingNavbar />
@@ -283,22 +283,15 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           </a> */}
           <h1 className="gradient-heading mt-28 text-center text-5xl leading-[48px] tracking-[-0.6px] sm:text-6xl sm:leading-[64px]">
             <Balancer>
-              Build a delightful GPT-4 prompt for your Markdown docs
+              Enterprise-grade AI chatbots for your website and docs.
             </Balancer>
           </h1>
-          <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg dark:text-neutral-500">
-            Skip the configuration, hosting and metrics collection needed to run
-            a prompt on your docs site. Works with Markdown, Markdoc, MDX and
-            HTML.
-            <br />
-            From the{' '}
-            <a
-              className="border-b border-dashed border-neutral-700"
-              href="https://motif.land"
-            >
-              Motif
-            </a>{' '}
-            team.
+          <p className="mx-auto mt-4 max-w-screen-md text-center text-lg dark:text-neutral-500">
+            Connect any source of content, from public websites to private
+            GitHub repos, configure the design and tone, and paste the code to
+            your website. In minutes, you have a chatbot that answers all your
+            customers&apos; questions. If not, you will get notified and can
+            take action.
           </p>
           <div className="flex flex-row items-center justify-center gap-4 pt-8">
             <Button variant="cta" buttonSize="lg" href="/signup">
@@ -433,7 +426,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
         <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg dark:text-neutral-500">
           Your users will be asking lots of questions, and will be expecting
           quality answers. Use Markprompt&apos;s feedback and analytics features
-          to pinpoint shortcomings in your content, and improve your docs.
+          to pinpoint shortcomings in your content, and improve your content.
         </p>
         <div className="relative mt-20 h-[600px] w-full overflow-hidden rounded-lg border border-neutral-900">
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-8">
@@ -490,7 +483,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               * BYO: Bring your own API key
             </p>
           </div> */}
-          <div className="relative mt-16 grid w-full max-w-screen-lg grid-cols-1 gap-4 sm:grid-cols-3 md:gap-8">
+          <div className="relative mt-16 grid w-full max-w-screen-md grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Blurs />
             <PricingCard
               tier={TIERS.hobby}
@@ -498,14 +491,15 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               model={model}
               customPrice="Free"
             />
-            <PricingCard
+            {/* <PricingCard
               tier={TIERS.pro}
               highlight
               cta="Get started with Pro"
               model={model}
-            />
+            /> */}
             <PricingCard
               tier={TIERS.enterprise}
+              highlight
               cta="Contact Sales"
               ctaHref={`mailto:${process.env.NEXT_PUBLIC_SALES_EMAIL!}`}
               model={model}
