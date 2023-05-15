@@ -1,6 +1,6 @@
 import * as Slider from '@radix-ui/react-slider';
+import Spline from '@splinetool/react-spline';
 import cn from 'classnames';
-import Link from 'next/link';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
 
@@ -270,10 +270,54 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           fits in →
         </Link>
       </div> */}
+
       <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 sm:px-8">
         <Pattern />
         <LandingNavbar />
         <div className="animate-slide-up">
+          <div className="grid h-[calc(100vh-100px)] grid-cols-1 gap-8 sm:grid-cols-5">
+            <div className="col-span-3">
+              <h1 className="gradient-heading mt-28 text-left text-5xl leading-[48px] tracking-[-0.6px] sm:text-6xl sm:leading-[64px]">
+                <Balancer>
+                  Enterprise-grade AI chatbots for your website and docs
+                </Balancer>
+              </h1>
+              <p className="z-20 mx-auto mt-4 max-w-screen-md text-left text-lg dark:text-neutral-500">
+                Connect any source of content, from public websites to private
+                GitHub repos, configure the design and tone, and paste the code
+                to your website. In minutes, you have a chatbot that answers all
+                your customers&apos; questions. If not, you will get notified
+                and can take action.
+              </p>
+              <div className="flex flex-row items-center justify-start gap-4 pt-8">
+                <Button variant="cta" buttonSize="lg" href="/signup">
+                  Start for free
+                </Button>
+                <Button
+                  variant="plain"
+                  buttonSize="lg"
+                  href="https://github.com/motifland/markprompt"
+                  Icon={GitHubIcon}
+                >
+                  Star on GitHub
+                  <span className="ml-2 text-neutral-600">
+                    {formatNumStars(stars)}
+                  </span>
+                </Button>
+              </div>
+              <p className="pt-16 text-left text-neutral-700">Live with</p>
+              <div className="flex flex-col items-center justify-start gap-8 pt-6 sm:flex-row sm:gap-12">
+                <CalIcon className="w-[90px] text-neutral-500" />
+                <AngeListIcon className="w-[90px] text-neutral-500" />
+                <ReploIcon className="w-[90px] text-neutral-500" />
+              </div>
+            </div>
+            <div className="relative z-0 col-span-2 h-full">
+              <div className="absolute top-0 bottom-0 left-[-100px] right-[-100px] mt-[-30%] overflow-visible">
+                <Spline scene="https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode" />
+              </div>
+            </div>
+          </div>
           {/* <a
             href="https://twitter.com/markprompt"
             className="mx-auto mt-20 flex w-min flex-row items-center gap-2 whitespace-nowrap rounded-full bg-primary-900/20 px-4 py-1 text-sm font-medium text-primary-400 transition hover:bg-primary-900/30"
@@ -281,40 +325,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             <TwitterIcon className="h-4 w-4" />
             Introducing Markprompt
           </a> */}
-          <h1 className="gradient-heading mt-28 text-center text-5xl leading-[48px] tracking-[-0.6px] sm:text-6xl sm:leading-[64px]">
-            <Balancer>
-              Enterprise-grade AI chatbots for your website and docs.
-            </Balancer>
-          </h1>
-          <p className="mx-auto mt-4 max-w-screen-md text-center text-lg dark:text-neutral-500">
-            Connect any source of content, from public websites to private
-            GitHub repos, configure the design and tone, and paste the code to
-            your website. In minutes, you have a chatbot that answers all your
-            customers&apos; questions. If not, you will get notified and can
-            take action.
-          </p>
-          <div className="flex flex-row items-center justify-center gap-4 pt-8">
-            <Button variant="cta" buttonSize="lg" href="/signup">
-              Start for free
-            </Button>
-            <Button
-              variant="plain"
-              buttonSize="lg"
-              href="https://github.com/motifland/markprompt"
-              Icon={GitHubIcon}
-            >
-              Star on GitHub
-              <span className="ml-2 text-neutral-600">
-                {formatNumStars(stars)}
-              </span>
-            </Button>
-          </div>
-          <p className="pt-20 text-center text-neutral-700">Live with</p>
-          <div className="flex flex-col items-center justify-center gap-8 pt-6 sm:flex-row sm:gap-16">
-            <CalIcon className="w-[120px] text-neutral-500" />
-            <AngeListIcon className="w-[120px] text-neutral-500" />
-            <ReploIcon className="w-[120px] text-neutral-500" />
-          </div>
+
           <div className="shadow-box relative mx-auto mt-24 h-[500px] w-full max-w-screen-sm overflow-hidden rounded-2xl shadow-primary-500/10">
             <Playground
               isDemoMode
@@ -421,7 +432,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           </div>
         </div>
         <h2 className="gradient-heading mt-40 text-center text-4xl">
-          Track usage, get feedback, improve docs
+          Track usage, get feedback, improve content
         </h2>
         <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg dark:text-neutral-500">
           Your users will be asking lots of questions, and will be expecting
