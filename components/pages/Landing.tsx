@@ -1,6 +1,7 @@
 import * as Slider from '@radix-ui/react-slider';
 import Spline from '@splinetool/react-spline';
 import cn from 'classnames';
+import Link from 'next/link';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
 
@@ -31,7 +32,6 @@ import { Playground } from '../files/Playground';
 import { DiscordIcon } from '../icons/Discord';
 import { ListItem } from '../ui/ListItem';
 import { Segment } from '../ui/Segment';
-import Link from 'next/link';
 import { Tag } from '../ui/Tag';
 
 const demoPrompt = 'How do I publish a component?';
