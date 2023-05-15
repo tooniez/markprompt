@@ -13,6 +13,7 @@ import LandingNavbar from './LandingNavbar';
 import {
   DocsPlayground,
   Fence,
+  MarkdocButton,
   ProseContainer,
   TOC,
   useTableOfContents,
@@ -157,6 +158,7 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
               <ProseContainer>
                 {Markdoc.renderers.react(content, React, {
                   components: {
+                    Button: MarkdocButton,
                     Collapse,
                     CollapseGroup,
                     Fence,

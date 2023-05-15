@@ -37,7 +37,7 @@ export const ButtonOrLinkWrapper = forwardRef(
 
 ButtonOrLinkWrapper.displayName = 'ButtonOrLinkWrapper';
 
-type ButtonProps = {
+export type ButtonProps = {
   buttonSize?: 'xs' | 'sm' | 'base' | 'md' | 'lg';
   variant?: ButtonVariant;
   light?: boolean;

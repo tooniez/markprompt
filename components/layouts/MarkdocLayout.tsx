@@ -25,6 +25,7 @@ import {
 import { defaultTheme } from '@/lib/themes';
 
 import { Playground } from '../files/Playground';
+import Button from '../ui/Button';
 import { CodePanel } from '../ui/Code';
 
 type MarkdocCodeFenceProps = {
@@ -134,6 +135,34 @@ export const fenceNode = {
   },
 };
 
+export const buttonTag = {
+  render: 'Button',
+  children: ['paragraph', 'tag', 'list'],
+  attributes: {
+    href: {
+      type: String,
+    },
+    className: {
+      type: String,
+    },
+    variant: {
+      type: String,
+      default: 'plain',
+      matches: [
+        'cta',
+        'glow',
+        'danger',
+        'ghost',
+        'plain',
+        'bordered',
+        'fuchsia',
+        'borderedWhite',
+        'borderedFuchsia',
+      ],
+    },
+  },
+};
+
 export const noteTag = {
   render: 'Note',
   children: ['paragraph', 'tag', 'list'],
@@ -185,7 +214,7 @@ export const iconTags = {
   iconFileBarChart: { render: 'IconFileBarChart' },
   iconSliders: { render: 'IconSliders' },
   iconUnplug: { render: 'IconUnplug' },
-  iconCode2: { render: 'IconCode2' },
+  iconPackage: { render: 'IconPackage' },
   iconKey: { render: 'IconKey' },
   iconShieldCheck: { render: 'IconShieldCheck' },
 };
@@ -392,18 +421,23 @@ export const TableOfContents: FC<TableOfContentsProps> = ({
 
 type ProseContainer = {
   width?: 'base' | 'md' | 'lg' | 'xl';
+  print?: boolean;
   children?: ReactNode;
 };
 
 export const ProseContainer: FC<ProseContainer> = ({
   width = 'base',
+  print,
   children,
 }) => {
   return (
     <div
       className={cn(
-        'prose prose-invert prose-headings:text-neutral-300 prose-h1:mt-12 prose-p:text-neutral-400 prose-a:text-neutral-400 prose-strong:text-neutral-300 prose-code:rounded prose-code:border prose-code:border-neutral-900 prose-code:bg-neutral-1000 prose-code:px-1 prose-code:py-0.5 prose-code:text-neutral-400 prose-li:text-neutral-400 prose-thead:border-neutral-800 prose-tr:border-neutral-900 prose-hr:border-neutral-900 md:px-8',
+        'prose prose-h1:mt-12 prose-code:rounded prose-code:border  prose-code:px-1 prose-code:py-0.5 md:px-8',
         {
+          'prose-invert prose-headings:text-neutral-300 prose-p:text-neutral-400 prose-a:text-neutral-400 prose-strong:text-neutral-300 prose-code:border-neutral-900 prose-code:bg-neutral-1000 prose-code:text-neutral-400 prose-li:text-neutral-400 prose-thead:border-neutral-800 prose-tr:border-neutral-900 prose-hr:border-neutral-900':
+            !print,
+          'prose-sm': print,
           'sm:max-w-screen-md': width === 'md',
           'sm:max-w-screen-lg': width === 'lg',
           'sm:max-w-screen-xl': width === 'xl',
@@ -411,6 +445,14 @@ export const ProseContainer: FC<ProseContainer> = ({
       )}
     >
       {children}
+    </div>
+  );
+};
+
+export const MarkdocButton = (props: any) => {
+  return (
+    <div className="not-prose w-min">
+      <Button {...props} />
     </div>
   );
 };

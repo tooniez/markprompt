@@ -1,4 +1,5 @@
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
+import { useRouter } from 'next/router';
 import { FC } from 'react';
 
 import { ResourcesLayout } from '@/components/layouts/ResourcesLayout';
@@ -23,6 +24,8 @@ const ResourcesPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
   toc,
   frontmatter,
 }) => {
+  const router = useRouter();
+
   return (
     <>
       <SharedHead
@@ -38,6 +41,7 @@ const ResourcesPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
         content={JSON.parse(content)}
         toc={toc}
         frontmatter={frontmatter}
+        format={router.query.format as string}
       />
     </>
   );

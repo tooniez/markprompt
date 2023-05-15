@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import yaml from 'js-yaml';
 
 import {
+  buttonTag,
   collapseGroupTag,
   collapseTag,
   createTOC,
@@ -26,6 +27,7 @@ export const getMarkdocStaticProps = async (pageId: string) => {
       heading: headingNode,
     },
     tags: {
+      button: buttonTag,
       playground: playgroundTag,
       note: noteTag,
       collapsegroup: collapseGroupTag,

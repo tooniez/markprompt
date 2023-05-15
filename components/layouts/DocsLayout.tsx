@@ -6,6 +6,7 @@ import LandingNavbar from './LandingNavbar';
 import {
   DocsPlayground,
   Fence,
+  MarkdocButton,
   ProseContainer,
   TOC,
   TableOfContents,
@@ -71,6 +72,7 @@ export const DocsLayout: FC<DocsLayoutProps> = ({ content, toc }: any) => {
               <ProseContainer>
                 {Markdoc.renderers.react(content, React, {
                   components: {
+                    Button: MarkdocButton,
                     Collapse,
                     CollapseGroup,
                     Fence,
