@@ -17,6 +17,9 @@ const UNAUTHED_PATHS = [
   '/api/subscriptions/webhook',
   '/api/support/contact',
   '/s/*',
+  '/test',
+  '/test2',
+  '/test3',
 ];
 
 export default async function AppMiddleware(req: NextRequest) {

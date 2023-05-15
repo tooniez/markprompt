@@ -6,7 +6,8 @@ create table users (
   email                        text unique not null,
   avatar_url                   text,
   has_completed_onboarding     boolean not null default false,
-  subscribe_to_product_updates boolean not null default false
+  subscribe_to_product_updates boolean not null default false,
+  outreach_tag                 text
 );
 
 -- Teams

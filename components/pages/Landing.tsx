@@ -1,6 +1,7 @@
 import * as Slider from '@radix-ui/react-slider';
-import Spline from '@splinetool/react-spline';
+import { Application } from '@splinetool/runtime';
 import cn from 'classnames';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
@@ -248,6 +249,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
   const playgroundAnchorRef = useRef<HTMLDivElement | null>(null);
   const isInputVisible = useOnScreen(playgroundAnchorRef);
   const [autoplayPlayground, setAutoplayPlayground] = useState(false);
+
   const modelNames = [
     modelLabels['gpt-3.5-turbo'],
     modelLabels['gpt-4'],
@@ -259,6 +261,14 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
       setAutoplayPlayground(true);
     }
   }, [isInputVisible]);
+
+  useEffect(() => {
+    const canvas: any = document.getElementById('animation-canvas');
+    if (canvas) {
+      const app = new Application(canvas);
+      app.load('https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode');
+    }
+  }, []);
 
   return (
     <>
@@ -275,7 +285,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
       <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 sm:px-8">
         <Pattern />
         <LandingNavbar />
-        <div className="">
+        <div className="animate-slide-up">
           <div className="grid grid-cols-1 gap-8 sm:min-h-[calc(100vh-100px)] sm:grid-cols-5">
             <div className="col-span-3 mt-16 sm:mt-24">
               <Link href="/blog/introducing-website-sources">
@@ -316,15 +326,15 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               <p className="pt-8 text-left text-sm text-neutral-700 sm:pt-16 sm:text-base">
                 Live with
               </p>
-              <div className="flex flex-row items-center justify-start gap-8 overflow-x-auto pt-4 sm:items-center sm:gap-12 sm:pt-6">
+              <div className="flex flex-row items-center justify-start gap-8 overflow-x-auto pt-4 sm:items-center sm:gap-12 sm:pt-4">
                 <CalIcon className="w-[72px] text-neutral-500 sm:w-[90px]" />
                 <AngeListIcon className="w-[72px] text-neutral-500 sm:w-[90px]" />
                 <ReploIcon className="w-[72px] text-neutral-500 sm:w-[90px]" />
               </div>
             </div>
-            <div className="relative z-0 col-span-2 hidden h-full sm:block">
-              <div className="absolute top-0 left-[-100px] right-[-100px] h-[80%]">
-                <Spline scene="https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode" />
+            <div className="z-0 col-span-2 hidden h-full sm:block">
+              <div className="animate-scale-bounce relative ml-[-100px] block h-[90%] w-[calc(100%+200px)] transform-gpu">
+                <canvas id="animation-canvas" />
               </div>
             </div>
           </div>
@@ -335,7 +345,6 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             <TwitterIcon className="h-4 w-4" />
             Introducing Markprompt
           </a> */}
-
           <div className="shadow-box relative mx-auto mt-24 h-[500px] w-full max-w-screen-sm overflow-hidden rounded-2xl shadow-primary-500/10">
             <Playground
               isDemoMode
