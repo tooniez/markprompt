@@ -31,6 +31,8 @@ import { Playground } from '../files/Playground';
 import { DiscordIcon } from '../icons/Discord';
 import { ListItem } from '../ui/ListItem';
 import { Segment } from '../ui/Segment';
+import Link from 'next/link';
+import { Tag } from '../ui/Tag';
 
 const demoPrompt = 'How do I publish a component?';
 
@@ -275,8 +277,13 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
         <LandingNavbar />
         <div className="">
           <div className="grid grid-cols-1 gap-8 sm:min-h-[calc(100vh-100px)] sm:grid-cols-5">
-            <div className="col-span-3">
-              <h1 className="gradient-heading mt-16 text-left text-4xl leading-[36px] tracking-[-0.6px] sm:mt-28 sm:text-6xl sm:leading-[64px]">
+            <div className="col-span-3 mt-16 sm:mt-24">
+              <Link href="/blog/introducing-website-sources">
+                <Tag size="base" color="sky">
+                  Introducing website sources →
+                </Tag>
+              </Link>
+              <h1 className="gradient-heading mt-6 text-left text-4xl leading-[36px] tracking-[-0.6px] sm:text-6xl sm:leading-[64px]">
                 <Balancer>
                   Enterprise-grade AI chatbots for your website and docs
                 </Balancer>

@@ -28,6 +28,7 @@ export const Tag: FC<TagProps> = ({
           'bg-orange-900/20 text-orange-400': color === 'orange',
           'bg-sky-900/20 text-sky-400': color === 'sky',
           'bg-green-900/20 text-green-400': color === 'green',
+          'px-3 py-1.5 text-sm': size === 'base',
           'px-2 py-0.5 text-xs': size === 'sm',
           'px-2 py-[1px] text-[11px]': size === 'xs',
         },
