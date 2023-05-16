@@ -2,10 +2,11 @@ import { useSession } from '@supabase/auth-helpers-react';
 import cn from 'classnames';
 import Link from 'next/link';
 
+import emitter, { EVENT_OPEN_CHAT } from '@/lib/events';
+
 import { DiscordIcon } from '../icons/Discord';
 import { GitHubIcon } from '../icons/GitHub';
 import { MarkpromptIcon } from '../icons/Markprompt';
-import { DocsPrompt } from '../ui/DocsPrompt';
 
 export default function LandingNavbar({
   noAnimation,
@@ -26,12 +27,18 @@ export default function LandingNavbar({
         </Link>{' '}
         <Link
           href="/"
-          className="text-lg font-semibold transition hover:opacity-80"
+          className="hidden text-lg font-semibold transition hover:opacity-80 lg:block"
         >
           Markprompt
         </Link>
       </div>
       <div className="flex-grow" />
+      <Link
+        className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 sm:block"
+        href="/resources/overview"
+      >
+        Why Markprompt
+      </Link>
       <Link
         className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 md:block"
         href="/#pricing"
@@ -50,14 +57,15 @@ export default function LandingNavbar({
       >
         Docs
       </Link>
-      <DocsPrompt>
-        <button
-          className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 outline-none hover:opacity-100 sm:block"
-          aria-label="Ask docs"
-        >
-          Ask docs...
-        </button>
-      </DocsPrompt>
+      {/* <DocsPrompt> */}
+      <button
+        onClick={() => emitter.emit(EVENT_OPEN_CHAT)}
+        className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 outline-none hover:opacity-100 sm:block"
+        aria-label="Ask docs"
+      >
+        Contact us
+      </button>
+      {/* </DocsPrompt> */}
 
       {session ? (
         <Link
@@ -83,13 +91,13 @@ export default function LandingNavbar({
         </>
       )}
       <a
-        className="hidden transform text-sm font-medium text-white opacity-60 hover:opacity-100 md:block"
+        className="hidden transform text-sm font-medium text-white opacity-60 hover:opacity-100 lg:block"
         href="https://github.com/motifland/markprompt"
       >
         <GitHubIcon className="h-5 w-5" />
       </a>
       <a
-        className="hidden transform text-sm font-medium text-white opacity-60 hover:opacity-100 md:block"
+        className="hidden transform text-sm font-medium text-white opacity-60 hover:opacity-100 lg:block"
         href="https://discord.gg/MBMh4apz6X"
       >
         <DiscordIcon className="h-5 w-5" />
