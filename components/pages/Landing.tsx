@@ -297,7 +297,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
                   Enterprise-grade AI chatbots for your website and docs
                 </Balancer>
               </h1>
-              <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base dark:text-neutral-500 sm:mt-4 sm:text-lg">
+              <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base dark:text-neutral-500 sm:mt-4 sm:text-base">
                 <Balancer ratio={0.5}>
                   Connect any source of content, from public websites to private
                   GitHub repos, configure the design and tone, and paste the
@@ -523,18 +523,21 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             <a
               className="transition hover:text-neutral-500"
               href="https://github.com/motifland/markprompt"
+              aria-label="Markprompt on GitHub"
             >
               <GitHubIcon className="h-5 w-5" />
             </a>
             <a
               className="transition hover:text-neutral-500"
               href="https://twitter.com/markprompt"
+              aria-label="Markprompt on Twitter"
             >
               <TwitterIcon className="h-5 w-5" />
             </a>
             <a
               className="transition hover:text-neutral-500"
               href="https://discord.gg/MBMh4apz6X"
+              aria-label="Markprompt on Discord"
             >
               <DiscordIcon className="h-5 w-5" />
             </a>
