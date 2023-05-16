@@ -308,7 +308,11 @@ export const MarkpromptPromptWindow = () => {
 
   return (
     <DocsPrompt onOpenChange={setPromptOpen}>
-      <div className="fixed right-8 bottom-8">
+      <div
+        className="fixed right-8 bottom-8"
+        role="region"
+        aria-label="Ask Markprompt"
+      >
         <button
           className="transform rounded-full border border-neutral-800 bg-neutral-900 p-3 outline-none transition duration-300 hover:bg-neutral-1000"
           role="button"
