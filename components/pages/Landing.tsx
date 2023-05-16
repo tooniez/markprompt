@@ -297,7 +297,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
                   Enterprise-grade AI chatbots for your website and docs
                 </Balancer>
               </h1>
-              <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base dark:text-neutral-500 sm:mt-4 sm:text-base">
+              <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base dark:text-neutral-500 sm:mt-4 sm:text-lg">
                 <Balancer ratio={0.5}>
                   Connect any source of content, from public websites to private
                   GitHub repos, configure the design and tone, and paste the
