@@ -20,6 +20,7 @@ import useUser from '@/lib/hooks/use-user';
 import { isValidEmail } from '@/lib/utils';
 
 import Button from '../ui/Button';
+import { DocsPrompt } from '../ui/DocsPrompt';
 import { ErrorLabel } from '../ui/Forms';
 import { NoAutoInput } from '../ui/Input';
 import { CTABar } from '../ui/SettingsCard';
@@ -287,5 +288,36 @@ export const ChatWindow = ({
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+  );
+};
+
+export const MarkpromptChatWindow = () => {
+  const [promptOpen, setPromptOpen] = useState(false);
+
+  return (
+    <DocsPrompt onOpenChange={setPromptOpen}>
+      <div className="fixed right-8 bottom-8 print:hidden">
+        <button
+          className="transform rounded-full border border-neutral-800 bg-neutral-900 p-3 outline-none transition duration-300 hover:bg-neutral-1000"
+          aria-label="Start chat"
+        >
+          <div className="relative">
+            <X
+              className={cn(
+                'absolute inset-0 h-5 w-5 transform text-neutral-300 duration-300',
+                {
+                  'opacity-0': !promptOpen,
+                },
+              )}
+            />
+            <MessageSquare
+              className={cn('h-5 w-5 transform text-neutral-300 duration-300', {
+                'opacity-0': promptOpen,
+              })}
+            />
+          </div>
+        </button>
+      </div>
+    </DocsPrompt>
   );
 };

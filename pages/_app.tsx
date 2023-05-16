@@ -15,7 +15,11 @@ import { ThemeProvider } from 'next-themes';
 import { ReactNode, useEffect, useState } from 'react';
 
 import { Toaster } from '@/components/ui/Toaster';
-import { ChatWindow, plainTheme } from '@/components/user/ChatWindow';
+import {
+  ChatWindow,
+  MarkpromptChatWindow,
+  plainTheme,
+} from '@/components/user/ChatWindow';
 import { ManagedAppContext } from '@/lib/context/app';
 import { ManagedConfigContext } from '@/lib/context/config';
 import { ManagedTrainingContext } from '@/lib/context/training';
@@ -111,5 +115,6 @@ export const ChatOutsideOnboarding = () => {
     return <></>;
   }
 
-  return <ChatWindow closeOnClickOutside />;
+  // return <ChatWindow closeOnClickOutside />;
+  return <MarkpromptChatWindow />;
 };

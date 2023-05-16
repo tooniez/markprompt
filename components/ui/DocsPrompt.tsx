@@ -12,13 +12,20 @@ import { Playground } from '../files/Playground';
 
 type DocsPromptProps = {
   children: ReactNode;
+  onOpenChange?: (open: boolean) => void;
 };
 
-export const DocsPrompt: FC<DocsPromptProps> = ({ children }) => {
+export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
   const [promptOpen, setPromptOpen] = useState(false);
 
   return (
-    <Popover.Root open={promptOpen} onOpenChange={setPromptOpen}>
+    <Popover.Root
+      open={promptOpen}
+      onOpenChange={(open) => {
+        setPromptOpen(open);
+        onOpenChange?.(open);
+      }}
+    >
       <Popover.Trigger asChild>{children}</Popover.Trigger>
       <Popover.Portal>
         <Popover.Content className="animate-chat-window z-30 mr-4 mb-4 w-[calc(100vw-32px)] sm:w-full">
