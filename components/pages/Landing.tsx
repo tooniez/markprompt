@@ -281,14 +281,14 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
         <Pattern />
         <LandingNavbar />
         <div className="animate-slide-up">
-          <div className="grid grid-cols-1 gap-8 sm:min-h-[calc(100vh-100px)] sm:grid-cols-5">
+          <div className="grid grid-cols-1 gap-8 pb-24 sm:min-h-[calc(100vh-100px)] sm:grid-cols-5">
             <div className="col-span-3 mt-16 sm:mt-24">
               <Link href="/blog/introducing-website-sources">
                 <Tag size="base" color="sky">
                   Introducing website sources →
                 </Tag>
               </Link>
-              <h1 className="gradient-heading mt-6 mr-[-50px] text-left text-4xl leading-[36px] tracking-[-0.6px] sm:text-6xl sm:leading-[64px]">
+              <h1 className="gradient-heading mt-6 text-left text-4xl leading-[36px] tracking-[-0.6px] sm:mr-[-50px] sm:text-6xl sm:leading-[64px]">
                 <Balancer>
                   Enterprise-grade AI chatbots for your website and docs
                 </Balancer>
@@ -388,7 +388,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
       <StepsSection />
       <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 pt-24 sm:px-8">
         <h2 className="gradient-heading mt-64 text-center text-4xl">
-          Track usage, get feedback, improve content
+          <Balancer>Track usage, get feedback, improve content</Balancer>
         </h2>
         <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg dark:text-neutral-500">
           Your users will be asking lots of questions, and will be expecting
@@ -424,7 +424,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             id="pricing"
             className="gradient-heading mt-40 pt-8 text-center text-4xl"
           >
-            Generous free-tier, scale with usage
+            <Balancer>Generous free-tier, scale with usage</Balancer>
           </h2>
           <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg dark:text-neutral-500">
             Start for free, no credit card required. Scale as you grow.
@@ -479,8 +479,10 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             Open source
           </h2>
           <p className="mx-auto mt-4 max-w-md text-center text-lg dark:text-neutral-500">
-            The source code is on GitHub, for you to review, run, and contribute
-            to if you like!
+            <Balancer>
+              The source code is on GitHub, for you to review, run, and
+              contribute to if you like!
+            </Balancer>
           </p>
           <div className="mt-12">
             <Button

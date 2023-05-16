@@ -94,29 +94,31 @@ type StepProps = {
 
 const Step = ({ title, description, Icon, position, children }: StepProps) => {
   return (
-    <div className="flex h-full flex-col items-center">
-      <div className="flex min-h-[400px] w-full flex-grow items-center justify-center px-4">
+    <div className="flex flex-col items-center">
+      <div className="flex h-[400px] w-full flex-grow items-center justify-center">
         {children}
       </div>
-      <div className="relative mt-[-44px] flex h-32 w-full flex-none flex-col">
-        <div className="relative flex h-[100px] w-full items-center justify-center">
-          <div className="absolute flex h-full w-full items-center justify-center">
-            <div
-              className={cn('gridline gridline-horizontal h-1 w-full', {
-                'gridline-fade-left': position === 'left',
-                'gridline-fade-right': position === 'right',
-              })}
-            />
-          </div>
+      <div className="relative flex w-full flex-none flex-col">
+        <div className="absolute inset-0 flex w-full items-center justify-center">
+          <div
+            className={cn('gridline gridline-horizontal h-1 w-full', {
+              'gridline-fade-left': position === 'left',
+              'gridline-fade-right': position === 'right',
+            })}
+          />
+        </div>
+        <div className="relative flex w-full items-center justify-center">
           <div className="relative z-20">
             <div className="glow-border glow-border-founded-full glow-border-white h-10 w-10 flex-none rounded-full bg-fuchsia-600 p-3 text-white">
               <Icon className="h-full w-full" />
             </div>
           </div>
         </div>
+      </div>
+      <div>
         <div className="relative mt-4 flex w-full flex-none flex-col items-center font-medium text-neutral-300">
           {title}
-          <p className="absolute inset-x-0 top-6 mx-auto mt-2 h-20 max-w-xs text-center text-sm font-normal text-neutral-500">
+          <p className="mx-auto mt-2 h-20 max-w-xs text-center text-sm font-normal text-neutral-500">
             <Balancer ratio={0.5}>{description}</Balancer>
           </p>
         </div>
@@ -282,19 +284,19 @@ const StepsSection = () => {
   return (
     <div className="relative z-0 mx-auto max-w-screen-xl px-6 sm:px-8">
       <h2 className="gradient-heading mt-40 text-center text-4xl">
-        Go live in minutes, no setup required
+        <Balancer>Go live in minutes, no setup required</Balancer>
       </h2>
-      <div className="mt-16 grid grid-cols-1 items-center justify-center gap-12 sm:grid-cols-3 sm:gap-0">
+      <div className="grid grid-cols-1 items-center justify-center gap-12 sm:mt-16 sm:gap-0 md:grid-cols-3">
         <Step
           title="Connect multiple sources"
           description="Sync a website, a GitHub repo, a Gitbook docs site, a Zendesk knowledge base. Drag and drop files. Or upload via API."
           Icon={Unplug}
           position="left"
         >
-          <div className="max-auto -mt-12 flex h-full flex-col items-center justify-end">
+          <div className="max-auto flex h-full flex-col items-end justify-end">
             <div className="relative flex h-min w-full">
               <div className="absolute inset-x-0 top-0 z-10 h-[100px] bg-gradient-to-b from-neutral-1100 to-neutral-1100/0" />
-              <div className="relative z-0 grid h-min w-full grid-cols-2 items-center justify-center gap-4 md:grid-cols-3 lg:grid-cols-4">
+              <div className="relative z-0 grid h-min w-full grid-cols-4 items-center justify-center gap-4">
                 <SourceIcon id="motif" />
                 <SourceIcon id="substack" />
                 <SourceIcon id="medium" />
@@ -321,7 +323,6 @@ const StepsSection = () => {
                 />
               </div>
             </div>
-            {/* */}
           </div>
         </Step>
         <Step
@@ -331,7 +332,7 @@ const StepsSection = () => {
           position="middle"
         >
           <div className="relative h-full w-full">
-            <div className="skewed-sheet group absolute inset-x-12 inset-y-0 flex transform flex-col items-end justify-start gap-4 transition duration-300">
+            <div className="skewed-sheet group absolute inset-x-12 inset-y-0 mt-12 flex transform flex-col items-end justify-start gap-4 transition duration-300">
               <div className="animate-bounce-subtle relative h-[70%] w-full rounded-2xl border border-dashed border-neutral-700 bg-neutral-1000/20">
                 <div className="absolute inset-0 z-30 flex transform flex-col rounded-md border-neutral-900 bg-white opacity-100 transition duration-300 group-hover:opacity-0">
                   <div className="relative h-[38px] flex-none items-center gap-2 border-b border-neutral-200 py-2 px-12 text-sm text-neutral-400">
@@ -408,10 +409,10 @@ const StepsSection = () => {
           Icon={Code}
           position="right"
         >
-          <div className="relative">
+          <div className="relative overflow-hidden">
             <div className="absolute top-0 z-20 h-[200px] w-full bg-gradient-to-b from-neutral-1100 to-neutral-1100/0" />
             <div className="absolute right-0 z-20 h-full w-[200px] bg-gradient-to-l from-neutral-1100 to-neutral-1100/0" />
-            <AnimatedGlobe className="relative z-10 h-full w-full" />
+            <AnimatedGlobe className="relative z-10 h-[400px] w-[400px]" />
             <div className="absolute left-[calc(50%-1px)] bottom-0 z-0 h-[100px] w-1">
               <LaunchLine
                 height={100}
