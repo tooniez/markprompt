@@ -2,8 +2,6 @@ import { useSession } from '@supabase/auth-helpers-react';
 import cn from 'classnames';
 import Link from 'next/link';
 
-import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
-
 import { DiscordIcon } from '../icons/Discord';
 import { GitHubIcon } from '../icons/GitHub';
 import { MarkpromptIcon } from '../icons/Markprompt';
@@ -22,17 +20,14 @@ export default function LandingNavbar({
         'animate-slide-down-delayed': !noAnimation,
       })}
     >
-      <div className="flex flex-none flex-row items-center gap-4 text-white">
-        <Link href="/">
+      <Link href="/">
+        <div className="flex flex-none flex-row items-center gap-4 text-white">
           <MarkpromptIcon className="mx-auto h-10 w-10 text-white" />
-        </Link>{' '}
-        <Link
-          href="/"
-          className="hidden text-lg font-semibold transition hover:opacity-80 lg:block"
-        >
-          Markprompt
-        </Link>
-      </div>
+          <div className="hidden text-lg font-semibold transition hover:opacity-80 lg:block">
+            Markprompt
+          </div>
+        </div>
+      </Link>{' '}
       <div className="flex-grow" />
       <Link
         className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 sm:block"
@@ -95,12 +90,14 @@ export default function LandingNavbar({
       <a
         className="hidden transform text-sm font-medium text-white opacity-60 hover:opacity-100 lg:block"
         href="https://github.com/motifland/markprompt"
+        aria-label="Markprompt on GitHub"
       >
         <GitHubIcon className="h-5 w-5" />
       </a>
       <a
         className="hidden transform text-sm font-medium text-white opacity-60 hover:opacity-100 lg:block"
         href="https://discord.gg/MBMh4apz6X"
+        aria-label="Markprompt on Discord"
       >
         <DiscordIcon className="h-5 w-5" />
       </a>
