@@ -1,4 +1,5 @@
 import * as Slider from '@radix-ui/react-slider';
+import { Application } from '@splinetool/runtime';
 import cn from 'classnames';
 import { MessageCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -256,13 +257,13 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
     }
   }, [isInputVisible]);
 
-  // useEffect(() => {
-  //   const canvas: any = document.getElementById('animation-canvas');
-  //   if (canvas) {
-  //     const app = new Application(canvas);
-  //     app.load('https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode');
-  //   }
-  // }, []);
+  useEffect(() => {
+    const canvas: any = document.getElementById('animation-canvas');
+    if (canvas) {
+      const app = new Application(canvas);
+      app.load('https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode');
+    }
+  }, []);
 
   return (
     <>
