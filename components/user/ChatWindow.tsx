@@ -160,7 +160,7 @@ export const ContactWindow = ({
         {Component ? (
           Component
         ) : (
-          <div className="fixed right-8 bottom-8 print:hidden">
+          <div className="fixed right-8 bottom-8">
             <button
               className="transform rounded-full border border-neutral-800 bg-neutral-900 p-3 outline-none transition duration-300 hover:bg-neutral-1000"
               aria-label="Start chat"
@@ -308,7 +308,7 @@ export const MarkpromptPromptWindow = () => {
 
   return (
     <DocsPrompt onOpenChange={setPromptOpen}>
-      <div className="fixed right-8 bottom-8 print:hidden">
+      <div className="fixed right-8 bottom-8">
         <button
           className="transform rounded-full border border-neutral-800 bg-neutral-900 p-3 outline-none transition duration-300 hover:bg-neutral-1000"
           aria-label="Ask Markprompt"
