@@ -22,6 +22,7 @@ import {
   useTableOfContents,
 } from './MarkdocLayout';
 import { Collapse, CollapseGroup } from '../ui/Collapse';
+import { ContentImage } from '../ui/ContentImage';
 import { Heading } from '../ui/Heading';
 import { Note } from '../ui/Note';
 import { Pattern } from '../ui/Pattern';
@@ -53,6 +54,7 @@ const ResourcesProseContainer = ({
           Button: MarkdocButton,
           Collapse,
           CollapseGroup,
+          ContentImage,
           Fence,
           Heading,
           Note,

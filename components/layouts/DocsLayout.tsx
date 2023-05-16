@@ -13,6 +13,7 @@ import {
   useTableOfContents,
 } from './MarkdocLayout';
 import { Collapse, CollapseGroup } from '../ui/Collapse';
+import { ContentImage } from '../ui/ContentImage';
 import { DocsPrompt } from '../ui/DocsPrompt';
 import { Heading } from '../ui/Heading';
 import { Note } from '../ui/Note';
@@ -75,6 +76,7 @@ export const DocsLayout: FC<DocsLayoutProps> = ({ content, toc }: any) => {
                     Button: MarkdocButton,
                     Collapse,
                     CollapseGroup,
+                    ContentImage,
                     Fence,
                     Heading,
                     Note,

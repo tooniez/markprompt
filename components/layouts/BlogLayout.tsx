@@ -19,6 +19,7 @@ import {
   useTableOfContents,
 } from './MarkdocLayout';
 import { Collapse, CollapseGroup } from '../ui/Collapse';
+import { ContentImage } from '../ui/ContentImage';
 import { Heading } from '../ui/Heading';
 import { Note } from '../ui/Note';
 import { Pattern } from '../ui/Pattern';
@@ -130,11 +131,9 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
           <div className="prose prose-invert relative mx-auto min-h-screen w-full max-w-screen-xl px-6 pt-48 pb-24 sm:px-8">
             {frontmatter?.title && (
               <div className="flex justify-center">
-                <Balancer>
-                  <h1 className="mb-4 text-center text-4xl md:text-5xl">
-                    {frontmatter.title}
-                  </h1>
-                </Balancer>
+                <h1 className="mb-4 text-center text-4xl md:text-5xl">
+                  <Balancer>{frontmatter.title}</Balancer>
+                </h1>
               </div>
             )}
             <div className="mt-4 mb-2 flex flex-row items-center  justify-center gap-4">
@@ -161,6 +160,7 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
                     Button: MarkdocButton,
                     Collapse,
                     CollapseGroup,
+                    ContentImage,
                     Fence,
                     Heading,
                     Note,

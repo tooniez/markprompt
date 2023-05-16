@@ -30,7 +30,7 @@ import { SAMPLE_REPO_URL } from '@/lib/constants';
 import { useAppContext } from '@/lib/context/app';
 import { useConfigContext } from '@/lib/context/config';
 import { useTrainingContext } from '@/lib/context/training';
-import emitter, { EVENT_OPEN_CHAT } from '@/lib/events';
+import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
@@ -457,7 +457,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
             <span
               className="subtle-underline cursor-pointer"
               onClick={() => {
-                emitter.emit(EVENT_OPEN_CHAT);
+                emitter.emit(EVENT_OPEN_CONTACT);
               }}
             >
               Let us know

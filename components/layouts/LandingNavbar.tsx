@@ -2,11 +2,12 @@ import { useSession } from '@supabase/auth-helpers-react';
 import cn from 'classnames';
 import Link from 'next/link';
 
-import emitter, { EVENT_OPEN_CHAT } from '@/lib/events';
+import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 
 import { DiscordIcon } from '../icons/Discord';
 import { GitHubIcon } from '../icons/GitHub';
 import { MarkpromptIcon } from '../icons/Markprompt';
+import { ContactWindow } from '../user/ChatWindow';
 
 export default function LandingNavbar({
   noAnimation,
@@ -57,16 +58,17 @@ export default function LandingNavbar({
       >
         Docs
       </Link>
-      {/* <DocsPrompt> */}
-      <button
-        onClick={() => emitter.emit(EVENT_OPEN_CHAT)}
-        className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 outline-none hover:opacity-100 sm:block"
-        aria-label="Ask docs"
-      >
-        Contact us
-      </button>
-      {/* </DocsPrompt> */}
-
+      <ContactWindow
+        closeOnClickOutside
+        Component={
+          <button
+            className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 sm:block"
+            aria-label="Contact us"
+          >
+            Contact us
+          </button>
+        }
+      />
       {session ? (
         <Link
           className="button-glow flex flex-row items-center gap-3 rounded-md px-4 py-2 text-sm font-semibold transition dark:bg-white dark:text-neutral-900 hover:dark:bg-neutral-300"

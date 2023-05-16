@@ -10,6 +10,7 @@ import {
   fenceNode,
   headingNode,
   iconTags,
+  imageNode,
   noteTag,
   playgroundTag,
   videoTag,
@@ -25,6 +26,7 @@ export const getMarkdocStaticProps = async (pageId: string) => {
     nodes: {
       fence: fenceNode,
       heading: headingNode,
+      image: imageNode,
     },
     tags: {
       button: buttonTag,

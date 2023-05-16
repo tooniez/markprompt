@@ -15,7 +15,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import colors from 'tailwindcss/colors';
 
-import emitter, { EVENT_OPEN_CHAT } from '@/lib/events';
+import emitter, { EVENT_OPEN_PROMPT, EVENT_OPEN_CONTACT } from '@/lib/events';
 import useUser from '@/lib/hooks/use-user';
 import { isValidEmail } from '@/lib/utils';
 
@@ -68,10 +68,10 @@ export const PlainChatWindow = ({
       setChatOpen(true);
     };
 
-    emitter.on(EVENT_OPEN_CHAT, handler);
+    emitter.on(EVENT_OPEN_PROMPT, handler);
 
     return () => {
-      emitter.off(EVENT_OPEN_CHAT, handler);
+      emitter.off(EVENT_OPEN_PROMPT, handler);
     };
   }, []);
 
@@ -133,29 +133,29 @@ export const PlainChatWindow = ({
   );
 };
 
-export const ChatWindow = ({
+export const ContactWindow = ({
   Component,
 }: {
   closeOnClickOutside?: boolean;
   Component?: ReactNode;
 }) => {
   const { user } = useUser();
-  const [isChatOpen, setChatOpen] = useState(false);
+  const [isContactWindowOpen, setContactWindowOpen] = useState(false);
 
   useEffect(() => {
     const handler = () => {
-      setChatOpen(true);
+      setContactWindowOpen(true);
     };
 
-    emitter.on(EVENT_OPEN_CHAT, handler);
+    emitter.on(EVENT_OPEN_CONTACT, handler);
 
     return () => {
-      emitter.off(EVENT_OPEN_CHAT, handler);
+      emitter.off(EVENT_OPEN_CONTACT, handler);
     };
   }, []);
 
   return (
-    <Dialog.Root open={isChatOpen} onOpenChange={setChatOpen}>
+    <Dialog.Root open={isContactWindowOpen} onOpenChange={setContactWindowOpen}>
       <Dialog.Trigger asChild>
         {Component ? (
           Component
@@ -170,7 +170,7 @@ export const ChatWindow = ({
                   className={cn(
                     'absolute inset-0 h-5 w-5 transform text-neutral-300 duration-300',
                     {
-                      'opacity-0': !isChatOpen,
+                      'opacity-0': !isContactWindowOpen,
                     },
                   )}
                 />
@@ -178,7 +178,7 @@ export const ChatWindow = ({
                   className={cn(
                     'h-5 w-5 transform text-neutral-300 duration-300',
                     {
-                      'opacity-0': isChatOpen,
+                      'opacity-0': isContactWindowOpen,
                     },
                   )}
                 />
@@ -224,7 +224,7 @@ export const ChatWindow = ({
                 },
               });
               setSubmitting(false);
-              setChatOpen(false);
+              setContactWindowOpen(false);
               toast.success(
                 'Thank you for your message! We will respond by email shortly.',
               );
@@ -291,8 +291,20 @@ export const ChatWindow = ({
   );
 };
 
-export const MarkpromptChatWindow = () => {
+export const MarkpromptPromptWindow = () => {
   const [promptOpen, setPromptOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = () => {
+      setPromptOpen(true);
+    };
+
+    emitter.on(EVENT_OPEN_PROMPT, handler);
+
+    return () => {
+      emitter.off(EVENT_OPEN_PROMPT, handler);
+    };
+  }, []);
 
   return (
     <DocsPrompt onOpenChange={setPromptOpen}>

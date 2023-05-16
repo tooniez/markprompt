@@ -10,7 +10,7 @@ import useUser from '@/lib/hooks/use-user';
 import { MarkpromptIcon } from '../icons/Markprompt';
 import TeamProjectPicker from '../team/TeamProjectPicker';
 import Button from '../ui/Button';
-import { ChatWindow } from '../user/ChatWindow';
+import { ContactWindow } from '../user/ChatWindow';
 import ProfileMenu from '../user/ProfileMenu';
 
 type AppNavbarProps = {
@@ -62,7 +62,7 @@ export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
                     </NavigationMenu.Link>
                   </NavigationMenu.Item>
                 )}
-                <ChatWindow
+                <ContactWindow
                   closeOnClickOutside
                   Component={
                     <NavigationMenu.Item>

@@ -126,6 +126,16 @@ export const headingNode = {
   },
 };
 
+export const imageNode = {
+  render: 'ContentImage',
+  children: ['inline'],
+  attributes: {
+    src: { type: String },
+    alt: { type: String },
+    title: { type: String },
+  },
+};
+
 export const fenceNode = {
   render: 'Fence',
   attributes: {
@@ -433,7 +443,7 @@ export const ProseContainer: FC<ProseContainer> = ({
   return (
     <div
       className={cn(
-        'prose prose-h1:mt-12 prose-code:rounded prose-code:border  prose-code:px-1 prose-code:py-0.5 md:px-8',
+        'prose max-w-screen-md prose-h1:mt-12 prose-code:rounded  prose-code:border prose-code:px-1 prose-code:py-0.5 md:px-8',
         {
           'prose-invert prose-headings:text-neutral-300 prose-p:text-neutral-400 prose-a:text-neutral-400 prose-strong:text-neutral-300 prose-code:border-neutral-900 prose-code:bg-neutral-1000 prose-code:text-neutral-400 prose-li:text-neutral-400 prose-thead:border-neutral-800 prose-tr:border-neutral-900 prose-hr:border-neutral-900':
             !print,
