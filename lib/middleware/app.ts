@@ -11,15 +11,12 @@ const UNAUTHED_PATHS = [
   '/blog/**/*',
   '/login',
   '/signup',
-  '/benefits',
+  '/resources/**/*',
   '/legal/terms',
   '/legal/privacy',
   '/api/subscriptions/webhook',
   '/api/support/contact',
   '/s/*',
-  '/test',
-  '/test2',
-  '/test3',
 ];
 
 export default async function AppMiddleware(req: NextRequest) {
