@@ -282,7 +282,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
         <LandingNavbar />
         <div className="animate-slide-up">
           <div className="grid grid-cols-1 gap-8 pb-24 sm:min-h-[calc(100vh-100px)] sm:grid-cols-5">
-            <div className="col-span-3 mt-16 sm:mt-24">
+            <div className="col-span-3 mt-12 sm:mt-24">
               <Link href="/blog/introducing-website-sources">
                 <Tag size="base" color="sky">
                   Introducing website sources →
