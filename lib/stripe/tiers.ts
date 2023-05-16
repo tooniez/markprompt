@@ -8,7 +8,7 @@ type Price = {
   };
 };
 
-export type Tier = 'hobby' | 'pro' | 'enterprise';
+export type Tier = 'hobby' | 'starter' | 'pro' | 'enterprise';
 
 export type PricedModel = 'gpt-4' | 'gpt-3.5-turbo' | 'byo';
 
@@ -147,6 +147,38 @@ export const TIERS: Record<Tier, TierDetails> = {
         name: 'Free',
         quota: 25,
         numWebsitePagesPerProject: 50,
+      },
+    ],
+  },
+  starter: {
+    name: 'Starter',
+    description: 'For small projects',
+    items: [
+      '500 GPT-4 completions',
+      '100 indexed website pages per project',
+      'Analytics (soon)',
+    ],
+    prices: [
+      {
+        name: 'Starter',
+        quota: 500,
+        numWebsitePagesPerProject: 100,
+        price: {
+          monthly: {
+            amount: 25,
+            priceIds: {
+              test: 'price_1N8Wh6Cv3sM26vDeKjjg71C7',
+              production: 'price_1N8WfxCv3sM26vDeN9BnA5D3',
+            },
+          },
+          yearly: {
+            amount: 20,
+            priceIds: {
+              test: 'price_1N8Wh6Cv3sM26vDeNTZ2D1K2',
+              production: 'price_1N8WfxCv3sM26vDerkB8Tkmz',
+            },
+          },
+        },
       },
     ],
   },

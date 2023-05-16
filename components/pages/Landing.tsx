@@ -94,11 +94,11 @@ const PricingCard = ({
         </div>
       )}
       <div className="absolute inset-0 rounded-lg bg-neutral-1100" />
-      <h2 className="z-10 flex-none px-4 text-3xl font-semibold text-neutral-300 md:px-8">
+      <h2 className="z-10 flex-none px-4 text-2xl font-semibold text-neutral-300 md:px-8">
         {tier.name}
       </h2>
       <div className="relative z-10 flex h-16 w-full flex-col items-center px-4 md:px-8">
-        <p className="mt-0 text-center text-lg dark:text-neutral-500">
+        <p className="mt-0 text-center text-base dark:text-neutral-500">
           {tier.description}
         </p>
         {hasMonthlyOption && (
@@ -118,7 +118,7 @@ const PricingCard = ({
       <div className="z-10 flex h-20 w-full items-center justify-center bg-neutral-900/0 px-4 sm:h-24 md:px-8">
         {tier.prices && (
           <div className="relative -mt-4 flex w-full flex-col items-center">
-            <p className="text-[44px] font-semibold text-neutral-300 sm:text-[32px] md:text-[44px]">
+            <p className="text-[36px] font-semibold text-neutral-300 sm:text-[28px] md:text-[36px]">
               {customPrice ?? (
                 <>
                   $
@@ -170,7 +170,11 @@ const PricingCard = ({
         <ul className="flex w-full flex-col gap-1 px-4 md:px-8">
           {tier.items.map((item, i) => {
             return (
-              <ListItem variant="discreet" key={`pricing-${tier.name}-${i}`}>
+              <ListItem
+                size="sm"
+                variant="discreet"
+                key={`pricing-${tier.name}-${i}`}
+              >
                 {typeof item === 'string' ? item : item[model]}
               </ListItem>
             );
@@ -450,7 +454,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               * BYO: Bring your own API key
             </p>
           </div> */}
-          <div className="relative mt-16 grid w-full max-w-screen-md grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
+          <div className="relative mt-16 grid w-full max-w-screen-xl grid-cols-1 gap-4 sm:grid-cols-4 md:gap-8">
             <Blurs />
             <PricingCard
               tier={TIERS.hobby}
@@ -458,15 +462,19 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               model={model}
               customPrice="Free"
             />
-            {/* <PricingCard
+            <PricingCard
+              tier={TIERS.starter}
+              cta="Get started with Starter"
+              model={model}
+            />
+            <PricingCard
               tier={TIERS.pro}
               highlight
               cta="Get started with Pro"
               model={model}
-            /> */}
+            />
             <PricingCard
               tier={TIERS.enterprise}
-              highlight
               cta="Contact Sales"
               ctaHref={`mailto:${process.env.NEXT_PUBLIC_SALES_EMAIL!}`}
               model={model}
