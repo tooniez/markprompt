@@ -4,6 +4,13 @@
 
 @import 'prism.css';
 
+@layer base {
+  :root {
+    --color-neutral-1000: #0e0e0e;
+    --color-neutral-1100: #050505;
+  }
+}
+
 :root {
   --scroll-margin-top: 120px;
   --app-navbar-height: 56px;
@@ -190,10 +197,104 @@ textarea {
     0px 0px 6px rgba(217, 70, 239, 0.3), 8px 0px 20px rgba(217, 70, 239, 0.2) !important;
 }
 
+.panel-glow-color {
+  box-shadow: 0px 20px 30px rgba(217, 70, 239, 0.1),
+    0px 10px 20px rgba(217, 70, 239, 0.15), 8px 0px 80px rgba(217, 70, 239, 0.1) !important;
+}
+
 .input-glow-color {
   box-shadow: -4px 0px 20px rgba(217, 70, 239, 0.2),
     0px 0px 6px rgba(217, 70, 239, 0.3), 8px 0px 20px rgba(217, 70, 239, 0.2) !important;
   @apply border border-fuchsia-600 !important;
+}
+
+.gridline-horizontal {
+  --background: theme('colors.neutral.1100');
+  --color: theme('colors.neutral.800');
+  --size: 1px;
+  --dash-size: 4px;
+  --fade-stop: 80%;
+  --offset: 0px;
+
+  position: absolute;
+
+  background: linear-gradient(
+    to right,
+    var(--color),
+    var(--color) 50%,
+    transparent 0,
+    transparent
+  );
+  background-size: var(--dash-size) var(--size);
+  mask-composite: exclude;
+}
+
+.gridline-horizontal {
+  width: calc(100% + var(--offset));
+  height: var(--size);
+  left: calc(var(--offset) / 2 * -1);
+}
+
+.gridline-vertical {
+  width: var(--size);
+  height: calc(100% + var(--offset));
+  left: calc(var(--offset) / 2 * -1);
+}
+
+.gridline-fade-left {
+  -webkit-mask: linear-gradient(
+      to left,
+      var(--background) var(--fade-stop),
+      transparent
+    ),
+    linear-gradient(to right, var(--background) 100%, transparent),
+    linear-gradient(black, black);
+}
+
+.gridline-fade-right {
+  -webkit-mask: linear-gradient(to left, var(--background) 100%, transparent),
+    linear-gradient(to right, var(--background) var(--fade-stop), transparent),
+    linear-gradient(black, black);
+}
+
+.skewed-sheet {
+  perspective: 1000px;
+  transform: rotateY(20deg) rotateY(20deg) rotateZ(10deg) scale(0.9);
+}
+
+.skewed-sheet:hover {
+  transform: rotateY(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
+}
+
+.glow-border::before {
+  @apply absolute;
+  content: '';
+  left: -0.5px;
+  top: -0.5px;
+  background-size: 100%;
+  width: calc(100% + 1px);
+  height: calc(100% + 1px);
+  z-index: -1;
+}
+
+.glow-border-white::before {
+  background: conic-gradient(from 45deg, #ffffffaa, #ffffff00, #ffffffaa);
+}
+
+.glow-border-white-alt::before {
+  background: conic-gradient(from -45deg, #ffffff50, #ffffff00, #ffffff50);
+}
+
+.glow-border-fuchsia::before {
+  background: conic-gradient(from -45deg, #d946ef80, #d946ef40, #d946ef80);
+}
+
+.glow-border-founded-full::before {
+  @apply rounded-full;
+}
+
+.glow-border-founded-lg::before {
+  @apply rounded-lg;
 }
 
 .supabase-auth-ui_ui-button {
@@ -316,6 +417,10 @@ button:not([type='submit']).supabase-auth-ui_ui-button {
 
 .grid-background {
   @apply bg-[length:36px_36px];
+}
+
+.grid-background-sm {
+  @apply bg-[length:16px_16px];
 }
 
 .grid-background-light {
@@ -557,6 +662,18 @@ button:not([type='submit']).supabase-auth-ui_ui-button {
   animation-delay: 500ms;
   animation-fill-mode: both;
   transition-timing-function: cubic-bezier(0.25, 0.4, 0.55, 1.4);
+}
+
+.animate-pulse-slow {
+  animation-name: pulse;
+  animation-duration: 5s;
+  animation-fill-mode: none;
+  animation-iteration-count: infinite;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 5s infinite;
 }
 
 @keyframes slide-down {
@@ -827,5 +944,27 @@ button:not([type='submit']).supabase-auth-ui_ui-button {
   100% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce-subtle {
+  0%,
+  100% {
+    transform: translateY(-2%);
+    animation-timing-function: ease-in-out;
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: ease-in-out;
   }
 }

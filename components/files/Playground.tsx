@@ -89,7 +89,7 @@ type PlaygroundProps = {
   playing?: boolean;
   demoPrompt?: string;
   demoResponse?: string;
-  demoReferences?: string[];
+  demoReferenceIds?: string[];
   noAnimation?: boolean;
   iDontKnowMessage?: string;
   modelConfig?: ModelConfig;
@@ -121,7 +121,7 @@ export const Playground = forwardRef(
       playing,
       demoPrompt,
       demoResponse,
-      demoReferences,
+      demoReferenceIds,
       noAnimation,
       iDontKnowMessage,
       modelConfig,
@@ -177,7 +177,7 @@ export const Playground = forwardRef(
           await timeout(2000);
         }
         const responseChunks = demoResponse.split(' ');
-        setReferences(demoReferences || []);
+        setReferences(demoReferenceIds || []);
         for (const chunk of responseChunks) {
           setAnswer((a) => a + chunk + ' ');
           if (!noAnimation) {
@@ -193,7 +193,7 @@ export const Playground = forwardRef(
           clearTimeout(timeoutRef.current);
         }
       };
-    }, [playing, demoResponse, demoPrompt, demoReferences, noAnimation]);
+    }, [playing, demoResponse, demoPrompt, demoReferenceIds, noAnimation]);
 
     useEffect(() => {
       onStateChanged?.(!!loading);

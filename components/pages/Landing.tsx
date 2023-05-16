@@ -1,6 +1,7 @@
 import * as Slider from '@radix-ui/react-slider';
 import { Application } from '@splinetool/runtime';
 import cn from 'classnames';
+import { MessageCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
@@ -26,7 +27,9 @@ import {
   TIERS,
 } from '@/lib/stripe/tiers';
 import { defaultTheme } from '@/lib/themes';
+import { capitalize } from '@/lib/utils';
 
+import StepsSection from './sections/Steps';
 import { SharedHead } from './SharedHead';
 import { AnalyticsExample } from '../examples/analytics';
 import { Playground } from '../files/Playground';
@@ -34,30 +37,19 @@ import { DiscordIcon } from '../icons/Discord';
 import { ListItem } from '../ui/ListItem';
 import { Segment } from '../ui/Segment';
 import { Tag } from '../ui/Tag';
+import colors from 'tailwindcss/colors';
 
-const demoPrompt = 'How do I publish a component?';
+const demoPrompt = 'What is Markprompt?';
 
-const demoResponse = `To publish a component on Acme, follow these steps:
+const demoResponse = `Markprompt is three things:
 
-- At the root of your project, open or create a file named \`index.js\`, and add the following lines (you can add as many components as you need):
+- A set of API endpoints that allow you to train your content and create a prompt to ask questions to it, for instance for a docs site.
+- A [web dashboard](https://markprompt.com/) that makes it easy to do the above. The dashboard also allows you to set up syncing with a GitHub repo or a website, drag and drop files to train, manage access keys, and visualize stats on how users query your content.
+- A set of UI components (currently [React](/docs#react) and [Web Component](#web-component)) that make it easy to integrate a prompt on your existing site.
 
-\`\`\`js
-import Component1 from "/path/to/component1
-import Component2 from "/path/to/component2
+Markprompt is [open source](https://github.com/motifland/markprompt), so you are free to host the dashboard and model backend on your own premises. We also warmly welcome [contributions](https://github.com/motifland/markprompt/pulls).`;
 
-export {
-  Component1,
-  Component2,
-  // ...
-}
-\`\`\`
-
-- Then, head over to the Component Library, accessible via the sidebar.
-- Navigate to the Publish tab, and set a new semantic version. It must be higher than the previous one.
-- Hit "Publish".
-`;
-
-const demoReferences = ['Getting Started', 'Publishing', 'Components'];
+const demoReferenceIds = ['docs'];
 
 const reactCode = `
 import { Markprompt } from "markprompt"
@@ -92,17 +84,23 @@ const PricingCard = ({
   return (
     <div
       className={cn(
-        'flex w-full flex-col items-center gap-4 rounded-lg bg-black/50 py-12 backdrop-blur',
+        'relative flex w-full flex-col items-center gap-4 rounded-lg bg-neutral-1100 py-12 backdrop-blur',
         {
           'border border-neutral-900 shadow-2xl': !highlight,
-          'shadow-box border border-fuchsia-900': highlight,
+          'shadow-box': highlight,
         },
       )}
     >
-      <h2 className="flex-none px-4 text-3xl font-semibold text-neutral-300 md:px-8">
+      {highlight && (
+        <div className="absolute inset-0 z-[-1]">
+          <div className="glow-border glow-border-fuchsia glow-border-founded-lg absolute inset-0 z-0 rounded-lg" />
+        </div>
+      )}
+      <div className="absolute inset-0 rounded-lg bg-neutral-1100" />
+      <h2 className="z-10 flex-none px-4 text-3xl font-semibold text-neutral-300 md:px-8">
         {tier.name}
       </h2>
-      <div className="relative flex h-16 w-full flex-col items-center px-4 md:px-8">
+      <div className="relative z-10 flex h-16 w-full flex-col items-center px-4 md:px-8">
         <p className="mt-0 text-center text-lg dark:text-neutral-500">
           {tier.description}
         </p>
@@ -120,7 +118,7 @@ const PricingCard = ({
           </div>
         )}
       </div>
-      <div className="flex h-20 w-full items-center justify-center bg-neutral-900/0 px-4 sm:h-24 md:px-8">
+      <div className="z-10 flex h-20 w-full items-center justify-center bg-neutral-900/0 px-4 sm:h-24 md:px-8">
         {tier.prices && (
           <div className="relative -mt-4 flex w-full flex-col items-center">
             <p className="text-[44px] font-semibold text-neutral-300 sm:text-[32px] md:text-[44px]">
@@ -171,7 +169,7 @@ const PricingCard = ({
           </div>
         )}
       </div>
-      <div className="flex w-full flex-grow flex-col gap-1">
+      <div className="z-10 flex w-full flex-grow flex-col gap-1">
         <ul className="flex w-full flex-col gap-1 px-4 md:px-8">
           {tier.items.map((item, i) => {
             return (
@@ -196,7 +194,7 @@ const PricingCard = ({
           </ul>
         )}
       </div>
-      <div className="mt-4 w-full px-4 md:px-8">
+      <div className="z-10 mt-4 w-full px-4 md:px-8">
         <Button
           className="w-full"
           variant={highlight ? 'fuchsia' : 'plain'}
@@ -262,13 +260,13 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
     }
   }, [isInputVisible]);
 
-  useEffect(() => {
-    const canvas: any = document.getElementById('animation-canvas');
-    if (canvas) {
-      const app = new Application(canvas);
-      app.load('https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode');
-    }
-  }, []);
+  // useEffect(() => {
+  //   const canvas: any = document.getElementById('animation-canvas');
+  //   if (canvas) {
+  //     const app = new Application(canvas);
+  //     app.load('https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode');
+  //   }
+  // }, []);
 
   return (
     <>
@@ -293,17 +291,19 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
                   Introducing website sources →
                 </Tag>
               </Link>
-              <h1 className="gradient-heading mt-6 text-left text-4xl leading-[36px] tracking-[-0.6px] sm:text-6xl sm:leading-[64px]">
+              <h1 className="gradient-heading mt-6 mr-[-50px] text-left text-4xl leading-[36px] tracking-[-0.6px] sm:text-6xl sm:leading-[64px]">
                 <Balancer>
                   Enterprise-grade AI chatbots for your website and docs
                 </Balancer>
               </h1>
-              <p className="z-20 mx-auto mt-8 max-w-screen-md text-left text-base dark:text-neutral-500 sm:mt-4 sm:text-lg">
-                Connect any source of content, from public websites to private
-                GitHub repos, configure the design and tone, and paste the code
-                to your website. In minutes, you have a chatbot that answers all
-                your customers&apos; questions. If not, you will get notified
-                and can take action.
+              <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base dark:text-neutral-500 sm:mt-4 sm:text-lg">
+                <Balancer ratio={0.5}>
+                  Connect any source of content, from public websites to private
+                  GitHub repos, configure the design and tone, and paste the
+                  code to your website. In minutes, you have a chatbot that
+                  answers all your customers&apos; questions. If not, you will
+                  get notified and can take action.
+                </Balancer>
               </p>
               <div className="flex flex-col items-start justify-start gap-4 pt-8 sm:flex-row sm:items-center">
                 <Button variant="cta" buttonSize="lg" href="/signup">
@@ -323,7 +323,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
                   </Button>
                 </div>
               </div>
-              <p className="pt-8 text-left text-sm text-neutral-700 sm:pt-16 sm:text-base">
+              <p className="pt-8 text-left text-sm text-neutral-700 sm:pt-8 sm:text-base">
                 Live with
               </p>
               <div className="flex flex-row items-center justify-start gap-8 overflow-x-auto pt-4 sm:items-center sm:gap-12 sm:pt-4">
@@ -345,112 +345,52 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             <TwitterIcon className="h-4 w-4" />
             Introducing Markprompt
           </a> */}
-          <div className="shadow-box relative mx-auto mt-24 h-[500px] w-full max-w-screen-sm overflow-hidden rounded-2xl shadow-primary-500/10">
-            <Playground
-              isDemoMode
-              isDark={true}
-              theme={{ ...defaultTheme, dimensions: { radius: '16px' } }}
-              playing={autoplayPlayground}
-              demoPrompt={demoPrompt}
-              demoResponse={demoResponse}
-              demoReferences={demoReferences}
-              placeholder={CONFIG_DEFAULT_VALUES.placeholder}
-              iDontKnowMessage={CONFIG_DEFAULT_VALUES.iDontKnowMessage}
-              referencesHeading={CONFIG_DEFAULT_VALUES.referencesHeading}
-              loadingHeading={CONFIG_DEFAULT_VALUES.loadingHeading}
-              getReferenceInfo={(id) => {
-                return { name: id, href: undefined };
-              }}
-            />
-            <div
-              ref={playgroundAnchorRef}
-              className="pointer-events-none absolute right-0 bottom-32 h-2 w-2 opacity-0"
-            />
-          </div>
-          <h2 className="gradient-heading mt-40 text-center text-4xl">
-            As easy as 1, 2
-          </h2>
-          <p className="mx-auto mt-4 max-w-screen-md text-center text-lg dark:text-neutral-500">
-            Sync your Markdown/Markdoc/MDX/HTML/text files from a GitHub repo or
-            a website, drag and drop them in the dashboard, or upload them
-            programmatically. Wait a little for the training to complete, then
-            use our React component, or fetch completions via our streaming API.
-            Use the model that suits your needs—all OpenAI{' '}
-            <a
-              href="https://platform.openai.com/docs/models/moderation"
-              className="subtle-underline"
-            >
-              completion models
-            </a>{' '}
-            are supported, including GPT-4.
-          </p>
-          <div className="mt-12 grid grid-cols-1 items-center justify-center gap-12 sm:grid-cols-2 sm:gap-0">
-            <div className="flex h-full flex-col items-center">
-              <div className="flex w-full flex-grow sm:px-12">
-                <div className="mx-auto flex flex-grow items-center justify-center rounded-lg border border-neutral-900 bg-neutral-1000 px-4 py-12 text-sm">
-                  <div className="pointer-events-none flex flex-row items-center gap-2  sm:flex-col md:flex-row">
-                    <div className="flex flex-grow flex-row items-center gap-4 rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 pr-8">
-                      <GitHubIcon className="h-4 w-4 flex-none text-neutral-600" />
-                      <p className="flex-grow truncate text-neutral-300 ">
-                        github.com/acme/docs
-                      </p>
-                    </div>
-                    <div className="button-glow-color flex-none rounded-md border-transparent bg-fuchsia-600 px-4 py-2 text-center text-white sm:w-full md:w-min">
-                      Train
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="relative flex h-32 w-full flex-none flex-col items-center">
-                <div className="absolute right-0 z-0 h-[48px] w-1/2 border-b border-dashed border-neutral-800" />
-                <div className="absolute top-0 left-0 z-0 h-[48px] w-1/2 border-b border-dashed border-neutral-800" />
-                <div className="absolute left-0 z-10 h-[54px] w-1/2 bg-gradient-to-l from-neutral-1100/0 to-neutral-1100" />
-                <div className="h-[40px] border-r border-dashed border-neutral-800" />
-                <div className="z-20 h-4 w-4 rounded-full border-4 border-neutral-800 bg-neutral-300" />
-                <div className="relative mt-4 flex w-full flex-none flex-col items-center font-medium text-neutral-300">
-                  Train
-                  <p className="absolute inset-x-0 top-6 mx-auto mt-2 h-20 max-w-xs text-center text-sm font-normal text-neutral-500">
-                    <Balancer ratio={0.5}>
-                      Sync a GitHub repo, drag and drop files, or post via HTTP.
-                    </Balancer>
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="flex h-full flex-col items-center">
-              <div className="flex w-full flex-grow px-0 sm:px-12">
-                <div className="mx-auto flex w-full items-center justify-center overflow-hidden rounded-lg border border-neutral-900 bg-neutral-1000 px-4 py-12 text-sm">
-                  <Code
-                    className="code-small-md"
-                    language="jsx"
-                    code={reactCode}
-                  />
-                </div>
-              </div>
-              <div className="relative flex h-32 w-full flex-none flex-col items-center">
-                <div className="absolute top-0 left-0 z-0 h-[48px] w-1/2 border-b border-dashed border-neutral-800" />
-                <div className="absolute top-0 right-0 z-0 h-[48px] w-1/2 border-b border-dashed border-neutral-800" />
-                <div className="absolute right-0 z-10 h-[54px] w-1/2 bg-gradient-to-r from-neutral-1100/0 to-neutral-1100" />
-                <div className="h-[40px] border-r border-dashed border-neutral-800" />
-                <div className="z-20 h-4 w-4 rounded-full border-4 border-neutral-800 bg-neutral-300" />
-                <div className="relative mt-4 flex w-full flex-none flex-col items-center font-medium text-neutral-300">
-                  Prompt
-                  <p className="absolute inset-x-0 top-6 mx-auto mt-2 h-20 max-w-xs text-center text-sm font-normal text-neutral-500">
-                    Use the{' '}
-                    <a
-                      className="subtle-underline"
-                      href="https://github.com/motifland/markprompt-js"
-                    >
-                      Markprompt React or Web component
-                    </a>
-                    , or fetch via a readable stream.
-                  </p>
-                </div>
-              </div>
-            </div>
+        </div>
+      </div>
+      <div className="grid-background-sm grid-background-dark relative z-0 mx-auto bg-neutral-1000 px-6 py-24 sm:px-8 sm:py-32">
+        <div className="glow-border-founded-lg glow-border-white-alt glow-border relative mx-auto h-[500px] w-full max-w-screen-md rounded-lg">
+          <div className="absolute inset-0 z-0 rounded-xl border-2 bg-transparent" />
+          <Playground
+            isDemoMode
+            isDark={true}
+            hideCloseButton
+            theme={{
+              ...defaultTheme,
+              colors: {
+                ...defaultTheme.colors,
+                dark: {
+                  ...defaultTheme.colors.dark,
+                  border: '#ffffff10',
+                },
+              },
+              dimensions: { radius: '8px' },
+            }}
+            playing={autoplayPlayground}
+            demoPrompt={demoPrompt}
+            demoResponse={demoResponse}
+            demoReferenceIds={demoReferenceIds}
+            placeholder={CONFIG_DEFAULT_VALUES.placeholder}
+            iDontKnowMessage={CONFIG_DEFAULT_VALUES.iDontKnowMessage}
+            referencesHeading={CONFIG_DEFAULT_VALUES.referencesHeading}
+            loadingHeading={CONFIG_DEFAULT_VALUES.loadingHeading}
+            getReferenceInfo={(id) => {
+              return { name: capitalize(id), href: id };
+            }}
+          />
+          <div
+            ref={playgroundAnchorRef}
+            className="pointer-events-none absolute right-0 bottom-32 h-2 w-2 opacity-0"
+          />
+        </div>
+        <div className="mx-auto mt-8 flex w-full max-w-screen-md justify-end">
+          <div className="rounded-full border border-sky-500 bg-sky-600 p-3 shadow">
+            <MessageCircle className="h-5 w-5 text-white" />
           </div>
         </div>
-        <h2 className="gradient-heading mt-40 text-center text-4xl">
+      </div>
+      <StepsSection />
+      <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 pt-24 sm:px-8">
+        <h2 className="gradient-heading mt-64 text-center text-4xl">
           Track usage, get feedback, improve content
         </h2>
         <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg dark:text-neutral-500">
