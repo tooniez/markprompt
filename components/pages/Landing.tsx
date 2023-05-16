@@ -1,8 +1,6 @@
 import * as Slider from '@radix-ui/react-slider';
-import { Application } from '@splinetool/runtime';
 import cn from 'classnames';
 import { MessageCircle } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
@@ -17,7 +15,6 @@ import { TwitterIcon } from '@/components/icons/Twitter';
 import LandingNavbar from '@/components/layouts/LandingNavbar';
 import { Blurs } from '@/components/ui/Blurs';
 import Button from '@/components/ui/Button';
-import { Code } from '@/components/ui/Code';
 import { Pattern } from '@/components/ui/Pattern';
 import { CONFIG_DEFAULT_VALUES } from '@/lib/context/config';
 import {
@@ -37,7 +34,6 @@ import { DiscordIcon } from '../icons/Discord';
 import { ListItem } from '../ui/ListItem';
 import { Segment } from '../ui/Segment';
 import { Tag } from '../ui/Tag';
-import colors from 'tailwindcss/colors';
 
 const demoPrompt = 'What is Markprompt?';
 
