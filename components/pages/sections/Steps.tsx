@@ -344,10 +344,10 @@ const StepsSection = () => {
                   </div>
                   <div className="flex flex-grow flex-col items-start gap-1 px-3 py-3">
                     <div className="rounded-full bg-indigo-100 px-2 py-1 text-xs text-indigo-600">
-                      What is your pricing?
+                      What is the pricing plan?
                     </div>
                     <div className="rounded-full bg-indigo-100 px-2 py-1 text-xs text-indigo-600">
-                      How do I add a team members?
+                      How do I add a team member?
                     </div>
                     <div className="rounded-full bg-indigo-100 px-2 py-1 text-xs text-indigo-600">
                       Are you SOC2 compliant?
