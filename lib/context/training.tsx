@@ -381,86 +381,85 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               robotsTxtInfo.sitemap,
             );
 
-            if (sitemapUrlsOrUndefined !== undefined) {
-              const sitemapUrls = sitemapUrlsOrUndefined.filter((url) => {
-                // Only include the url with the same root as baseUrl, e.g.
-                // example.com/docs should not inculde example.com/blog links.
-                return url.startsWith(baseUrl);
-              });
-              const numAllowance =
-                numWebsitePagesPerProjectAllowance === 'unlimited'
-                  ? sitemapUrls.length
-                  : numWebsitePagesPerProjectAllowance;
-              await generateEmbeddingsForUrls(
-                sitemapUrls.slice(0, numAllowance),
-              );
-              if (sitemapUrls.length > numAllowance) {
-                toast.error(
-                  'You have reached the quota of pages per website on this plan.',
-                );
-              }
-            } else {
-              // Otherwise, we discover links starting with the root page
-              let processedLinks: string[] = [];
-              let linksToProcess = [data.url];
+            // if (sitemapUrlsOrUndefined !== undefined) {
+            //   const sitemapUrls = sitemapUrlsOrUndefined.filter((url) => {
+            //     // Only include the url with the same root as baseUrl, e.g.
+            //     // example.com/docs should not inculde example.com/blog links.
+            //     return url.startsWith(baseUrl);
+            //   });
+            //   const numAllowance =
+            //     numWebsitePagesPerProjectAllowance === 'unlimited'
+            //       ? sitemapUrls.length
+            //       : numWebsitePagesPerProjectAllowance;
+            //   await generateEmbeddingsForUrls(
+            //     sitemapUrls.slice(0, numAllowance),
+            //   );
+            //   if (sitemapUrls.length > numAllowance) {
+            //     toast.error(
+            //       'You have reached the quota of pages per website on this plan.',
+            //     );
+            //   }
+            // } else {
+            // Otherwise, we discover links starting with the root page
+            let processedLinks: string[] = [];
+            let linksToProcess = [data.url];
 
-              let numLinksSentForProcessing = 0;
-              let didReachLimit = false;
-              // Even in the "unlimited" case, cap at 1_000_000 to prevent
-              // degenerate cases.
-              const _numWebsitePagesPerProjectAllowance =
-                numWebsitePagesPerProjectAllowance === 'unlimited'
-                  ? 1_000_000
-                  : numWebsitePagesPerProjectAllowance;
+            let numLinksSentForProcessing = 0;
+            let didReachLimit = false;
+            // Even in the "unlimited" case, cap at 1_000_000 to prevent
+            // degenerate cases.
+            const _numWebsitePagesPerProjectAllowance =
+              numWebsitePagesPerProjectAllowance === 'unlimited'
+                ? 1_000_000
+                : numWebsitePagesPerProjectAllowance;
 
-              while (
-                linksToProcess.length > 0 &&
-                numLinksSentForProcessing < _numWebsitePagesPerProjectAllowance
+            while (
+              linksToProcess.length > 0 &&
+              numLinksSentForProcessing < _numWebsitePagesPerProjectAllowance
+            ) {
+              let linksActuallySentToProcess = linksToProcess;
+              if (
+                numLinksSentForProcessing + linksActuallySentToProcess.length >
+                _numWebsitePagesPerProjectAllowance
               ) {
-                let linksActuallySentToProcess = linksToProcess;
-                if (
-                  numLinksSentForProcessing +
-                    linksActuallySentToProcess.length >
-                  _numWebsitePagesPerProjectAllowance
-                ) {
-                  didReachLimit = true;
-                  linksActuallySentToProcess = linksToProcess.slice(
-                    0,
-                    _numWebsitePagesPerProjectAllowance -
-                      numLinksSentForProcessing,
-                  );
-                }
-                const processedContent = await generateEmbeddingsForUrls(
-                  linksActuallySentToProcess,
+                didReachLimit = true;
+                linksActuallySentToProcess = linksToProcess.slice(
+                  0,
+                  _numWebsitePagesPerProjectAllowance -
+                    numLinksSentForProcessing,
                 );
-                numLinksSentForProcessing += linksActuallySentToProcess.length;
+              }
+              const processedContent = await generateEmbeddingsForUrls(
+                linksActuallySentToProcess,
+              );
+              numLinksSentForProcessing += linksActuallySentToProcess.length;
 
-                const discoveredLinks = !processedContent
-                  ? []
-                  : uniq(
-                      processedContent.flatMap((html) =>
-                        extractLinksFromHtml(html),
-                      ),
-                    )
-                      .filter((href) => isHrefFromBaseUrl(baseUrl, href))
-                      .map((href) => {
-                        return completeHrefWithBaseUrl(baseUrl, href);
-                      })
-                      .filter(isPresent);
-                processedLinks = [
-                  ...processedLinks,
-                  ...linksActuallySentToProcess,
-                ];
-                linksToProcess = discoveredLinks.filter(
-                  (link) => !processedLinks.includes(link),
-                );
-              }
-              if (didReachLimit) {
-                toast.error(
-                  'You have reached the quota of pages per website on this plan.',
-                );
-              }
+              const discoveredLinks = !processedContent
+                ? []
+                : uniq(
+                    processedContent.flatMap((html) =>
+                      extractLinksFromHtml(html),
+                    ),
+                  )
+                    .filter((href) => isHrefFromBaseUrl(baseUrl, href))
+                    .map((href) => {
+                      return completeHrefWithBaseUrl(baseUrl, href);
+                    })
+                    .filter(isPresent);
+              processedLinks = [
+                ...processedLinks,
+                ...linksActuallySentToProcess,
+              ];
+              linksToProcess = discoveredLinks.filter(
+                (link) => !processedLinks.includes(link),
+              );
             }
+            if (didReachLimit) {
+              toast.error(
+                'You have reached the quota of pages per website on this plan.',
+              );
+            }
+            // }
           } catch (e) {
             onError(`Error processing ${origin}: ${e}`);
           }
