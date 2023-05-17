@@ -156,7 +156,7 @@ export const TIERS: Record<Tier, TierDetails> = {
     items: [
       '500 GPT-4 completions',
       '100 indexed website pages per project',
-      'Analytics (soon)',
+      'Usage analytics',
     ],
     prices: [
       {
@@ -190,7 +190,7 @@ export const TIERS: Record<Tier, TierDetails> = {
       'Model customization',
       '1000 GPT-4 completions',
       '200 indexed website pages per project',
-      'Analytics (soon)',
+      'Advanced analytics',
     ],
     prices: [
       {
