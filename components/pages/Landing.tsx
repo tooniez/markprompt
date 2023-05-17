@@ -286,7 +286,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
         <LandingNavbar />
         <div className="animate-slide-up">
           <div className="grid grid-cols-1 gap-8 pb-24 sm:min-h-[calc(100vh-100px)] sm:grid-cols-5">
-            <div className="col-span-3 mt-12 sm:mt-24">
+            <div className="col-span-3 mt-12 flex flex-col justify-center 2xl:mt-0">
               <Link href="/blog/introducing-website-sources">
                 <Tag size="base" color="sky">
                   Introducing website sources →
@@ -334,7 +334,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               </div>
             </div>
             <div className="z-0 col-span-2 hidden h-full sm:block">
-              <div className="animate-scale-bounce relative ml-[-100px] block h-[90%] w-[calc(100%+200px)] transform-gpu">
+              <div className="animate-scale-bounce relative ml-[-100px] mt-[5%] block h-[90%] w-[calc(100%+200px)] transform-gpu">
                 <canvas id="animation-canvas" />
               </div>
             </div>
