@@ -104,7 +104,7 @@ const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
   return (
     <div className="flex w-full cursor-default flex-row items-center gap-2 text-sm">
       <Icon className="h-4 w-4 flex-none text-neutral-500" />
-      <p className="flex-grow overflow-hidden truncate text-neutral-500">
+      <p className="flex-grow overflow-hidden text-neutral-500">
         {getLabelForSource(source)}
       </p>
       <DropdownMenu.Root>

@@ -507,7 +507,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                       className="flex flex-row items-center gap-2 rounded-md bg-sky-900/20 py-2 pl-3 pr-2 outline-none"
                     >
                       <Icon className="h-4 w-4 flex-none text-sky-400" />
-                      <p className="flex-grow overflow-hidden truncate text-xs text-sky-400">
+                      <p className="flex-grow overflow-hidden text-xs text-sky-400">
                         {getLabelForSource(source)}
                       </p>
                       <button
