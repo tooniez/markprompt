@@ -46,6 +46,7 @@ type TeamProjectPickerProps = {
 };
 
 const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
+  const { user } = useUser();
   const { teams, loading } = useTeams();
   const { team } = useTeam();
   const [isOpen, setOpen] = useState(false);
@@ -57,12 +58,17 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
   return (
     <DropdownMenu.Root open={isOpen} onOpenChange={setOpen}>
       <DropdownMenu.Trigger asChild>
-        <button
-          className="no-ring rounded p-1 outline-none transition dark:text-neutral-300 dark:hover:bg-neutral-900"
-          aria-label="Select team"
-        >
-          <ChevronsUpDown className="h-3 w-3" />
-        </button>
+        {user?.has_completed_onboarding ? (
+          <button
+            className="no-ring flex select-none flex-row items-center gap-2 rounded py-1 px-2 text-sm text-neutral-300 outline-none transition hover:text-neutral-400 dark:text-neutral-300 dark:hover:bg-neutral-900"
+            aria-label="Select team"
+          >
+            {team?.name || ''}
+            <ChevronsUpDown className="h-3 w-3" />
+          </button>
+        ) : (
+          <p className="dropdown-menu-button select-none">{team?.name || ''}</p>
+        )}
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content
@@ -119,11 +125,12 @@ const ProjectPicker = () => {
       <DropdownMenu.Trigger asChild>
         <button
           className={cn(
-            'select-none rounded px-2 py-1 text-sm outline-none transition dark:text-neutral-300 dark:hover:bg-neutral-900',
+            'flex select-none flex-row items-center gap-2 rounded px-2 py-1 text-sm outline-none transition dark:text-neutral-300 dark:hover:bg-neutral-900',
           )}
           aria-label="Select team"
         >
           {project.name}
+          <ChevronsUpDown className="h-3 w-3" />
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
@@ -183,22 +190,13 @@ export const TeamProjectPicker = () => {
 
   return (
     <>
-      <div className="flex flex-row items-center gap-4">
+      <div className="flex flex-row items-center gap-2">
         <Slash size="md" />
+
         {team ? (
-          <Link
-            className="dropdown-menu-button select-none"
-            href={`/${team.slug}`}
-          >
-            {team?.name}
-          </Link>
+          <TeamPicker onNewTeamClick={() => setNewTeamDialogOpen(true)} />
         ) : (
           <></>
-        )}
-        {user?.has_completed_onboarding && (
-          <div className="-ml-2 -mr-2">
-            <TeamPicker onNewTeamClick={() => setNewTeamDialogOpen(true)} />
-          </div>
         )}
         {!loadingProject && team && project && (
           <>
