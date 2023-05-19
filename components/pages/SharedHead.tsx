@@ -21,7 +21,7 @@ export const SharedHead: FC<SharedHeadProps> = ({
         name="description"
         content={
           description ||
-          'Open-source GPT-4 platform for Markdown, Markdoc and MDX with built-in analytics'
+          'Enterprise-grade AI chatbots for your website and docs'
         }
         key="desc"
       />
@@ -29,7 +29,7 @@ export const SharedHead: FC<SharedHeadProps> = ({
         property="og:description"
         content={
           description ||
-          'Open-source GPT-4 platform for Markdown, Markdoc and MDX with built-in analytics'
+          'Enterprise-grade AI chatbots for your website and docs'
         }
       />
 
@@ -46,7 +46,7 @@ export const SharedHead: FC<SharedHeadProps> = ({
         name="twitter:description"
         content={
           description ||
-          'Open-source GPT-4 platform for Markdown, Markdoc and MDX with built-in analytics'
+          'Enterprise-grade AI chatbots for your website and docs'
         }
       />
       <meta name="twitter:image" content={ogImage} />
