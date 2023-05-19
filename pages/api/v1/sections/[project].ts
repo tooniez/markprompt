@@ -21,7 +21,7 @@ type Data =
       status?: string;
       error?: string;
     }
-  | { data: FileSection[] };
+  | { data: Omit<FileSection, 'token_count'>[] };
 
 const allowedMethods = ['GET'];
 
@@ -112,6 +112,12 @@ export default async function handler(
   track(projectId, 'get sections', { projectId });
 
   return res.status(200).json({
-    data: fileSections,
+    data: fileSections.map((section) => {
+      return {
+        path: section.path,
+        content: section.content,
+        similarity: section.similarity,
+      };
+    }),
   });
 }
