@@ -611,7 +611,7 @@ export const Playground = forwardRef(
                     <a
                       key={`reference-${r}`}
                       className={cn(
-                        'button-ring animate-slide-up block max-w-[33%] truncate whitespace-nowrap rounded-md border px-2 py-1 text-sm font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/50',
+                        'button-ring animate-slide-up inline-block max-w-[30%] shrink-0 truncate whitespace-nowrap rounded-md border px-2 py-1 text-sm font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/50',
                         {
                           'button-ring-light': !isDark,
                         },

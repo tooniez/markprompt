@@ -697,11 +697,14 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                 />
                 <div className="absolute inset-x-0 top-4 bottom-0 z-10 flex flex-col gap-4 px-16 py-8">
                   <div
-                    className={cn('h-full w-full transform transition', {
-                      'animate-slide-up-fast': isPlaygroundVisible,
-                      'animate-slide-down-fast pointer-events-none':
-                        !isPlaygroundVisible,
-                    })}
+                    className={cn(
+                      'w-full flex-grow transform overflow-hidden transition',
+                      {
+                        'animate-slide-up-fast': isPlaygroundVisible,
+                        'animate-slide-down-fast pointer-events-none':
+                          !isPlaygroundVisible,
+                      },
+                    )}
                   >
                     <Playground
                       ref={playgroundRef}

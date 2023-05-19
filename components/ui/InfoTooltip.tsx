@@ -13,7 +13,7 @@ export const InfoTooltip = ({
     <Tooltip.Provider>
       <Tooltip.Root>
         <Tooltip.Trigger asChild>
-          <button className="button-ring flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300">
+          <button className="button-ring flex w-min cursor-default cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300">
             <Info
               className={cn('h-3 w-3', {
                 'text-neutral-300': !dimmed,
