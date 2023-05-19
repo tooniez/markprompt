@@ -25,6 +25,7 @@ import { processFile } from '../api';
 import useProject from '../hooks/use-project';
 import useSources from '../hooks/use-sources';
 import useUsage from '../hooks/use-usage';
+import { getMarkpromptPathFromGitHubArchivePath } from '../integrations/github';
 import { getGitHubFiles } from '../integrations/github.node';
 import {
   getMotifFileContent,
@@ -48,7 +49,6 @@ import {
   toNormalizedUrl,
   truncate,
 } from '../utils';
-import { getMarkpromptPathFromGitHubArchivePath } from '../integrations/github';
 
 type IdleState = { state: 'idle' };
 type FetchingDataState = { state: 'fetching_data' };
