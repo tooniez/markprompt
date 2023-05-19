@@ -6,7 +6,10 @@ const VideoSection = () => {
       <Blurs />
       <div className="overflow-hidden rounded-lg border border-neutral-900">
         <video controls autoPlay muted loop width="100%">
-          <source src="/static/videos/landing.mp4" type="video/webm" />
+          <source
+            src="https://res.cloudinary.com/djp21wtxm/video/upload/v1684478419/landing_juljzq.mp4"
+            type="video/webm"
+          />
         </video>
       </div>
     </div>
