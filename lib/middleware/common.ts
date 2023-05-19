@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { NextApiRequest } from 'next';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { Database } from '@/types/supabase';
@@ -45,4 +46,13 @@ export const getProjectIdFromToken = async (
     .maybeSingle();
 
   return data?.project_id;
+};
+
+// Cf. https://stackoverflow.com/questions/68338838/how-to-get-the-ip-address-of-the-client-from-server-side-in-next-js-app
+export const getRequesterIp = (req: NextApiRequest) => {
+  const forwarded = req.headers['x-forwarded-for'];
+
+  return typeof forwarded === 'string'
+    ? forwarded.split(/, /)[0]
+    : req.socket.remoteAddress;
 };

@@ -1,5 +1,7 @@
 // Edge utilities. Cannot run Node APIs.
 
+import { NextRequest } from 'next/server';
+
 export const getAppHost = (subdomain?: string, forceProduction?: boolean) => {
   const isProd = forceProduction || process.env.NODE_ENV === 'production';
   const host = isProd ? process.env.NEXT_PUBLIC_APP_HOSTNAME : 'localhost:3000';
@@ -28,4 +30,9 @@ export const safeParseInt = (value: any, defaultValue = 0) => {
     // Do nothing
   }
   return defaultValue;
+};
+
+export const isRequestFromMarkprompt = (origin: string | undefined | null) => {
+  const requesterHost = origin && removeSchema(origin);
+  return requesterHost === getAppHost();
 };

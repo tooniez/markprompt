@@ -1,4 +1,4 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import { stripIndent } from 'common-tags';
 import {
   createParser,
@@ -9,55 +9,27 @@ import { backOff } from 'exponential-backoff';
 import type { NextRequest } from 'next/server';
 import { CreateEmbeddingResponse } from 'openai';
 
-import {
-  CONTEXT_TOKENS_CUTOFF,
-  I_DONT_KNOW,
-  MAX_PROMPT_LENGTH,
-  STREAM_SEPARATOR,
-} from '@/lib/constants';
+import * as constants from '@/lib/constants';
+import { I_DONT_KNOW, MAX_PROMPT_LENGTH } from '@/lib/constants';
 import { createEmbedding, createModeration } from '@/lib/openai.edge';
 import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
+import { FileSection, getMatchingSections, storePrompt } from '@/lib/sections';
 import { getBYOOpenAIKey, getTeamStripeInfo } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import { stringToLLMInfo } from '@/lib/utils';
-import { getAppHost, removeSchema, safeParseInt } from '@/lib/utils.edge';
+import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
+  ApiError,
   DbFile,
-  OpenAIEmbeddingsModelId,
   OpenAIModelIdWithType,
   Project,
 } from '@/types/types';
 
 export const config = {
   runtime: 'edge',
-};
-
-const isRequestFromMarkprompt = (req: NextRequest) => {
-  const requesterOrigin = req.headers.get('origin');
-  const requesterHost = requesterOrigin && removeSchema(requesterOrigin);
-  return requesterHost === getAppHost();
-};
-
-const storePrompt = async (
-  supabase: SupabaseClient<Database>,
-  projectId: Project['id'],
-  prompt: string,
-  response: string | null,
-  embedding: any,
-  noResponse: boolean,
-) => {
-  return supabase.from('query_stats').insert([
-    {
-      project_id: projectId,
-      prompt,
-      ...(response ? { response } : {}),
-      embedding,
-      ...(noResponse ? { no_response: noResponse } : {}),
-    },
-  ]);
 };
 
 const isIDontKnowResponse = (
@@ -142,13 +114,15 @@ const supabaseAdmin = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY || '',
 );
 
+const allowedMethods = ['POST'];
+
 export default async function handler(req: NextRequest) {
   // Preflight check
   if (req.method === 'OPTIONS') {
     return new Response('ok', { status: 200 });
   }
 
-  if (req.method !== 'POST') {
+  if (!req.method || !allowedMethods.includes(req.method)) {
     return new Response(`Method ${req.method} Not Allowed`, { status: 405 });
   }
 
@@ -166,7 +140,9 @@ export default async function handler(req: NextRequest) {
 
   const { pathname, searchParams } = new URL(req.url);
 
-  const _isRequestFromMarkprompt = isRequestFromMarkprompt(req);
+  const _isRequestFromMarkprompt = isRequestFromMarkprompt(
+    req.headers.get('origin'),
+  );
 
   const lastPathComponent = pathname.split('/').slice(-1)[0];
   let projectIdParam = undefined;
@@ -202,13 +178,11 @@ export default async function handler(req: NextRequest) {
     return new Response('Too many requests', { status: 429 });
   }
 
-  const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
-
   if (!_isRequestFromMarkprompt) {
     // Custom model configurations are part of the Pro and Enterprise plans
     // when used outside of the Markprompt dashboard.
     const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
-    if (!teamStripeInfo) {
+    if (!teamStripeInfo?.stripePriceId) {
       // Custom model configurations are part of the Pro and Enterprise plans.
       params = {
         ...params,
@@ -224,108 +198,31 @@ export default async function handler(req: NextRequest) {
     }
   }
 
+  const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
+
   const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
 
-  // Moderate the content
-  const moderationResponse = await createModeration(
-    sanitizedQuery,
-    byoOpenAIKey,
-  );
-
-  if (moderationResponse?.results?.[0]?.flagged) {
-    throw new Error('Flagged content');
-  }
-
-  let embeddingResult: CreateEmbeddingResponse | undefined = undefined;
+  let fileSections: FileSection[] = [];
+  let promptEmbedding: number[] | undefined = undefined;
   try {
-    // Retry with exponential backoff in case of error. Typical cause is
-    // too_many_requests.
-    const modelId: OpenAIEmbeddingsModelId = 'text-embedding-ada-002';
-    embeddingResult = await backOff(
-      () => createEmbedding(sanitizedQuery, byoOpenAIKey, modelId),
-      {
-        startingDelay: 10000,
-        numOfAttempts: 10,
-      },
-    );
-
-    if (!byoOpenAIKey) {
-      const embeddingModelInfo = stringToLLMInfo(modelId);
-      await recordProjectTokenCount(
-        projectId,
-        embeddingModelInfo,
-        embeddingResult.usage.total_tokens,
-      );
-    }
-  } catch (error) {
-    console.error(
-      `[COMPLETIONS] [CREATE-EMBEDDING] [${projectId}] - Error creating embedding for prompt '${prompt}': ${error}`,
-    );
-    return new Response(
-      `Error creating embedding for prompt '${prompt}': ${error}`,
-      { status: 400 },
-    );
-  }
-
-  const promptEmbedding = embeddingResult?.data?.[0]?.embedding;
-
-  if (!promptEmbedding) {
-    return new Response(`Error creating embedding for prompt '${prompt}'`, {
-      status: 400,
-    });
-  }
-
-  // We need to use the service_role admin supabase as these
-  // requests come without auth, but the tables being queried
-  // are subject to RLS.
-  const {
-    error,
-    data: fileSections,
-  }: {
-    error: { message: string } | null;
-    data:
-      | {
-          path: string;
-          content: string;
-          token_count: number;
-          similarity: number;
-        }[]
-      | null;
-  } = await supabaseAdmin.rpc('match_file_sections', {
-    project_id: projectId,
-    // Somehow Supabase expects a string for the embeddings
-    // entry (which is a vector type in the function definition),
-    // so we just convert to any.
-    embedding: promptEmbedding as any,
-    match_threshold: params.sectionsMatchThreshold || 0.5,
-    match_count: params.sectionsMatchCount || 10,
-    min_content_length: 30,
-  });
-
-  if (error) {
-    console.error(
-      `[COMPLETIONS] [LOAD-EMBEDDINGS] [${projectId}] - Error loading embeddings: ${error.message}`,
-    );
-    return new Response(`Error loading embeddings: ${error.message}`, {
-      status: 400,
-    });
-  }
-
-  if (!fileSections || fileSections?.length === 0) {
-    console.error(
-      `[COMPLETIONS] [LOAD-EMBEDDINGS] [${projectId}] - No relevant sections found`,
-    );
-    await storePrompt(
-      supabaseAdmin,
-      projectId,
+    const sectionsResponse = await getMatchingSections(
+      sanitizedQuery,
       prompt,
-      null,
-      promptEmbedding,
-      true,
+      params.sectionsMatchThreshold,
+      params.sectionsMatchCount,
+      projectId,
+      byoOpenAIKey,
+      'completions',
+      supabaseAdmin,
     );
-    return new Response('No relevant sections found', {
-      status: 400,
-    });
+    fileSections = sectionsResponse.fileSections;
+    promptEmbedding = sectionsResponse.promptEmbedding;
+  } catch (e) {
+    if (e instanceof ApiError) {
+      return new Response(e.message, { status: e.code });
+    } else {
+      return new Response(`${e}`, { status: 400 });
+    }
   }
 
   track(projectId, 'generate completions', { projectId });
@@ -345,7 +242,7 @@ export default async function handler(req: NextRequest) {
   for (const section of fileSections) {
     numTokens += section.token_count;
 
-    if (numTokens >= CONTEXT_TOKENS_CUTOFF) {
+    if (numTokens >= constants.CONTEXT_TOKENS_CUTOFF) {
       break;
     }
 
@@ -359,7 +256,7 @@ export default async function handler(req: NextRequest) {
 
   const fullPrompt = stripIndent(
     ((params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE.template)
-      .replace('{{I_DONT_KNOW}}', iDontKnowMessage || I_DONT_KNOW)
+      .replace('{{I_DONT_KNOW}}', iDontKnowMessage || constants.I_DONT_KNOW)
       .replace('{{CONTEXT}}', contextText)
       .replace('{{PROMPT}}', sanitizedQuery),
   );
@@ -445,7 +342,9 @@ export default async function handler(req: NextRequest) {
             if (!didSendHeader) {
               // Done sending chunks, send references
               const queue = encoder.encode(
-                `${JSON.stringify(references || [])}${STREAM_SEPARATOR}`,
+                `${JSON.stringify(references || [])}${
+                  constants.STREAM_SEPARATOR
+                }`,
               );
               controller.enqueue(queue);
               didSendHeader = true;

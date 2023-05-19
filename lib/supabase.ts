@@ -34,15 +34,22 @@ export const getBYOOpenAIKey = async (
 export const getTeamStripeInfo = async (
   supabaseAdmin: SupabaseClient<Database>,
   projectId: Project['id'],
-): Promise<string | undefined> => {
+): Promise<
+  { stripePriceId: string | null; isEnterprisePlan: boolean } | undefined
+> => {
   const { data } = await supabaseAdmin
     .from('teams')
-    .select('stripe_price_id, projects!inner (id)')
+    .select('stripe_price_id, is_enterprise_plan, projects!inner (id)')
     .match({ 'projects.id': projectId })
     .limit(1)
     .maybeSingle();
 
-  return data?.stripe_price_id || undefined;
+  return data
+    ? {
+        stripePriceId: data.stripe_price_id,
+        isEnterprisePlan: !!data.is_enterprise_plan,
+      }
+    : undefined;
 };
 
 export const setGitHubAuthState = async (

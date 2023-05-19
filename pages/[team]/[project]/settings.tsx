@@ -308,7 +308,7 @@ const ProjectSettingsPage = () => {
           }
         >
           <div className="flex flex-col gap-2 px-4 py-2">
-            <h3 className="text-sm font-bold">
+            <h3 className="text-sm font-bold text-neutral-300">
               Production{' '}
               <Tag className="ml-1" size="sm" color="green">
                 Public
@@ -336,7 +336,7 @@ const ProjectSettingsPage = () => {
               </div>
             </div>
             <div className="my-4 h-1 w-full border-b border-neutral-900" />
-            <h3 className="text-sm font-bold">
+            <h3 className="text-sm font-bold text-neutral-300">
               Development{' '}
               <Tag className="ml-1" size="sm" color="orange">
                 Private
@@ -408,7 +408,7 @@ const ProjectSettingsPage = () => {
                   className="group flex w-full flex-row items-center gap-2 rounded-md px-4 py-1"
                   key={`domain-${token.value}`}
                 >
-                  <div className="text-neutral-300, select-none truncate py-0.5 font-mono text-sm">
+                  <div className="select-none truncate py-0.5 font-mono text-sm text-neutral-300">
                     {truncateMiddle(token.value, 2, 4, '***')}
                   </div>
                   <div className="flex-grow" />

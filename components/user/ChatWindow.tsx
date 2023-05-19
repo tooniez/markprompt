@@ -155,7 +155,12 @@ export const ContactWindow = ({
   }, []);
 
   return (
-    <Dialog.Root open={isContactWindowOpen} onOpenChange={setContactWindowOpen}>
+    <Dialog.Root
+      open={isContactWindowOpen}
+      onOpenChange={(open) => {
+        setContactWindowOpen(open);
+      }}
+    >
       <Dialog.Trigger asChild>
         {Component ? (
           Component
@@ -190,7 +195,7 @@ export const ContactWindow = ({
       <Dialog.Portal>
         <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
         <Dialog.Content className="animate-dialog-slide-in dialog-content max-h-[90%] w-[90%] max-w-[540px]">
-          <Dialog.Title className="dialog-title">Contact Us</Dialog.Title>
+          <Dialog.Title className="dialog-title">Contact us</Dialog.Title>
           <Dialog.Description className="dialog-description pb-4">
             Share feedback, request a feature, report a bug, or contact sales.
           </Dialog.Description>

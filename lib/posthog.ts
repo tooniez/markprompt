@@ -1,5 +1,7 @@
 import { PostHog } from 'posthog-node';
 
+type TrackingEventType = 'train' | 'generate completions' | 'get sections';
+
 const posthogNoopClient = {
   capture: () => {
     // No-op
@@ -14,7 +16,11 @@ const client =
     ? new PostHog(process.env.POSTHOG_API_KEY!)
     : posthogNoopClient;
 
-export const track = (identifier: string, name: string, data: any) => {
+export const track = (
+  identifier: string,
+  name: TrackingEventType,
+  data: any,
+) => {
   client.capture({
     distinctId: identifier,
     event: name,

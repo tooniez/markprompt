@@ -62,23 +62,23 @@ export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
                     </NavigationMenu.Link>
                   </NavigationMenu.Item>
                 )}
-                <ContactWindow
-                  closeOnClickOutside
-                  Component={
-                    <NavigationMenu.Item>
-                      <NavigationMenu.Link
-                        asChild
-                        className="button-ring block h-full rounded-md px-2 py-1.5 text-sm text-neutral-300 hover:bg-neutral-900 hover:text-neutral-100 focus-visible:text-neutral-100"
-                      >
-                        <button className="text-neutral-300hover:bg-neutral-900 block h-full rounded-md px-2 py-1.5 text-sm hover:text-neutral-100 focus-visible:text-neutral-100">
-                          Help
-                        </button>
-                      </NavigationMenu.Link>
-                    </NavigationMenu.Item>
-                  }
-                />
               </>
             )}
+            <ContactWindow
+              closeOnClickOutside
+              Component={
+                <NavigationMenu.Item>
+                  <NavigationMenu.Link
+                    asChild
+                    className="button-ring block h-full rounded-md px-2 py-1.5 text-sm text-neutral-300 hover:bg-neutral-900 hover:text-neutral-100 focus-visible:text-neutral-100"
+                  >
+                    <button className="text-neutral-300hover:bg-neutral-900 block h-full rounded-md px-2 py-1.5 text-sm hover:text-neutral-100 focus-visible:text-neutral-100">
+                      Help
+                    </button>
+                  </NavigationMenu.Link>
+                </NavigationMenu.Item>
+              }
+            />
             <NavigationMenu.Item>
               <NavigationMenu.Link
                 asChild

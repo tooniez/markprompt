@@ -60,7 +60,7 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
       <DropdownMenu.Trigger asChild>
         {user?.has_completed_onboarding ? (
           <button
-            className="no-ring flex select-none flex-row items-center gap-2 rounded py-1 px-2 text-sm text-neutral-300 outline-none transition hover:text-neutral-400 dark:text-neutral-300 dark:hover:bg-neutral-900"
+            className="no-ring flex select-none flex-row items-center gap-2 rounded py-1 px-2 text-sm text-neutral-300 outline-none transition hover:bg-neutral-900 hover:text-neutral-400"
             aria-label="Select team"
           >
             {team?.name || ''}
@@ -125,7 +125,7 @@ const ProjectPicker = () => {
       <DropdownMenu.Trigger asChild>
         <button
           className={cn(
-            'flex select-none flex-row items-center gap-2 rounded px-2 py-1 text-sm outline-none transition dark:text-neutral-300 dark:hover:bg-neutral-900',
+            'flex select-none flex-row items-center gap-2 rounded px-2 py-1 text-sm text-neutral-300 outline-none transition hover:bg-neutral-900',
           )}
           aria-label="Select team"
         >

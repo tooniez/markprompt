@@ -66,6 +66,27 @@ export const checkCompletionsRateLimits = async (
   return { result, hours, minutes };
 };
 
+export const checkSectionsRateLimits = async (identifier: RateLimitIdType) => {
+  // For now, impose a hard limit of 100 sectinos per minute
+  // per project. Later, make this configurable.
+  const ratelimit = new Ratelimit({
+    redis: getRedisClient(),
+    limiter: Ratelimit.fixedWindow(100, '1 m'),
+    analytics: true,
+  });
+
+  const result = await ratelimit.limit(rateLimitTypeToKey(identifier));
+
+  // Calcualte the remaining time until generations are reset
+  const diff = Math.abs(
+    new Date(result.reset).getTime() - new Date().getTime(),
+  );
+  const hours = Math.floor(diff / 1000 / 60 / 60);
+  const minutes = Math.floor(diff / 1000 / 60) - hours * 60;
+
+  return { result, hours, minutes };
+};
+
 export const getEmbeddingsRateLimitResponse = (
   hours: number,
   minutes: number,

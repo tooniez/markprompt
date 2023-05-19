@@ -2,7 +2,9 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useSession } from '@supabase/auth-helpers-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 
+import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import useTeams from '@/lib/hooks/use-teams';
 import useUser from '@/lib/hooks/use-user';
 
@@ -10,11 +12,15 @@ const ProfileMenu = () => {
   const session = useSession();
   const { user, signOut } = useUser();
   const { teams } = useTeams();
+  const [isMenuOpen, setMenuOpen] = useState(false);
 
   const personalTeam = teams?.find((t) => t.is_personal);
 
   return (
-    <DropdownMenu.Root>
+    <DropdownMenu.Root
+      onOpenChange={(open) => setMenuOpen(open)}
+      open={isMenuOpen}
+    >
       <DropdownMenu.Trigger asChild>
         <button
           className="button-ring select-none rounded-full outline-none transition hover:opacity-70"
@@ -100,15 +106,13 @@ const ProfileMenu = () => {
               GitHub
             </a>
           </DropdownMenu.Item>
-          <DropdownMenu.Item asChild>
-            <a
-              className="dropdown-menu-item dropdown-menu-item-noindent block"
-              href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Email
-            </a>
+          <DropdownMenu.Item
+            className="dropdown-menu-item dropdown-menu-item-noindent"
+            onClick={() => {
+              emitter.emit(EVENT_OPEN_CONTACT);
+            }}
+          >
+            Contact us
           </DropdownMenu.Item>
           <DropdownMenu.Separator className="dropdown-menu-separator" />
           <DropdownMenu.Item

@@ -321,12 +321,9 @@ export const Playground = forwardRef(
     return (
       <div
         ref={forwardedRef}
-        className={cn(
-          'relative flex h-full flex-col overflow-hidden border shadow-2xl',
-          {
-            'light-playground': !isDark,
-          },
-        )}
+        className={cn('relative flex h-full flex-col overflow-hidden border', {
+          'light-playground': !isDark,
+        })}
         style={{
           backgroundColor: colors?.background,
           borderColor: colors?.border,

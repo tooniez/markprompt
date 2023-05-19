@@ -9,7 +9,10 @@ import {
   noProjectForTokenResponse,
   noTokenResponse,
 } from './common';
-import { checkCompletionsRateLimits } from '../rate-limits';
+import {
+  checkCompletionsRateLimits,
+  checkSectionsRateLimits,
+} from '../rate-limits';
 import { getAuthorizationToken, truncateMiddle } from '../utils';
 
 // Admin access to Supabase, bypassing RLS.
@@ -18,13 +21,7 @@ const supabaseAdmin = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY || '',
 );
 
-export default async function TrainMiddleware(req: NextRequest) {
-  // Requests to api.markprompt.com/v1/train come exclusively from external
-  // sources. Indeed, in the Markprompt dashboard, the internal
-  // route /api/v1/openai/train-file is used, and it will be caught
-  // when comparing requester hosts. So only requests with a valid
-  // authorization bearer token will be accepted here.
-
+export default async function MatchSectionsMiddleware(req: NextRequest) {
   if (process.env.NODE_ENV === 'production' && !req.ip) {
     return new Response('Forbidden', { status: 403 });
   }
@@ -38,14 +35,14 @@ export default async function TrainMiddleware(req: NextRequest) {
   if (process.env.NODE_ENV === 'production' && req.ip) {
     // Apply rate limiting here already based on IP. After that, apply rate
     // limiting on requester token.
-    const rateLimitIPResult = await checkCompletionsRateLimits({
+    const rateLimitIPResult = await checkSectionsRateLimits({
       value: req.ip,
       type: 'ip',
     });
 
     if (!rateLimitIPResult.result.success) {
       console.error(
-        `[TRAIN] [RATE-LIMIT] IP ${req.ip}, token: ${truncateMiddle(
+        `[SECTIONS] [RATE-LIMIT] IP ${req.ip}, token: ${truncateMiddle(
           token,
           2,
           2,
@@ -57,14 +54,14 @@ export default async function TrainMiddleware(req: NextRequest) {
 
   // Apply rate-limit here already, before looking up the project id,
   // which requires a database lookup.
-  const rateLimitResult = await checkCompletionsRateLimits({
+  const rateLimitResult = await checkSectionsRateLimits({
     value: token,
     type: 'token',
   });
 
   if (!rateLimitResult.result.success) {
     console.error(
-      `[TRAIN] [RATE-LIMIT] IP: ${req.ip}, token ${truncateMiddle(
+      `[SECTIONS] [RATE-LIMIT] IP: ${req.ip}, token ${truncateMiddle(
         token,
         2,
         2,
@@ -81,9 +78,9 @@ export default async function TrainMiddleware(req: NextRequest) {
     return noProjectForTokenResponse;
   }
 
-  track(projectId, 'train', { projectId });
+  track(projectId, 'get sections', { projectId });
 
   return NextResponse.rewrite(
-    new URL(`/api/v1/openai/train/${projectId}`, req.url),
+    new URL(`/api/v1/sections/${projectId}`, req.url),
   );
 }
