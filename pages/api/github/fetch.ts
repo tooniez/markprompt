@@ -3,6 +3,7 @@ import JSZip from 'jszip';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Octokit } from 'octokit';
 
+import { getMarkpromptPathFromGitHubArchivePath } from '@/lib/integrations/github';
 import { getOrRefreshAccessToken } from '@/lib/integrations/github.node';
 import { compress, shouldIncludeFileWithPath } from '@/lib/utils';
 import { Database } from '@/types/supabase';
@@ -36,7 +37,12 @@ const extractFromZip = async (
     .filter((p) => {
       // Ignore files with unsupported extensions and files in dot
       // folders, like .github.
-      return shouldIncludeFileWithPath(p, includeGlobs, excludeGlobs);
+      const pathWithoutRepoId = getMarkpromptPathFromGitHubArchivePath(p);
+      return shouldIncludeFileWithPath(
+        pathWithoutRepoId,
+        includeGlobs,
+        excludeGlobs,
+      );
     });
 
   for (let i = offset; i < relativePaths.length; i++) {

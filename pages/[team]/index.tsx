@@ -33,7 +33,7 @@ const Team = () => {
               key={`project-card-${project.slug}`}
               href={`/${team?.slug}/${project.slug}`}
             >
-              <div className="rounded-lg border border-neutral-800 bg-neutral-1000 p-8 transition hover:bg-neutral-900">
+              <div className="rounded-lg border border-neutral-800 bg-neutral-1000 p-8 text-neutral-100 transition hover:bg-neutral-900">
                 {project.name}
               </div>
             </Link>

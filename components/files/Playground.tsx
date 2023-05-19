@@ -358,7 +358,7 @@ export const Playground = forwardRef(
                 placeholder={placeholder}
                 className={cn(
                   inputClassName,
-                  'mt-[2px] w-full appearance-none rounded-md border-0 bg-transparent outline-none transition duration-500 placeholder:text-neutral-500/50 focus:outline-none focus:ring-0',
+                  'mt-[2px] w-full appearance-none rounded-md border-0 bg-transparent outline-none transition duration-500 placeholder:text-neutral-500/80 focus:outline-none focus:ring-0',
                   {
                     'pointer-events-none': isDemoMode && playing,
                     'text-sm': theme?.size === 'sm',

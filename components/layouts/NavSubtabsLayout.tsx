@@ -56,7 +56,7 @@ export const NavSubtabsLayout: FC<NavSubtabsLayoutProps> = ({
               {!noHeading && (
                 <div className="mb-4 flex flex-col pt-8">
                   <div className="flex flex-col gap-4 sm:h-12 sm:flex-row sm:items-center">
-                    <h1 className="truncate whitespace-nowrap text-2xl font-bold">
+                    <h1 className="truncate whitespace-nowrap text-2xl font-bold text-white">
                       {titleComponent ?? title}
                     </h1>
                     {RightHeading && (

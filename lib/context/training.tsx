@@ -48,6 +48,7 @@ import {
   toNormalizedUrl,
   truncate,
 } from '../utils';
+import { getMarkpromptPathFromGitHubArchivePath } from '../integrations/github';
 
 type IdleState = { state: 'idle' };
 type FetchingDataState = { state: 'fetching_data' };
@@ -298,7 +299,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               source.id,
               'github',
               fileData.length,
-              (i) => fileData[i].path,
+              (i) => getMarkpromptPathFromGitHubArchivePath(fileData[i].path),
               async (i) => {
                 const name = fileData[i].name;
                 const content = fileData[i].content;

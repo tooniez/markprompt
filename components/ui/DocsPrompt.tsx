@@ -54,6 +54,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
               }}
               onCloseClick={() => {
                 setPromptOpen(false);
+                onOpenChange?.(false);
               }}
             />
           </div>

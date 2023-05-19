@@ -184,7 +184,7 @@ const PricingCard = ({
               {customPrice ?? (
                 <>
                   ${amount}
-                  <span className="text-base font-normal text-neutral-700">
+                  <span className="text-base font-normal text-neutral-500">
                     /month
                   </span>
                 </>
