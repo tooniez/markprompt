@@ -1,9 +1,8 @@
 import * as Slider from '@radix-ui/react-slider';
 import { Application } from '@splinetool/runtime';
 import cn from 'classnames';
-import { MessageCircle } from 'lucide-react';
 import Link from 'next/link';
-import { FC, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
 
 import { AngeListIcon } from '@/components/icons/AngelList';
@@ -17,44 +16,16 @@ import LandingNavbar from '@/components/layouts/LandingNavbar';
 import { Blurs } from '@/components/ui/Blurs';
 import Button from '@/components/ui/Button';
 import { Pattern } from '@/components/ui/Pattern';
-import { CONFIG_DEFAULT_VALUES } from '@/lib/context/config';
-import {
-  modelLabels,
-  PricedModel,
-  TierDetails,
-  TIERS,
-} from '@/lib/stripe/tiers';
-import { defaultTheme } from '@/lib/themes';
-import { capitalize } from '@/lib/utils';
+import { PricedModel, TierDetails, TIERS } from '@/lib/stripe/tiers';
 
 import StepsSection from './sections/Steps';
+import VideoSection from './sections/Video';
 import { SharedHead } from './SharedHead';
 import { AnalyticsExample } from '../examples/analytics';
-import { Playground } from '../files/Playground';
 import { DiscordIcon } from '../icons/Discord';
 import { ListItem } from '../ui/ListItem';
 import { Segment } from '../ui/Segment';
 import { Tag } from '../ui/Tag';
-
-const demoPrompt = 'What is Markprompt?';
-
-const demoResponse = `Markprompt is three things:
-
-- A set of API endpoints that allow you to train your content and create a prompt to ask questions to it, for instance for a docs site.
-- A [web dashboard](https://markprompt.com/) that makes it easy to do the above. The dashboard also allows you to set up syncing with a GitHub repo or a website, drag and drop files to train, manage access keys, and visualize stats on how users query your content.
-- A set of UI components (currently [React](/docs#react) and [Web Component](#web-component)) that make it easy to integrate a prompt on your existing site.
-
-Markprompt is [open source](https://github.com/motifland/markprompt), so you are free to host the dashboard and model backend on your own premises. We also warmly welcome [contributions](https://github.com/motifland/markprompt/pulls).`;
-
-const demoReferenceIds = ['docs'];
-
-const reactCode = `
-import { Markprompt } from "markprompt"
-
-function MyPrompt() {
-  return <Markprompt model="gpt-4" />
-}
-`.trim();
 
 const PricingCard = ({
   tier,
@@ -212,30 +183,6 @@ type LandingPageProps = {
   stars: number;
 };
 
-const useOnScreen = (ref: any) => {
-  const [isIntersecting, setIntersecting] = useState(false);
-
-  const observer = useMemo(() => {
-    if (typeof IntersectionObserver === 'undefined') {
-      return undefined;
-    }
-    return new IntersectionObserver(([entry]) =>
-      setIntersecting(entry.isIntersecting),
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref]);
-
-  useEffect(() => {
-    if (!ref.current || !observer) {
-      return;
-    }
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [observer, ref]);
-
-  return isIntersecting;
-};
-
 const formatNumStars = (stars: number) => {
   if (stars > 1000) {
     return `${(stars / 1000).toFixed(1)}k`;
@@ -245,21 +192,6 @@ const formatNumStars = (stars: number) => {
 
 const LandingPage: FC<LandingPageProps> = ({ stars }) => {
   const [model, setModel] = useState<PricedModel>('gpt-3.5-turbo');
-  const playgroundAnchorRef = useRef<HTMLDivElement | null>(null);
-  const isInputVisible = useOnScreen(playgroundAnchorRef);
-  const [autoplayPlayground, setAutoplayPlayground] = useState(false);
-
-  const modelNames = [
-    modelLabels['gpt-3.5-turbo'],
-    modelLabels['gpt-4'],
-    modelLabels['byo'],
-  ];
-
-  useEffect(() => {
-    if (isInputVisible) {
-      setAutoplayPlayground(true);
-    }
-  }, [isInputVisible]);
 
   useEffect(() => {
     const canvas: any = document.getElementById('animation-canvas');
@@ -348,47 +280,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           </a> */}
         </div>
       </div>
-      <div className="grid-background-sm grid-background-dark relative z-0 mx-auto bg-neutral-1000 px-6 py-24 sm:px-8 sm:py-32">
-        <div className="glow-border-founded-lg glow-border-white-alt glow-border relative mx-auto h-[500px] w-full max-w-screen-md rounded-lg">
-          <div className="absolute inset-0 z-0 rounded-xl border-2 bg-transparent" />
-          <Playground
-            isDemoMode
-            isDark={true}
-            hideCloseButton
-            theme={{
-              ...defaultTheme,
-              colors: {
-                ...defaultTheme.colors,
-                dark: {
-                  ...defaultTheme.colors.dark,
-                  border: '#ffffff10',
-                },
-              },
-              dimensions: { radius: '8px' },
-            }}
-            playing={autoplayPlayground}
-            demoPrompt={demoPrompt}
-            demoResponse={demoResponse}
-            demoReferenceIds={demoReferenceIds}
-            placeholder={CONFIG_DEFAULT_VALUES.placeholder}
-            iDontKnowMessage={CONFIG_DEFAULT_VALUES.iDontKnowMessage}
-            referencesHeading={CONFIG_DEFAULT_VALUES.referencesHeading}
-            loadingHeading={CONFIG_DEFAULT_VALUES.loadingHeading}
-            getReferenceInfo={(id) => {
-              return { name: capitalize(id), href: id };
-            }}
-          />
-          <div
-            ref={playgroundAnchorRef}
-            className="pointer-events-none absolute right-0 bottom-32 h-2 w-2 opacity-0"
-          />
-        </div>
-        <div className="mx-auto mt-8 flex w-full max-w-screen-md justify-end">
-          <div className="rounded-full border border-sky-500 bg-sky-600 p-3 shadow">
-            <MessageCircle className="h-5 w-5 text-white" />
-          </div>
-        </div>
-      </div>
+      <VideoSection />
       <StepsSection />
       <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 pt-24 sm:px-8">
         <h2 className="gradient-heading mt-64 text-center text-4xl">

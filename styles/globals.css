@@ -286,7 +286,7 @@ textarea {
 }
 
 .glow-border-fuchsia::before {
-  background: conic-gradient(from -45deg, #d946ef80, #d946ef40, #d946ef80);
+  background: conic-gradient(from -45deg, #d946ef90, #d946ef30, #d946ef90);
 }
 
 .glow-border-founded-full::before {
