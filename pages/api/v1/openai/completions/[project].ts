@@ -182,7 +182,7 @@ export default async function handler(req: NextRequest) {
     // Custom model configurations are part of the Pro and Enterprise plans
     // when used outside of the Markprompt dashboard.
     const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
-    if (!teamStripeInfo?.stripePriceId) {
+    if (!teamStripeInfo?.stripePriceId && !teamStripeInfo?.isEnterprisePlan) {
       // Custom model configurations are part of the Pro and Enterprise plans.
       params = {
         ...params,
