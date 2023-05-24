@@ -151,12 +151,6 @@ export const Playground = forwardRef(
     const colors = isDark ? theme?.colors.dark : theme?.colors.light;
 
     useEffect(() => {
-      setAnswer(
-        '![](https://images.unsplash.com/photo-1684828729865-0e8b74bba0d7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=977&q=80)',
-      );
-    }, []);
-
-    useEffect(() => {
       if (!playing || !demoResponse || !demoPrompt) {
         return;
       }
