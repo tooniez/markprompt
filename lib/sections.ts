@@ -55,7 +55,7 @@ export const getMatchingSections = async (
     throw new ApiError(400, 'Flagged content');
   }
 
-  let embeddingResult: CreateEmbeddingResponse | undefined = undefined;
+  let embeddingResult: CreateEmbeddingResponse | any | undefined = undefined;
   try {
     // Retry with exponential backoff in case of error. Typical cause is
     // too_many_requests.
@@ -67,6 +67,10 @@ export const getMatchingSections = async (
         numOfAttempts: 10,
       },
     );
+
+    if (embeddingResult.error) {
+      throw new ApiError(400, embeddingResult.error.message);
+    }
 
     if (!byoOpenAIKey) {
       const embeddingModelInfo = stringToLLMInfo(modelId);

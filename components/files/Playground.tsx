@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -242,9 +243,10 @@ export const Playground = forwardRef(
 
           if (!res.ok || !res.body) {
             const text = await res.text();
-            console.error('Error:', text);
+            console.error(text);
             await setAnswerAnimated(_iDontKnowMessage);
             setLoading(false);
+            toast.error(text);
             return;
           }
 
