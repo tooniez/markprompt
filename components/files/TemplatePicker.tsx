@@ -34,7 +34,7 @@ export const TemplatePicker: FC<TemplatePickerProps> = () => {
       }}
     >
       <Select.Trigger
-        className="button-ring flex w-full flex-row items-center gap-2 rounded-md border border-neutral-900 py-1.5 px-3 text-sm outline-none"
+        className="button-ring flex w-full flex-row items-center gap-2 rounded-md border border-neutral-900 py-1.5 px-3 text-sm text-neutral-300 outline-none"
         aria-label="Theme"
       >
         <div className="flex-grow truncate whitespace-nowrap text-left">
