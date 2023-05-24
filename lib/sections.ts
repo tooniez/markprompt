@@ -1,18 +1,13 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { backOff } from 'exponential-backoff';
-import { NextRequest } from 'next/server';
 import { CreateEmbeddingResponse } from 'openai';
 
 import { Database } from '@/types/supabase';
 import { ApiError, OpenAIEmbeddingsModelId, Project } from '@/types/types';
 
-import { MAX_PROMPT_LENGTH } from './constants';
 import { createEmbedding, createModeration } from './openai.edge';
-import { checkCompletionsRateLimits } from './rate-limits';
-import { getBYOOpenAIKey, getTeamStripeInfo } from './supabase';
 import { recordProjectTokenCount } from './tinybird';
 import { stringToLLMInfo } from './utils';
-import { isRequestFromMarkprompt } from './utils.edge';
 
 export type FileSection = {
   path: string;
@@ -83,18 +78,21 @@ export const getMatchingSections = async (
     }
   } catch (error) {
     console.error(
-      `[${source.toUpperCase()}] [CREATE-EMBEDDING] [${projectId}] - Error creating embedding for prompt '${prompt}': ${error}`,
+      `[${source.toUpperCase()}] [CREATE-EMBEDDING] [${projectId}] - Error creating embedding for prompt '${verbatimPrompt}': ${error}`,
     );
     throw new ApiError(
       400,
-      `Error creating embedding for prompt '${prompt}': ${error}`,
+      `Error creating embedding for prompt '${verbatimPrompt}': ${error}`,
     );
   }
 
   const promptEmbedding = embeddingResult?.data?.[0]?.embedding;
 
   if (!promptEmbedding) {
-    throw new ApiError(400, `Error creating embedding for prompt '${prompt}'`);
+    throw new ApiError(
+      400,
+      `Error creating embedding for prompt '${verbatimPrompt}'`,
+    );
   }
 
   // We need to use the service_role admin supabase as these

@@ -5,13 +5,10 @@ import {
   ParsedEvent,
   ReconnectInterval,
 } from 'eventsource-parser';
-import { backOff } from 'exponential-backoff';
 import type { NextRequest } from 'next/server';
-import { CreateEmbeddingResponse } from 'openai';
 
 import * as constants from '@/lib/constants';
 import { I_DONT_KNOW, MAX_PROMPT_LENGTH } from '@/lib/constants';
-import { createEmbedding, createModeration } from '@/lib/openai.edge';
 import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
@@ -127,9 +124,10 @@ export default async function handler(req: NextRequest) {
   }
 
   let params = await req.json();
-  console.log('params', JSON.stringify(params, null, 2));
+  console.log('***** PARAMS', JSON.stringify(params, null, 2));
   const modelInfo = stringToLLMInfo(params.model);
   const prompt = (params.prompt as string)?.substring(0, MAX_PROMPT_LENGTH);
+  console.log('***** PROMPT', prompt);
   const iDontKnowMessage =
     (params.i_dont_know_message as string) || // v1
     (params.iDontKnowMessage as string) || // v0
