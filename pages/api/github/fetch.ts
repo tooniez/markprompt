@@ -149,6 +149,7 @@ export default async function handler(
 
   if (githubRes?.status !== 200) {
     try {
+      console.info('Trying master branch instead...');
       // If main branch doesn't exist, fallback to master
       githubRes = await fetchRepo(
         req.body.owner,
@@ -167,6 +168,8 @@ export default async function handler(
         'Failed to download repository. Make sure the main or master branch is accessible.',
     });
   }
+
+  console.info('Fetched GitHub archive for', req.body.owner, req.body.repo);
 
   const ab = await githubRes.arrayBuffer();
   const jsZip = new JSZip();
@@ -187,6 +190,8 @@ export default async function handler(
   // If we're below the limit, which we will be most of the time,
   // we send it as is.
   let compressed = Buffer.from(compress(JSON.stringify({ files })));
+
+  console.info('Repo size:', compressed.length);
 
   if (compressed.length < PAYLOAD_MAX_SIZE_BYTES) {
     return res.status(200).send(compressed);

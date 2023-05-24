@@ -289,10 +289,14 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         case 'github': {
           const data = source.data as GitHubSourceDataType;
           try {
+            console.info('Fetching GitHub archive for', data.url);
             const fileData = await getGitHubFiles(
               data.url,
               config.include || [],
               config.exclude || [],
+            );
+            console.info(
+              `Done fetching GitHub archive. Now processing ${fileData.length} files...`,
             );
 
             await generateEmbeddings(

@@ -46,7 +46,7 @@ export const Note: FC<NoteProps> = ({ size, className, type, children }) => {
         })}
       />
       <div
-        className={cn('flex-grow prose-p:my-0', {
+        className={cn('flex-grow text-neutral-300 prose-p:my-0', {
           'text-sm': noteSize === 'sm',
         })}
       >
