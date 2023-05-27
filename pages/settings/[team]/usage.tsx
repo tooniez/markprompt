@@ -109,7 +109,7 @@ const Usage = () => {
             <DropdownMenu.Trigger asChild>
               <button
                 className={cn(
-                  'flex select-none flex-row items-center gap-2 rounded border border-neutral-800 px-2 py-1 text-sm outline-none transition dark:text-neutral-300 dark:hover:bg-neutral-900',
+                  'flex select-none flex-row items-center gap-2 rounded border border-neutral-800 px-2 py-1 text-sm text-neutral-300 outline-none transition hover:bg-neutral-900',
                 )}
                 aria-label="Select team"
               >

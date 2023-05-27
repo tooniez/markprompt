@@ -91,9 +91,9 @@ const AddFiles: FC<AddFilesProps> = ({ onTrainingComplete, onNext }) => {
             <FileDnd onTrainingComplete={onTrainingComplete} />
           </div>
           <p className="text-sm text-neutral-400">or</p>
-          <div className="relative w-full rounded-lg border border-dashed bg-neutral-900/50 py-4 dark:border-neutral-800">
+          <div className="relative w-full rounded-lg border border-dashed border-neutral-800 bg-neutral-900/50 py-4">
             <div
-              className="absolute right-2 top-2 cursor-pointer rounded p-2 transition dark:hover:bg-neutral-900"
+              className="absolute right-2 top-2 cursor-pointer rounded p-2 transition hover:bg-neutral-900"
               onClick={() => {
                 copyToClipboard(curlCode);
                 toast.success('Copied!');

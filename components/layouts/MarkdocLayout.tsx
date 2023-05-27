@@ -413,7 +413,7 @@ export const TableOfContents: FC<TableOfContentsProps> = ({
                       href={`#${subsection.slug}`}
                       className={cn('group flex items-start py-1', {
                         'text-neutral-300': _isActive,
-                        'dark:hover:text-slate-300': !_isActive,
+                        'hover:text-neutral-300': !_isActive,
                       })}
                     >
                       {subsection.title}

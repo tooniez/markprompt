@@ -48,7 +48,7 @@ const Query: FC<QueryProps> = ({ goBack, didCompleteFirstQuery, isReady }) => {
           Trained on {pluralize(files?.length || 0, 'file', 'files')}.{' '}
           <span
             onClick={goBack}
-            className="cursor-pointer border-b border-dashed dark:border-neutral-800"
+            className="cursor-pointer border-b border-dashed border-neutral-800"
           >
             Add more files
           </span>
@@ -61,7 +61,7 @@ const Query: FC<QueryProps> = ({ goBack, didCompleteFirstQuery, isReady }) => {
           >
             <div className="flip-content">
               <div
-                className="flip-front rounded-lg border border-dashed bg-neutral-1000 px-8 py-4 dark:border-neutral-800"
+                className="flip-front rounded-lg border border-dashed border-neutral-800 bg-neutral-1000 px-8 py-4"
                 style={{
                   WebkitBackfaceVisibility: 'hidden',
                   backfaceVisibility: 'hidden',
@@ -76,7 +76,7 @@ const Query: FC<QueryProps> = ({ goBack, didCompleteFirstQuery, isReady }) => {
                   }
                 />
               </div>
-              <div className="flip-back flex flex-col justify-center divide-neutral-900 rounded-lg border border-dashed bg-neutral-900/50 p-12 text-sm dark:border-neutral-800">
+              <div className="flip-back flex flex-col justify-center divide-neutral-900 rounded-lg border border-dashed border-neutral-800 bg-neutral-900/50 p-12 text-sm">
                 <div className="relative flex">
                   <span className="absolute left-1 flex h-full select-none items-center font-mono text-neutral-700">
                     $
@@ -84,7 +84,7 @@ const Query: FC<QueryProps> = ({ goBack, didCompleteFirstQuery, isReady }) => {
                   <Code language="bash" code={npmCode} />
                   <div className="absolute right-2 flex h-full items-center">
                     <div
-                      className="cursor-pointer rounded p-2 transition dark:hover:bg-neutral-900"
+                      className="cursor-pointer rounded p-2 transition hover:bg-neutral-900"
                       onClick={() => {
                         copyToClipboard(npmCode);
                         toast.success('Copied!');
@@ -102,7 +102,7 @@ const Query: FC<QueryProps> = ({ goBack, didCompleteFirstQuery, isReady }) => {
                   />
                   <div className="absolute right-2 top-9">
                     <div
-                      className="cursor-pointer rounded p-2 transition dark:hover:bg-neutral-900"
+                      className="cursor-pointer rounded p-2 transition hover:bg-neutral-900"
                       onClick={() => {
                         copyToClipboard(reactCode(project.public_api_key));
                         toast.success('Copied!');

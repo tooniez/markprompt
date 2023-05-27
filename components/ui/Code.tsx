@@ -62,7 +62,7 @@ export const CodePanel: FC<CodeProps> = ({
         />
       </div>
       <div
-        className="absolute right-[12px] top-[12px] cursor-pointer rounded bg-neutral-1000/80 p-2 backdrop-blur transition dark:hover:bg-neutral-900"
+        className="absolute right-[12px] top-[12px] cursor-pointer rounded bg-neutral-1000/80 p-2 backdrop-blur transition hover:bg-neutral-900"
         onClick={() => {
           copyToClipboard(code);
           toast.success('Copied!');

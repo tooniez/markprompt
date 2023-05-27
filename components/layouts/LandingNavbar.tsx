@@ -66,7 +66,7 @@ export default function LandingNavbar({
       />
       {session ? (
         <Link
-          className="button-glow flex flex-row items-center gap-3 rounded-md px-4 py-2 text-sm font-semibold transition dark:bg-white dark:text-neutral-900 hover:dark:bg-neutral-300"
+          className="button-glow flex flex-row items-center gap-3 rounded-md bg-white px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-300"
           href="/"
         >
           Go to app
@@ -80,7 +80,7 @@ export default function LandingNavbar({
             Sign up
           </Link>
           <Link
-            className="button-glow flex flex-row items-center gap-3 whitespace-nowrap rounded-md px-4 py-2 text-sm font-semibold transition dark:bg-white dark:text-neutral-900 hover:dark:bg-neutral-300"
+            className="button-glow flex flex-row items-center gap-3 whitespace-nowrap rounded-md bg-white px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-300"
             href="/login"
           >
             Sign in

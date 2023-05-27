@@ -69,7 +69,7 @@ const PricingCard = ({
         {tier.name}
       </h2>
       <div className="relative z-10 flex h-16 w-full flex-col items-center px-4 md:px-8">
-        <p className="mt-0 text-center text-base dark:text-neutral-500">
+        <p className="mt-0 text-center text-base text-neutral-500">
           {tier.description}
         </p>
         {hasMonthlyOption && (
@@ -229,7 +229,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
                   Enterprise-grade AI chatbots for your website and docs
                 </Balancer>
               </h1>
-              <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base dark:text-neutral-500 sm:mt-4 sm:text-lg">
+              <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base text-neutral-500 sm:mt-4 sm:text-lg">
                 <Balancer ratio={0.5}>
                   Connect any source of content, from public websites to private
                   GitHub repos, configure the design and tone, and paste the
@@ -286,7 +286,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
         <h2 className="gradient-heading mt-64 text-center text-4xl">
           <Balancer>Track usage, get feedback, improve content</Balancer>
         </h2>
-        <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg dark:text-neutral-500">
+        <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg text-neutral-500">
           Your users will be asking lots of questions, and will be expecting
           quality answers. Use Markprompt&apos;s feedback and analytics features
           to pinpoint shortcomings in your content, and improve your content.
@@ -322,7 +322,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           >
             <Balancer>Generous free-tier, scale with usage</Balancer>
           </h2>
-          <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg dark:text-neutral-500">
+          <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg text-neutral-500">
             Start for free, no credit card required. Scale as you grow.
           </p>
           {/* <div className="relative mt-8">
@@ -378,7 +378,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           <h2 className="gradient-heading mt-40 text-center text-4xl">
             Open source
           </h2>
-          <p className="mx-auto mt-4 max-w-md text-center text-lg dark:text-neutral-500">
+          <p className="mx-auto mt-4 max-w-md text-center text-lg text-neutral-500">
             <Balancer>
               The source code is on GitHub, for you to review, run, and
               contribute to if you like!
