@@ -385,7 +385,12 @@ export const generateKey = customAlphabet(ALPHABET, 32);
 
 export const generateShareKey = customAlphabet(ALPHABET, 8);
 
+const PK_TEST_PREFIX = 'pk_test_';
 const SK_TEST_PREFIX = 'sk_test_';
+
+export const generatePKKey = () => {
+  return PK_TEST_PREFIX + generateKey();
+};
 
 export const generateSKTestKey = () => {
   return SK_TEST_PREFIX + generateKey();

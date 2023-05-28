@@ -4,6 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import {
   generateKey,
+  generatePKKey,
   generateRandomSlug,
   generateSKTestKey,
   slugFromName,
@@ -88,7 +89,7 @@ export default async function handler(
   } else if (req.method === 'POST') {
     const { name } = req.body;
     const slug = await getAvailableProjectSlug(supabase, teamId, name);
-    const public_api_key = generateKey();
+    const public_api_key = generatePKKey();
     const private_dev_api_key = generateSKTestKey();
     const { data, error } = await supabase
       .from('projects')

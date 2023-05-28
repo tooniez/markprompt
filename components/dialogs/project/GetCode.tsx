@@ -1,6 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Switch from '@radix-ui/react-switch';
 import * as Tabs from '@radix-ui/react-tabs';
+import { Book } from 'lucide-react';
 import Link from 'next/link';
 import { ReactNode, useState } from 'react';
 
@@ -55,7 +56,7 @@ const reactCode = (
 ) => {
   return `import '@markprompt/css';
 import './style.css';
-  
+
 import * as Markprompt from '@markprompt/react';
 import { useCallback, useContext, useMemo, type ComponentPropsWithoutRef } from 'react';
 
@@ -710,10 +711,9 @@ const vanillaCode = (
 import { markprompt } from '@markprompt/web';
 
 markprompt(
-  ${projectKey}, 
-  ${container}, 
+  ${projectKey},
+  ${container},
   {
-    // options for @markprompt/core
     iDontKnowMessage: ${options.iDontKnowMessage},
     model: ${options.model},
     promptTemplate: ${options.promptTemplate},
@@ -724,7 +724,6 @@ markprompt(
     maxTokens: ${options.maxTokens},
     sectionsMatchCount: ${options.sectionsMatchCount},
     sectionsMatchThreshold: ${options.sectionsMatchThreshold},
-    // options for @markprompt/web
     prompt: {
       placeholder: ${options.placeholder}
     },
@@ -761,7 +760,6 @@ const scriptTagInstallCode = (
     projectKey: ${projectKey},
     container: ${container},
     options: {
-      // options for @markprompt/core
       iDontKnowMessage: ${options.iDontKnowMessage},
       model: ${options.model},
       promptTemplate: ${options.promptTemplate},
@@ -772,18 +770,20 @@ const scriptTagInstallCode = (
       maxTokens: ${options.maxTokens},
       sectionsMatchCount: ${options.sectionsMatchCount},
       sectionsMatchThreshold: ${options.sectionsMatchThreshold},
-      // options for @markprompt/web
       prompt: {
         placeholder: ${options.placeholder}
       },
       references: {
-        loadingText: ${options.loadingText}
+        loadingText: ${options.loadingText},
         referencesText: ${options.referencesText}
       }
     }
   }
 </script>
 <script async src="https://unpkg.com/@markprompt/web@0.4.1/dist/init.js"></script>
+
+<!-- Container for the Markpromt trigger button -->
+<div id="markprompt" />
 `;
 
 const getDescription = (
@@ -793,13 +793,20 @@ const getDescription = (
   isOnboarding: boolean,
 ) => {
   if (isTestMode) {
-    return 'Showing code with your test key, which can be used for non-public sites, for instance on localhost. Do not share code with a test key publicly. For public sites, use a production key from a whitelisted domain.';
+    return (
+      <>
+        Showing code with your <strong>test</strong> key, which can be used for
+        non-public sites, for instance on localhost. Do not share code with a
+        test key publicly. For public sites, use a production key from a
+        whitelisted domain.
+      </>
+    );
   } else {
     return (
       <>
-        Showing code with your production key. Production keys can only be used
-        when called from a whitelisted domain. You can add whitelisted domains
-        in the{' '}
+        Showing code with your <strong>production</strong> key. Production keys
+        can only be used when called from a whitelisted domain. You can add
+        whitelisted domains in the{' '}
         {!isOnboarding ? (
           <Link
             className="subtle-underline"
@@ -871,9 +878,15 @@ const GetCode = ({
       <Dialog.Portal>
         <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
         <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[800px] w-[90%] max-w-[700px] flex-col">
-          <Dialog.Title className="dialog-title-xl flex flex-none flex-row items-center gap-2">
+          <Dialog.Title className="dialog-title-xl flex flex-none flex-row items-center gap-4">
             <div className="flex-grow truncate">Copy code</div>
-            <Button variant="ghost" buttonSize="sm">
+            <Button
+              variant="plain"
+              buttonSize="sm"
+              target="_blank"
+              href="/docs"
+              Icon={Book}
+            >
               Docs
             </Button>
             <div className="flex flex-none flex-row items-center gap-2">
@@ -909,7 +922,7 @@ const GetCode = ({
                   Vanilla JS
                 </Tabs.Trigger>
                 <Tabs.Trigger className="tabs-trigger" value="scriptTag">
-                  Via script tag
+                  Script tag
                 </Tabs.Trigger>
               </Tabs.List>
               <Tabs.Content
@@ -991,11 +1004,6 @@ const GetCode = ({
                     code={vanillaInstallCode}
                   />
                   <h3>Usage</h3>
-                  <p>
-                    Then call the <code>markprompt</code> function with the
-                    project key and a selector for the element you want to
-                    render the prompt in.
-                  </p>
                   <TestKeyNote
                     className="mb-4"
                     team={team}
@@ -1003,6 +1011,20 @@ const GetCode = ({
                     testMode={testMode}
                     isOnboarding={isOnboarding}
                   />
+                  <h4>HTML</h4>
+                  <p className="text-sm text-neutral-300">
+                    Place a container with id `#markprompt` in your page.
+                  </p>
+                  <CodePanel
+                    className="w-full"
+                    language="javascript"
+                    code={`<div id="markprompt" />`}
+                  />
+                  <h4>JavaScript</h4>
+                  <p className="text-sm text-neutral-300">
+                    In JavaScript, call the code below, which will attach the
+                    interactive prompt to the `#markprompt` container.
+                  </p>
                   <CodePanel
                     className="w-full"
                     language="javascript"
@@ -1032,9 +1054,8 @@ const GetCode = ({
               >
                 <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 w-full max-w-full overflow-y-auto py-4">
                   <h3>Usage</h3>
-                  <p>
-                    Add the following script tag to the HTML of pages where you
-                    want to show Markprompt.
+                  <p className="text-sm text-neutral-300">
+                    Add the following tags to your HTML pages.
                   </p>
                   <TestKeyNote
                     className="mb-4"

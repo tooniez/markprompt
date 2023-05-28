@@ -218,7 +218,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
         onFileProcessed?.();
       } catch (e) {
-        console.error('Error', e);
+        console.error(`Error processing ${file.name}: ${e}`);
         toast.error(`Error processing file ${nameAndContent.name}: ${e}`);
         setErrors((errors) => [
           ...errors,
@@ -315,7 +315,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             );
           } catch (e) {
             const repoOwner = getGitHubOwnerRepoString(data.url);
-            onError(`Error processing ${repoOwner}: ${e}`);
+            onError(`Error processing repo ${repoOwner}: ${e}`);
             break;
           }
           break;
@@ -345,7 +345,9 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               },
             );
           } catch (e) {
-            onError(`Error processing ${data.projectDomain}: ${e}`);
+            onError(
+              `Error processing Motif project ${data.projectDomain}: ${e}`,
+            );
             break;
           }
           break;
@@ -466,7 +468,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             }
             // }
           } catch (e) {
-            onError(`Error processing ${origin}: ${e}`);
+            onError(`Error processing website ${origin}: ${e}`);
           }
 
           break;

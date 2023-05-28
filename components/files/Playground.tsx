@@ -237,6 +237,7 @@ export const Playground = forwardRef(
                 iDontKnowMessage: _iDontKnowMessage,
                 ...modelConfig,
                 projectKey,
+                includeDebugInfo: true,
               }),
             },
           );
