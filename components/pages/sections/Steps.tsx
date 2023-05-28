@@ -283,7 +283,7 @@ const StepsSection = () => {
 
   return (
     <div className="relative z-0 mx-auto max-w-screen-xl px-6 sm:px-8">
-      <h2 className="gradient-heading mt-40 text-center text-4xl">
+      <h2 className="gradient-heading mt-16 text-center text-4xl sm:mt-40">
         <Balancer>Go live in minutes, no setup required</Balancer>
       </h2>
       <div className="grid grid-cols-1 items-center justify-center gap-12 sm:mt-16 sm:gap-0 md:grid-cols-3">
