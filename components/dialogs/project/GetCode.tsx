@@ -755,7 +755,7 @@ const scriptTagInstallCode = (
     temperature: number;
     topP: number;
   },
-) => `<link rel="stylesheet" href="https://esm.sh/@markprompt/css?css />
+) => `<link rel="stylesheet" href="https://unpkg.com/@markprompt/css@0.1.0/markprompt.css" />
 <script>
   window.markprompt = {
     projectKey: ${projectKey},
@@ -783,7 +783,7 @@ const scriptTagInstallCode = (
     }
   }
 </script>
-<script async src="https://esm.sh/@markprompt/web/init"></script>
+<script async src="https://unpkg.com/@markprompt/web@0.4.0/dist/init.js"></script>
 `;
 
 const getDescription = (
