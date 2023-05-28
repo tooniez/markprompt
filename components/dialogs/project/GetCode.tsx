@@ -783,7 +783,7 @@ const scriptTagInstallCode = (
     }
   }
 </script>
-<script async src="https://unpkg.com/@markprompt/web@0.4.0/dist/init.js"></script>
+<script async src="https://unpkg.com/@markprompt/web@0.4.1/dist/init.js"></script>
 `;
 
 const getDescription = (
