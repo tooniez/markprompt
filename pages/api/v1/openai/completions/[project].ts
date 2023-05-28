@@ -281,6 +281,8 @@ export default async function handler(req: NextRequest) {
     body: JSON.stringify(payload),
   });
 
+  const debugInfo = params.includeDebugInfo ? { fullPrompt } : {};
+
   if (!stream) {
     if (!res.ok) {
       const message = await res.text();
@@ -310,7 +312,7 @@ export default async function handler(req: NextRequest) {
         promptEmbedding,
         isIDontKnowResponse(text, iDontKnowMessage),
       );
-      return new Response(JSON.stringify({ text, references }), {
+      return new Response(JSON.stringify({ text, references, debugInfo }), {
         status: 200,
       });
     }

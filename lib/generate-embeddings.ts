@@ -393,5 +393,14 @@ export const generateFileEmbeddings = async (
     );
   }
 
+  if (errors) {
+    // If there were errors, delete the file (which will cascade and delete
+    // associated embeddings), to give a change to process the file again.
+    await supabaseAdmin
+      .from('file_sections')
+      .delete()
+      .filter('file_id', 'eq', fileId);
+  }
+
   return errors;
 };

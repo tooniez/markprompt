@@ -799,7 +799,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
               </Button>
             </GetCode>
           </div>
-          <div className="px-6 pt-4">
+          <div className="px-6 pt-4 text-neutral-300">
             <h2 className="mb-4 text-lg font-bold">Design</h2>
             <UIConfigurator />
             <h2 className="mb-4 mt-12 text-lg font-bold">Model configurator</h2>
