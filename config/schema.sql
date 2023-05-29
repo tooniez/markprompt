@@ -202,6 +202,8 @@ $$;
 create index idx_files_source_id on files(source_id);
 create index idx_sources_project_id on sources(project_id);
 create index idx_file_sections_file_id on file_sections(file_id);
+create index idx_projects_team_id on projects(team_id);
+create index idx_memberships_user_id on memberships(user_id);
 
 -- RLS
 

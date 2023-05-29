@@ -98,6 +98,11 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
             );
           })}
           <DropdownMenu.Separator className="dropdown-menu-separator" />
+          {team && (
+            <DropdownMenu.Item className="dropdown-menu-item dropdown-menu-item-indent">
+              <Link href={`/${team.slug}`}>Team settings</Link>
+            </DropdownMenu.Item>
+          )}
           <DropdownMenu.Item
             className="dropdown-menu-item dropdown-menu-item-indent"
             onClick={onNewTeamClick}

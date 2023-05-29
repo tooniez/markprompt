@@ -11,7 +11,7 @@ export default function useTeams() {
     data: teams,
     mutate,
     error,
-  } = useSWR(user ? '/api/teams' : null, fetcher<Team[]>);
+  } = useSWR(user?.id ? '/api/teams' : null, fetcher<Team[]>);
 
   const loading = !teams && !error;
 

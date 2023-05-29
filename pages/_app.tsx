@@ -13,10 +13,10 @@ import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
 import { ThemeProvider } from 'next-themes';
 import { ReactNode, useEffect, useState } from 'react';
+import { SWRConfig } from 'swr';
 
 import { Toaster } from '@/components/ui/Toaster';
 import {
-  ContactWindow,
   MarkpromptPromptWindow,
   plainTheme,
 } from '@/components/user/ChatWindow';
@@ -66,25 +66,31 @@ export default function App({ Component, pageProps }: CustomAppProps) {
 
   return (
     <>
-      <ThemeProvider defaultTheme="dark" attribute="class">
-        <SessionContextProvider
-          supabaseClient={supabase}
-          initialSession={(pageProps as any).initialSession}
-        >
-          <ManagedPlainProvider>
-            <ManagedAppContext>
-              <ManagedTrainingContext>
-                <ManagedConfigContext>
-                  <Component {...pageProps}></Component>
-                  <PromptOutsideOnboarding />
-                </ManagedConfigContext>
-              </ManagedTrainingContext>
-            </ManagedAppContext>
-          </ManagedPlainProvider>
-        </SessionContextProvider>
-      </ThemeProvider>
-      <Toaster />
-      <Analytics />
+      <SWRConfig
+        value={{
+          dedupingInterval: 10000,
+        }}
+      >
+        <ThemeProvider defaultTheme="dark" attribute="class">
+          <SessionContextProvider
+            supabaseClient={supabase}
+            initialSession={(pageProps as any).initialSession}
+          >
+            <ManagedPlainProvider>
+              <ManagedAppContext>
+                <ManagedTrainingContext>
+                  <ManagedConfigContext>
+                    <Component {...pageProps}></Component>
+                    <PromptOutsideOnboarding />
+                  </ManagedConfigContext>
+                </ManagedTrainingContext>
+              </ManagedAppContext>
+            </ManagedPlainProvider>
+          </SessionContextProvider>
+        </ThemeProvider>
+        <Toaster />
+        <Analytics />
+      </SWRConfig>
     </>
   );
 }
