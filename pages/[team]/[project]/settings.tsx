@@ -488,7 +488,7 @@ const ProjectSettingsPage = () => {
         >
           <Formik
             initialValues={{
-              openai_key: project.openai_key,
+              openai_key: project.openai_key || '',
             }}
             validateOnMount
             onSubmit={async (values, { setSubmitting }) => {

@@ -80,6 +80,11 @@ const Input: FC<InputProps> = ({
   const hasLeftAccessory = !!leftAccessory;
   const hasRightAccessory = !!rightAccessory;
 
+  console.log(
+    'Value',
+    typeof props.value,
+    typeof props.value === 'string' ? props.value : '',
+  );
   return (
     <InputWrapper
       className={wrapperClassName}

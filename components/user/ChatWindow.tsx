@@ -265,7 +265,7 @@ export const ContactWindow = ({
                     className="h-48"
                     type="text"
                     name="message"
-                    inputSize="sm"
+                    textAreaSize="sm"
                     as={TextArea}
                     disabled={isSubmitting}
                   />
