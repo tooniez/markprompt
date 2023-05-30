@@ -34,18 +34,18 @@ const env =
 
 const PricingCard = ({
   tier,
-  isStandard,
+  isPro,
   currentPriceId,
-  isEnterprisePlan,
+  isOnEnterprisePlan,
   customPrice,
   cta,
   ctaHref,
 }: {
   tier: Tier;
   model: PricedModel;
-  isStandard?: boolean;
+  isPro?: boolean;
   currentPriceId?: string;
-  isEnterprisePlan?: boolean;
+  isOnEnterprisePlan?: boolean;
   customPrice?: string;
   cta?: string;
   ctaHref?: string;
@@ -77,10 +77,6 @@ const PricingCard = ({
     setShowAnnual(annual);
   }, [currentPriceId, hasMonthlyOption, tierDetails.prices]);
 
-  const quotas =
-    priceStep > -1 ? tierDetails.prices[priceStep].quota : undefined;
-  const quotaModels = (quotas ? Object.keys(quotas) : []) as PricedModel[];
-
   const priceIdsAndAmount =
     priceStep > -1
       ? tierDetails.prices[priceStep].price?.[
@@ -94,9 +90,9 @@ const PricingCard = ({
   let isCurrentPlan = false;
   if (!currentPriceId) {
     // Free and Enterprise do not have any price ids attached
-    if (isEnterprisePlan && tierDetails.enterprise) {
+    if (isOnEnterprisePlan && tierDetails.enterprise) {
       isCurrentPlan = true;
-    } else if (!tierDetails.enterprise) {
+    } else if (!isOnEnterprisePlan && !tierDetails.enterprise) {
       isCurrentPlan = priceId === undefined;
     }
   } else {
@@ -120,10 +116,10 @@ const PricingCard = ({
   }
 
   let isHighlighted = false;
-  if (isStandard && !currentPriceId) {
+  if (isPro && !currentPriceId) {
     // If we are on a free plan, highlight Standard
     isHighlighted = true;
-  } else if (isCurrentPlan && !isFree) {
+  } else if (isPro && !isFree) {
     // If this is the current plan, and it's not Free, highlight
     isHighlighted = true;
   } else if (
@@ -384,21 +380,21 @@ const PlanPicker = () => {
           tier="hobby"
           model={model}
           currentPriceId={team?.stripe_price_id || undefined}
-          isEnterprisePlan={!!team?.is_enterprise_plan}
+          isOnEnterprisePlan={!!team?.is_enterprise_plan}
           customPrice="Free"
         />
         <PricingCard
           tier="pro"
-          isStandard
+          isPro
           model={model}
           currentPriceId={team?.stripe_price_id || undefined}
-          isEnterprisePlan={!!team?.is_enterprise_plan}
+          isOnEnterprisePlan={!!team?.is_enterprise_plan}
         />
         <PricingCard
           tier="enterprise"
           model={model}
           currentPriceId={team?.stripe_price_id || undefined}
-          isEnterprisePlan={!!team?.is_enterprise_plan}
+          isOnEnterprisePlan={!!team?.is_enterprise_plan}
           customPrice="Custom"
           cta="Contact Sales"
           ctaHref={`mailto:${process.env.NEXT_PUBLIC_SALES_EMAIL!}`}
