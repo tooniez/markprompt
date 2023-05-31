@@ -12,7 +12,10 @@ import {
   noProjectForTokenResponse,
   noTokenOrProjectKeyResponse,
 } from './common';
-import { checkCompletionsRateLimits } from '../rate-limits';
+import {
+  checkCompletionsRateLimits,
+  checkSearchRateLimits,
+} from '../rate-limits';
 import { getAuthorizationToken, truncateMiddle } from '../utils';
 import { removeSchema } from '../utils.edge';
 
@@ -22,21 +25,21 @@ const supabaseAdmin = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY || '',
 );
 
-export default async function CompletionsMiddleware(req: NextRequest) {
+export default async function SearchMiddleware(req: NextRequest) {
   if (process.env.NODE_ENV === 'production') {
     // Check that IP is present and not rate limited
     if (!req.ip) {
       return new Response('Forbidden', { status: 403 });
     }
 
-    const rateLimitIPResult = await checkCompletionsRateLimits({
+    const rateLimitIPResult = await checkSearchRateLimits({
       value: req.ip,
       type: 'ip',
     });
 
     if (!rateLimitIPResult.result.success) {
       console.error(
-        `[COMPLETIONS] [RATE-LIMIT] IP ${req.ip}, origin: ${req.headers.get(
+        `[SEARCH] [RATE-LIMIT] IP ${req.ip}, origin: ${req.headers.get(
           'origin',
         )}`,
       );
@@ -56,18 +59,14 @@ export default async function CompletionsMiddleware(req: NextRequest) {
 
     if (!rateLimitHostnameResult.result.success) {
       console.error(
-        `[COMPLETIONS] [RATE-LIMIT] IP: ${req.ip}, origin: ${requesterOrigin}`,
+        `[SEARCH] [RATE-LIMIT] IP: ${req.ip}, origin: ${requesterOrigin}`,
       );
       return new Response('Too many requests', { status: 429 });
     }
   }
 
-  const body = await req.json();
-
   const token = getAuthorizationToken(req.headers.get('Authorization'));
-  // In v0, we support projectKey query parameters
-  const projectKey =
-    body.projectKey || req.nextUrl.searchParams.get('projectKey');
+  const projectKey = req.nextUrl.searchParams.get('projectKey');
 
   if (!token && !projectKey) {
     return noTokenOrProjectKeyResponse;
@@ -77,14 +76,14 @@ export default async function CompletionsMiddleware(req: NextRequest) {
 
   if (token) {
     // If authorization token is present, use this to find the project id
-    const rateLimitResult = await checkCompletionsRateLimits({
+    const rateLimitResult = await checkSearchRateLimits({
       value: token,
       type: 'token',
     });
 
     if (!rateLimitResult.result.success) {
       console.error(
-        `[COMPLETIONS] [RATE-LIMIT] IP: ${req.ip}, token: ${truncateMiddle(
+        `[SEARCH] [RATE-LIMIT] IP: ${req.ip}, token: ${truncateMiddle(
           token,
           2,
           2,
@@ -128,7 +127,10 @@ export default async function CompletionsMiddleware(req: NextRequest) {
     );
   }
 
+  // We pass the search query string as part of the rewritten response.
+  // This is the only way I found to pass along GET query params to the
+  // API handler function.
   return NextResponse.rewrite(
-    new URL(`/api/v1/openai/completions/${projectId}`, req.url),
+    new URL(`/api/v1/search/${projectId}${req.nextUrl.search}`, req.url),
   );
 }

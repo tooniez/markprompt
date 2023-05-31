@@ -768,3 +768,20 @@ export const roundToLowerOrderDecimal = (n: number) => {
   const roundedNumber = Math.round(n / order) * order;
   return roundedNumber;
 };
+
+export const safeParseNumber = (
+  value: string | undefined | null,
+  fallbackValue: number,
+): number => {
+  if (typeof value !== 'string') {
+    return fallbackValue;
+  }
+
+  try {
+    return parseInt(value);
+  } catch {
+    //
+  }
+
+  return fallbackValue;
+};
