@@ -290,6 +290,10 @@ export const canRemoveBranding = (team: Team) => {
   return team.is_enterprise_plan;
 };
 
+export const canEnableInstantSearch = (team: Team) => {
+  return isAtLeastPro(team);
+};
+
 export const canConfigureModel = (team: Team) => {
   return isAtLeastPro(team);
 };

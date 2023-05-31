@@ -1,5 +1,5 @@
 -- Add an index on file_sections' content column for pgroonga extension.
-create index ix_file_sections_content ON file_sections USING pgroonga(content);
+create index ix_file_sections_content on file_sections using pgroonga(content);
 
 create materialized view file_section_content_infos as
   select

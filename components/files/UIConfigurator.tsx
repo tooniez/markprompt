@@ -6,7 +6,7 @@ import { ChangeEvent, FC, useMemo } from 'react';
 import { useConfigContext } from '@/lib/context/config';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';
 import useTeam from '@/lib/hooks/use-team';
-import { canRemoveBranding } from '@/lib/stripe/tiers';
+import { canEnableInstantSearch, canRemoveBranding } from '@/lib/stripe/tiers';
 import { Theme, ThemeColorKeys, ThemeColors } from '@/lib/themes';
 
 import { Row } from './PlaygroundDashboard';
@@ -46,6 +46,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
     setDark,
     setSize,
     includeBranding,
+    isInstantSearchEnabled,
     placeholder,
     iDontKnowMessage,
     setPlaceholder,
@@ -55,6 +56,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
     loadingHeading,
     setLoadingHeading,
     setIncludeBranding,
+    setInstantSearchEnabled,
   } = useConfigContext();
 
   const colors = useMemo(() => {
@@ -62,6 +64,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
   }, [theme, isDark]);
 
   const _canRemoveBranding = team && canRemoveBranding(team);
+  const _canEnableInstantSearch = team && canEnableInstantSearch(team);
 
   return (
     <div className="flex flex-col gap-2">
@@ -76,6 +79,25 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
             setPlaceholder(event.target.value);
           }}
         />
+      </Row>
+      <Row label="Instant search">
+        <div className="flex flex-row items-center justify-end gap-2">
+          {!_canEnableInstantSearch && (
+            <UpgradeCTA showDialog>
+              <ButtonOrLinkWrapper className="mr-1 flex flex-none items-center rounded-full">
+                <Tag color="fuchsia">Pro</Tag>
+              </ButtonOrLinkWrapper>
+            </UpgradeCTA>
+          )}
+          <Switch.Root
+            className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 disabled:cursor-not-allowed data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600 disabled:data-[state='checked']:opacity-40"
+            checked={isInstantSearchEnabled || !_canEnableInstantSearch}
+            disabled={!_canEnableInstantSearch}
+            onCheckedChange={(b: boolean) => setInstantSearchEnabled(b)}
+          >
+            <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
+          </Switch.Root>
+        </div>
       </Row>
       <Row label="Include branding">
         <div className="flex flex-row items-center justify-end gap-2">
