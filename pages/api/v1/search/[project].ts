@@ -4,6 +4,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getRequesterIp } from '@/lib/middleware/common';
 import { track } from '@/lib/posthog';
 import { checkSearchRateLimits } from '@/lib/rate-limits';
+import { isAtLeastPro } from '@/lib/stripe/tiers';
 import { getTeamStripeInfo } from '@/lib/supabase';
 import { safeParseNumber } from '@/lib/utils';
 import { isRequestFromMarkprompt } from '@/lib/utils.edge';
@@ -78,9 +79,15 @@ export default async function handler(
     // Indexes queries are part of the Enterprise plans when used outside of
     // the Markprompt dashboard.
     const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
-    if (!teamStripeInfo?.isEnterprisePlan) {
+    if (
+      !teamStripeInfo ||
+      !isAtLeastPro(
+        teamStripeInfo.stripePriceId,
+        teamStripeInfo.isEnterprisePlan,
+      )
+    ) {
       return res.status(401).json({
-        error: `The indexes endpoint is only accessible on the Enterprise plan. Please contact ${process.env.NEXT_PUBLIC_SALES_EMAIL} to get set up.`,
+        error: `The indexes endpoint is only accessible on the Pro plan. Please contact ${process.env.NEXT_PUBLIC_SALES_EMAIL} to get set up.`,
       });
     }
   }
