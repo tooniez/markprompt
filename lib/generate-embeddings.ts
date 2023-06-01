@@ -370,15 +370,6 @@ export const generateFileEmbeddings = async (
     }
   }
 
-  console.log(
-    'embeddingsData',
-    JSON.stringify(
-      embeddingsData.map((e) => e.content.substring(0, 20)),
-      null,
-      2,
-    ),
-  );
-
   const { error } = await supabaseAdmin
     .from('file_sections')
     .insert(embeddingsData);
@@ -403,13 +394,10 @@ export const generateFileEmbeddings = async (
     );
   }
 
-  if (errors) {
+  if (errors?.length > 0) {
     // If there were errors, delete the file (which will cascade and delete
     // associated embeddings), to give a change to process the file again.
-    await supabaseAdmin
-      .from('file_sections')
-      .delete()
-      .filter('file_id', 'eq', fileId);
+    await supabaseAdmin.from('files').delete().eq('id', fileId);
   }
 
   return errors;
