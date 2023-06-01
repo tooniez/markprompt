@@ -370,9 +370,19 @@ export const generateFileEmbeddings = async (
     }
   }
 
+  console.log(
+    'embeddingsData',
+    JSON.stringify(
+      embeddingsData.map((e) => e.content.substring(0, 20)),
+      null,
+      2,
+    ),
+  );
+
   const { error } = await supabaseAdmin
     .from('file_sections')
     .insert(embeddingsData);
+
   if (error) {
     console.error('Error storing embeddings:', error);
     errors.push({
