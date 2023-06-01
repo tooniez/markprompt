@@ -160,6 +160,13 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
+create or replace function refresh_materialized_view(view_name text)
+returns void as $$
+begin
+  refresh materialized view view_name;
+end;
+$$ language plpgsql;
+
 create or replace function match_file_sections(project_id uuid, embedding vector(1536), match_threshold float, match_count int, min_content_length int)
 returns table (path text, content text, token_count int, similarity float)
 language plpgsql
@@ -204,6 +211,8 @@ create index idx_sources_project_id on sources(project_id);
 create index idx_file_sections_file_id on file_sections(file_id);
 create index idx_projects_team_id on projects(team_id);
 create index idx_memberships_user_id on memberships(user_id);
+
+-- Materialized views
 
 -- RLS
 

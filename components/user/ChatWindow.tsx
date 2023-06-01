@@ -197,7 +197,7 @@ export const ContactWindow = ({
         <Dialog.Content className="animate-dialog-slide-in dialog-content max-h-[90%] w-[90%] max-w-[540px]">
           <Dialog.Title className="dialog-title">Contact us</Dialog.Title>
           <Dialog.Description className="dialog-description pb-4">
-            Share feedback, request a feature, report a bug, or us.
+            Share feedback, request a feature, report a bug, or contact us.
           </Dialog.Description>
           <Formik
             initialValues={{

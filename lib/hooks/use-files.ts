@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 
-import { DbFile } from '@/types/types';
+import { DbFileWithTokenCount } from '@/types/types';
 
 import useProject from './use-project';
 import { fetcher } from '../utils';
@@ -13,7 +13,7 @@ export default function useFiles() {
     error,
   } = useSWR(
     project?.id ? `/api/project/${project.id}/files` : null,
-    fetcher<DbFile[]>,
+    fetcher<DbFileWithTokenCount[]>,
   );
 
   const loading = !files && !error;

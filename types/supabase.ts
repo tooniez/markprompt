@@ -338,6 +338,7 @@ export interface Database {
           full_name: string | null;
           has_completed_onboarding: boolean;
           id: string;
+          outreach_tag: string | null;
           subscribe_to_product_updates: boolean;
           updated_at: string | null;
         };
@@ -347,6 +348,7 @@ export interface Database {
           full_name?: string | null;
           has_completed_onboarding?: boolean;
           id: string;
+          outreach_tag?: string | null;
           subscribe_to_product_updates?: boolean;
           updated_at?: string | null;
         };
@@ -356,13 +358,22 @@ export interface Database {
           full_name?: string | null;
           has_completed_onboarding?: boolean;
           id?: string;
+          outreach_tag?: string | null;
           subscribe_to_product_updates?: boolean;
           updated_at?: string | null;
         };
       };
     };
     Views: {
-      [_ in never]: never;
+      v_team_project_usage_info: {
+        Row: {
+          is_enterprise_plan: boolean | null;
+          project_id: string | null;
+          stripe_price_id: string | null;
+          team_id: string | null;
+          team_token_count: number | null;
+        };
+      };
     };
     Functions: {
       ivfflathandler: {
@@ -401,6 +412,12 @@ export interface Database {
               similarity: number;
             }[];
           };
+      refresh_materialized_view: {
+        Args: {
+          view_name: string;
+        };
+        Returns: undefined;
+      };
       vector_avg: {
         Args: {
           '': number[];

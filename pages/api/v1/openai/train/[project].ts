@@ -4,7 +4,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import pLimit from 'p-limit';
 import { isPresent } from 'ts-is-present';
 
-import { generateFileEmbeddings } from '@/lib/generate-embeddings';
+import {
+  EmbeddingsError,
+  generateFileEmbeddings,
+} from '@/lib/generate-embeddings';
 import {
   checkEmbeddingsRateLimits,
   getEmbeddingsRateLimitResponse,
@@ -14,6 +17,7 @@ import {
   getChecksums,
   getOrCreateSource,
   getProjectTeam,
+  refreshMaterializedViewsAfterTraining,
 } from '@/lib/supabase';
 import {
   createChecksum,
@@ -24,11 +28,19 @@ import {
 import { getMarkpromptConfigOrDefault } from '@/lib/utils.browser';
 import { getBufferFromReadable } from '@/lib/utils.node';
 import { Database } from '@/types/supabase';
-import { FileData, Project } from '@/types/types';
+import {
+  API_ERROR_CODE_CONTENT_TOKEN_QUOTA_EXCEEDED,
+  API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
+  ApiError,
+  FileData,
+  Project,
+} from '@/types/types';
 
 type Data = {
   status?: string;
+  message?: string;
   error?: string;
+  name?: string;
 };
 
 export const config = {
@@ -50,6 +62,32 @@ const supabaseAdmin = createClient<Database>(
 );
 
 const allowedMethods = ['POST'];
+
+const generateResponseMessage = (
+  errors: EmbeddingsError[],
+  numFilesSuccess: number,
+) => {
+  const successMessage = `Successfully trained ${pluralize(
+    numFilesSuccess,
+    'file',
+    'files',
+  )}.`;
+
+  let message = '';
+  if (errors.length > 0) {
+    if (numFilesSuccess > 0) {
+      message = successMessage;
+    }
+    message += `\nEncountered ${pluralize(
+      errors.length,
+      'error',
+      'errors',
+    )}:\n${errors.map((e) => `* In '${e.path}': ${e.message}`).join('\n')}`;
+  } else {
+    message = successMessage;
+  }
+  return message;
+};
 
 export default async function handler(
   req: NextApiRequest,
@@ -129,6 +167,7 @@ export default async function handler(
                 k,
                 config.include || [],
                 config.exclude || [],
+                false,
               )
             ) {
               return undefined;
@@ -169,6 +208,7 @@ export default async function handler(
                 f.id,
                 config.include || [],
                 config.exclude || [],
+                false,
               )
             ) {
               return undefined;
@@ -190,6 +230,7 @@ export default async function handler(
                 path,
                 config.include || [],
                 config.exclude || [],
+                false,
               )
             ) {
               return undefined;
@@ -219,11 +260,11 @@ export default async function handler(
   const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
 
   let numFilesSuccess = 0;
-  let allFileErrors: { path: string; message: string }[] = [];
+  let allFileErrors: EmbeddingsError[] = [];
 
   const forceRetrain = req.headers['x-markprompt-force-retrain'] === 'true';
 
-  const processFile = async (file: FileData) => {
+  const _processFile = async (file: FileData) => {
     // Check the checksum, and skip if equals
     const contentChecksum = createChecksum(file.content);
 
@@ -253,41 +294,58 @@ export default async function handler(
     } else {
       numFilesSuccess++;
     }
+
+    if (
+      allFileErrors.some(
+        (e) => e.id === API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
+      )
+    ) {
+      // In case of a quota exceeded error, throw so as to stop
+      // further processing
+      throw new ApiError(API_ERROR_CODE_CONTENT_TOKEN_QUOTA_EXCEEDED);
+    }
   };
 
-  // TODO: check how much we can do concurrently without hitting
-  // rate limitations.
-  const limit = pLimit(5);
+  try {
+    // TODO: Since we are parallelizing the processing, we cannot check reliably
+    // inside each _processFile call whether we have reached the token limit
+    // for training. Therefore, we make a rough estimate here, and only
+    // send the set of files that fit within the threshold.
 
-  await Promise.all(
-    filesWithPath.map((fileWithPath) => {
-      return limit(() => processFile(fileWithPath));
-    }),
-  );
+    // TODO: check how much we can do concurrently without hitting
+    // rate limitations.
+    const limit = pLimit(5);
 
-  let message;
-  const successMessage = `Successfully trained ${pluralize(
-    numFilesSuccess,
-    'file',
-    'files',
-  )}.`;
+    await Promise.all(
+      filesWithPath.map((fileWithPath) => {
+        return limit(() => _processFile(fileWithPath));
+      }),
+    );
+  } catch (e) {
+    if (
+      e instanceof ApiError &&
+      e.code === API_ERROR_CODE_CONTENT_TOKEN_QUOTA_EXCEEDED
+    ) {
+      // If this is a quota exceeded error, return immediately, and with an
+      // error code. Also return the cumulative "success" message, and make
+      // sure to update the materialized views.
+      const message = generateResponseMessage(allFileErrors, numFilesSuccess);
 
-  if (allFileErrors.length > 0) {
-    if (numFilesSuccess > 0) {
-      message = successMessage;
+      await refreshMaterializedViewsAfterTraining(supabaseAdmin);
+
+      return res.status(403).json({
+        error: message,
+        name: API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
+      });
     }
-    message += `\nEncountered ${pluralize(
-      allFileErrors.length,
-      'error',
-      'errors',
-    )}:\n${allFileErrors
-      .map((e) => `* In '${e.path}': ${e.message}`)
-      .join('\n')}`;
-  } else {
-    message = successMessage;
   }
 
+  await refreshMaterializedViewsAfterTraining(supabaseAdmin);
+
+  const message = generateResponseMessage(allFileErrors, numFilesSuccess);
+
   res.status(200).json({
-    status: message,
+    status: 'ok',
+    message,
   });
 }
