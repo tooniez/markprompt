@@ -16,6 +16,7 @@ import LandingNavbar from '@/components/layouts/LandingNavbar';
 import { Blurs } from '@/components/ui/Blurs';
 import Button from '@/components/ui/Button';
 import { Pattern } from '@/components/ui/Pattern';
+import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import { PricedModel, TierDetails, TIERS } from '@/lib/stripe/tiers';
 
 import StepsSection from './sections/Steps';
@@ -33,6 +34,7 @@ const PricingCard = ({
   highlight,
   cta,
   ctaHref,
+  onCtaClick,
   customPrice,
 }: {
   tier: TierDetails;
@@ -40,6 +42,7 @@ const PricingCard = ({
   highlight?: boolean;
   cta: string;
   ctaHref?: string;
+  onCtaClick?: () => void;
   customPrice?: string;
 }) => {
   const [priceStep, setPriceStep] = useState(0);
@@ -170,7 +173,10 @@ const PricingCard = ({
         <Button
           className="w-full"
           variant={highlight ? 'fuchsia' : 'plain'}
-          href={ctaHref ?? '/signup'}
+          href={ctaHref ?? (!onCtaClick ? '/signup' : undefined)}
+          onClick={() => {
+            onCtaClick?.();
+          }}
         >
           {cta}
         </Button>
@@ -368,7 +374,9 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
             <PricingCard
               tier={TIERS.enterprise}
               cta="Contact Sales"
-              ctaHref={`mailto:${process.env.NEXT_PUBLIC_SALES_EMAIL!}`}
+              onCtaClick={() => {
+                emitter.emit(EVENT_OPEN_CONTACT);
+              }}
               model={model}
               customPrice="Custom"
             />

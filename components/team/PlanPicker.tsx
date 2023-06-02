@@ -17,7 +17,10 @@ import Button from '@/components/ui/Button';
 import { ListItem } from '@/components/ui/ListItem';
 import { Segment } from '@/components/ui/Segment';
 import { cancelSubscription } from '@/lib/api';
-import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';
+import emitter, {
+  EVENT_OPEN_CONTACT,
+  EVENT_OPEN_PLAN_PICKER_DIALOG,
+} from '@/lib/events';
 import useTeam from '@/lib/hooks/use-team';
 import { getStripe } from '@/lib/stripe/client';
 import {
@@ -41,6 +44,7 @@ const PricingCard = ({
   customPrice,
   cta,
   ctaHref,
+  onCtaClick,
 }: {
   tier: Tier;
   model: PricedModel;
@@ -50,6 +54,7 @@ const PricingCard = ({
   customPrice?: string;
   cta?: string;
   ctaHref?: string;
+  onCtaClick?: () => void;
 }) => {
   const router = useRouter();
   const { team, mutate: mutateTeam } = useTeam();
@@ -263,7 +268,11 @@ const PricingCard = ({
           variant="plain"
           href={ctaHref}
           onClick={async () => {
-            if (!team || ctaHref) {
+            if (!team) {
+              return;
+            }
+            if (onCtaClick) {
+              onCtaClick();
               return;
             }
             try {
@@ -367,7 +376,9 @@ const PlanPicker = () => {
           isOnEnterprisePlan={!!team?.is_enterprise_plan}
           customPrice="Custom"
           cta="Contact Sales"
-          ctaHref={`mailto:${process.env.NEXT_PUBLIC_SALES_EMAIL!}`}
+          onCtaClick={() => {
+            emitter.emit(EVENT_OPEN_CONTACT);
+          }}
         />
       </div>
     </>
