@@ -350,7 +350,12 @@ export const generateFileEmbeddings = async (
   let numRemainingTokensOnPlan = tokenAllowanceInfo.numRemainingTokensOnPlan;
 
   for (const section of sections) {
-    const input = section.replace(/\n/g, ' ');
+    // Unlike earlier, we keep the sections verbatim during indexing, as we
+    // may need to run further Remark plugins, e.g. for search to extract
+    // headings. We do this processing instead when building the completions
+    // prompt.
+    const input = section;
+    // const input = section.replace(/\n/g, ' ');
 
     // // Ignore content shorter than `MIN_CONTENT_LENGTH` characters.
     // if (input.length < MIN_CONTENT_LENGTH) {

@@ -233,6 +233,10 @@ export default async function handler(req: NextRequest) {
   //   });
   // }
 
+  const _prepareSectionText = (text: string) => {
+    return text.replace(/\n/g, ' ').trim();
+  };
+
   let numTokens = 0;
   let contextText = '';
   const references: DbFile['path'][] = [];
@@ -243,9 +247,9 @@ export default async function handler(req: NextRequest) {
       break;
     }
 
-    contextText += `Section id: ${
-      section.path
-    }\n\n${section.content.trim()}\n---\n`;
+    contextText += `Section id: ${section.path}\n\n${_prepareSectionText(
+      section.content,
+    )}\n---\n`;
     if (!references.includes(section.path)) {
       references.push(section.path);
     }
