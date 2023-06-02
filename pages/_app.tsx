@@ -82,13 +82,13 @@ export default function App({ Component, pageProps }: CustomAppProps) {
                   <ManagedConfigContext>
                     <Component {...pageProps}></Component>
                     <PromptOutsideOnboarding />
+                    <Toaster />
                   </ManagedConfigContext>
                 </ManagedTrainingContext>
               </ManagedAppContext>
             </ManagedPlainProvider>
           </SessionContextProvider>
         </ThemeProvider>
-        <Toaster />
         <Analytics />
       </SWRConfig>
     </>

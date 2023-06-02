@@ -73,7 +73,7 @@ export const processFile = async (
   sourceId: Source['id'],
   fileData: FileData,
 ) => {
-  await fetch('/api/v1/openai/train-file', {
+  const res = await fetch('/api/v1/openai/train-file', {
     method: 'POST',
     body: JSON.stringify({
       file: fileData,
@@ -84,6 +84,7 @@ export const processFile = async (
       accept: 'application/json',
     },
   });
+  return getResponseOrThrow<void>(res);
 };
 
 export const deleteFiles = async (

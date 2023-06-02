@@ -104,7 +104,7 @@ const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
   return (
     <div className="flex w-full cursor-default flex-row items-center gap-2 text-sm">
       <Icon className="h-4 w-4 flex-none text-neutral-500" />
-      <p className="flex-grow overflow-hidden text-neutral-500">
+      <p className="flex-grow overflow-hidden text-neutral-300">
         {getLabelForSource(source)}
       </p>
       <DropdownMenu.Root>
@@ -207,8 +207,8 @@ const Data = () => {
     trainAllSources,
   } = useTrainingContext();
   const {
-    numWebsitePagesInProject,
-    numWebsitePagesPerProjectAllowance,
+    numTokensPerTeamRemainingAllowance,
+    numTokensPerTeamAllowance,
     mutate: mutateFileStats,
   } = useUsage();
   const [rowSelection, setRowSelection] = useState({});
@@ -335,10 +335,9 @@ const Data = () => {
   const numSelected = Object.values(rowSelection).filter(Boolean).length;
   const hasFiles = files && files.length > 0;
   const canTrain = hasFiles || hasNonFileSources(sources);
-  const canAddMoreWebsitePages =
-    !team ||
-    numWebsitePagesPerProjectAllowance === 'unlimited' ||
-    numWebsitePagesInProject < numWebsitePagesPerProjectAllowance;
+  const canAddMoreContent =
+    numTokensPerTeamRemainingAllowance === 'unlimited' ||
+    numTokensPerTeamRemainingAllowance > 0;
 
   return (
     <ProjectSettingsLayout
@@ -427,7 +426,9 @@ const Data = () => {
                     },
                   );
                   await mutateFiles();
-                  toast.success('Processing complete.');
+                  toast.success('Processing complete.', {
+                    id: 'processing-complete',
+                  });
                 }}
               >
                 Train
@@ -439,11 +440,11 @@ const Data = () => {
     >
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-4">
         <div className="flex w-full flex-col gap-2">
-          {!loadingFiles && !canAddMoreWebsitePages && (
-            <UpgradeNote className="mb-4">
-              You have reached your quota of indexed website pages (
-              {numWebsitePagesPerProjectAllowance}) for this plan. Please
-              upgrade your plan to index more website pages.
+          {!loadingFiles && !canAddMoreContent && (
+            <UpgradeNote className="mb-4" showDialog>
+              You have reached your quota of indexed content (
+              {numTokensPerTeamAllowance} tokens) on this plan. Please upgrade
+              your plan to index more documents.
             </UpgradeNote>
           )}
           {sources.length > 0 && (
@@ -464,35 +465,63 @@ const Data = () => {
               </div>
             </>
           )}
-          <div className="flex flex-col gap-2 rounded-md border border-dashed border-neutral-800 p-4">
+          <div
+            className={cn(
+              'flex flex-col gap-2 rounded-md border border-dashed border-neutral-800 p-4',
+              {
+                'cursor-not-allowed': !canAddMoreContent,
+              },
+            )}
+          >
+            <WebsiteAddSourceDialog>
+              <button
+                className={cn(
+                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                  {
+                    'pointer-events-none opacity-50': !canAddMoreContent,
+                  },
+                )}
+              >
+                <Globe className="h-4 w-4 flex-none text-neutral-500" />
+                <span className="truncate">Connect website</span>
+              </button>
+            </WebsiteAddSourceDialog>
             <GitHubAddSourceDialog>
-              <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
-                <GitHub.GitHubIcon className="h-4 w-4 flex-none" />
+              <button
+                className={cn(
+                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                  {
+                    'pointer-events-none opacity-50': !canAddMoreContent,
+                  },
+                )}
+              >
+                <GitHub.GitHubIcon className="h-4 w-4 flex-none text-neutral-500" />
                 <span className="truncate">Connect GitHub repo</span>
               </button>
             </GitHubAddSourceDialog>
             <MotifAddSourceDialog>
-              <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
-                <MotifIcon className="h-4 w-4 flex-none" />
-                <span className="truncate">Connect Motif project</span>
-              </button>
-            </MotifAddSourceDialog>
-            <WebsiteAddSourceDialog>
               <button
                 className={cn(
-                  'flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400',
+                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
                   {
-                    'pointer-events-none opacity-50': !canAddMoreWebsitePages,
+                    'pointer-events-none opacity-50': !canAddMoreContent,
                   },
                 )}
               >
-                <Globe className="h-4 w-4 flex-none" />
-                <span className="truncate">Connect website</span>
+                <MotifIcon className="h-4 w-4 flex-none text-neutral-500" />
+                <span className="truncate">Connect Motif project</span>
               </button>
-            </WebsiteAddSourceDialog>
+            </MotifAddSourceDialog>
             <FilesAddSourceDialog>
-              <button className="flex flex-row items-center gap-2 text-left text-sm text-neutral-500 outline-none transition hover:text-neutral-400">
-                <Upload className="h-4 w-4 flex-none" />
+              <button
+                className={cn(
+                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                  {
+                    'pointer-events-none opacity-50': !canAddMoreContent,
+                  },
+                )}
+              >
+                <Upload className="h-4 w-4 flex-none text-neutral-500" />
                 <span className="truncate">Upload files</span>
               </button>
             </FilesAddSourceDialog>
@@ -501,8 +530,11 @@ const Data = () => {
         {!loadingFiles && !hasFiles && (
           <div className="h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100 sm:col-span-3">
             <FileDnd
+              isOnEmptyStateDataPanel
               onTrainingComplete={() => {
-                toast.success('Processing complete.');
+                toast.success('Processing complete.', {
+                  id: 'processing-complete',
+                });
               }}
             />
           </div>

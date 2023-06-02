@@ -14,6 +14,7 @@ import {
   WebsiteSourceDataType,
 } from '@/types/types';
 
+import { TokenAllowance, getNumTokensPerTeamAllowance } from './stripe/tiers';
 import { generateKey } from './utils';
 
 export const getBYOOpenAIKey = async (
@@ -198,16 +199,71 @@ export const getProjectTeam = async (
   return undefined;
 };
 
-export const getFilesInTeam = async (
+export const getTeamUsageInfoByTeamOrProject = async (
   supabase: SupabaseClient<Database>,
-  teamId: Team['id'],
-) => {
-  // TODO: this query should be revised if/when we remove the project_id
-  // column from the files table.
-  const { data } = await supabase
-    .from('files')
-    .select('sources!inner (project_id), projects!inner (team_id)')
-    .eq('projects.team_id', teamId);
+  teamOrProjectId: { teamId?: Team['id']; projectId?: Project['id'] },
+): Promise<{
+  is_enterprise_plan: boolean;
+  stripe_price_id: string | null;
+  team_token_count: number;
+}> => {
+  const {
+    data,
+  }: {
+    data: {
+      is_enterprise_plan: boolean | null;
+      stripe_price_id: string | null;
+      team_token_count: number | null;
+    } | null;
+  } = await supabase
+    .from('v_team_project_usage_info')
+    .select('team_token_count')
+    .eq(
+      teamOrProjectId.teamId ? 'team_id' : 'project_id',
+      teamOrProjectId.teamId ?? teamOrProjectId.projectId,
+    )
+    .limit(1)
+    .maybeSingle();
 
-  return data;
+  return {
+    is_enterprise_plan: !!data?.is_enterprise_plan,
+    stripe_price_id: data?.stripe_price_id || null,
+    team_token_count: data?.team_token_count || 0,
+  };
+};
+
+export const getTokenAllowanceInfo = async (
+  supabase: SupabaseClient<Database>,
+  teamOrProjectId: { teamId?: Team['id']; projectId?: Project['id'] },
+): Promise<{
+  numRemainingTokensOnPlan: number;
+  usedTokens: number;
+  tokenAllowance: TokenAllowance;
+}> => {
+  const teamUsageInfo = await getTeamUsageInfoByTeamOrProject(
+    supabase,
+    teamOrProjectId,
+  );
+  const usedTokens = teamUsageInfo?.team_token_count || 0;
+  const tokenAllowance = getNumTokensPerTeamAllowance(
+    !!teamUsageInfo?.is_enterprise_plan,
+    teamUsageInfo?.stripe_price_id,
+  );
+  const numRemainingTokensOnPlan =
+    tokenAllowance === 'unlimited'
+      ? 1_000_000_000
+      : Math.max(0, tokenAllowance - usedTokens);
+  return { numRemainingTokensOnPlan, usedTokens, tokenAllowance };
+};
+
+export const refreshMaterializedViewsAfterTraining = async (
+  supabase: SupabaseClient<Database>,
+) => {
+  // TODO: what views should be refreshed?
+  const viewsToRefresh: string[] = [];
+  for (const viewName of viewsToRefresh) {
+    await supabase.rpc('refresh_materialized_view', {
+      view_name: viewName,
+    });
+  }
 };

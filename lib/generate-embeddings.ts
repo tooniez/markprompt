@@ -11,7 +11,7 @@ import TurndownService from 'turndown';
 import { u } from 'unist-builder';
 import { filter } from 'unist-util-filter';
 
-import { CONTEXT_TOKENS_CUTOFF, MIN_CONTENT_LENGTH } from '@/lib/constants';
+import { CONTEXT_TOKENS_CUTOFF } from '@/lib/constants';
 import { createEmbedding } from '@/lib/openai.edge';
 import {
   createChecksum,
@@ -21,6 +21,7 @@ import {
 import { extractFrontmatter } from '@/lib/utils.node';
 import { Database } from '@/types/supabase';
 import {
+  API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
   DbFile,
   FileData,
   OpenAIModelIdWithType,
@@ -29,7 +30,8 @@ import {
   geLLMInfoFromModel,
 } from '@/types/types';
 
-import { getProjectIdFromSource } from './supabase';
+import { tokensToApproxParagraphs } from './stripe/tiers';
+import { getTokenAllowanceInfo } from './supabase';
 import { recordProjectTokenCount } from './tinybird';
 
 type FileSectionData = {
@@ -199,7 +201,7 @@ const splitWithinTokenCutoff = (section: string): string[] => {
   return subSections;
 };
 
-const processFile = (file: FileData): FileSectionData => {
+const chunkFileIntoSections = (file: FileData): FileSectionData => {
   let sections: string[] = [];
   const meta = extractFrontmatter(file.content);
   const fileType = getFileType(file.name);
@@ -272,30 +274,39 @@ const createFile = async (
   return data?.id as DbFile['id'];
 };
 
+const revertFileProcessing = async (
+  supabaseAdmin: SupabaseClient,
+  fileId: DbFile['id'],
+) => {
+  // If there were errors, delete the file (which will cascade and delete
+  // associated embeddings), to give a change to process the file again.
+  return supabaseAdmin.from('files').delete().eq('id', fileId);
+};
+
+export type EmbeddingsError = {
+  id?: string;
+  path: string;
+  message: string;
+};
+
 export const generateFileEmbeddings = async (
   supabaseAdmin: SupabaseClient,
-  _projectId: Project['id'],
+  projectId: Project['id'],
   sourceId: Source['id'],
   file: FileData,
   byoOpenAIKey: string | undefined,
-) => {
+): Promise<EmbeddingsError[]> => {
   let embeddingsTokenCount = 0;
   const errors: { path: string; message: string }[] = [];
 
-  const projectId = await getProjectIdFromSource(supabaseAdmin, sourceId);
-
-  if (!projectId) {
-    return;
-  }
-
-  const { meta, sections } = processFile(file);
+  const { meta, sections } = chunkFileIntoSections(file);
 
   let fileId = await getFileAtPath(supabaseAdmin, sourceId, file.path);
 
   const checksum = createChecksum(file.content);
 
-  // Delete previous file section data, and update current file
   if (fileId) {
+    // Delete previous file section data, and update current file
     await supabaseAdmin
       .from('file_sections')
       .delete()
@@ -307,7 +318,7 @@ export const generateFileEmbeddings = async (
   } else {
     fileId = await createFile(
       supabaseAdmin,
-      _projectId,
+      projectId,
       sourceId,
       file.path,
       meta,
@@ -333,13 +344,18 @@ export const generateFileEmbeddings = async (
     value: 'text-embedding-ada-002',
   };
 
+  const tokenAllowanceInfo = await getTokenAllowanceInfo(supabaseAdmin, {
+    projectId,
+  });
+  let numRemainingTokensOnPlan = tokenAllowanceInfo.numRemainingTokensOnPlan;
+
   for (const section of sections) {
     const input = section.replace(/\n/g, ' ');
 
-    // Ignore content shorter than `MIN_CONTENT_LENGTH` characters.
-    if (input.length < MIN_CONTENT_LENGTH) {
-      continue;
-    }
+    // // Ignore content shorter than `MIN_CONTENT_LENGTH` characters.
+    // if (input.length < MIN_CONTENT_LENGTH) {
+    //   continue;
+    // }
 
     try {
       // Retry with exponential backoff in case of error. Typical cause is
@@ -353,6 +369,31 @@ export const generateFileEmbeddings = async (
       );
 
       embeddingsTokenCount += embeddingResult.usage?.total_tokens ?? 0;
+
+      if (numRemainingTokensOnPlan - embeddingsTokenCount < 0) {
+        // The file has been created, so delete it to allow for a subsequent
+        // processing.
+        await revertFileProcessing(supabaseAdmin, fileId);
+        return [
+          {
+            id: API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
+            path: file.path,
+            message: `Training quota reached. Your plan allows you to process ${
+              tokenAllowanceInfo.tokenAllowance
+            } tokens (approximately ${tokensToApproxParagraphs(
+              tokenAllowanceInfo.tokenAllowance as number,
+            )} paragraphs). You have currently processed ${Math.min(
+              tokenAllowanceInfo.usedTokens,
+              tokenAllowanceInfo.tokenAllowance as number,
+            )} tokens, and you are attempting to process additional ${embeddingsTokenCount} tokens, which brings you past the limit. Please upgrade your plan, or contact ${
+              process.env.NEXT_PUBLIC_SALES_EMAIL
+            } to discuss extended usage.`,
+          },
+        ];
+      } else {
+        numRemainingTokensOnPlan =
+          numRemainingTokensOnPlan - embeddingsTokenCount;
+      }
 
       embeddingsData.push({
         file_id: fileId,
@@ -395,9 +436,7 @@ export const generateFileEmbeddings = async (
   }
 
   if (errors?.length > 0) {
-    // If there were errors, delete the file (which will cascade and delete
-    // associated embeddings), to give a change to process the file again.
-    await supabaseAdmin.from('files').delete().eq('id', fileId);
+    await revertFileProcessing(supabaseAdmin, fileId);
   }
 
   return errors;

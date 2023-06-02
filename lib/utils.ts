@@ -221,7 +221,7 @@ export const getFileType = (name: string): FileType => {
   }
 };
 
-const SUPPORTED_EXTENSIONS = ['md', 'mdx', 'mdoc', 'txt', 'html', 'htm'];
+export const SUPPORTED_EXTENSIONS = ['md', 'mdx', 'mdoc', 'txt', 'html', 'htm'];
 
 export const isSupportedFileType = (pathOrName: string): boolean => {
   const extension = getFileExtension(pathOrName);
@@ -254,6 +254,7 @@ export const getResponseOrThrow = async <T>(res: Response): Promise<T> => {
     if (json.error) {
       const error = new Error(json.error) as SWRError;
       error.status = res.status;
+      error.name = json.name;
       throw error;
     } else {
       throw new Error('An unexpected error occurred');
@@ -441,13 +442,28 @@ export const shouldIncludeFileWithPath = (
   path: string,
   includeGlobs: string[],
   excludeGlobs: string[],
+  isWebsiteSource: boolean,
 ) => {
+  if (isWebsiteSource) {
+    // If this is a website source, we need to handle the root
+    // url specially. Namely, if the path is a root URL, such as
+    // https://markprompt.com, we should not see `.com` as a file
+    // extension. If it's not a root URL, e.g.
+    // https://markprompt.com/favicon.ico, then `.ico` is indeed
+    // and extension, and we can check that it's supported. The
+    // solution is simply to append a trailing "/" to root URLs.
+    const isRootUrl = !urlHasPath(path);
+    if (isRootUrl && !path.endsWith('/')) {
+      path = path + '/';
+    }
+  }
+
   if (
     path.startsWith('.') ||
     path.includes('/.') ||
     !isSupportedFileType(path)
   ) {
-    // Exclude unsupported files and dotfiles
+    // Exclude dotfiles and unsupported extensions
     return false;
   }
 
@@ -578,7 +594,10 @@ export const toNormalizedUrl = (url: string, useInsecureSchema?: boolean) => {
 
   try {
     const parsedUrl = new URL(url);
-    return `${parsedUrl.protocol}//${parsedUrl.hostname}${parsedUrl.pathname}`;
+    return `${parsedUrl.protocol}//${parsedUrl.hostname}${parsedUrl.pathname}`.replace(
+      /\/+$/,
+      '',
+    );
   } catch {
     // Do nothing, just return the URL as is.
     return url;
@@ -603,8 +622,17 @@ export const isUrl = (path: string) => {
 };
 
 export const getUrlPath = (url: string) => {
-  const urlObj = new URL(url);
-  return urlObj.pathname;
+  try {
+    const urlObj = new URL(url);
+    return urlObj.pathname;
+  } catch {
+    return undefined;
+  }
+};
+
+const urlHasPath = (url: string) => {
+  const path = getUrlPath(url);
+  return path && path.length > 0 && path !== '/';
 };
 
 export const isHrefFromBaseUrl = (baseUrl: string, href: string) => {
@@ -619,7 +647,7 @@ export const isHrefFromBaseUrl = (baseUrl: string, href: string) => {
   } else if (href.startsWith('/')) {
     // Links that don't include a full hostname are considered relative links
     // from the given host.
-    const basePath = getUrlPath(baseUrl);
+    const basePath = getUrlPath(baseUrl) || '/';
     return href.startsWith(basePath);
   } else if (!href.includes(':')) {
     // Relative paths should be considered valid, since they are
@@ -733,4 +761,10 @@ export const objectEquals = (object: any, otherObject: any) => {
   }
 
   return true;
+};
+
+export const roundToLowerOrderDecimal = (n: number) => {
+  const order = Math.pow(10, Math.round(Math.log10(n)));
+  const roundedNumber = Math.round(n / order) * order;
+  return roundedNumber;
 };
