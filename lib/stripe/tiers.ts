@@ -155,7 +155,7 @@ export const TIERS: Record<Tier, TierDetails> = {
     name: 'Starter',
     description: 'For small projects',
     items: [
-      '100 indexed documents*',
+      '100 indexed documents',
       '200 GPT-4 completions',
       'Usage analytics',
     ],
