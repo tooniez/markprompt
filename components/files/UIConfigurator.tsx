@@ -83,11 +83,14 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
       <Row label="Instant search">
         <div className="flex flex-row items-center justify-end gap-2">
           {!_canEnableInstantSearch && (
-            <UpgradeCTA showDialog>
-              <ButtonOrLinkWrapper className="mr-1 flex flex-none items-center rounded-full">
-                <Tag color="fuchsia">Pro</Tag>
-              </ButtonOrLinkWrapper>
-            </UpgradeCTA>
+            <ButtonOrLinkWrapper
+              className="mr-1 flex flex-none items-center rounded-full"
+              onClick={() => {
+                emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
+              }}
+            >
+              <Tag color="fuchsia">Pro</Tag>
+            </ButtonOrLinkWrapper>
           )}
           <Switch.Root
             className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 disabled:cursor-not-allowed data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600 disabled:data-[state='checked']:opacity-40"
