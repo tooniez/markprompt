@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { PostgrestError } from '@supabase/supabase-js';
 
-import { Database, Json } from '@/types/supabase';
+import { Database } from '@/types/supabase';
 import {
   DbUser,
   GitHubSourceDataType,
@@ -14,10 +14,10 @@ import {
   WebsiteSourceDataType,
 } from '@/types/types';
 
+import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
 import { MarkpromptConfig } from './schema';
 import { TokenAllowance, getNumTokensPerTeamAllowance } from './stripe/tiers';
 import { generateKey } from './utils';
-import { getMarkpromptConfigOrDefault } from './utils.browser';
 
 export const getBYOOpenAIKey = async (
   supabaseAdmin: SupabaseClient<Database>,
@@ -49,11 +49,15 @@ export const getProjectConfigData = async (
     .select()
     .maybeSingle();
 
+  // We cannot use Ajv in edge runtimes, so use non-typesafe
+  // parsing and assume the format is correct. Cf.
+  // https://github.com/vercel/next.js/discussions/47063
+  const markpromptConfig = (data?.markprompt_config ||
+    JSON.parse(DEFAULT_MARKPROMPT_CONFIG)) as MarkpromptConfig;
+
   return {
     byoOpenAIKey: data?.openai_key || undefined,
-    markpromptConfig: getMarkpromptConfigOrDefault(
-      data?.markprompt_config || undefined,
-    ),
+    markpromptConfig: markpromptConfig,
   };
 };
 

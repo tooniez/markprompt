@@ -12,14 +12,6 @@ export type MarkpromptConfig = {
   };
 };
 
-export const DEFAULT_MARKPROMPT_CONFIG = `{
-  "include": [
-    "**/*"
-  ],
-  "exclude": [],
-  "processorOptions": {}
-}`;
-
 export const MARKPROMPT_CONFIG_SCHEMA: JTDSchemaType<MarkpromptConfig> = {
   optionalProperties: {
     include: { elements: { type: 'string' } },

@@ -5,3 +5,11 @@ export const STREAM_SEPARATOR = '___START_RESPONSE_STREAM___';
 export const CONTEXT_TOKENS_CUTOFF = 4000;
 export const SAMPLE_REPO_URL =
   'https://github.com/motifland/markprompt-sample-docs';
+
+export const DEFAULT_MARKPROMPT_CONFIG = `{
+  "include": [
+    "**/*"
+  ],
+  "exclude": [],
+  "processorOptions": {}
+}`;
