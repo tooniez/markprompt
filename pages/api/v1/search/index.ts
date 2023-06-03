@@ -49,6 +49,8 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
+  console.log('req.query', JSON.stringify(req.query, null, 2));
+
   const params = req.body;
   const projectId = req.query.project as Project['id'];
   let config = {};
@@ -58,42 +60,36 @@ export default async function handler(
     // Do nothing
   }
 
-  if (!projectId) {
-    console.error(`[INDEXES] Project not found`);
-    return res.status(400).json({ error: 'Project not found' });
-  }
+  // if (!projectId) {
+  //   console.error(`[INDEXES] Project not found`);
+  //   return res.status(400).json({ error: 'Project not found' });
+  // }
 
   // Apply rate limits, in additional to middleware rate limits.
-  const rateLimitResult = await checkSearchRateLimits({
-    value: projectId,
-    type: 'projectId',
-  });
+  // const rateLimitResult = await checkSearchRateLimits({
+  //   value: projectId,
+  //   type: 'projectId',
+  // });
 
-  if (!rateLimitResult.result.success) {
-    const ip = getRequesterIp(req);
-    console.error(`[INDEXES] [RATE-LIMIT] [${projectId}] IP: ${ip}`);
-    return res.status(429).json({ error: 'Too many requests' });
-  }
-
-  if (!isRequestFromMarkprompt(req.headers.origin)) {
-    // Indexes queries are part of the Enterprise plans when used outside of
-    // the Markprompt dashboard.
-    const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
-    if (
-      !teamStripeInfo ||
-      !isAtLeastPro(
-        teamStripeInfo.stripePriceId,
-        teamStripeInfo.isEnterprisePlan,
-      )
-    ) {
-      return res.status(401).json({
-        error: `The indexes endpoint is only accessible on the Pro plan. Please contact ${process.env.NEXT_PUBLIC_SALES_EMAIL} to get set up.`,
-      });
-    }
-  }
+  // TODO
+  // if (!isRequestFromMarkprompt(req.headers.origin)) {
+  //   // Search is part of the Enterprise plans when used outside of
+  //   // the Markprompt dashboard.
+  //   const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
+  //   if (
+  //     !teamStripeInfo ||
+  //     !isAtLeastPro(
+  //       teamStripeInfo.stripePriceId,
+  //       teamStripeInfo.isEnterprisePlan,
+  //     )
+  //   ) {
+  //     return res.status(401).json({
+  //       error: `The search endpoint is only accessible on the Pro and Enterprise plans. Please contact ${process.env.NEXT_PUBLIC_SALES_EMAIL} to get set up.`,
+  //     });
+  //   }
+  // }
 
   const query = req.query.query as string;
-  const highlight = safeParseNumber(req.query.highlight as string, 1) === 1;
   const limit = safeParseNumber(req.query.limit as string, 10);
 
   if (!query || query.trim() === '') {
@@ -106,13 +102,16 @@ export default async function handler(
     data: fileSections,
     error,
   }: {
-    data: FileSectionContentInfo[] | null;
+    data: FileSectionContentInfo[] | null | any;
     error: { message: string; code: string } | null;
   } = await supabaseAdmin
-    .from('file_section_content_infos')
-    .select('*')
+    .from('mv_file_section_search_infos')
+    .select('content')
     .like('content', `%${query}%`)
-    .eq('project_id', projectId)
+    .eq(
+      req.query.token ? 'token' : 'public_api_key',
+      req.query.token ?? req.query.projectKey,
+    )
     .limit(limit);
 
   track(projectId, 'search', { projectId });

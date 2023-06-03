@@ -365,6 +365,22 @@ export interface Database {
       }
     }
     Views: {
+      mv_file_section_search_infos: {
+        Row: {
+          content: string | null
+          domain: string | null
+          is_enterprise_plan: boolean | null
+          meta: Json | null
+          path: string | null
+          private_dev_api_key: string | null
+          project_id: string | null
+          public_api_key: string | null
+          source_data: Json | null
+          source_type: Database["public"]["Enums"]["source_type"] | null
+          stripe_price_id: string | null
+          token: string | null
+        }
+      }
       v_team_project_usage_info: {
         Row: {
           is_enterprise_plan: boolean | null

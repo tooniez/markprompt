@@ -16,6 +16,7 @@ import {
   getBYOOpenAIKey,
   getChecksums,
   getOrCreateSource,
+  getProjectConfigData,
   getProjectTeam,
   refreshMaterializedViewsAfterTraining,
 } from '@/lib/supabase';
@@ -257,7 +258,10 @@ export default async function handler(
   );
   const checksums = await getChecksums(supabaseAdmin, sourceId);
 
-  const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
+  const { byoOpenAIKey, markpromptConfig } = await getProjectConfigData(
+    supabaseAdmin,
+    projectId,
+  );
 
   let numFilesSuccess = 0;
   let allFileErrors: EmbeddingsError[] = [];
@@ -287,6 +291,7 @@ export default async function handler(
       sourceId,
       file,
       byoOpenAIKey,
+      markpromptConfig,
     );
 
     if (errors && errors.length > 0) {

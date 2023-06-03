@@ -13,7 +13,7 @@ import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import { FileSection, getMatchingSections, storePrompt } from '@/lib/sections';
-import { getBYOOpenAIKey, getTeamStripeInfo } from '@/lib/supabase';
+import { getProjectConfigData, getTeamStripeInfo } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import { stringToLLMInfo } from '@/lib/utils';
 import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
@@ -191,7 +191,7 @@ export default async function handler(req: NextRequest) {
     }
   }
 
-  const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
+  const { byoOpenAIKey } = await getProjectConfigData(supabaseAdmin, projectId);
 
   const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
 

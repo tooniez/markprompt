@@ -30,6 +30,7 @@ import {
   geLLMInfoFromModel,
 } from '@/types/types';
 
+import { MarkpromptConfig } from './schema';
 import { tokensToApproxParagraphs } from './stripe/tiers';
 import { getTokenAllowanceInfo } from './supabase';
 import { recordProjectTokenCount } from './tinybird';
@@ -295,9 +296,12 @@ export const generateFileEmbeddings = async (
   sourceId: Source['id'],
   file: FileData,
   byoOpenAIKey: string | undefined,
+  config: MarkpromptConfig,
 ): Promise<EmbeddingsError[]> => {
   let embeddingsTokenCount = 0;
   const errors: { path: string; message: string }[] = [];
+
+  console.log('config', JSON.stringify(config, null, 2));
 
   const { meta, sections } = chunkFileIntoSections(file);
 

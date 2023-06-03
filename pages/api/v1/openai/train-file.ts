@@ -7,7 +7,7 @@ import {
   checkEmbeddingsRateLimits,
   getEmbeddingsRateLimitResponse,
 } from '@/lib/rate-limits';
-import { getBYOOpenAIKey, getProjectIdFromSource } from '@/lib/supabase';
+import { getProjectConfigData, getProjectIdFromSource } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 import {
   API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
@@ -76,7 +76,10 @@ export default async function handler(
     });
   }
 
-  const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
+  const { byoOpenAIKey, markpromptConfig } = await getProjectConfigData(
+    supabaseAdmin,
+    projectId,
+  );
 
   const errors = await generateFileEmbeddings(
     supabaseAdmin,
@@ -84,6 +87,7 @@ export default async function handler(
     sourceId,
     file,
     byoOpenAIKey,
+    markpromptConfig,
   );
 
   const quotaExceededError = errors.find(

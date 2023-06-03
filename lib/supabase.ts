@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { PostgrestError } from '@supabase/supabase-js';
 
-import { Database } from '@/types/supabase';
+import { Database, Json } from '@/types/supabase';
 import {
   DbUser,
   GitHubSourceDataType,
@@ -14,14 +14,16 @@ import {
   WebsiteSourceDataType,
 } from '@/types/types';
 
+import { MarkpromptConfig } from './schema';
 import { TokenAllowance, getNumTokensPerTeamAllowance } from './stripe/tiers';
 import { generateKey } from './utils';
+import { getMarkpromptConfigOrDefault } from './utils.browser';
 
 export const getBYOOpenAIKey = async (
   supabaseAdmin: SupabaseClient<Database>,
   projectId: Project['id'],
-) => {
-  const { data: openAIKeyData } = await supabaseAdmin
+): Promise<string | undefined> => {
+  const { data } = await supabaseAdmin
     .from('projects')
     .select('openai_key')
     .eq('id', projectId)
@@ -29,7 +31,30 @@ export const getBYOOpenAIKey = async (
     .select()
     .maybeSingle();
 
-  return openAIKeyData?.openai_key || undefined;
+  return data?.openai_key || undefined;
+};
+
+export const getProjectConfigData = async (
+  supabaseAdmin: SupabaseClient<Database>,
+  projectId: Project['id'],
+): Promise<{
+  byoOpenAIKey: string | undefined;
+  markpromptConfig: MarkpromptConfig;
+}> => {
+  const { data } = await supabaseAdmin
+    .from('projects')
+    .select('openai_key,markprompt_config')
+    .eq('id', projectId)
+    .limit(1)
+    .select()
+    .maybeSingle();
+
+  return {
+    byoOpenAIKey: data?.openai_key || undefined,
+    markpromptConfig: getMarkpromptConfigOrDefault(
+      data?.markprompt_config || undefined,
+    ),
+  };
 };
 
 export const getTeamStripeInfo = async (
