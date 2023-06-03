@@ -144,14 +144,10 @@ export default async function handler(
     });
   }
 
-  const { data } = await supabaseAdmin
-    .from('projects')
-    .select('markprompt_config')
-    .eq('id', projectId)
-    .limit(1)
-    .maybeSingle();
-
-  const config = getMarkpromptConfigOrDefault(data?.markprompt_config);
+  const { byoOpenAIKey, markpromptConfig } = await getProjectConfigData(
+    supabaseAdmin,
+    projectId,
+  );
 
   if (
     contentType === 'application/zip' ||
@@ -166,8 +162,8 @@ export default async function handler(
             if (
               !shouldIncludeFileWithPath(
                 k,
-                config.include || [],
-                config.exclude || [],
+                markpromptConfig.include || [],
+                markpromptConfig.exclude || [],
                 false,
               )
             ) {
@@ -207,8 +203,8 @@ export default async function handler(
             if (
               !shouldIncludeFileWithPath(
                 f.id,
-                config.include || [],
-                config.exclude || [],
+                markpromptConfig.include || [],
+                markpromptConfig.exclude || [],
                 false,
               )
             ) {
@@ -229,8 +225,8 @@ export default async function handler(
             if (
               !shouldIncludeFileWithPath(
                 path,
-                config.include || [],
-                config.exclude || [],
+                markpromptConfig.include || [],
+                markpromptConfig.exclude || [],
                 false,
               )
             ) {
@@ -257,11 +253,6 @@ export default async function handler(
     undefined,
   );
   const checksums = await getChecksums(supabaseAdmin, sourceId);
-
-  const { byoOpenAIKey, markpromptConfig } = await getProjectConfigData(
-    supabaseAdmin,
-    projectId,
-  );
 
   let numFilesSuccess = 0;
   let allFileErrors: EmbeddingsError[] = [];

@@ -224,6 +224,7 @@ const Data = () => {
     path: string;
     source_id: string;
     updated_at: string;
+    meta: any;
   }>();
 
   const columns: any = useMemo(
@@ -251,16 +252,22 @@ const Data = () => {
         footer: (info) => info.column.id,
       }),
       columnHelper.accessor(
-        (row) => ({ sourceId: row.source_id, path: row.path }),
+        (row) => {
+          return {
+            sourceId: row.source_id,
+            path: row.path,
+            title: row.meta?.title,
+          };
+        },
         {
           id: 'name',
           header: () => <span>Name</span>,
           cell: (info) => {
-            const sourcePath = info.getValue();
-            return getNameForPath(
-              sources,
-              sourcePath.sourceId,
-              sourcePath.path,
+            const value = info.getValue();
+            // Ensure compat with previously trained data, where we don't
+            // extract the title in the meta.
+            return (
+              value.title ?? getNameForPath(sources, value.sourceId, value.path)
             );
           },
           footer: (info) => info.column.id,
@@ -278,22 +285,24 @@ const Data = () => {
       columnHelper.accessor((row) => row.path, {
         id: 'path',
         header: () => <span>Path</span>,
-        cell: (info) => (
-          <Tooltip.Provider>
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-                <div className="cursor-default truncate">
-                  {getBasePath(info.getValue())}
-                </div>
-              </Tooltip.Trigger>
-              <Tooltip.Portal>
-                <Tooltip.Content className="tooltip-content">
-                  {getBasePath(info.getValue())}
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            </Tooltip.Root>
-          </Tooltip.Provider>
-        ),
+        cell: (info) => {
+          return (
+            <Tooltip.Provider>
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <div className="cursor-default truncate">
+                    {info.getValue()}
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content className="tooltip-content">
+                    {info.getValue()}
+                  </Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip.Root>
+            </Tooltip.Provider>
+          );
+        },
         footer: (info) => info.column.id,
       }),
       columnHelper.accessor((row) => row.source_id, {
