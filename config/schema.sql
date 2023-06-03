@@ -102,6 +102,7 @@ create table public.file_sections (
   file_id     bigint not null references public.files on delete cascade,
   content     text,
   token_count int,
+  meta        jsonb,
   embedding   vector(1536)
 );
 

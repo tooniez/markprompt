@@ -35,6 +35,7 @@ export interface Database {
           embedding: string | null
           file_id: number
           id: number
+          meta: Json | null
           token_count: number | null
         }
         Insert: {
@@ -42,6 +43,7 @@ export interface Database {
           embedding?: string | null
           file_id: number
           id?: number
+          meta?: Json | null
           token_count?: number | null
         }
         Update: {
@@ -49,6 +51,7 @@ export interface Database {
           embedding?: string | null
           file_id?: number
           id?: number
+          meta?: Json | null
           token_count?: number | null
         }
       }

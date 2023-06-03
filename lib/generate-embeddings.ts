@@ -21,7 +21,7 @@ import {
 } from '@/lib/utils';
 import { removeFileExtension } from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.node';
-import { Database } from '@/types/supabase';
+import { Database, Json } from '@/types/supabase';
 import {
   API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
   DbFile,
@@ -458,6 +458,7 @@ export const generateFileEmbeddings = async (
   const embeddingsData: {
     file_id: DbFile['id'];
     content: string;
+    meta: any;
     embedding: unknown;
     token_count: number;
   }[] = [];
@@ -525,6 +526,9 @@ export const generateFileEmbeddings = async (
       embeddingsData.push({
         file_id: fileId,
         content: input,
+        meta: section.leadHeading
+          ? { leadHeading: section.leadHeading }
+          : undefined,
         embedding: embeddingResult.data[0].embedding,
         token_count: embeddingResult.usage.total_tokens ?? 0,
       });

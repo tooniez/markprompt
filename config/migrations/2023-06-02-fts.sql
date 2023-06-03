@@ -23,3 +23,7 @@ create materialized view mv_file_section_search_infos as
   left join tokens tok on p.id = tok.project_id
   left join domains d on p.id = d.project_id
   left join teams t on t.id = p.team_id
+
+-- Add an enterprise plan flag in the team table
+alter table file_sections
+add column meta jsonb;
