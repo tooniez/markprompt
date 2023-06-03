@@ -6,6 +6,8 @@ import { safeParseNumber } from '@/lib/utils';
 import { Database, Json } from '@/types/supabase';
 import { Project } from '@/types/types';
 
+const MAX_SEARCH_RESULTS = 20;
+
 // Admin access to Supabase, bypassing RLS.
 const supabaseAdmin = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -84,7 +86,10 @@ export default async function handler(
   // }
 
   const query = req.query.query as string;
-  const limit = safeParseNumber(req.query.limit as string, 10);
+  const limit = Math.min(
+    MAX_SEARCH_RESULTS,
+    safeParseNumber(req.query.limit as string, 10),
+  );
 
   if (!query || query.trim() === '') {
     return res.status(200).json({
@@ -93,15 +98,17 @@ export default async function handler(
   }
 
   const {
-    data: fileSections,
+    data,
     error,
   }: {
     data: FileSectionContentInfo[] | null | any;
     error: { message: string; code: string } | null;
   } = await supabaseAdmin
     .from('mv_file_section_search_infos')
-    .select('content,section_meta')
-    .like('content', `%${query}%`)
+    .select(
+      'file_id,file_path,file_meta,section_content,section_meta,source_type,source_data',
+    )
+    .like('section_content', `%${query}%`)
     .eq(
       req.query.token ? 'token' : 'public_api_key',
       req.query.token ?? req.query.projectKey,
@@ -110,13 +117,43 @@ export default async function handler(
 
   track(projectId, 'search', { projectId });
 
-  if (error || !fileSections) {
+  if (error || !data) {
     return res
-      .status(safeParseNumber(error?.code, 400))
+      .status(400)
       .json({ error: error?.message || 'Error retrieving sections' });
   }
 
+  const resultsByFile = data.reduce((acc: any, value: any) => {
+    const {
+      file_id,
+      file_path,
+      file_meta,
+      section_content,
+      section_meta,
+      source_type,
+      source_data,
+    } = value;
+    return {
+      ...acc,
+      [file_id]: {
+        path: file_path,
+        meta: file_meta,
+        source: {
+          type: source_type,
+          ...(source_data ? { data: source_data } : {}),
+        },
+        sections: [
+          ...(acc[file_id]?.sections || []),
+          {
+            ...(section_meta ? { meta: section_meta } : {}),
+            content: (section_content || '').tim(),
+          },
+        ],
+      },
+    };
+  }, {} as any);
+
   return res.status(200).json({
-    data: fileSections,
+    data: Object.values(resultsByFile),
   });
 }

@@ -4,10 +4,11 @@ create index ix_mv_file_section_search_infos on mv_file_section_search_infos usi
 
 create materialized view mv_file_section_search_infos as
   select
-    f.path as path,
-    f.meta as meta,
-    fs.content as content,
-    fs.meta as meta,
+    f.id as file_id,
+    f.path as file_path,
+    f.meta as file_meta,
+    fs.content as section_content,
+    fs.meta as section_meta,
     s.type as source_type,
     s.data as source_data,
     p.id as project_id,
