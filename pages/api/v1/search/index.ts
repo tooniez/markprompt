@@ -1,13 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-import { getRequesterIp } from '@/lib/middleware/common';
 import { track } from '@/lib/posthog';
-import { checkSearchRateLimits } from '@/lib/rate-limits';
-import { isAtLeastPro } from '@/lib/stripe/tiers';
-import { getTeamStripeInfo } from '@/lib/supabase';
 import { safeParseNumber } from '@/lib/utils';
-import { isRequestFromMarkprompt } from '@/lib/utils.edge';
 import { Database, Json } from '@/types/supabase';
 import { Project } from '@/types/types';
 
@@ -20,7 +15,8 @@ const supabaseAdmin = createClient<Database>(
 type FileSectionContentInfo = {
   content: string | null;
   path: string | null;
-  meta: Json | null;
+  file_meta: Json | null;
+  section_meta: Json | null;
   project_id: string | null;
   source_data: Json | null;
   source_type: Database['public']['Enums']['source_type'] | null;
@@ -48,8 +44,6 @@ export default async function handler(
     res.setHeader('Allow', allowedMethods);
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
-
-  console.log('req.query', JSON.stringify(req.query, null, 2));
 
   const params = req.body;
   const projectId = req.query.project as Project['id'];
@@ -106,7 +100,7 @@ export default async function handler(
     error: { message: string; code: string } | null;
   } = await supabaseAdmin
     .from('mv_file_section_search_infos')
-    .select('content')
+    .select('content,section_meta')
     .like('content', `%${query}%`)
     .eq(
       req.query.token ? 'token' : 'public_api_key',

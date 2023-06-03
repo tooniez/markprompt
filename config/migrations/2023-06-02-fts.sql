@@ -7,6 +7,7 @@ create materialized view mv_file_section_search_infos as
     f.path as path,
     f.meta as meta,
     fs.content as content,
+    fs.meta as meta,
     s.type as source_type,
     s.data as source_data,
     p.id as project_id,

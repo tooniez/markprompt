@@ -372,12 +372,13 @@ export interface Database {
         Row: {
           content: string | null
           domain: string | null
+          file_meta: Json | null
           is_enterprise_plan: boolean | null
-          meta: Json | null
           path: string | null
           private_dev_api_key: string | null
           project_id: string | null
           public_api_key: string | null
+          section_meta: Json | null
           source_data: Json | null
           source_type: Database["public"]["Enums"]["source_type"] | null
           stripe_price_id: string | null
