@@ -471,6 +471,7 @@ export const generateFileEmbeddings = async (
   const tokenAllowanceInfo = await getTokenAllowanceInfo(supabaseAdmin, {
     projectId,
   });
+
   let numRemainingTokensOnPlan = tokenAllowanceInfo.numRemainingTokensOnPlan;
 
   for (const section of sections) {
@@ -497,8 +498,6 @@ export const generateFileEmbeddings = async (
       );
 
       embeddingsTokenCount += embeddingResult.usage?.total_tokens ?? 0;
-
-      console.log('!!! TOKENS', numRemainingTokensOnPlan, embeddingsTokenCount);
 
       if (numRemainingTokensOnPlan - embeddingsTokenCount < 0) {
         // The file has been created, so delete it to allow for a subsequent

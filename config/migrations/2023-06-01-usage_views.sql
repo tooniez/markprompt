@@ -18,3 +18,12 @@ create view v_team_project_usage_info as
   left join projects on sources.project_id = projects.id
   left join teams on projects.team_id = teams.id
   group by projects.id, teams.id
+
+create view v_team_project_info as
+  select
+    projects.id as project_id,
+    teams.id as team_id,
+    teams.is_enterprise_plan as is_enterprise_plan,
+    teams.stripe_price_id as stripe_price_id
+  from projects
+  left join teams on projects.team_id = teams.id

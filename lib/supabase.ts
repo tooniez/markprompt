@@ -236,23 +236,40 @@ export const getTeamUsageInfoByTeamOrProject = async (
   stripe_price_id: string | null;
   team_token_count: number;
 }> => {
-  const {
-    data,
-  }: {
-    data: {
-      is_enterprise_plan: boolean | null;
-      stripe_price_id: string | null;
-      team_token_count: number | null;
-    } | null;
-  } = await supabase
+  // eslint-disable-next-line prefer-const
+  let { data, error } = await supabase
     .from('v_team_project_usage_info')
-    .select('team_token_count')
+    .select('is_enterprise_plan,stripe_price_id,team_token_count')
     .eq(
       teamOrProjectId.teamId ? 'team_id' : 'project_id',
       teamOrProjectId.teamId ?? teamOrProjectId.projectId,
     )
     .limit(1)
     .maybeSingle();
+
+  // Important: data will be null in the above query if no content has been
+  // indexed. In that case, just fetch the team plan details.
+  if (!data || error) {
+    const {
+      data: teamProjectInfoData,
+    }: {
+      data: {
+        is_enterprise_plan: boolean | null;
+        stripe_price_id: string | null;
+        team_token_count: number | null;
+      } | null;
+    } = await supabase
+      .from('v_team_project_info')
+      .select('is_enterprise_plan,stripe_price_id')
+      .eq(
+        teamOrProjectId.teamId ? 'team_id' : 'project_id',
+        teamOrProjectId.teamId ?? teamOrProjectId.projectId,
+      )
+      .limit(1)
+      .maybeSingle();
+
+    data = teamProjectInfoData;
+  }
 
   return {
     is_enterprise_plan: !!data?.is_enterprise_plan,
@@ -278,15 +295,9 @@ export const getTokenAllowanceInfo = async (
     !!teamUsageInfo?.is_enterprise_plan,
     teamUsageInfo?.stripe_price_id,
   );
-  console.log(
-    '!!!ALLOWANCE: usedTokens',
-    usedTokens,
-    'tokenAllowance',
-    tokenAllowance,
-  );
   const numRemainingTokensOnPlan =
     tokenAllowance === 'unlimited'
-      ? 1_000_000_000_000_000
+      ? 1_000_000_000
       : Math.max(0, tokenAllowance - usedTokens);
   return { numRemainingTokensOnPlan, usedTokens, tokenAllowance };
 };
