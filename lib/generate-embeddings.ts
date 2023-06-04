@@ -498,6 +498,8 @@ export const generateFileEmbeddings = async (
 
       embeddingsTokenCount += embeddingResult.usage?.total_tokens ?? 0;
 
+      console.log('!!! TOKENS', numRemainingTokensOnPlan, embeddingsTokenCount);
+
       if (numRemainingTokensOnPlan - embeddingsTokenCount < 0) {
         // The file has been created, so delete it to allow for a subsequent
         // processing.
