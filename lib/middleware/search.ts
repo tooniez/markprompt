@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { noTokenOrProjectKeyResponse } from './common';
-import {
-  checkCompletionsRateLimits,
-  checkSearchRateLimits,
-} from '../rate-limits';
+import { checkSearchRateLimits } from '../rate-limits';
 import { getAuthorizationToken, truncateMiddle } from '../utils';
 import { removeSchema } from '../utils.edge';
 
@@ -35,7 +32,7 @@ export default async function SearchMiddleware(req: NextRequest) {
 
   if (requesterHost) {
     // Browser requests. Check that origin is not rate-limited.
-    const rateLimitHostnameResult = await checkCompletionsRateLimits({
+    const rateLimitHostnameResult = await checkSearchRateLimits({
       value: requesterHost,
       type: 'hostname',
     });
@@ -50,8 +47,6 @@ export default async function SearchMiddleware(req: NextRequest) {
 
   const token = getAuthorizationToken(req.headers.get('Authorization'));
   const projectKey = req.nextUrl.searchParams.get('projectKey');
-
-  // let projectId: Project['id'] | undefined = undefined;
 
   let url: URL | undefined = undefined;
   if (token) {
