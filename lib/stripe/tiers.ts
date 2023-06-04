@@ -268,6 +268,7 @@ export const isAtLeastPro = (
 };
 
 export type TokenAllowance = number | 'unlimited';
+
 export const getNumTokensPerTeamAllowance = (
   isEnterprisePlan: boolean,
   stripePriceId: string | null | undefined,
@@ -286,6 +287,18 @@ export const getNumTokensPerTeamAllowance = (
   } else {
     return TIERS.hobby.prices[0].numTokensPerTeam;
   }
+};
+
+export const getTeamTier = (team: Team): Tier => {
+  if (team.is_enterprise_plan) {
+    return 'enterprise';
+  } else if (team.stripe_price_id) {
+    const tier = getTierFromPriceId(team.stripe_price_id);
+    if (tier) {
+      return tier;
+    }
+  }
+  return 'hobby';
 };
 
 export const tokensToApproxParagraphs = (numTokens: number): number => {

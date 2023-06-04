@@ -152,3 +152,5 @@ export class ApiError extends Error {
     this.code = code;
   }
 }
+
+export type TagColor = 'fuchsia' | 'orange' | 'sky' | 'green';
