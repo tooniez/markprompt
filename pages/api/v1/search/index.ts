@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 import { track } from '@/lib/posthog';
-import { safeParseNumber } from '@/lib/utils';
+import { isSKTestKey, safeParseNumber } from '@/lib/utils';
 import { Database, Json } from '@/types/supabase';
 import { Project } from '@/types/types';
 
@@ -97,6 +97,20 @@ export default async function handler(
     });
   }
 
+  let eqColumn;
+  let eqValue;
+  if (req.query.token) {
+    eqColumn = 'token';
+    eqValue = req.query.token;
+  } else {
+    eqValue = req.query.projectKey;
+    if (isSKTestKey(req.query.projectKey as string)) {
+      eqColumn = 'private_dev_api_key';
+    } else {
+      eqColumn = 'public_api_key';
+    }
+  }
+
   const {
     data,
     error,
@@ -109,10 +123,7 @@ export default async function handler(
       'file_id,file_path,file_meta,section_content,section_meta,source_type,source_data',
     )
     .like('section_content', `%${query}%`)
-    .eq(
-      req.query.token ? 'token' : 'public_api_key',
-      req.query.token ?? req.query.projectKey,
-    )
+    .eq(eqColumn, eqValue)
     .limit(limit);
 
   track(projectId, 'search', { projectId });

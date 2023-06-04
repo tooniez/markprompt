@@ -94,8 +94,9 @@ export default async function SearchMiddleware(req: NextRequest) {
       return new Response('Too many requests', { status: 429 });
     }
 
+    // Don't pass projectKey here, as it's already in the query params
     url = new URL(
-      `/api/v1/search${req.nextUrl.search}&projectKey=${token}&host=${requesterHost}`,
+      `/api/v1/search${req.nextUrl.search}&host=${requesterHost}`,
       req.url,
     );
     // try {
