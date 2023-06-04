@@ -13,11 +13,11 @@ import {
   getEmbeddingsRateLimitResponse,
 } from '@/lib/rate-limits';
 import {
-  getBYOOpenAIKey,
   getChecksums,
   getOrCreateSource,
+  getProjectConfigData,
   getProjectTeam,
-  refreshMaterializedViewsAfterTraining,
+  refreshMaterializedViews,
 } from '@/lib/supabase';
 import {
   createChecksum,
@@ -25,7 +25,6 @@ import {
   pluralize,
   shouldIncludeFileWithPath,
 } from '@/lib/utils';
-import { getMarkpromptConfigOrDefault } from '@/lib/utils.browser';
 import { getBufferFromReadable } from '@/lib/utils.node';
 import { Database } from '@/types/supabase';
 import {
@@ -143,14 +142,10 @@ export default async function handler(
     });
   }
 
-  const { data } = await supabaseAdmin
-    .from('projects')
-    .select('markprompt_config')
-    .eq('id', projectId)
-    .limit(1)
-    .maybeSingle();
-
-  const config = getMarkpromptConfigOrDefault(data?.markprompt_config);
+  const { byoOpenAIKey, markpromptConfig } = await getProjectConfigData(
+    supabaseAdmin,
+    projectId,
+  );
 
   if (
     contentType === 'application/zip' ||
@@ -165,8 +160,8 @@ export default async function handler(
             if (
               !shouldIncludeFileWithPath(
                 k,
-                config.include || [],
-                config.exclude || [],
+                markpromptConfig.include || [],
+                markpromptConfig.exclude || [],
                 false,
               )
             ) {
@@ -195,19 +190,23 @@ export default async function handler(
       if (body?.files && Array.isArray(body.files)) {
         // v1
         filesWithPath = body.files
-          .map((f: unknown) => {
-            if (f === null || typeof f !== 'object') return undefined;
-            if (!('id' in f) || !('content' in f)) return undefined;
+          .map((f: any) => {
+            const path = f.path || f.id; // f.id for backwards compatibility
 
-            if (typeof f.id !== 'string' || typeof f.content !== 'string') {
+            if (
+              typeof path !== 'string' ||
+              typeof f.content !== 'string' ||
+              !path ||
+              !f.content
+            ) {
               return undefined;
             }
 
             if (
               !shouldIncludeFileWithPath(
-                f.id,
-                config.include || [],
-                config.exclude || [],
+                path,
+                markpromptConfig.include || [],
+                markpromptConfig.exclude || [],
                 false,
               )
             ) {
@@ -215,8 +214,8 @@ export default async function handler(
             }
 
             return {
-              path: f.id,
-              name: getNameFromPath(f.id),
+              path,
+              name: getNameFromPath(path),
               content: f.content,
             };
           })
@@ -228,8 +227,8 @@ export default async function handler(
             if (
               !shouldIncludeFileWithPath(
                 path,
-                config.include || [],
-                config.exclude || [],
+                markpromptConfig.include || [],
+                markpromptConfig.exclude || [],
                 false,
               )
             ) {
@@ -256,8 +255,6 @@ export default async function handler(
     undefined,
   );
   const checksums = await getChecksums(supabaseAdmin, sourceId);
-
-  const byoOpenAIKey = await getBYOOpenAIKey(supabaseAdmin, projectId);
 
   let numFilesSuccess = 0;
   let allFileErrors: EmbeddingsError[] = [];
@@ -287,6 +284,7 @@ export default async function handler(
       sourceId,
       file,
       byoOpenAIKey,
+      markpromptConfig,
     );
 
     if (errors && errors.length > 0) {
@@ -331,7 +329,9 @@ export default async function handler(
       // sure to update the materialized views.
       const message = generateResponseMessage(allFileErrors, numFilesSuccess);
 
-      await refreshMaterializedViewsAfterTraining(supabaseAdmin);
+      await refreshMaterializedViews(supabaseAdmin, [
+        'mv_file_section_search_infos',
+      ]);
 
       return res.status(403).json({
         error: message,
@@ -340,7 +340,9 @@ export default async function handler(
     }
   }
 
-  await refreshMaterializedViewsAfterTraining(supabaseAdmin);
+  await refreshMaterializedViews(supabaseAdmin, [
+    'mv_file_section_search_infos',
+  ]);
 
   const message = generateResponseMessage(allFileErrors, numFilesSuccess);
 

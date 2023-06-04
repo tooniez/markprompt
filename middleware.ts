@@ -2,6 +2,7 @@ import { NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 
 import AppMiddleware from './lib/middleware/app';
 import CompletionsMiddleware from './lib/middleware/completions';
+import SearchMiddleware from './lib/middleware/search';
 import MatchSectionsMiddleware from './lib/middleware/sections';
 import TrainMiddleware from './lib/middleware/train';
 import { getAppHost } from './lib/utils.edge';
@@ -39,6 +40,8 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
       return TrainMiddleware(req);
     } else if (path?.startsWith('/v1/sections')) {
       return MatchSectionsMiddleware(req);
+    } else if (path?.startsWith('/v1/search')) {
+      return SearchMiddleware(req);
     }
   }
 

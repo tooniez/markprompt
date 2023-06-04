@@ -257,8 +257,14 @@ export const getMonthlyQueryAllowance = (team: Team) => {
   }
 };
 
-export const isAtLeastPro = (team: Team): boolean => {
-  return team.is_enterprise_plan || !!team.stripe_price_id;
+export const isAtLeastPro = (
+  stripePriceId: string | null,
+  isEnterprisePlan: boolean,
+): boolean => {
+  return !!(
+    isEnterprisePlan ||
+    (stripePriceId && getTierFromPriceId(stripePriceId) === 'pro')
+  );
 };
 
 export type TokenAllowance = number | 'unlimited';
@@ -290,6 +296,10 @@ export const canRemoveBranding = (team: Team) => {
   return team.is_enterprise_plan;
 };
 
+export const canEnableInstantSearch = (team: Team) => {
+  return isAtLeastPro(team.stripe_price_id, !!team.is_enterprise_plan);
+};
+
 export const canConfigureModel = (team: Team) => {
-  return isAtLeastPro(team);
+  return isAtLeastPro(team.stripe_price_id, !!team.is_enterprise_plan);
 };

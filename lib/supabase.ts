@@ -14,14 +14,16 @@ import {
   WebsiteSourceDataType,
 } from '@/types/types';
 
+import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
+import { MarkpromptConfig } from './schema';
 import { TokenAllowance, getNumTokensPerTeamAllowance } from './stripe/tiers';
 import { generateKey } from './utils';
 
 export const getBYOOpenAIKey = async (
   supabaseAdmin: SupabaseClient<Database>,
   projectId: Project['id'],
-) => {
-  const { data: openAIKeyData } = await supabaseAdmin
+): Promise<string | undefined> => {
+  const { data } = await supabaseAdmin
     .from('projects')
     .select('openai_key')
     .eq('id', projectId)
@@ -29,7 +31,34 @@ export const getBYOOpenAIKey = async (
     .select()
     .maybeSingle();
 
-  return openAIKeyData?.openai_key || undefined;
+  return data?.openai_key || undefined;
+};
+
+export const getProjectConfigData = async (
+  supabaseAdmin: SupabaseClient<Database>,
+  projectId: Project['id'],
+): Promise<{
+  byoOpenAIKey: string | undefined;
+  markpromptConfig: MarkpromptConfig;
+}> => {
+  const { data } = await supabaseAdmin
+    .from('projects')
+    .select('openai_key,markprompt_config')
+    .eq('id', projectId)
+    .limit(1)
+    .select()
+    .maybeSingle();
+
+  // We cannot use Ajv in edge runtimes, so use non-typesafe
+  // parsing and assume the format is correct. Cf.
+  // https://github.com/vercel/next.js/discussions/47063
+  const markpromptConfig = (data?.markprompt_config ||
+    JSON.parse(DEFAULT_MARKPROMPT_CONFIG)) as MarkpromptConfig;
+
+  return {
+    byoOpenAIKey: data?.openai_key || undefined,
+    markpromptConfig: markpromptConfig,
+  };
 };
 
 export const getTeamStripeInfo = async (
@@ -256,14 +285,16 @@ export const getTokenAllowanceInfo = async (
   return { numRemainingTokensOnPlan, usedTokens, tokenAllowance };
 };
 
-export const refreshMaterializedViewsAfterTraining = async (
-  supabase: SupabaseClient<Database>,
+export const refreshMaterializedViews = async (
+  supabaseAdmin: SupabaseClient<Database>,
+  views: (keyof Database['public']['Views'])[],
 ) => {
-  // TODO: what views should be refreshed?
-  const viewsToRefresh: string[] = [];
-  for (const viewName of viewsToRefresh) {
-    await supabase.rpc('refresh_materialized_view', {
-      view_name: viewName,
-    });
-  }
+  // TODO
+  console.log('No implemented yet');
+  // for (const viewName of views) {
+  //   const { error } = await supabaseAdmin.rpc('refresh_materialized_view', {
+  //     view_name: viewName,
+  //   });
+  //   console.error(error);
+  // }
 };

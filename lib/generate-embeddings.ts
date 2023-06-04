@@ -6,20 +6,22 @@ import type { Content, Root } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { mdxFromMarkdown } from 'mdast-util-mdx';
 import { toMarkdown } from 'mdast-util-to-markdown';
+import { toString } from 'mdast-util-to-string';
 import { mdxjs } from 'micromark-extension-mdxjs';
 import TurndownService from 'turndown';
 import { u } from 'unist-builder';
 import { filter } from 'unist-util-filter';
 
-import { CONTEXT_TOKENS_CUTOFF } from '@/lib/constants';
+import { CONTEXT_TOKENS_CUTOFF, MIN_CONTENT_LENGTH } from '@/lib/constants';
 import { createEmbedding } from '@/lib/openai.edge';
 import {
   createChecksum,
   getFileType,
   splitIntoSubstringsOfMaxLength,
 } from '@/lib/utils';
+import { removeFileExtension } from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.node';
-import { Database } from '@/types/supabase';
+import { Database, Json } from '@/types/supabase';
 import {
   API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
   DbFile,
@@ -30,13 +32,24 @@ import {
   geLLMInfoFromModel,
 } from '@/types/types';
 
+import { MarkpromptConfig } from './schema';
 import { tokensToApproxParagraphs } from './stripe/tiers';
 import { getTokenAllowanceInfo } from './supabase';
 import { recordProjectTokenCount } from './tinybird';
 
 type FileSectionData = {
-  sections: string[];
-  meta: any;
+  content: string;
+  leadHeading?: { value: string | undefined; depth: number };
+};
+
+type FileSectionsData = {
+  sections: FileSectionData[];
+  meta: { title: string } & any;
+};
+
+const defaultFileSectionsData: FileSectionsData = {
+  sections: [],
+  meta: { title: 'Untitled' },
 };
 
 const turndown = new TurndownService({
@@ -52,18 +65,46 @@ turndown.addRule('pre', {
   },
 });
 
-const splitTreeBy = (tree: Root, predicate: (node: Content) => boolean) => {
-  return tree.children.reduce<Root[]>((trees, node) => {
-    const [lastTree] = trees.slice(-1);
+const splitTreeBy = <T extends Content>(
+  tree: Root,
+  predicate: (node: Content) => boolean,
+): {
+  predicateNode: T;
+  tree: Root;
+}[] => {
+  return tree.children.reduce<{ predicateNode: T; tree: Root }[]>(
+    (trees, node) => {
+      const [lastTree] = trees.slice(-1);
 
-    if (!lastTree || predicate(node)) {
-      const tree: Root = u('root', [node]);
-      return trees.concat(tree);
-    }
+      if (!lastTree || predicate(node)) {
+        const tree: Root = u('root', [node]);
+        return trees.concat({ predicateNode: node as T, tree });
+      }
 
-    lastTree.children.push(node);
-    return trees;
-  }, []);
+      lastTree.tree.children.push(node);
+      return trees;
+    },
+    [],
+  );
+};
+
+const inferTitleFromPath = (path: string) => {
+  return removeFileExtension(path.split('/').slice(-1)[0]);
+};
+
+const extractFrontmatterWithFallbackTitle = (content: string, path: string) => {
+  let meta = extractFrontmatter(content);
+
+  if (!meta?.title) {
+    meta = {
+      ...meta,
+      title: path
+        ? inferTitleFromPath(path)
+        : defaultFileSectionsData.meta.title,
+    };
+  }
+
+  return meta;
 };
 
 // Use `asMDX = false` for Markdoc content. What might happen in Markdoc
@@ -78,10 +119,18 @@ const splitTreeBy = (tree: Root, predicate: (node: Content) => boolean) => {
 // Similarly, statements like "<10" are valid Markdown/Markdoc, but not
 // valid MDX (https://github.com/micromark/micromark-extension-mdx-jsx/issues/7)
 // and we don't want this to break Markdoc.
-const splitMarkdownIntoSections = (
+const processMarkdown = (
   content: string,
   asMDX: boolean,
-): string[] => {
+  path: string,
+  extractMeta: boolean,
+  markpromptConfig: MarkpromptConfig,
+): FileSectionsData => {
+  let meta: any = undefined;
+  if (extractMeta) {
+    meta = extractFrontmatterWithFallbackTitle(content, path);
+  }
+
   const mdxTree = fromMarkdown(
     content,
     asMDX
@@ -106,14 +155,34 @@ const splitMarkdownIntoSections = (
   );
 
   if (!mdTree) {
-    return [];
+    return { sections: [], meta };
   }
 
   const sectionTrees = splitTreeBy(mdTree, (node) => node.type === 'heading');
-  return sectionTrees.map((tree) => toMarkdown(tree));
+
+  const sections: FileSectionData[] = sectionTrees.map((tree) => {
+    const node = tree.predicateNode as any;
+    return {
+      content: toMarkdown(tree.tree),
+      leadHeading:
+        node.type === 'heading'
+          ? { value: toString(node), depth: node.depth }
+          : undefined,
+    };
+  });
+
+  return {
+    sections,
+    meta,
+  };
 };
 
-const splitMarkdocIntoSections = (content: string): string[] => {
+const processMarkdoc = (
+  content: string,
+  path: string,
+  markpromptConfig: MarkpromptConfig,
+): FileSectionsData => {
+  const meta = extractFrontmatterWithFallbackTitle(content, path);
   const ast = Markdoc.parse(content);
   // In Markdoc, we make an exception and transform {% img %}
   // and {% image %} tags to <img> html since this is a common
@@ -127,13 +196,30 @@ const splitMarkdocIntoSections = (content: string): string[] => {
   });
   const html = Markdoc.renderers.html(transformed) || '';
   const md = turndown.turndown(html);
-  return splitMarkdownIntoSections(md, false);
+  const fileSectionData = processMarkdown(
+    md,
+    false,
+    path,
+    false,
+    markpromptConfig,
+  );
+
+  return {
+    ...fileSectionData,
+    meta,
+  };
 };
 
 const htmlExcludeTags = ['head', 'script', 'style', 'nav', 'footer', 'aside'];
 
-const splitHtmlIntoSections = (content: string): string[] => {
+const processHtml = (
+  content: string,
+  path: string,
+  markpromptConfig: MarkpromptConfig,
+): FileSectionsData => {
   const $ = load(content);
+
+  const title = $('title').text();
 
   htmlExcludeTags.forEach((tag) => {
     $(tag).remove();
@@ -144,11 +230,23 @@ const splitHtmlIntoSections = (content: string): string[] => {
     cleanedHtml = $('body').html();
   }
 
+  let fileSectionsData = defaultFileSectionsData;
+
   if (cleanedHtml) {
     const md = turndown.turndown(cleanedHtml);
-    return splitMarkdownIntoSections(md, false);
+    fileSectionsData = processMarkdown(
+      md,
+      false,
+      path,
+      false,
+      markpromptConfig,
+    );
   }
-  return [];
+
+  return {
+    ...fileSectionsData,
+    meta: { title },
+  };
 };
 
 const TOKEN_CUTOFF_ADJUSTED = CONTEXT_TOKENS_CUTOFF * 0.8;
@@ -201,22 +299,38 @@ const splitWithinTokenCutoff = (section: string): string[] => {
   return subSections;
 };
 
-const chunkFileIntoSections = (file: FileData): FileSectionData => {
-  let sections: string[] = [];
-  const meta = extractFrontmatter(file.content);
+const processFileData = (
+  file: FileData,
+  markpromptConfig: MarkpromptConfig,
+): FileSectionsData => {
+  let fileSectionsData: FileSectionsData;
   const fileType = getFileType(file.name);
   if (fileType === 'mdoc') {
-    sections = splitMarkdocIntoSections(file.content);
+    fileSectionsData = processMarkdoc(
+      file.content,
+      file.path,
+      markpromptConfig,
+    );
   } else if (fileType === 'html') {
-    sections = splitHtmlIntoSections(file.content);
+    fileSectionsData = processHtml(file.content, file.path, markpromptConfig);
   } else {
     try {
-      sections = splitMarkdownIntoSections(file.content, true);
+      fileSectionsData = processMarkdown(
+        file.content,
+        true,
+        file.path,
+        true,
+        markpromptConfig,
+      );
     } catch (e) {
       // Some repos use the .md extension for Markdoc, and this
       // would break if parsed as MDX, so attempt with Markoc
       // parsing here.
-      sections = splitMarkdocIntoSections(file.content);
+      fileSectionsData = processMarkdoc(
+        file.content,
+        file.path,
+        markpromptConfig,
+      );
     }
   }
 
@@ -224,11 +338,19 @@ const chunkFileIntoSections = (file: FileData): FileSectionData => {
   // the token limit. This is especially important for plain text files
   // with no heading separators, or Markdown files with very
   // large sections. We don't want these to be ignored.
-  const trimmedSections = sections.flatMap((section: string) => {
-    return splitWithinTokenCutoff(section);
-  }, [] as string[]);
+  const trimmedSectionsData: FileSectionData[] =
+    fileSectionsData.sections.flatMap(
+      (sectionData: FileSectionData): FileSectionData[] => {
+        const split = splitWithinTokenCutoff(sectionData.content);
+        return split.map((s, i) => ({
+          content: s,
+          leadHeading: i === 0 ? sectionData.leadHeading : undefined,
+        }));
+      },
+      [] as FileSectionData[],
+    );
 
-  return { sections: trimmedSections, meta };
+  return { sections: trimmedSectionsData, meta: fileSectionsData.meta };
 };
 
 const getFileAtPath = async (
@@ -295,11 +417,12 @@ export const generateFileEmbeddings = async (
   sourceId: Source['id'],
   file: FileData,
   byoOpenAIKey: string | undefined,
+  markpromptConfig: MarkpromptConfig,
 ): Promise<EmbeddingsError[]> => {
   let embeddingsTokenCount = 0;
   const errors: { path: string; message: string }[] = [];
 
-  const { meta, sections } = chunkFileIntoSections(file);
+  const { meta, sections } = processFileData(file, markpromptConfig);
 
   let fileId = await getFileAtPath(supabaseAdmin, sourceId, file.path);
 
@@ -335,6 +458,7 @@ export const generateFileEmbeddings = async (
   const embeddingsData: {
     file_id: DbFile['id'];
     content: string;
+    meta: any;
     embedding: unknown;
     token_count: number;
   }[] = [];
@@ -354,13 +478,12 @@ export const generateFileEmbeddings = async (
     // may need to run further Remark plugins, e.g. for search to extract
     // headings. We do this processing instead when building the completions
     // prompt.
-    const input = section;
-    // const input = section.replace(/\n/g, ' ');
+    const input = section.content;
 
-    // // Ignore content shorter than `MIN_CONTENT_LENGTH` characters.
-    // if (input.length < MIN_CONTENT_LENGTH) {
-    //   continue;
-    // }
+    // Ignore content shorter than `MIN_CONTENT_LENGTH` characters.
+    if (input.length < MIN_CONTENT_LENGTH) {
+      continue;
+    }
 
     try {
       // Retry with exponential backoff in case of error. Typical cause is
@@ -403,6 +526,9 @@ export const generateFileEmbeddings = async (
       embeddingsData.push({
         file_id: fileId,
         content: input,
+        meta: section.leadHeading
+          ? { leadHeading: section.leadHeading }
+          : undefined,
         embedding: embeddingResult.data[0].embedding,
         token_count: embeddingResult.usage.total_tokens ?? 0,
       });
