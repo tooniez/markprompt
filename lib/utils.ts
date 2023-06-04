@@ -386,11 +386,11 @@ export const generateKey = customAlphabet(ALPHABET, 32);
 
 export const generateShareKey = customAlphabet(ALPHABET, 8);
 
-const PK_TEST_PREFIX = 'pk_test_';
+const PK_PREFIX = 'pk_';
 const SK_TEST_PREFIX = 'sk_test_';
 
 export const generatePKKey = () => {
-  return PK_TEST_PREFIX + generateKey();
+  return PK_PREFIX + generateKey();
 };
 
 export const generateSKTestKey = () => {
