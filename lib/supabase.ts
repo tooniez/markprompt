@@ -285,14 +285,16 @@ export const getTokenAllowanceInfo = async (
   return { numRemainingTokensOnPlan, usedTokens, tokenAllowance };
 };
 
-export const refreshMaterializedViewsAfterTraining = async (
-  supabase: SupabaseClient<Database>,
+export const refreshMaterializedViews = async (
+  supabaseAdmin: SupabaseClient<Database>,
+  views: (keyof Database['public']['Views'])[],
 ) => {
-  // TODO: what views should be refreshed?
-  const viewsToRefresh: string[] = [];
-  for (const viewName of viewsToRefresh) {
-    await supabase.rpc('refresh_materialized_view', {
-      view_name: viewName,
-    });
-  }
+  // TODO
+  console.log('No implemented yet');
+  // for (const viewName of views) {
+  //   const { error } = await supabaseAdmin.rpc('refresh_materialized_view', {
+  //     view_name: viewName,
+  //   });
+  //   console.error(error);
+  // }
 };

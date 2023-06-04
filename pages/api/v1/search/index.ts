@@ -104,7 +104,7 @@ export default async function handler(
     data: FileSectionContentInfo[] | null | any;
     error: { message: string; code: string } | null;
   } = await supabaseAdmin
-    .from('mv_file_section_search_infos')
+    .from('v_file_section_search_infos')
     .select(
       'file_id,file_path,file_meta,section_content,section_meta,source_type,source_data',
     )
@@ -146,7 +146,7 @@ export default async function handler(
           ...(acc[file_id]?.sections || []),
           {
             ...(section_meta ? { meta: section_meta } : {}),
-            content: (section_content || '').tim(),
+            content: (section_content || '').trim(),
           },
         ],
       },

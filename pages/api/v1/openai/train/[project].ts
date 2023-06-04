@@ -13,12 +13,11 @@ import {
   getEmbeddingsRateLimitResponse,
 } from '@/lib/rate-limits';
 import {
-  getBYOOpenAIKey,
   getChecksums,
   getOrCreateSource,
   getProjectConfigData,
   getProjectTeam,
-  refreshMaterializedViewsAfterTraining,
+  refreshMaterializedViews,
 } from '@/lib/supabase';
 import {
   createChecksum,
@@ -26,7 +25,6 @@ import {
   pluralize,
   shouldIncludeFileWithPath,
 } from '@/lib/utils';
-import { getMarkpromptConfigOrDefault } from '@/lib/utils.browser';
 import { getBufferFromReadable } from '@/lib/utils.node';
 import { Database } from '@/types/supabase';
 import {
@@ -331,7 +329,9 @@ export default async function handler(
       // sure to update the materialized views.
       const message = generateResponseMessage(allFileErrors, numFilesSuccess);
 
-      await refreshMaterializedViewsAfterTraining(supabaseAdmin);
+      await refreshMaterializedViews(supabaseAdmin, [
+        'mv_file_section_search_infos',
+      ]);
 
       return res.status(403).json({
         error: message,
@@ -340,7 +340,9 @@ export default async function handler(
     }
   }
 
-  await refreshMaterializedViewsAfterTraining(supabaseAdmin);
+  await refreshMaterializedViews(supabaseAdmin, [
+    'mv_file_section_search_infos',
+  ]);
 
   const message = generateResponseMessage(allFileErrors, numFilesSuccess);
 

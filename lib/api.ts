@@ -1,4 +1,5 @@
 import { getResponseOrThrow, slugFromName } from '@/lib/utils';
+import { Database } from '@/types/supabase';
 import {
   DbFile,
   DbUser,
@@ -285,6 +286,19 @@ export const cancelSubscription = (teamId: Team['id']) => {
   return fetch('/api/subscriptions/cancel', {
     method: 'POST',
     body: JSON.stringify({ teamId }),
+    headers: {
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+  });
+};
+
+export const clientRefreshMaterializedViews = (
+  views: (keyof Database['public']['Views'])[],
+) => {
+  return fetch('/api/db/refresh-materialized-views', {
+    method: 'POST',
+    body: JSON.stringify({ views }),
     headers: {
       'Content-Type': 'application/json',
       accept: 'application/json',

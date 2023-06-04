@@ -370,14 +370,15 @@ export interface Database {
     Views: {
       mv_file_section_search_infos: {
         Row: {
-          content: string | null
           domain: string | null
+          file_id: number | null
           file_meta: Json | null
+          file_path: string | null
           is_enterprise_plan: boolean | null
-          path: string | null
           private_dev_api_key: string | null
           project_id: string | null
           public_api_key: string | null
+          section_content: string | null
           section_meta: Json | null
           source_data: Json | null
           source_type: Database["public"]["Enums"]["source_type"] | null
@@ -396,6 +397,10 @@ export interface Database {
       }
     }
     Functions: {
+      create_mv_file_section_search_infos: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       ivfflathandler: {
         Args: {
           "": unknown
@@ -432,12 +437,17 @@ export interface Database {
               similarity: number
             }[]
           }
-      refresh_materialized_view: {
-        Args: {
-          view_name: string
-        }
-        Returns: undefined
-      }
+      refresh_materialized_view:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: undefined
+          }
+        | {
+            Args: {
+              view_name: string
+            }
+            Returns: undefined
+          }
       vector_avg: {
         Args: {
           "": number[]

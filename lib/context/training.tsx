@@ -23,7 +23,7 @@ import {
   WebsiteSourceDataType,
 } from '@/types/types';
 
-import { processFile } from '../api';
+import { clientRefreshMaterializedViews, processFile } from '../api';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '../events';
 import useProject from '../hooks/use-project';
 import useSources from '../hooks/use-sources';
@@ -533,6 +533,10 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         await _trainSource(source, onFileProcessed, onError);
       }
       setState({ state: 'idle' });
+      const ts = performance.now();
+      console.log('Refreshing');
+      await clientRefreshMaterializedViews(['mv_file_section_search_infos']);
+      console.log('Done refreshing in', performance.now() - ts);
     },
     [sources, _trainSource],
   );
