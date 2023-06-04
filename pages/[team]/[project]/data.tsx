@@ -395,7 +395,7 @@ const Data = () => {
                   const selectedRowIndices = Object.keys(rowSelection);
                   const rowModel = table.getSelectedRowModel().rowsById;
                   const fileIds = selectedRowIndices
-                    .map((i) => rowModel[i].original.id)
+                    .map((i) => rowModel[i]?.original?.id)
                     .filter(isPresent);
                   if (fileIds.length === 0) {
                     return;
