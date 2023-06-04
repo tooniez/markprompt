@@ -32,6 +32,19 @@ export default function useUsage() {
       ? numTokensPerTeamAllowance
       : Math.max(0, numTokensPerTeamAllowance - (fileStats?.tokenCount || 0));
 
+  console.log(
+    'Stats',
+    JSON.stringify(
+      {
+        numTokensInTeam: fileStats?.tokenCount || 0,
+        numTokensPerTeamAllowance,
+        numTokensPerTeamRemainingAllowance,
+      },
+      null,
+      2,
+    ),
+  );
+
   return {
     numTokensInTeam: fileStats?.tokenCount || 0,
     numTokensPerTeamAllowance,

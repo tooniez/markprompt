@@ -90,6 +90,10 @@ export default async function handler(
     markpromptConfig,
   );
 
+  if (errors) {
+    console.error('Errors in trainfile', JSON.stringify(errors, null, 2));
+  }
+
   const quotaExceededError = errors.find(
     (e) => e.id === API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
   );
