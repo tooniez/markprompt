@@ -1,7 +1,6 @@
 create index ix_files_meta on files using pgroonga(meta);
 create index ix_file_sections_meta on files using pgroonga(meta);
 
-drop function full_text_search
 create or replace function full_text_search(
   search_text text,
   match_count int,
