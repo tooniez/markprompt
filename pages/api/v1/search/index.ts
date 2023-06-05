@@ -97,18 +97,13 @@ export default async function handler(
     });
   }
 
-  let eqColumn;
-  let eqValue;
-  if (req.query.token) {
-    eqColumn = 'token';
-    eqValue = req.query.token;
+  const token: string | undefined = req.query.token as string;
+  let publicApiKey: string | undefined = undefined;
+  let privateDevApiKey: string | undefined = undefined;
+  if (isSKTestKey(req.query.projectKey as string)) {
+    privateDevApiKey = req.query.projectKey as string;
   } else {
-    eqValue = req.query.projectKey;
-    if (isSKTestKey(req.query.projectKey as string)) {
-      eqColumn = 'private_dev_api_key';
-    } else {
-      eqColumn = 'public_api_key';
-    }
+    publicApiKey = req.query.projectKey as string;
   }
 
   const {
@@ -117,14 +112,13 @@ export default async function handler(
   }: {
     data: FileSectionContentInfo[] | null | any;
     error: { message: string; code: string } | null;
-  } = await supabaseAdmin
-    .from('v_file_section_search_infos')
-    .select(
-      'file_id,file_path,file_meta,section_content,section_meta,source_type,source_data',
-    )
-    .like('section_content', `%${query}%`)
-    .eq(eqColumn, eqValue)
-    .limit(limit);
+  } = await supabaseAdmin.rpc('full_text_search', {
+    search_text: query,
+    match_count: limit,
+    token,
+    public_api_key: publicApiKey,
+    private_dev_api_key: privateDevApiKey,
+  });
 
   track(projectId, 'search', { projectId });
 

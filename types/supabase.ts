@@ -386,6 +386,32 @@ export interface Database {
           token: string | null
         }
       }
+      v_file_section_search_infos: {
+        Row: {
+          domain: string | null
+          file_id: number | null
+          file_meta: Json | null
+          file_path: string | null
+          is_enterprise_plan: boolean | null
+          private_dev_api_key: string | null
+          project_id: string | null
+          public_api_key: string | null
+          section_content: string | null
+          section_meta: Json | null
+          source_data: Json | null
+          source_type: Database["public"]["Enums"]["source_type"] | null
+          stripe_price_id: string | null
+          token: string | null
+        }
+      }
+      v_team_project_info: {
+        Row: {
+          is_enterprise_plan: boolean | null
+          project_id: string | null
+          stripe_price_id: string | null
+          team_id: string | null
+        }
+      }
       v_team_project_usage_info: {
         Row: {
           is_enterprise_plan: boolean | null
@@ -397,9 +423,38 @@ export interface Database {
       }
     }
     Functions: {
-      create_mv_file_section_search_infos: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
+      fts: {
+        Args: {
+          project_id: string
+          query: string
+          match_count: number
+        }
+        Returns: {
+          file_id: string
+          file_path: string
+          file_meta: Json
+          section_content: string
+          section_meta: Json
+          source_type: string
+          source_data: Json
+        }[]
+      }
+      full_text_search: {
+        Args: {
+          search_text: string
+          match_count: number
+          token?: string
+          public_api_key?: string
+          private_dev_api_key?: string
+        }
+        Returns: {
+          file_path: string
+          file_meta: Json
+          section_content: string
+          section_meta: Json
+          source_type: Database["public"]["Enums"]["source_type"]
+          source_data: Json
+        }[]
       }
       ivfflathandler: {
         Args: {

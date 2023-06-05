@@ -130,6 +130,7 @@ create table public.prompt_configs (
 comment on table public.prompt_configs is 'Prompt configs.';
 
 -- Query stats
+
 create table public.query_stats (
   id             uuid primary key default uuid_generate_v4(),
   created_at     timestamp with time zone default timezone('utc'::text, now()) not null,
@@ -144,10 +145,8 @@ create table public.query_stats (
 );
 comment on table public.query_stats is 'Query stats.';
 
--- Triggers
+-- Functions
 
--- This trigger automatically creates a user entry when a new user signs up
--- via Supabase Auth.for more details.
 create function public.handle_new_user()
 returns trigger as $$
 begin
@@ -156,9 +155,6 @@ begin
   return new;
 end;
 $$ language plpgsql security definer;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
 
 create or replace function refresh_materialized_view(view_name text)
 returns void
@@ -206,12 +202,58 @@ begin
 end;
 $$;
 
-create or replace function refresh_materialized_view(view_name text)
-returns void as $$
+create or replace function full_text_search(
+  search_text text,
+  match_count int,
+  token text default null,
+  public_api_key text default null,
+  private_dev_api_key text default null
+)
+returns table (
+  file_path text,
+  file_meta jsonb,
+  section_content text,
+  section_meta jsonb,
+  source_type source_type,
+  source_data jsonb
+)
+language plpgsql
+as $$
+#variable_conflict use_variable
 begin
-  refresh materialized view view_name;
+  return query
+  select
+    v.file_path,
+    v.file_meta,
+    v.section_content,
+    v.section_meta,
+    v.source_type,
+    v.source_data
+  from v_file_section_search_infos as v
+  where
+    (
+      v.section_content like '%' || search_text || '%'
+      or v.file_meta &` ('paths @ ".title" && string @ "' || search_text || '"')
+      or v.section_meta &` ('paths @ ".leadHeading.value" && string @ "' || search_text || '"')
+    )
+    and (
+      v.token = full_text_search.token
+      or v.public_api_key = full_text_search.public_api_key
+      or v.private_dev_api_key = full_text_search.private_dev_api_key
+    )
+  limit match_count;
 end;
-$$ language plpgsql;
+$$;
+
+-- Triggers
+
+-- This trigger automatically creates a user entry when a new user signs up
+-- via Supabase Auth.for more details.
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+
+-- Indexes
 
 create index idx_files_source_id on files(source_id);
 create index idx_sources_project_id on sources(project_id);
@@ -219,6 +261,8 @@ create index idx_file_sections_file_id on file_sections(file_id);
 create index idx_projects_team_id on projects(team_id);
 create index idx_memberships_user_id on memberships(user_id);
 create index ix_file_sections_content on file_sections using pgroonga(content);
+create index ix_files_meta on files using pgroonga(meta);
+create index ix_file_sections_meta on files using pgroonga(meta);
 
 -- Views
 
