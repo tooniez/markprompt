@@ -9,6 +9,7 @@ create or replace function full_text_search(
   private_dev_api_key text default null
 )
 returns table (
+  file_id bigint,
   file_path text,
   file_meta jsonb,
   section_content text,
@@ -22,6 +23,7 @@ as $$
 begin
   return query
   select
+    v.file_id,
     v.file_path,
     v.file_meta,
     v.section_content,

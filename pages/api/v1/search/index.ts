@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import { Document } from 'flexsearch';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 import { track } from '@/lib/posthog';
 import { isSKTestKey, safeParseNumber } from '@/lib/utils';
 import { Database, Json } from '@/types/supabase';
-import { Project } from '@/types/types';
+import { Project, SourceType } from '@/types/types';
 
 const MAX_SEARCH_RESULTS = 20;
 
@@ -15,13 +16,20 @@ const supabaseAdmin = createClient<Database>(
 );
 
 type FileSectionContentInfo = {
-  content: string | null;
-  path: string | null;
-  file_meta: Json | null;
-  section_meta: Json | null;
-  project_id: string | null;
-  source_data: Json | null;
-  source_type: Database['public']['Enums']['source_type'] | null;
+  file_id: string;
+  file_path: string;
+  file_meta?: {
+    title?: string;
+  };
+  section_content: string;
+  section_meta?: {
+    leadHeading?: {
+      depth?: number;
+      value: string;
+    };
+  };
+  source_type: SourceType;
+  source_data: any;
 };
 
 type Data =
@@ -107,7 +115,7 @@ export default async function handler(
   }
 
   const {
-    data,
+    data: _data,
     error,
   }: {
     data: FileSectionContentInfo[] | null | any;
@@ -122,41 +130,46 @@ export default async function handler(
 
   track(projectId, 'search', { projectId });
 
-  if (error || !data) {
+  if (error || !_data) {
     return res
       .status(400)
       .json({ error: error?.message || 'Error retrieving sections' });
   }
 
-  const resultsByFile = data.reduce((acc: any, value: any) => {
-    const {
-      file_id,
-      file_path,
-      file_meta,
-      section_content,
-      section_meta,
-      source_type,
-      source_data,
-    } = value;
-    return {
-      ...acc,
-      [file_id]: {
-        path: file_path,
-        meta: file_meta,
-        source: {
-          type: source_type,
-          ...(source_data ? { data: source_data } : {}),
-        },
-        sections: [
-          ...(acc[file_id]?.sections || []),
-          {
-            ...(section_meta ? { meta: section_meta } : {}),
-            content: (section_content || '').trim(),
+  const data = _data as FileSectionContentInfo[];
+
+  const resultsByFile: { [key: string]: FileSectionContentInfo } = data.reduce(
+    (acc: any, value: any) => {
+      const {
+        file_id,
+        file_path,
+        file_meta,
+        section_content,
+        section_meta,
+        source_type,
+        source_data,
+      } = value;
+      return {
+        ...acc,
+        [file_id]: {
+          path: file_path,
+          meta: file_meta,
+          source: {
+            type: source_type,
+            ...(source_data ? { data: source_data } : {}),
           },
-        ],
-      },
-    };
-  }, {} as any);
+          sections: [
+            ...(acc[file_id]?.sections || []),
+            {
+              ...(section_meta ? { meta: section_meta } : {}),
+              content: (section_content || '').trim(),
+            },
+          ],
+        },
+      };
+    },
+    {} as any,
+  );
 
   return res.status(200).json({
     data: Object.values(resultsByFile),

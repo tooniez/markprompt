@@ -448,6 +448,7 @@ export interface Database {
           private_dev_api_key?: string
         }
         Returns: {
+          file_id: number
           file_path: string
           file_meta: Json
           section_content: string
