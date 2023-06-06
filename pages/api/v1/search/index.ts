@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import { Document } from 'flexsearch';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 import { track } from '@/lib/posthog';
