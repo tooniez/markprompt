@@ -38,10 +38,31 @@ export default async function handler(
   }
 
   try {
-    const websiteRes = await fetch(url);
-    if (websiteRes.ok) {
-      const content = await websiteRes.text();
-      return res.status(200).json({ content });
+    const immediate = req.body.immediate as boolean;
+    const useCustomPageFetcher = req.body.useCustomPageFetcher as boolean;
+
+    // For simple page fetching, like a sitemap with no hydration,
+    // use a plain fetch approach.
+    if (immediate || !useCustomPageFetcher) {
+      const websiteRes = await fetch(url);
+      if (websiteRes.ok) {
+        const content = await websiteRes.text();
+        return res.status(200).json({ content });
+      }
+    } else {
+      const pageRes = await fetch(process.env.CUSTOM_PAGE_FETCH_SERVICE_URL!, {
+        method: 'POST',
+        body: JSON.stringify({ url }),
+        headers: {
+          Authorization: `Bearer ${process.env.MARKPROMPT_API_TOKEN}`,
+          'Content-Type': 'application/json',
+          accept: 'application/json',
+        },
+      });
+      if (pageRes.ok) {
+        const { content } = await pageRes.json();
+        return res.status(200).json({ content });
+      }
     }
   } catch {
     // Handle below

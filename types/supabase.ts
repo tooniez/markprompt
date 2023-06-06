@@ -244,6 +244,7 @@ export interface Database {
           is_enterprise_plan: boolean | null
           is_personal: boolean | null
           name: string | null
+          plan_details: Json | null
           slug: string
           stripe_customer_id: string | null
           stripe_price_id: string | null
@@ -256,6 +257,7 @@ export interface Database {
           is_enterprise_plan?: boolean | null
           is_personal?: boolean | null
           name?: string | null
+          plan_details?: Json | null
           slug: string
           stripe_customer_id?: string | null
           stripe_price_id?: string | null
@@ -268,6 +270,7 @@ export interface Database {
           is_enterprise_plan?: boolean | null
           is_personal?: boolean | null
           name?: string | null
+          plan_details?: Json | null
           slug?: string
           stripe_customer_id?: string | null
           stripe_price_id?: string | null

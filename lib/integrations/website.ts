@@ -3,6 +3,8 @@ import { isPresent } from 'ts-is-present';
 
 import { RobotsTxtInfo } from '@/types/types';
 
+import { removeQueryParameters } from '../utils';
+
 export const isWebsiteAccessible = async (url: string) => {
   const res = await fetch('/api/integrations/website/is-accessible', {
     method: 'POST',
@@ -18,7 +20,7 @@ export const isWebsiteAccessible = async (url: string) => {
 export const fetchRobotsTxtInfo = async (
   baseUrl: string,
 ): Promise<RobotsTxtInfo> => {
-  const robotsTxt = await fetchPageContent(`${baseUrl}/robots.txt`);
+  const robotsTxt = await fetchPageContent(`${baseUrl}/robots.txt`, true);
   if (!robotsTxt) {
     return {
       disallowedPaths: [],
@@ -57,42 +59,64 @@ export const fetchRobotsTxtInfo = async (
   };
 };
 
+export const isSitemapUrl = (url: string) => {
+  return url.endsWith('.xml');
+};
+
 export const fetchSitemapUrls = async (
-  baseUrl: string,
-  robotsTxtSitemap?: string,
-): Promise<string[] | undefined> => {
-  let sitemap: string | undefined = undefined;
-  if (robotsTxtSitemap) {
-    sitemap = await fetchPageContent(robotsTxtSitemap);
-  }
+  sitemapUrl: string,
+): Promise<string[]> => {
+  const sitemap = await fetchPageContent(sitemapUrl, true);
 
   if (!sitemap) {
-    sitemap = await fetchPageContent(`${baseUrl}/sitemap.xml`);
+    return [];
   }
 
-  if (!sitemap) {
-    return undefined;
-  }
+  const pageUrls: string[] = [];
 
-  const sitemapUrls: string[] = [];
+  const addPageUrl = (url: string) => {
+    try {
+      const normalizedUrl = removeQueryParameters(url);
+      if (!pageUrls.includes(normalizedUrl)) {
+        pageUrls.push(normalizedUrl);
+      }
+    } catch {
+      //
+    }
+  };
+
   const $ = load(sitemap, { xmlMode: true });
-  $('loc').each(function () {
-    const url = $(this).text();
 
-    if (!sitemapUrls.includes(url)) {
-      sitemapUrls.push(url);
+  const subSitemapUrls: string[] = [];
+  $('sitemapindex > sitemap > loc').each(function () {
+    const url = $(this).text();
+    if (!subSitemapUrls.includes(url)) {
+      subSitemapUrls.push(url);
     }
   });
 
-  return sitemapUrls;
+  for (const subSitemapUrl of subSitemapUrls) {
+    const subPageUrls = await fetchSitemapUrls(subSitemapUrl);
+    for (const subPageUrl of subPageUrls) {
+      addPageUrl(subPageUrl);
+    }
+  }
+
+  $('url > loc').each(function () {
+    addPageUrl($(this).text());
+  });
+
+  return pageUrls;
 };
 
 export const fetchPageContent = async (
   url: string,
+  immediate: boolean,
+  useCustomPageFetcher?: boolean,
 ): Promise<string | undefined> => {
   const res = await fetch('/api/integrations/website/fetch-page', {
     method: 'POST',
-    body: JSON.stringify({ url }),
+    body: JSON.stringify({ url, immediate, useCustomPageFetcher }),
     headers: {
       'Content-Type': 'application/json',
       accept: 'application/json',

@@ -1,10 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
-import { Document } from 'flexsearch';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 import { track } from '@/lib/posthog';
 import { isSKTestKey, safeParseNumber } from '@/lib/utils';
-import { Database, Json } from '@/types/supabase';
+import { Database } from '@/types/supabase';
 import { Project, SourceType } from '@/types/types';
 
 const MAX_SEARCH_RESULTS = 20;

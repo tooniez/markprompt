@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import { Team } from '@/types/types';
 
 import useTeams from './use-teams';
+import { PlanDetails } from '../stripe/tiers';
 import { fetcher } from '../utils';
 
 export default function useTeam() {
@@ -18,5 +19,7 @@ export default function useTeam() {
 
   const loading = !team && !error;
 
-  return { team, loading, mutate };
+  const planDetails = team?.plan_details as PlanDetails;
+
+  return { team, planDetails, loading, mutate };
 }
