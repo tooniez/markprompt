@@ -302,16 +302,22 @@ export const getTokenAllowanceInfo = async (
   return { numRemainingTokensOnPlan, usedTokens, tokenAllowance };
 };
 
-export const refreshMaterializedViews = async (
+export const serverRefreshFTSMaterializedView = async (
+  supabaseAdmin: SupabaseClient<Database>,
+) => {
+  return serverRefreshMaterializedViews(supabaseAdmin, ['mv_fts']);
+};
+
+export const serverRefreshMaterializedViews = async (
   supabaseAdmin: SupabaseClient<Database>,
   views: (keyof Database['public']['Views'])[],
 ) => {
-  // TODO
-  // console.log('Not implemented yet');
-  // for (const viewName of views) {
-  //   const { error } = await supabaseAdmin.rpc('refresh_materialized_view', {
-  //     view_name: viewName,
-  //   });
-  //   console.error(error);
-  // }
+  for (const viewName of views) {
+    const { error } = await supabaseAdmin.rpc('refresh_materialized_view', {
+      view_name: viewName,
+    });
+    if (error) {
+      console.error(error);
+    }
+  }
 };

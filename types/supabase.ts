@@ -371,7 +371,7 @@ export interface Database {
       }
     }
     Views: {
-      mv_file_section_search_infos: {
+      mv_fts: {
         Row: {
           domain: string | null
           file_id: number | null
@@ -382,6 +382,7 @@ export interface Database {
           project_id: string | null
           public_api_key: string | null
           section_content: string | null
+          section_id: number | null
           section_meta: Json | null
           source_data: Json | null
           source_type: Database["public"]["Enums"]["source_type"] | null
@@ -496,17 +497,12 @@ export interface Database {
               similarity: number
             }[]
           }
-      refresh_materialized_view:
-        | {
-            Args: Record<PropertyKey, never>
-            Returns: undefined
-          }
-        | {
-            Args: {
-              view_name: string
-            }
-            Returns: undefined
-          }
+      refresh_materialized_view: {
+        Args: {
+          view_name: string
+        }
+        Returns: undefined
+      }
       vector_avg: {
         Args: {
           "": number[]

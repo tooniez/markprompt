@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { refreshMaterializedViews } from '@/lib/supabase';
+import { serverRefreshMaterializedViews } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 
 type Data = {
@@ -44,7 +44,7 @@ export default async function handler(
     });
   }
 
-  await refreshMaterializedViews(supabaseAdmin, views);
+  await serverRefreshMaterializedViews(supabaseAdmin, views);
 
   return res.status(200).send({ status: 'ok' });
 }

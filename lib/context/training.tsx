@@ -23,7 +23,7 @@ import {
   WebsiteSourceDataType,
 } from '@/types/types';
 
-import { clientRefreshMaterializedViews, processFile } from '../api';
+import { clientRefreshFTSMaterializedView, processFile } from '../api';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '../events';
 import useProject from '../hooks/use-project';
 import useSources from '../hooks/use-sources';
@@ -477,7 +477,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         await _trainSource(source, onFileProcessed, onError);
       }
       setState({ state: 'idle' });
-      await clientRefreshMaterializedViews(['mv_file_section_search_infos']);
+      await clientRefreshFTSMaterializedView();
     },
     [sources, _trainSource],
   );

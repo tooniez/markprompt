@@ -262,9 +262,8 @@ create index idx_sources_project_id on sources(project_id);
 create index idx_file_sections_file_id on file_sections(file_id);
 create index idx_projects_team_id on projects(team_id);
 create index idx_memberships_user_id on memberships(user_id);
-create index ix_file_sections_content on file_sections using pgroonga(content);
-create index ix_files_meta on files using pgroonga(meta);
-create index ix_file_sections_meta on files using pgroonga(meta);
+create index idx_tokens_project_id on tokens(project_id);
+create index idx_domain_project_id on domains(project_id);
 
 -- Views
 

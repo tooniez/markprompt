@@ -17,7 +17,7 @@ import {
   getOrCreateSource,
   getProjectConfigData,
   getProjectTeam,
-  refreshMaterializedViews,
+  serverRefreshFTSMaterializedView,
 } from '@/lib/supabase';
 import {
   createChecksum,
@@ -329,9 +329,7 @@ export default async function handler(
       // sure to update the materialized views.
       const message = generateResponseMessage(allFileErrors, numFilesSuccess);
 
-      await refreshMaterializedViews(supabaseAdmin, [
-        'mv_file_section_search_infos',
-      ]);
+      await serverRefreshFTSMaterializedView(supabaseAdmin);
 
       return res.status(403).json({
         error: message,
@@ -340,9 +338,7 @@ export default async function handler(
     }
   }
 
-  await refreshMaterializedViews(supabaseAdmin, [
-    'mv_file_section_search_infos',
-  ]);
+  await serverRefreshFTSMaterializedView(supabaseAdmin);
 
   const message = generateResponseMessage(allFileErrors, numFilesSuccess);
 
