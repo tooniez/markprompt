@@ -381,7 +381,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               customPrice="Custom"
             />
           </div>
-          <p className="mt-12 rounded-lg border border-neutral-900 p-6 text-center text-sm text-neutral-500">
+          <p className="mt-12 rounded-lg border border-neutral-900 px-6 py-4 text-center text-sm text-neutral-500">
             * 1 token ≈ ¾ words. 1 document ≈ 900 words ≈ 1200 tokens.{' '}
             <Link className="subtle-underline" href="/docs#what-are-tokens">
               Learn more
