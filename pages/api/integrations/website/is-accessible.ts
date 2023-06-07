@@ -35,13 +35,15 @@ export default async function handler(
     });
   }
 
+  console.log('Fetching', url);
   try {
     const websiteRes = await fetch(url);
     if (websiteRes.ok) {
       return res.status(200).json({ status: 'ok' });
     }
-  } catch {
+  } catch (e) {
     // Handle below
+    console.error('Error is-accessible', e);
   }
 
   return res.status(400).json({ status: 'Website is not available' });

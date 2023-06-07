@@ -56,7 +56,6 @@ type WebsiteSourceProps = {
 
 const WebsiteSource: FC<WebsiteSourceProps> = ({
   clearPrevious,
-  openPricingAsDialog,
   onDidAddSource,
 }) => {
   const { project } = useProject();
