@@ -416,11 +416,8 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             };
 
             if (isSitemapUrl(baseUrl)) {
-              // const sitemapUrls = await fetchSitemapUrls(baseUrl);
-              // await generateEmbeddingsForUrls(sitemapUrls.slice(0, 10));
-              await generateEmbeddingsForUrls([
-                'https://support.mindbodyonline.com/s/article/Understanding-system-lists-Marketing-Suite',
-              ]);
+              const sitemapUrls = await fetchSitemapUrls(baseUrl);
+              await generateEmbeddingsForUrls(sitemapUrls.slice(0, 10));
             } else {
               // Otherwise, we discover links starting with the root page
               let processedLinks: string[] = [];

@@ -1,13 +1,17 @@
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeMinimal } from '@supabase/auth-ui-shared';
+import { MessagesSquare } from 'lucide-react';
 import Link from 'next/link';
 import { FC } from 'react';
 
 import { MarkpromptIcon } from '@/components/icons/Markprompt';
 import Button from '@/components/ui/Button';
+import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import useUser from '@/lib/hooks/use-user';
 import { getAppOrigin } from '@/lib/utils.edge';
+
+import { ContactWindow } from './ChatWindow';
 
 type AuthPageProps = {
   type: 'signin' | 'signup';
@@ -21,7 +25,7 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
   return (
     <div className="px-6 sm:px-8">
       <div className="mx-auto w-min">
-        <Link href="/">
+        <Link href="/" className="outline-none">
           <MarkpromptIcon className="mx-auto mt-16 h-16 w-16 text-white outline-none" />
         </Link>
       </div>
@@ -50,17 +54,21 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
                 },
               }}
             />
-          </div>
-          <p className="mt-24 text-center text-sm text-neutral-500">
-            Have a custom company use case?{' '}
-            <a
-              className="subtle-underline"
-              href={`mailto:${process.env.NEXT_PUBLIC_SALES_EMAIL!}`}
+            <p className="mt-16 mb-4 text-center text-sm text-neutral-500">
+              Have a custom company use case?
+            </p>
+            <Button
+              Icon={MessagesSquare}
+              className="w-full"
+              variant="bordered"
+              onClick={() => {
+                emitter.emit(EVENT_OPEN_CONTACT);
+              }}
             >
               Get enterprise assistance
-            </a>
-            .
-          </p>
+            </Button>
+          </div>
+
           <p className="mt-12 text-center text-sm text-neutral-500">
             By signing in, you agree to our{' '}
             <Link className="subtle-underline" href="/legal/terms">
@@ -84,6 +92,7 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
           </Button>
         </div>
       )}
+      <ContactWindow closeOnClickOutside />
     </div>
   );
 };
