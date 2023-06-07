@@ -37,6 +37,7 @@ import {
 import {
   extractLinksFromHtml,
   fetchPageContent,
+  fetchSitemapUrls,
   isSitemapUrl,
 } from '../integrations/website';
 import {
