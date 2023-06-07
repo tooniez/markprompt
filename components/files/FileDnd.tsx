@@ -49,7 +49,7 @@ export const FileDnd: FC<FileDndProps> = ({
     noKeyboard: true,
     maxFiles: 1000,
     maxSize: 1_000_000,
-    accept: { 'text/*': ['.md', '.mdoc', '.mdx', '.html', '.txt'] },
+    accept: { 'text/*': ['.md', '.mdoc', '.mdx', '.html', '.htm', '.txt'] },
     onDragEnter: () => {
       setDragging(true);
     },

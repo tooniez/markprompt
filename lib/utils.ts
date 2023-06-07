@@ -215,6 +215,7 @@ export const getFileType = (name: string): FileType => {
     case 'md':
       return 'md';
     case 'html':
+    case 'htm':
       return 'html';
     default:
       return 'txt';
