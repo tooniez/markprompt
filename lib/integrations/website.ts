@@ -81,7 +81,7 @@ export const fetchSitemapUrls = async (
         pageUrls.push(normalizedUrl);
       }
     } catch {
-      //
+      // Ignore page
     }
   };
 
