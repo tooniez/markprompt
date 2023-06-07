@@ -8,7 +8,11 @@ import { removeQueryParameters } from '../utils';
 export const fetchRobotsTxtInfo = async (
   baseUrl: string,
 ): Promise<RobotsTxtInfo> => {
-  const robotsTxt = await fetchPageContent(`${baseUrl}/robots.txt`, true);
+  const robotsTxt = await fetchPageContent(
+    `${baseUrl}/robots.txt`,
+    true,
+    false,
+  );
   if (!robotsTxt) {
     return {
       disallowedPaths: [],
@@ -108,7 +112,7 @@ export const fetchSitemapUrls = async (
 export const fetchPageContent = async (
   url: string,
   immediate: boolean,
-  useCustomPageFetcher?: boolean,
+  useCustomPageFetcher: boolean,
 ): Promise<string | undefined> => {
   const res = await fetch('/api/integrations/website/fetch-page', {
     method: 'POST',

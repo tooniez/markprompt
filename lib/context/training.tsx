@@ -401,7 +401,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                   const content = await fetchPageContent(
                     url,
                     false,
-                    planDetails?.useCustomPageFetcher,
+                    !!planDetails?.useCustomPageFetcher,
                   );
                   if (!content) {
                     return undefined;
@@ -417,6 +417,10 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             };
 
             if (isSitemapUrl(baseUrl)) {
+              console.log(
+                'Fetching sitemaps useCustomPageFetcher',
+                !!planDetails?.useCustomPageFetcher,
+              );
               const sitemapUrls = await fetchSitemapUrls(
                 baseUrl,
                 !!planDetails?.useCustomPageFetcher,
