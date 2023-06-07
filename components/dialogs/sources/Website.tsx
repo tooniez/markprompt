@@ -58,6 +58,7 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
   clearPrevious,
   onDidAddSource,
 }) => {
+  const { planDetails } = useTeam();
   const { project } = useProject();
   const { user } = useUser();
   const { numTokensPerTeamRemainingAllowance } = useUsage();
@@ -80,10 +81,14 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
 
           let url = toNormalizedUrl(website);
 
-          let isAccessible = await isWebsiteAccessible(url);
+          const useCustomPageFetcher = !!planDetails?.useCustomPageFetcher;
+          let isAccessible = await isWebsiteAccessible(
+            url,
+            useCustomPageFetcher,
+          );
           if (!isAccessible) {
             url = toNormalizedUrl(website, true);
-            isAccessible = await isWebsiteAccessible(url);
+            isAccessible = await isWebsiteAccessible(url, useCustomPageFetcher);
           }
 
           if (!isAccessible) {

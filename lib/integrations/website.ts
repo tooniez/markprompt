@@ -5,18 +5,6 @@ import { RobotsTxtInfo } from '@/types/types';
 
 import { removeQueryParameters } from '../utils';
 
-export const isWebsiteAccessible = async (url: string) => {
-  const res = await fetch('/api/integrations/website/is-accessible', {
-    method: 'POST',
-    body: JSON.stringify({ url }),
-    headers: {
-      'Content-Type': 'application/json',
-      accept: 'application/json',
-    },
-  });
-  return res.ok;
-};
-
 export const fetchRobotsTxtInfo = async (
   baseUrl: string,
 ): Promise<RobotsTxtInfo> => {
@@ -126,6 +114,16 @@ export const fetchPageContent = async (
     return (await res.json()).content;
   }
   return undefined;
+};
+
+export const isWebsiteAccessible = async (
+  url: string,
+  useCustomPageFetcher: boolean,
+) => {
+  // Some pages, like a sitemap.xml, may require a custom page fetcher
+  // service to load.
+  const page = await fetchPageContent(url, false, useCustomPageFetcher);
+  return !!page;
 };
 
 export const extractLinksFromHtml = (html: string) => {
