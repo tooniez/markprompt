@@ -348,7 +348,7 @@ const PlanPicker = () => {
 
   return (
     <>
-      <div className="-ml-8 grid w-[calc(100%+64px)] grid-cols-1 gap-4 sm:grid-cols-4">
+      <div className="-ml-6 grid w-[calc(100%+48px)] grid-cols-1 gap-4 sm:grid-cols-4">
         <PricingCard
           tier="hobby"
           model={model}
