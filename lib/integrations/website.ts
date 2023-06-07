@@ -61,7 +61,7 @@ export const fetchSitemapUrls = async (
 ): Promise<string[]> => {
   const sitemap = await fetchPageContent(
     sitemapUrl,
-    true,
+    false,
     useCustomPageFetcher,
   );
 
