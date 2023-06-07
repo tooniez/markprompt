@@ -37,7 +37,10 @@ export default async function handler(
 
   console.log('Fetching', url);
   try {
-    const websiteRes = await fetch(url);
+    const websiteRes = await fetch(
+      url,
+      url.endsWith('.xml') ? { headers: { Accept: 'application/xml' } } : {},
+    );
     console.log(
       'websiteRes',
       websiteRes.ok,
@@ -50,7 +53,6 @@ export default async function handler(
     }
   } catch (e) {
     // Handle below
-    console.error('Error is-accessible', e);
   }
 
   return res.status(400).json({ status: 'Website is not available' });
