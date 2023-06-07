@@ -68,10 +68,10 @@ const PricingCard = ({
         </div>
       )}
       <div className="absolute inset-0 rounded-lg bg-neutral-1100" />
-      <h2 className="z-10 flex-none px-4 text-2xl font-semibold text-neutral-300 md:px-8">
+      <h2 className="z-10 flex-none px-4 text-2xl font-semibold text-neutral-300 md:px-6">
         {tier.name}
       </h2>
-      <div className="relative z-10 flex h-16 w-full flex-col items-center px-4 md:px-8">
+      <div className="relative z-10 flex h-16 w-full flex-col items-center px-4 md:px-6">
         <p className="mt-0 text-center text-base text-neutral-500">
           {tier.description}
         </p>
@@ -89,7 +89,7 @@ const PricingCard = ({
           </div>
         )}
       </div>
-      <div className="z-10 flex h-20 w-full items-center justify-center bg-neutral-900/0 px-4 sm:h-24 md:px-8">
+      <div className="z-10 flex h-20 w-full items-center justify-center bg-neutral-900/0 px-4 sm:h-24 md:px-6">
         {tier.prices && (
           <div className="relative -mt-4 flex w-full flex-col items-center">
             <p className="text-[36px] font-semibold text-neutral-300 sm:text-[28px] md:text-[36px]">
@@ -141,7 +141,7 @@ const PricingCard = ({
         )}
       </div>
       <div className="z-10 flex w-full flex-grow flex-col gap-1">
-        <ul className="flex w-full flex-col gap-1 px-4 md:px-8">
+        <ul className="flex w-full flex-col gap-1 px-4 md:px-6">
           {tier.items.map((item, i) => {
             return (
               <ListItem
@@ -155,7 +155,7 @@ const PricingCard = ({
           })}
         </ul>
         {tier.notes && (
-          <ul className="mt-4 flex w-full flex-grow flex-col gap-1 px-4 md:px-8">
+          <ul className="mt-4 flex w-full flex-grow flex-col gap-1 px-4 md:px-6">
             {tier.notes.map((note, i) => {
               return (
                 <li
@@ -169,7 +169,7 @@ const PricingCard = ({
           </ul>
         )}
       </div>
-      <div className="z-10 mt-4 w-full px-4 md:px-8">
+      <div className="z-10 mt-4 w-full px-4 md:px-6">
         <Button
           className="w-full"
           variant={highlight ? 'fuchsia' : 'plain'}
@@ -352,7 +352,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               * BYO: Bring your own API key
             </p>
           </div> */}
-          <div className="relative mt-16 grid w-full max-w-screen-xl grid-cols-1 gap-4 sm:grid-cols-4 md:gap-8">
+          <div className="relative mt-16 grid w-full max-w-screen-xl grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
             <Blurs />
             <PricingCard
               tier={TIERS.hobby}
@@ -381,6 +381,13 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
               customPrice="Custom"
             />
           </div>
+          <p className="mt-12 rounded-lg border border-neutral-900 p-6 text-center text-sm text-neutral-500">
+            * 1 token ≈ ¾ words. 1 document ≈ 900 words ≈ 1200 tokens.{' '}
+            <Link className="subtle-underline" href="/docs#what-are-tokens">
+              Learn more
+            </Link>
+            .
+          </p>
         </div>
         <div className="flex flex-col items-center">
           <h2 className="gradient-heading mt-40 text-center text-4xl">

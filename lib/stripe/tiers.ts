@@ -141,12 +141,10 @@ export const TIERS: Record<Tier, TierDetails> = {
     name: 'Hobby',
     description: 'For personal and non-commercial projects',
     items: [
-      '25 indexed documents*',
+      '30K tokens* (≈ 25 documents)',
       '25 GPT-4 completions per month',
-      'Unlimited BYO* completions',
       'Public/private GitHub repos',
     ],
-    notes: ['* Varies by document size', '* BYO: Bring-your-own API key'],
     prices: [
       {
         name: 'Free',
@@ -159,7 +157,7 @@ export const TIERS: Record<Tier, TierDetails> = {
     name: 'Starter',
     description: 'For small projects',
     items: [
-      '100 indexed documents',
+      '120K tokens* (≈ 100 documents)',
       '200 GPT-4 completions per month',
       'Usage analytics',
     ],
@@ -191,7 +189,7 @@ export const TIERS: Record<Tier, TierDetails> = {
     name: 'Pro',
     description: 'For production',
     items: [
-      '500 indexed documents',
+      '600K tokens* (≈ 500 documents)',
       '1000 GPT-4 completions per month',
       'Prompt templates',
       'Model customization',
