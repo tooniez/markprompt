@@ -417,7 +417,10 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             };
 
             if (isSitemapUrl(baseUrl)) {
-              const sitemapUrls = await fetchSitemapUrls(baseUrl);
+              const sitemapUrls = await fetchSitemapUrls(
+                baseUrl,
+                !!planDetails?.useCustomPageFetcher,
+              );
               await generateEmbeddingsForUrls(sitemapUrls.slice(0, 10));
             } else {
               // Otherwise, we discover links starting with the root page

@@ -53,8 +53,13 @@ export const isSitemapUrl = (url: string) => {
 
 export const fetchSitemapUrls = async (
   sitemapUrl: string,
+  useCustomPageFetcher: boolean,
 ): Promise<string[]> => {
-  const sitemap = await fetchPageContent(sitemapUrl, true);
+  const sitemap = await fetchPageContent(
+    sitemapUrl,
+    true,
+    useCustomPageFetcher,
+  );
 
   if (!sitemap) {
     return [];
@@ -84,7 +89,10 @@ export const fetchSitemapUrls = async (
   });
 
   for (const subSitemapUrl of subSitemapUrls) {
-    const subPageUrls = await fetchSitemapUrls(subSitemapUrl);
+    const subPageUrls = await fetchSitemapUrls(
+      subSitemapUrl,
+      useCustomPageFetcher,
+    );
     for (const subPageUrl of subPageUrls) {
       addPageUrl(subPageUrl);
     }
