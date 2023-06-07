@@ -307,7 +307,7 @@ export const refreshMaterializedViews = async (
   views: (keyof Database['public']['Views'])[],
 ) => {
   // TODO
-  console.log('No implemented yet');
+  // console.log('Not implemented yet');
   // for (const viewName of views) {
   //   const { error } = await supabaseAdmin.rpc('refresh_materialized_view', {
   //     view_name: viewName,

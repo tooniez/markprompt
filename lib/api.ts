@@ -296,7 +296,7 @@ export const cancelSubscription = (teamId: Team['id']) => {
 export const clientRefreshMaterializedViews = (
   views: (keyof Database['public']['Views'])[],
 ) => {
-  console.log('Not implemented yet');
+  // console.log('Not implemented yet');
   // return fetch('/api/db/refresh-materialized-views', {
   //   method: 'POST',
   //   body: JSON.stringify({ views }),

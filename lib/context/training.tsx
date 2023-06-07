@@ -424,15 +424,11 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               let processedLinks: string[] = [];
               let linksToProcess = [data.url];
 
-              // let numLinksSentForProcessing = 0;
-              // let didReachLimit = false;
-
               while (linksToProcess.length > 0) {
                 try {
                   const processedContent = await generateEmbeddingsForUrls(
                     linksToProcess,
                   );
-                  // numLinksSentForProcessing += linksActuallySentToProcess.length;
 
                   const discoveredLinks = !processedContent
                     ? []
@@ -455,46 +451,6 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 }
               }
             }
-
-            // if (
-            //   didReachLimit ||
-            //   numLinksSentForProcessing >= _numDocumentsPerProjectAllowance
-            // ) {
-            //   toast(
-            //     (t) => (
-            //       <div className="flex w-full flex-row items-center gap-4">
-            //         <p className="p-2">
-            //           You have reached the quota of indexed content on this
-            //           plan.
-            //         </p>
-            //         <button
-            //           className="whitespace-nowrap font-medium"
-            //           onClick={() => {
-            //             emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
-            //             toast.dismiss(t.id);
-            //           }}
-            //           style={{
-            //             // The .toast class needs to use the "!important"
-            //             // flag, so we can only overwrite the text color
-            //             // using a style prop.
-            //             color: colors.sky['500'],
-            //           }}
-            //         >
-            //           Upgrade plan
-            //         </button>
-            //       </div>
-            //     ),
-            //     {
-            //       id: 'training-limit-reached',
-            //       duration: Infinity,
-            //       style: {
-            //         maxWidth: '400px',
-            //         width: '100%',
-            //       },
-            //     },
-            //   );
-            // }
-            // }
           } catch (e) {
             onError(`Error processing website ${origin}: ${e}`);
           }
