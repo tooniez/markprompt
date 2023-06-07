@@ -38,6 +38,12 @@ export default async function handler(
   console.log('Fetching', url);
   try {
     const websiteRes = await fetch(url);
+    console.log(
+      'websiteRes',
+      websiteRes.status,
+      websiteRes.statusText,
+      await websiteRes.text(),
+    );
     if (websiteRes.ok) {
       return res.status(200).json({ status: 'ok' });
     }
