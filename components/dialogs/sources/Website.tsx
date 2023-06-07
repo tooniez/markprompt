@@ -112,14 +112,14 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
             <div className="flex h-full flex-grow flex-col gap-2">
               <div className="h-flex-none mt-4 flex flex-col gap-1 px-4 pb-8">
                 <p className="mb-1 flex-none text-sm font-medium text-neutral-300">
-                  Website URL
+                  Website or sitemap URL
                 </p>
                 <div className="flex flex-none flex-row gap-2">
                   <Field
                     className="flex-grow"
                     type="text"
                     name="website"
-                    placeholder="example.com"
+                    placeholder="example.com, example.com/sitemap.xml"
                     inputSize="sm"
                     as={NoAutoInput}
                     disabled={isSubmitting}

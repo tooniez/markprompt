@@ -604,6 +604,12 @@ export const toNormalizedUrl = (url: string, useInsecureSchema?: boolean) => {
   }
 };
 
+export const removeQueryParameters = (url: string) => {
+  const urlObj = new URL(url);
+  urlObj.search = '';
+  return urlObj.toString();
+};
+
 export const getUrlHostname = (url: string) => {
   return removeSchema(url).split('/')[0];
 };

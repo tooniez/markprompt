@@ -27,7 +27,7 @@ import { clientRefreshMaterializedViews, processFile } from '../api';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '../events';
 import useProject from '../hooks/use-project';
 import useSources from '../hooks/use-sources';
-import useUsage from '../hooks/use-usage';
+import useTeam from '../hooks/use-team';
 import { getMarkpromptPathFromGitHubArchivePath } from '../integrations/github';
 import { getGitHubFiles } from '../integrations/github.node';
 import {
@@ -37,8 +37,7 @@ import {
 import {
   extractLinksFromHtml,
   fetchPageContent,
-  fetchRobotsTxtInfo,
-  fetchSitemapUrls,
+  isSitemapUrl,
 } from '../integrations/website';
 import {
   completeHrefWithBaseUrl,
@@ -127,6 +126,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
   const supabase = useSupabaseClient();
   const { project, config } = useProject();
   const { sources } = useSources();
+  const { planDetails } = useTeam();
   const [state, setState] = useState<TrainingState>({ state: 'idle' });
   const [errors, setErrors] = useState<string[]>([]);
   const stopFlag = useRef(false);
@@ -397,7 +397,11 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 async (i) => {
                   const url = urls[i];
                   const name = getNameFromUrlOrPath(url);
-                  const content = await fetchPageContent(url);
+                  const content = await fetchPageContent(
+                    url,
+                    false,
+                    planDetails?.useCustomPageFetcher,
+                  );
                   if (!content) {
                     return undefined;
                   }
@@ -411,63 +415,46 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               return processedContent;
             };
 
-            const robotsTxtInfo = await fetchRobotsTxtInfo(origin);
-            const sitemapUrlsOrUndefined = await fetchSitemapUrls(
-              origin,
-              robotsTxtInfo.sitemap,
-            );
+            if (isSitemapUrl(baseUrl)) {
+              // const sitemapUrls = await fetchSitemapUrls(baseUrl);
+              // await generateEmbeddingsForUrls(sitemapUrls.slice(0, 10));
+              await generateEmbeddingsForUrls([
+                'https://support.mindbodyonline.com/s/article/Understanding-system-lists-Marketing-Suite',
+              ]);
+            } else {
+              // Otherwise, we discover links starting with the root page
+              let processedLinks: string[] = [];
+              let linksToProcess = [data.url];
 
-            // if (sitemapUrlsOrUndefined !== undefined) {
-            //   const sitemapUrls = sitemapUrlsOrUndefined.filter((url) => {
-            //     // Only include the url with the same root as baseUrl, e.g.
-            //     // example.com/docs should not inculde example.com/blog links.
-            //     return url.startsWith(baseUrl);
-            //   });
-            //   const numAllowance =
-            //     numDocumentsPerProjectAllowance === 'unlimited'
-            //       ? sitemapUrls.length
-            //       : numDocumentsPerProjectAllowance;
-            //   await generateEmbeddingsForUrls(
-            //     sitemapUrls.slice(0, numAllowance),
-            //   );
-            //   if (sitemapUrls.length > numAllowance) {
-            //     toast.error(
-            //       'You have reached the quota of pages per website on this plan.',
-            //     );
-            //   }
-            // } else {
-            // Otherwise, we discover links starting with the root page
-            let processedLinks: string[] = [];
-            let linksToProcess = [data.url];
+              // let numLinksSentForProcessing = 0;
+              // let didReachLimit = false;
 
-            // let numLinksSentForProcessing = 0;
-            // let didReachLimit = false;
+              while (linksToProcess.length > 0) {
+                try {
+                  const processedContent = await generateEmbeddingsForUrls(
+                    linksToProcess,
+                  );
+                  // numLinksSentForProcessing += linksActuallySentToProcess.length;
 
-            while (linksToProcess.length > 0) {
-              try {
-                const processedContent = await generateEmbeddingsForUrls(
-                  linksToProcess,
-                );
-                // numLinksSentForProcessing += linksActuallySentToProcess.length;
-
-                const discoveredLinks = !processedContent
-                  ? []
-                  : uniq(
-                      processedContent.flatMap((html) =>
-                        extractLinksFromHtml(html),
-                      ),
-                    )
-                      .filter((href) => isHrefFromBaseUrl(baseUrl, href))
-                      .map((href) => {
-                        return completeHrefWithBaseUrl(baseUrl, href);
-                      })
-                      .filter(isPresent);
-                processedLinks = [...processedLinks, ...linksToProcess];
-                linksToProcess = discoveredLinks.filter(
-                  (link) => !processedLinks.includes(link),
-                );
-              } catch (e) {
-                break;
+                  const discoveredLinks = !processedContent
+                    ? []
+                    : uniq(
+                        processedContent.flatMap((html) =>
+                          extractLinksFromHtml(html),
+                        ),
+                      )
+                        .filter((href) => isHrefFromBaseUrl(baseUrl, href))
+                        .map((href) => {
+                          return completeHrefWithBaseUrl(baseUrl, href);
+                        })
+                        .filter(isPresent);
+                  processedLinks = [...processedLinks, ...linksToProcess];
+                  linksToProcess = discoveredLinks.filter(
+                    (link) => !processedLinks.includes(link),
+                  );
+                } catch (e) {
+                  break;
+                }
               }
             }
 
@@ -523,7 +510,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         }
       }
     },
-    [config.exclude, config.include, generateEmbeddings],
+    [config.exclude, config.include, generateEmbeddings, planDetails],
   );
 
   const trainAllSources = useCallback(

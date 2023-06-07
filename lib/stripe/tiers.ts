@@ -10,6 +10,10 @@ type Price = {
   };
 };
 
+export type PlanDetails = {
+  useCustomPageFetcher?: boolean;
+};
+
 export type Tier = 'hobby' | 'starter' | 'pro' | 'enterprise';
 
 export type PricedModel = 'gpt-4' | 'gpt-3.5-turbo' | 'byo';
@@ -224,11 +228,13 @@ export const TIERS: Record<Tier, TierDetails> = {
     items: [
       'Teams',
       'Integrations',
+      'Insights (soon)',
       'Unbranded prompts',
       'Unlimited completions',
+      'Custom source processing',
+      'SSO/SAML',
       'Dedicated support',
       'White glove onboarding',
-      'Insights (soon)',
     ],
     prices: [
       {

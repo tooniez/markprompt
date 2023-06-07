@@ -20,6 +20,7 @@ create table public.teams (
   stripe_customer_id  text,
   stripe_price_id     text,
   is_enterprise_plan  boolean,
+  plan_details        jsonb,
   billing_cycle_start timestamp with time zone,
   created_by          uuid references public.users not null
 );
