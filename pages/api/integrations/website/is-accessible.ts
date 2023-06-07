@@ -40,9 +40,10 @@ export default async function handler(
     const websiteRes = await fetch(url);
     console.log(
       'websiteRes',
+      websiteRes.ok,
       websiteRes.status,
       websiteRes.statusText,
-      await websiteRes.text(),
+      (await websiteRes.text()).substring(0, 100),
     );
     if (websiteRes.ok) {
       return res.status(200).json({ status: 'ok' });
