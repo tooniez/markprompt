@@ -44,14 +44,12 @@ export default async function handler(
     // For simple page fetching, like a sitemap with no hydration,
     // use a plain fetch approach.
     if (immediate || !useCustomPageFetcher) {
-      console.log('Fetching immediate', url);
       const websiteRes = await fetch(url);
       if (websiteRes.ok) {
         const content = await websiteRes.text();
         return res.status(200).json({ content });
       }
     } else {
-      console.log('Fetching with custom fetcher', url);
       const pageRes = await fetch(process.env.CUSTOM_PAGE_FETCH_SERVICE_URL!, {
         method: 'POST',
         body: JSON.stringify({ url }),
