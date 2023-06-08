@@ -1,6 +1,8 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { serverRefreshFTSMaterializedView } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 import { DbFile, Project } from '@/types/types';
 
@@ -12,6 +14,12 @@ type Data =
   | DbFile[];
 
 const allowedMethods = ['GET', 'DELETE'];
+
+// Admin access to Supabase, bypassing RLS.
+const supabaseAdmin = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+);
 
 export default async function handler(
   req: NextApiRequest,
@@ -72,6 +80,8 @@ export default async function handler(
     if (error) {
       return res.status(400).json({ error: error.message });
     }
+
+    await serverRefreshFTSMaterializedView(supabaseAdmin);
 
     return res.status(200).json({ status: 'ok' });
   }

@@ -156,14 +156,16 @@ begin
 end;
 $$ language plpgsql security definer;
 
+-- Make sure security definer is set, cf.
+-- https://stackoverflow.com/questions/67530999/error-must-be-owner-of-materialized-view-postgresql
 create or replace function refresh_materialized_view(view_name text)
 returns void
-language plpgsql
+security definer
 as $$
 begin
   execute 'refresh materialized view concurrently ' || view_name;
 end;
-$$;
+$$ language plpgsql;
 
 create or replace function match_file_sections(project_id uuid, embedding vector(1536), match_threshold float, match_count int, min_content_length int)
 returns table (path text, content text, token_count int, similarity float)
@@ -203,45 +205,48 @@ end;
 $$;
 
 create or replace function full_text_search(
-  search_text text,
+  search_term text,
   match_count int,
-  token text default null,
-  public_api_key text default null,
-  private_dev_api_key text default null
+  token_param text default null,
+  public_api_key_param text default null,
+  private_dev_api_key_param text default null
 )
 returns table (
-  file_id bigint,
   file_path text,
   file_meta jsonb,
+  section_id bigint,
   section_content text,
   section_meta jsonb,
   source_type source_type,
-  source_data jsonb
+  source_data jsonb,
+  score double precision
 )
 language plpgsql
 as $$
-#variable_conflict use_variable
 begin
   return query
   select
-    v.file_id,
-    v.file_path,
-    v.file_meta,
-    v.section_content,
-    v.section_meta,
-    v.source_type,
-    v.source_data
-  from v_file_section_search_infos as v
+    mv_fts.file_path,
+    mv_fts.file_meta,
+    mv_fts.section_id,
+    mv_fts.section_content,
+    mv_fts.section_meta jsonb,
+    mv_fts.source_type source_type,
+    mv_fts.source_data jsonb,
+    pgroonga_score(mv_fts.tableoid, mv_fts.ctid) as score
+  from mv_fts
   where
     (
-      v.section_content like '%' || search_text || '%'
-      or v.file_meta &` ('paths @ ".title" && string @ "' || search_text || '"')
-      or v.section_meta &` ('paths @ ".leadHeading.value" && string @ "' || search_text || '"')
+      array[
+        mv_fts.section_content,
+        (mv_fts.file_meta->>'title')::text,
+        (mv_fts.section_meta->'leadHeading'->>'value')::text
+      ] &@ (full_text_search.search_term, array[1, 100, 10], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
     )
     and (
-      v.token = full_text_search.token
-      or v.public_api_key = full_text_search.public_api_key
-      or v.private_dev_api_key = full_text_search.private_dev_api_key
+      full_text_search.token_param = any(mv_fts.tokens)
+      or mv_fts.public_api_key = full_text_search.public_api_key_param
+      or mv_fts.private_dev_api_key = full_text_search.private_dev_api_key_param
     )
   limit match_count;
 end;
@@ -254,17 +259,6 @@ $$;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
-
--- Indexes
-
-create index idx_files_source_id on files(source_id);
-create index idx_sources_project_id on sources(project_id);
-create index idx_file_sections_file_id on file_sections(file_id);
-create index idx_projects_team_id on projects(team_id);
-create index idx_memberships_user_id on memberships(user_id);
-create index ix_file_sections_content on file_sections using pgroonga(content);
-create index ix_files_meta on files using pgroonga(meta);
-create index ix_file_sections_meta on files using pgroonga(meta);
 
 -- Views
 
@@ -317,11 +311,12 @@ create view v_file_section_search_infos as
 
 -- Materialized views
 
-create materialized view mv_file_section_search_infos as
+create materialized view mv_fts as
   select
     f.id as file_id,
     f.path as file_path,
     f.meta as file_meta,
+    fs.id as section_id,
     fs.content as section_content,
     fs.meta as section_meta,
     s.type as source_type,
@@ -329,8 +324,8 @@ create materialized view mv_file_section_search_infos as
     p.id as project_id,
     p.public_api_key as public_api_key,
     p.private_dev_api_key as private_dev_api_key,
-    tok.value as token,
-    d.name as domain,
+    array_agg(distinct tok.value) as tokens,
+    array_agg(distinct d.name) as domains,
     t.stripe_price_id as stripe_price_id,
     t.is_enterprise_plan as is_enterprise_plan
   from file_sections fs
@@ -340,7 +335,39 @@ create materialized view mv_file_section_search_infos as
   left join tokens tok on p.id = tok.project_id
   left join domains d on p.id = d.project_id
   left join teams t on t.id = p.team_id
+  group by
+    f.id,
+    f.path,
+    f.meta,
+    fs.id,
+    fs.content,
+    fs.meta,
+    s.type,
+    s.data,
+    p.id,
+    p.public_api_key,
+    p.private_dev_api_key,
+    t.stripe_price_id,
+    t.is_enterprise_plan;
 
+-- Indexes
+
+create index idx_files_source_id on files(source_id);
+create index idx_sources_project_id on sources(project_id);
+create index idx_file_sections_file_id on file_sections(file_id);
+create index idx_projects_team_id on projects(team_id);
+create index idx_memberships_user_id on memberships(user_id);
+create index idx_tokens_project_id on tokens(project_id);
+create index idx_domain_project_id on domains(project_id);
+-- Need a unique index for the materialized view refresh to work
+create unique index idx_section_id_fts on mv_fts (section_id);
+create index idx_file_sections_fts
+on mv_fts
+using pgroonga ((array[
+    section_content,
+    (file_meta->>'title')::text,
+    (section_meta->'leadHeading'->>'value')::text
+  ]));
 -- Extensions
 
 create extension if not exists vector with schema public;

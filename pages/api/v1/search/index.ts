@@ -40,6 +40,30 @@ type Data =
 
 const allowedMethods = ['GET'];
 
+const createKWICSnippet = (
+  content: string,
+  searchTerm: string,
+  maxLength = 200,
+) => {
+  const trimmedContent = content.trim().replace(/\n/g, ' ');
+  const index = trimmedContent.indexOf(searchTerm);
+
+  if (index === -1) {
+    return trimmedContent.slice(0, maxLength);
+  }
+
+  const rawSnippet = trimmedContent.slice(
+    Math.max(0, index - Math.round(maxLength / 2)),
+    index + Math.round(maxLength / 2),
+  );
+
+  const words = rawSnippet.split(/\s+/);
+  if (words.length > 3) {
+    return words.slice(1, words.length - 1).join(' ');
+  }
+  return words;
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
@@ -120,11 +144,11 @@ export default async function handler(
     data: FileSectionContentInfo[] | null | any;
     error: { message: string; code: string } | null;
   } = await supabaseAdmin.rpc('full_text_search', {
-    search_text: query,
+    search_term: query,
     match_count: limit,
-    token,
-    public_api_key: publicApiKey,
-    private_dev_api_key: privateDevApiKey,
+    token_param: token,
+    public_api_key_param: publicApiKey,
+    private_dev_api_key_param: privateDevApiKey,
   });
 
   track(projectId, 'search', { projectId });
@@ -161,7 +185,7 @@ export default async function handler(
             ...(acc[file_id]?.sections || []),
             {
               ...(section_meta ? { meta: section_meta } : {}),
-              content: (section_content || '').trim(),
+              content: createKWICSnippet(section_content || '', query),
             },
           ],
         },

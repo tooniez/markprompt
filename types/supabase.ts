@@ -371,7 +371,7 @@ export interface Database {
       }
     }
     Views: {
-      mv_file_section_search_infos: {
+      mv_fts: {
         Row: {
           domain: string | null
           file_id: number | null
@@ -382,6 +382,7 @@ export interface Database {
           project_id: string | null
           public_api_key: string | null
           section_content: string | null
+          section_id: number | null
           section_meta: Json | null
           source_data: Json | null
           source_type: Database["public"]["Enums"]["source_type"] | null
@@ -444,20 +445,29 @@ export interface Database {
       }
       full_text_search: {
         Args: {
-          search_text: string
+          search_term: string
           match_count: number
-          token?: string
-          public_api_key?: string
-          private_dev_api_key?: string
+          token_param?: string
+          public_api_key_param?: string
+          private_dev_api_key_param?: string
         }
         Returns: {
           file_id: number
           file_path: string
           file_meta: Json
+          section_id: number
           section_content: string
           section_meta: Json
           source_type: Database["public"]["Enums"]["source_type"]
           source_data: Json
+          project_id: string
+          public_api_key: string
+          private_dev_api_key: string
+          token: string
+          domain: string
+          stripe_price_id: string
+          is_enterprise: boolean
+          score: number
         }[]
       }
       ivfflathandler: {
@@ -496,17 +506,12 @@ export interface Database {
               similarity: number
             }[]
           }
-      refresh_materialized_view:
-        | {
-            Args: Record<PropertyKey, never>
-            Returns: undefined
-          }
-        | {
-            Args: {
-              view_name: string
-            }
-            Returns: undefined
-          }
+      refresh_materialized_view: {
+        Args: {
+          view_name: string
+        }
+        Returns: undefined
+      }
       vector_avg: {
         Args: {
           "": number[]

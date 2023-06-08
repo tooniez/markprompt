@@ -293,16 +293,19 @@ export const cancelSubscription = (teamId: Team['id']) => {
   });
 };
 
-export const clientRefreshMaterializedViews = (
+export const clientRefreshFTSMaterializedView = async () => {
+  return clientRefreshMaterializedViews(['mv_fts']);
+};
+
+const clientRefreshMaterializedViews = async (
   views: (keyof Database['public']['Views'])[],
 ) => {
-  // console.log('Not implemented yet');
-  // return fetch('/api/db/refresh-materialized-views', {
-  //   method: 'POST',
-  //   body: JSON.stringify({ views }),
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     accept: 'application/json',
-  //   },
-  // });
+  return fetch('/api/db/refresh-materialized-views', {
+    method: 'POST',
+    body: JSON.stringify({ views }),
+    headers: {
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+  });
 };
