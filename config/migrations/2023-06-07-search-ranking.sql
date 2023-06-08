@@ -51,7 +51,7 @@ using pgroonga ((array[
     (section_meta->'leadHeading'->>'value')::text
   ]));
 
--- Make sure security defined is set, cf.
+-- Make sure security definer is set, cf.
 -- https://stackoverflow.com/questions/67530999/error-must-be-owner-of-materialized-view-postgresql
 create or replace function refresh_materialized_view(view_name text)
 returns void
