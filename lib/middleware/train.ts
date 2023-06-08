@@ -9,7 +9,7 @@ import {
   noProjectForTokenResponse,
   noTokenResponse,
 } from './common';
-import { checkCompletionsRateLimits } from '../rate-limits';
+import { checkEmbeddingsRateLimits } from '../rate-limits';
 import { getAuthorizationToken, truncateMiddle } from '../utils';
 
 // Admin access to Supabase, bypassing RLS.
@@ -38,7 +38,7 @@ export default async function TrainMiddleware(req: NextRequest) {
   if (process.env.NODE_ENV === 'production' && req.ip) {
     // Apply rate limiting here already based on IP. After that, apply rate
     // limiting on requester token.
-    const rateLimitIPResult = await checkCompletionsRateLimits({
+    const rateLimitIPResult = await checkEmbeddingsRateLimits({
       value: req.ip,
       type: 'ip',
     });
@@ -57,7 +57,7 @@ export default async function TrainMiddleware(req: NextRequest) {
 
   // Apply rate-limit here already, before looking up the project id,
   // which requires a database lookup.
-  const rateLimitResult = await checkCompletionsRateLimits({
+  const rateLimitResult = await checkEmbeddingsRateLimits({
     value: token,
     type: 'token',
   });

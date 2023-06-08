@@ -35,22 +35,6 @@ const getResetTime = (result: {
   return { hours, minutes };
 };
 
-export const checkEmbeddingsRateLimits = async (
-  identifier: RateLimitIdType,
-) => {
-  // For now, impose a hard limit of 100 embeddings per minute
-  // per project. Later, make this configurable.
-  const ratelimit = new Ratelimit({
-    redis: getRedisClient(),
-    limiter: Ratelimit.fixedWindow(100, '1 m'),
-    analytics: true,
-  });
-
-  const result = await ratelimit.limit(rateLimitTypeToKey(identifier));
-
-  return { result, ...getResetTime(result) };
-};
-
 type RateLimitUnit = 'ms' | 's' | 'm' | 'h' | 'd';
 type RateLimitDuration =
   | `${number} ${RateLimitUnit}`
@@ -81,6 +65,14 @@ export const getEmbeddingsRateLimitResponse = (
   )} and ${pluralize(minutes, 'minute', 'minutes')}. Email ${
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'us'
   } if you have any questions.`;
+};
+
+export const checkEmbeddingsRateLimits = async (
+  identifier: RateLimitIdType,
+) => {
+  // For now, impose a hard limit of 200 training per minute. Later, tie it to the plan associated to a team/project.
+  const result = await getRateLimit(rateLimitTypeToKey(identifier), 100, '1 m');
+  return { result, ...getResetTime(result) };
 };
 
 export const checkCompletionsRateLimits = async (
