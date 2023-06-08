@@ -40,6 +40,30 @@ type Data =
 
 const allowedMethods = ['GET'];
 
+const createKWICSnippet = (
+  content: string,
+  searchTerm: string,
+  maxLength = 200,
+) => {
+  const trimmedContent = content.trim().replace(/\n/g, ' ');
+  const index = trimmedContent.indexOf(searchTerm);
+
+  if (index === -1) {
+    return trimmedContent.slice(0, maxLength);
+  }
+
+  const rawSnippet = trimmedContent.slice(
+    Math.max(0, index - Math.round(maxLength / 2)),
+    index + Math.round(maxLength / 2),
+  );
+
+  const words = rawSnippet.split(/\s+/);
+  if (words.length > 3) {
+    return words.slice(1, words.length - 1).join(' ');
+  }
+  return words;
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
@@ -113,7 +137,6 @@ export default async function handler(
     publicApiKey = req.query.projectKey as string;
   }
 
-  const ts = Date.now();
   const {
     data: _data,
     error,
@@ -127,8 +150,6 @@ export default async function handler(
     public_api_key_param: publicApiKey,
     private_dev_api_key_param: privateDevApiKey,
   });
-
-  console.log('!!! Fetch took', Date.now() - ts);
 
   track(projectId, 'search', { projectId });
 
@@ -164,7 +185,7 @@ export default async function handler(
             ...(acc[file_id]?.sections || []),
             {
               ...(section_meta ? { meta: section_meta } : {}),
-              content: (section_content || '').trim(),
+              content: createKWICSnippet(section_content || '', query),
             },
           ],
         },
