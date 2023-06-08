@@ -29,6 +29,7 @@ type FileSectionContentInfo = {
   };
   source_type: SourceType;
   source_data: any;
+  score: number;
 };
 
 type Data =
@@ -171,12 +172,14 @@ export default async function handler(
         section_meta,
         source_type,
         source_data,
+        score,
       } = value;
       return {
         ...acc,
         [file_id]: {
           path: file_path,
           meta: file_meta,
+          score,
           source: {
             type: source_type,
             ...(source_data ? { data: source_data } : {}),
