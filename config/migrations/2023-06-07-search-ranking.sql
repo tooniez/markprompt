@@ -11,7 +11,6 @@ using pgroonga ((array[
     (section_meta->'leadHeading'->>'value')::text
   ]));
 
-drop materialized view mv_fts;
 create materialized view mv_fts as
   select
     f.id as file_id,
@@ -48,104 +47,104 @@ begin
 end;
 $$ language plpgsql;
 
-select
-  file_path,
-  file_meta,
-  section_content,
-  section_meta,
-  pgroonga_score(mv_fts.tableoid, mv_fts.ctid) as fs_score
-from mv_fts
-where
-  (
-    ARRAY[
-      mv_fts.section_content,
-      (mv_fts.file_meta->>'title')::text,
-      (mv_fts.section_meta.meta->'leadHeading'->>'value')::text
-    ] &@ ('for', array[1, 100, 10], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
-  )
-limit 10;
-
-  select
-    f.id as file_id,
-    f.path as file_path,
-    f.meta as file_meta,
-    fs.content as section_content,
-    fs.meta as section_meta,
-    s.type as source_type,
-    s.data as source_data,
-    p.id as project_id,
-    p.public_api_key as public_api_key,
-    p.private_dev_api_key as private_dev_api_key,
-    tok.value as token,
-    d.name as domain,
-    t.stripe_price_id as stripe_price_id,
-    t.is_enterprise_plan as is_enterprise_plan,
-    pgroonga_score(fs.tableoid, fs.ctid) as fs_score,
-    pgroonga_score(f.tableoid, f.ctid) as f_score
-  from file_sections fs
-  left join files f on fs.file_id = f.id
-  left join sources s on f.source_id = s.id
-  left join projects p on s.project_id = p.id
-  left join tokens tok on p.id = tok.project_id
-  left join domains d on p.id = d.project_id
-  left join teams t on t.id = p.team_id
-
 create or replace function full_text_search(
-  search_text text,
+  search_term text,
   match_count int,
-  token text default null,
-  public_api_key text default null,
-  private_dev_api_key text default null
+  token_param text default null,
+  public_api_key_param text default null,
+  private_dev_api_key_param text default null
 )
 returns table (
   file_id bigint,
   file_path text,
   file_meta jsonb,
+  section_id bigint,
   section_content text,
   section_meta jsonb,
   source_type source_type,
-  source_data jsonb
+  source_data jsonb,
+  project_id uuid,
+  public_api_key text,
+  private_dev_api_key text,
+  token text,
+  domain text,
+  stripe_price_id text,
+  is_enterprise boolean,
+  score double precision
 )
 language plpgsql
 as $$
-#variable_conflict use_variable
 begin
   return query
   select
-    f.id as file_id,
-    f.path as file_path,
-    f.meta as file_meta,
-    fs.content as section_content,
-    fs.meta as section_meta,
-    s.type as source_type,
-    s.data as source_data,
-    p.id as project_id,
-    p.public_api_key as public_api_key,
-    p.private_dev_api_key as private_dev_api_key,
-    tok.value as token,
-    d.name as domain,
-    t.stripe_price_id as stripe_price_id,
-    t.is_enterprise_plan as is_enterprise_plan,
-    pgroonga_score(fs.tableoid, fs.ctid) as fs_score,
-    pgroonga_score(f.tableoid, f.ctid) as f_score
-  from file_sections fs
-  left join files f on fs.file_id = f.id
-  left join sources s on f.source_id = s.id
-  left join projects p on s.project_id = p.id
-  left join tokens tok on p.id = tok.project_id
-  left join domains d on p.id = d.project_id
-  left join teams t on t.id = p.team_id
+    *, pgroonga_score(mv_fts.tableoid, mv_fts.ctid) as score
+  from mv_fts
   where
     (
-      ARRAY[
-        fs.content,
-        (f.meta->>'title')::text,
-        (fs.meta->'leadHeading'->>'value')::text
-      ] &@ ('for', array[1, 100, 10], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
+      array[
+        mv_fts.section_content,
+        (mv_fts.file_meta->>'title')::text,
+        (mv_fts.section_meta->'leadHeading'->>'value')::text
+      ] &@ (full_text_search.search_term, array[1, 100, 10], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
     )
-  limit 10;
+    and (
+      mv_fts.token = full_text_search.token_param
+      or mv_fts.public_api_key = full_text_search.public_api_key_param
+      or mv_fts.private_dev_api_key = full_text_search.private_dev_api_key_param
+    )
+  limit match_count;
 end;
 $$;
+
+-- create or replace function full_text_search(
+--   search_term text,
+--   match_count int,
+--   token text default null,
+--   public_api_key text default null,
+--   private_dev_api_key text default null
+-- )
+-- returns table (
+--   file_id bigint,
+--   file_path text,
+--   file_meta jsonb,
+--   section_content text,
+--   section_meta jsonb,
+--   source_type source_type,
+--   source_data jsonb,
+--   score double precision
+-- )
+-- language plpgsql
+-- as $$
+-- #variable_conflict use_variable
+-- begin
+--   return query
+--   select
+--     file_id,
+--     file_path,
+--     file_meta,
+--     section_content,
+--     section_meta,
+--     source_type,
+--     source_data,
+--     pgroonga_score(mv_fts.tableoid, mv_fts.ctid) as score
+--   from mv_fts
+--   where
+--     (
+--       array[
+--         mv_fts.section_content,
+--         (mv_fts.file_meta->>'title')::text,
+--         (mv_fts.section_meta->'leadHeading'->>'value')::text
+--       ] &@ (full_text_search.search_term, array[1, 100, 10], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
+--     )
+--     and (
+--       mv_fts.token = full_text_search.token
+--       or mv_fts.public_api_key = full_text_search.public_api_key
+--       or mv_fts.private_dev_api_key = full_text_search.private_dev_api_key
+--     )
+--   order by score desc
+--   limit match_count;
+-- end;
+-- $$;
 
 -- language plpgsql
 -- as $$

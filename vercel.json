@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/fts",
-      "schedule": "*/10 * * * *"
+      "schedule": "*/100 * * * *"
     }
   ]
 }

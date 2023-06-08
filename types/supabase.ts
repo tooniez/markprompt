@@ -445,20 +445,29 @@ export interface Database {
       }
       full_text_search: {
         Args: {
-          search_text: string
+          search_term: string
           match_count: number
-          token?: string
-          public_api_key?: string
-          private_dev_api_key?: string
+          token_param?: string
+          public_api_key_param?: string
+          private_dev_api_key_param?: string
         }
         Returns: {
           file_id: number
           file_path: string
           file_meta: Json
+          section_id: number
           section_content: string
           section_meta: Json
           source_type: Database["public"]["Enums"]["source_type"]
           source_data: Json
+          project_id: string
+          public_api_key: string
+          private_dev_api_key: string
+          token: string
+          domain: string
+          stripe_price_id: string
+          is_enterprise: boolean
+          score: number
         }[]
       }
       ivfflathandler: {

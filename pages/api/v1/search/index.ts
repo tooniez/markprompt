@@ -113,6 +113,7 @@ export default async function handler(
     publicApiKey = req.query.projectKey as string;
   }
 
+  const ts = Date.now();
   const {
     data: _data,
     error,
@@ -120,12 +121,14 @@ export default async function handler(
     data: FileSectionContentInfo[] | null | any;
     error: { message: string; code: string } | null;
   } = await supabaseAdmin.rpc('full_text_search', {
-    search_text: query,
+    search_term: query,
     match_count: limit,
-    token,
-    public_api_key: publicApiKey,
-    private_dev_api_key: privateDevApiKey,
+    token_param: token,
+    public_api_key_param: publicApiKey,
+    private_dev_api_key_param: privateDevApiKey,
   });
+
+  console.log('!!! Fetch took', Date.now() - ts);
 
   track(projectId, 'search', { projectId });
 
