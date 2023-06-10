@@ -15,6 +15,7 @@ const supabaseAdmin = createClient<Database>(
 );
 
 type FileSectionContentInfo = {
+  project_id: string;
   file_id: string;
   file_path: string;
   file_meta?: {
@@ -62,7 +63,8 @@ const createKWICSnippet = (
   if (words.length > 3) {
     return words.slice(1, words.length - 1).join(' ');
   }
-  return words;
+
+  return words.join(' ');
 };
 
 export default async function handler(
@@ -80,18 +82,13 @@ export default async function handler(
   }
 
   const params = req.body;
-  const projectId = req.query.project as Project['id'];
+
   let config = {};
   try {
     config = JSON.parse((params.config || '') as string);
   } catch {
     // Do nothing
   }
-
-  // if (!projectId) {
-  //   console.error(`[INDEXES] Project not found`);
-  //   return res.status(400).json({ error: 'Project not found' });
-  // }
 
   // Apply rate limits, in additional to middleware rate limits.
   // const rateLimitResult = await checkSearchRateLimits({
@@ -138,6 +135,8 @@ export default async function handler(
     publicApiKey = req.query.projectKey as string;
   }
 
+  const ts = Date.now();
+
   const {
     data: _data,
     error,
@@ -152,12 +151,16 @@ export default async function handler(
     private_dev_api_key_param: privateDevApiKey,
   });
 
-  track(projectId, 'search', { projectId });
+  console.log('!!! Took', Date.now() - ts);
 
   if (error || !_data) {
     return res
       .status(400)
       .json({ error: error?.message || 'Error retrieving sections' });
+  }
+
+  if (_data.project_id) {
+    track(_data.project_id, 'search', { projectId: _data.project_id });
   }
 
   const data = _data as FileSectionContentInfo[];

@@ -94,6 +94,8 @@ export default async function SearchMiddleware(req: NextRequest) {
       `/api/v1/search${req.nextUrl.search}&host=${requesterHost}`,
       req.url,
     );
+
+    // TODO: check whitelisted domain (or may do that in the handler function)
     // try {
     //   projectId = await getProjectIdFromKey(supabaseAdmin, projectKey);
     //   // Now that we have a project id, we need to check that the

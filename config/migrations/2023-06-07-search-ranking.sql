@@ -74,6 +74,7 @@ create or replace function full_text_search(
   private_dev_api_key_param text default null
 )
 returns table (
+  file_id bigint,
   file_path text,
   file_meta jsonb,
   section_id bigint,
@@ -81,6 +82,7 @@ returns table (
   section_meta jsonb,
   source_type source_type,
   source_data jsonb,
+  project_id uuid,
   score double precision
 )
 language plpgsql
@@ -88,6 +90,7 @@ as $$
 begin
   return query
   select
+    mv_fts.file_id,
     mv_fts.file_path,
     mv_fts.file_meta,
     mv_fts.section_id,
@@ -95,6 +98,7 @@ begin
     mv_fts.section_meta jsonb,
     mv_fts.source_type source_type,
     mv_fts.source_data jsonb,
+    mv_fts.project_id,
     pgroonga_score(mv_fts.tableoid, mv_fts.ctid) as score
   from mv_fts
   where
