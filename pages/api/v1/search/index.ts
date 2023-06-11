@@ -4,7 +4,6 @@ import { remark } from 'remark';
 import strip from 'strip-markdown';
 
 import { track } from '@/lib/posthog';
-// import strip from '@/lib/remark/strip-markdown';
 import { isSKTestKey, safeParseNumber } from '@/lib/utils';
 import { Database } from '@/types/supabase';
 import { SourceType } from '@/types/types';
