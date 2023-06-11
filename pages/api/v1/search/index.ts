@@ -162,7 +162,7 @@ export default async function handler(
     publicApiKey = req.query.projectKey as string;
   }
 
-  let ts = Date.now();
+  const ts = Date.now();
 
   const {
     data: _data,
@@ -178,8 +178,7 @@ export default async function handler(
     private_dev_api_key_param: privateDevApiKey,
   });
 
-  console.log('!!! [SUPABASE] Took', Date.now() - ts);
-  ts = Date.now();
+  console.log('[SUPABASE] Took', Date.now() - ts);
 
   if (error || !_data) {
     return res
@@ -212,8 +211,6 @@ export default async function handler(
       ],
     };
   }
-
-  console.log('!!! [REMARK] Took', Date.now() - ts);
 
   return res.status(200).json({
     data: Object.values(resultsByFile),
