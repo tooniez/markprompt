@@ -1,10 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { remark } from 'remark';
+import strip from 'strip-markdown';
 
 import { track } from '@/lib/posthog';
+// import strip from '@/lib/remark/strip-markdown';
 import { isSKTestKey, safeParseNumber } from '@/lib/utils';
 import { Database } from '@/types/supabase';
-import { Project, SourceType } from '@/types/types';
+import { SourceType } from '@/types/types';
 
 const MAX_SEARCH_RESULTS = 20;
 
@@ -14,7 +17,7 @@ const supabaseAdmin = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY || '',
 );
 
-type FileSectionContentInfo = {
+type FTSResult = {
   project_id: string;
   file_id: string;
   file_path: string;
@@ -33,28 +36,52 @@ type FileSectionContentInfo = {
   score: number;
 };
 
+type SearchResult = {
+  path: string;
+  meta: any;
+  score: number;
+  source: {
+    type: SourceType;
+    data?: any;
+  };
+  sections: { meta?: any; content: string }[];
+};
+
 type Data =
   | {
       status?: string;
       error?: string;
     }
-  | { data: FileSectionContentInfo[] };
+  | { data: SearchResult[] };
 
 const allowedMethods = ['GET'];
 
-const createKWICSnippet = (
+const createKWICSnippet = async (
   content: string,
   searchTerm: string,
   maxLength = 200,
 ) => {
-  const trimmedContent = content.trim().replace(/\n/g, ' ');
-  const index = trimmedContent.indexOf(searchTerm);
+  // Remove Markdown formatting, remove leadHeading, and trim around
+  // the keyword. This creates a snippet suitable for displaying in
+  // search results.
+  const plainText = String(
+    await remark()
+      .use(strip, {
+        remove: ['heading', 'inlineCode'],
+        keep: ['text'],
+      })
+      .process(content.trim()),
+  )
+    .replace(/\s+/g, ' ')
+    .replace(/\\n/g, ' ');
+
+  const index = plainText.indexOf(searchTerm);
 
   if (index === -1) {
-    return trimmedContent.slice(0, maxLength);
+    return plainText.slice(0, maxLength);
   }
 
-  const rawSnippet = trimmedContent.slice(
+  const rawSnippet = plainText.slice(
     Math.max(0, index - Math.round(maxLength / 2)),
     index + Math.round(maxLength / 2),
   );
@@ -135,13 +162,13 @@ export default async function handler(
     publicApiKey = req.query.projectKey as string;
   }
 
-  const ts = Date.now();
+  let ts = Date.now();
 
   const {
     data: _data,
     error,
   }: {
-    data: FileSectionContentInfo[] | null | any;
+    data: FTSResult[] | null | any;
     error: { message: string; code: string } | null;
   } = await supabaseAdmin.rpc('full_text_search', {
     search_term: query,
@@ -151,7 +178,8 @@ export default async function handler(
     private_dev_api_key_param: privateDevApiKey,
   });
 
-  console.log('!!! Took', Date.now() - ts);
+  console.log('!!! [SUPABASE] Took', Date.now() - ts);
+  ts = Date.now();
 
   if (error || !_data) {
     return res
@@ -163,42 +191,29 @@ export default async function handler(
     track(_data.project_id, 'search', { projectId: _data.project_id });
   }
 
-  const data = _data as FileSectionContentInfo[];
+  const data = _data as FTSResult[];
 
-  const resultsByFile: { [key: string]: FileSectionContentInfo } = data.reduce(
-    (acc: any, value: any) => {
-      const {
-        file_id,
-        file_path,
-        file_meta,
-        section_content,
-        section_meta,
-        source_type,
-        source_data,
-        score,
-      } = value;
-      return {
-        ...acc,
-        [file_id]: {
-          path: file_path,
-          meta: file_meta,
-          score,
-          source: {
-            type: source_type,
-            ...(source_data ? { data: source_data } : {}),
-          },
-          sections: [
-            ...(acc[file_id]?.sections || []),
-            {
-              ...(section_meta ? { meta: section_meta } : {}),
-              content: createKWICSnippet(section_content || '', query),
-            },
-          ],
+  const resultsByFile: { [key: string]: SearchResult } = {};
+  for (const result of data) {
+    resultsByFile[result.file_id] = {
+      path: result.file_path,
+      meta: result.file_meta,
+      score: result.score,
+      source: {
+        type: result.source_type,
+        ...(result.source_data ? { data: result.source_data } : {}),
+      },
+      sections: [
+        ...(resultsByFile[result.file_id]?.sections || []),
+        {
+          ...(result.section_meta ? { meta: result.section_meta } : {}),
+          content: await createKWICSnippet(result.section_content || '', query),
         },
-      };
-    },
-    {} as any,
-  );
+      ],
+    };
+  }
+
+  console.log('!!! [REMARK] Took', Date.now() - ts);
 
   return res.status(200).json({
     data: Object.values(resultsByFile),
