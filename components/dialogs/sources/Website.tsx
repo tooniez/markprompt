@@ -93,7 +93,8 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
 
           if (!isAccessible) {
             const errors: FormikErrors<FormikValues> = {
-              website: 'Website is not accessible',
+              website: `Website is not accessible. If your website has security
+                  checks, this might be the reason. Please contact us at ${process.env.NEXT_PUBLIC_SUPPORT_EMAIL} to discuss options.`,
             };
             setErrors(errors);
             return;

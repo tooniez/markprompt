@@ -48,6 +48,10 @@ export default async function handler(
       if (websiteRes.ok) {
         const content = await websiteRes.text();
         return res.status(200).json({ content });
+      } else {
+        const text = await websiteRes.text();
+        console.error(text.substring(0, 500));
+        return res.status(400).json({ status: text.substring(0, 500) });
       }
     } else {
       const pageRes = await fetch(process.env.CUSTOM_PAGE_FETCH_SERVICE_URL!, {
@@ -62,6 +66,10 @@ export default async function handler(
       if (pageRes.ok) {
         const { content } = await pageRes.json();
         return res.status(200).json({ content });
+      } else {
+        const text = await pageRes.text();
+        console.error(text.substring(0, 500));
+        return res.status(400).json({ status: text.substring(0, 500) });
       }
     }
   } catch {
