@@ -104,7 +104,10 @@ const getProcessor = (withMdx: boolean, markpromptConfig: MarkpromptConfig) => {
     chain.use(remarkLinkRewrite, markpromptConfig.processorOptions.linkRewrite);
   }
 
-  chain.use(remarkParse).use(remarkStringify).use(remarkFrontmatter, ['yaml']);
+  chain
+    .use(remarkParse)
+    .use(remarkStringify)
+    .use(remarkFrontmatter, ['yaml', 'toml']);
 
   if (withMdx) {
     chain = chain.use(remarkMdx);
@@ -180,6 +183,7 @@ const processMarkdown = (
     (node) =>
       ![
         'yaml',
+        'toml',
         'mdxjsEsm',
         'mdxJsxFlowElement',
         'mdxJsxTextElement',
