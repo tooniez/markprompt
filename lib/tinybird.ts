@@ -24,12 +24,14 @@ export const recordProjectTokenCount = async (
   projectId: Project['id'],
   model: LLMInfo,
   count: number,
+  purpose: 'query-stats' | 'completions' | 'generate-embeddings' | 'sections',
 ) => {
   return recordEvent('token_count', {
     projectId,
     count,
     vendor: model.vendor,
     model: model.model.value,
+    purpose,
   });
 };
 

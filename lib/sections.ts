@@ -78,6 +78,7 @@ export const getMatchingSections = async (
         projectId,
         embeddingModelInfo,
         embeddingResult.usage.total_tokens,
+        'sections',
       );
     }
   } catch (error) {

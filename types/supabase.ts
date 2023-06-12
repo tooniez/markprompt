@@ -28,6 +28,38 @@ export interface Database {
           name?: string
           project_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "domains_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "domains_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "domains_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "domains_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "domains_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
       }
       file_sections: {
         Row: {
@@ -54,6 +86,26 @@ export interface Database {
           meta?: Json | null
           token_count?: number | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "file_sections_file_id_fkey"
+            columns: ["file_id"]
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "file_sections_file_id_fkey"
+            columns: ["file_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["file_id"]
+          },
+          {
+            foreignKeyName: "file_sections_file_id_fkey"
+            columns: ["file_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["file_id"]
+          }
+        ]
       }
       files: {
         Row: {
@@ -83,6 +135,44 @@ export interface Database {
           source_id?: string | null
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "files_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "files_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "files_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "files_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "files_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "files_source_id_fkey"
+            columns: ["source_id"]
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       memberships: {
         Row: {
@@ -106,6 +196,32 @@ export interface Database {
           type?: Database["public"]["Enums"]["membership_type"]
           user_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_team_id_fkey"
+            columns: ["team_id"]
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_team_id_fkey"
+            columns: ["team_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "memberships_team_id_fkey"
+            columns: ["team_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "memberships_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       projects: {
         Row: {
@@ -150,6 +266,32 @@ export interface Database {
           slug?: string
           team_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "projects_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_team_id_fkey"
+            columns: ["team_id"]
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_team_id_fkey"
+            columns: ["team_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "projects_team_id_fkey"
+            columns: ["team_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["team_id"]
+          }
+        ]
       }
       prompt_configs: {
         Row: {
@@ -173,6 +315,38 @@ export interface Database {
           project_id?: string
           share_key?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_configs_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prompt_configs_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "prompt_configs_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "prompt_configs_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "prompt_configs_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
       }
       query_stats: {
         Row: {
@@ -211,6 +385,38 @@ export interface Database {
           response?: string | null
           upvoted?: boolean | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
       }
       sources: {
         Row: {
@@ -234,6 +440,38 @@ export interface Database {
           project_id?: string
           type?: Database["public"]["Enums"]["source_type"]
         }
+        Relationships: [
+          {
+            foreignKeyName: "sources_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sources_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "sources_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "sources_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "sources_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
       }
       teams: {
         Row: {
@@ -275,6 +513,14 @@ export interface Database {
           stripe_customer_id?: string | null
           stripe_price_id?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "teams_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       tokens: {
         Row: {
@@ -298,6 +544,44 @@ export interface Database {
           project_id?: string
           value?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "tokens_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tokens_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tokens_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "tokens_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "tokens_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "tokens_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
       }
       user_access_tokens: {
         Row: {
@@ -336,6 +620,14 @@ export interface Database {
           state?: string | null
           user_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "user_access_tokens_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       users: {
         Row: {
@@ -368,12 +660,20 @@ export interface Database {
           subscribe_to_product_updates?: boolean
           updated_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "users_id_fkey"
+            columns: ["id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
       mv_fts: {
         Row: {
-          domain: string | null
+          domains: string[] | null
           file_id: number | null
           file_meta: Json | null
           file_path: string | null
@@ -387,8 +687,47 @@ export interface Database {
           source_data: Json | null
           source_type: Database["public"]["Enums"]["source_type"] | null
           stripe_price_id: string | null
-          token: string | null
+          tokens: string[] | null
         }
+        Relationships: []
+      }
+      v_distinct_unprocessed_query_stats_project_ids: {
+        Row: {
+          min_created_at: string | null
+          project_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
       }
       v_file_section_search_infos: {
         Row: {
@@ -407,6 +746,7 @@ export interface Database {
           stripe_price_id: string | null
           token: string | null
         }
+        Relationships: []
       }
       v_team_project_info: {
         Row: {
@@ -415,6 +755,7 @@ export interface Database {
           stripe_price_id: string | null
           team_id: string | null
         }
+        Relationships: []
       }
       v_team_project_usage_info: {
         Row: {
@@ -424,6 +765,7 @@ export interface Database {
           team_id: string | null
           team_token_count: number | null
         }
+        Relationships: []
       }
     }
     Functions: {
@@ -461,12 +803,6 @@ export interface Database {
           source_type: Database["public"]["Enums"]["source_type"]
           source_data: Json
           project_id: string
-          public_api_key: string
-          private_dev_api_key: string
-          token: string
-          domain: string
-          stripe_price_id: string
-          is_enterprise: boolean
           score: number
         }[]
       }

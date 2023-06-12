@@ -15,7 +15,11 @@ import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import { FileSection, getMatchingSections, storePrompt } from '@/lib/sections';
 import { getProjectConfigData, getTeamStripeInfo } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
-import { stringToLLMInfo } from '@/lib/utils';
+import {
+  getCompletionsResponseText,
+  getCompletionsUrl,
+  stringToLLMInfo,
+} from '@/lib/utils';
 import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
@@ -69,35 +73,10 @@ const getPayload = (
   }
 };
 
-const getCompletionsUrl = (model: OpenAIModelIdWithType) => {
-  switch (model.type) {
-    case 'chat_completions': {
-      return 'https://api.openai.com/v1/chat/completions';
-    }
-    default: {
-      return 'https://api.openai.com/v1/completions';
-    }
-  }
-};
-
 const getChunkText = (response: any, model: OpenAIModelIdWithType) => {
   switch (model.type) {
     case 'chat_completions': {
       return response.choices[0].delta.content;
-    }
-    default: {
-      return response.choices[0].text;
-    }
-  }
-};
-
-const getCompletionsResponseText = (
-  response: any,
-  model: OpenAIModelIdWithType,
-) => {
-  switch (model.type) {
-    case 'chat_completions': {
-      return response.choices[0].message.content;
     }
     default: {
       return response.choices[0].text;
@@ -302,7 +281,12 @@ export default async function handler(req: NextRequest) {
       const json = await res.json();
       // TODO: track token count
       const tokenCount = safeParseInt(json.usage.total_tokens, 0);
-      await recordProjectTokenCount(projectId, modelInfo, tokenCount);
+      await recordProjectTokenCount(
+        projectId,
+        modelInfo,
+        tokenCount,
+        'completions',
+      );
       const text = getCompletionsResponseText(json, modelInfo.model);
       await storePrompt(
         supabaseAdmin,
@@ -386,6 +370,7 @@ export default async function handler(req: NextRequest) {
           projectId,
           modelInfo,
           estimatedTokenCount,
+          'completions',
         );
       }
 

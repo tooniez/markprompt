@@ -313,6 +313,13 @@ create view v_file_section_search_infos as
   left join domains d on p.id = d.project_id
   left join teams t on t.id = p.team_id;
 
+create view v_distinct_unprocessed_query_stats_project_ids as
+  select project_id, min(created_at) as min_created_at
+  from query_stats
+  where processed = false
+  group by project_id
+  order by min_created_at asc;
+
 -- Materialized views
 
 create materialized view mv_fts as
