@@ -3,11 +3,8 @@ import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { load } from 'cheerio';
 import { backOff } from 'exponential-backoff';
 import type { Content, Root } from 'mdast';
-import { fromMarkdown } from 'mdast-util-from-markdown';
-import { mdxFromMarkdown } from 'mdast-util-mdx';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import { toString } from 'mdast-util-to-string';
-import { mdxjs } from 'micromark-extension-mdxjs';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
@@ -16,16 +13,15 @@ import TurndownService from 'turndown';
 import { unified } from 'unified';
 import { u } from 'unist-builder';
 import { filter } from 'unist-util-filter';
-import { visit } from 'unist-util-visit';
 
 import { CONTEXT_TOKENS_CUTOFF, MIN_CONTENT_LENGTH } from '@/lib/constants';
 import { createEmbedding } from '@/lib/openai.edge';
 import {
   createChecksum,
   getFileType,
+  removeFileExtension,
   splitIntoSubstringsOfMaxLength,
 } from '@/lib/utils';
-import { removeFileExtension } from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.node';
 import { Database } from '@/types/supabase';
 import {
@@ -38,6 +34,7 @@ import {
   geLLMInfoFromModel,
 } from '@/types/types';
 
+import { remarkLinkRewrite } from './remark/remark-link-rewrite';
 import { MarkpromptConfig } from './schema';
 import { tokensToApproxParagraphs } from './stripe/tiers';
 import { getTokenAllowanceInfo } from './supabase';
@@ -100,25 +97,19 @@ const inferTitleFromPath = (path: string) => {
   return removeFileExtension(path.split('/').slice(-1)[0]);
 };
 
-const getProcessor = (withMdx: boolean) => {
-  const remarkTransformLinks = () => {
-    return (tree: Root) => {
-      visit(tree, 'link', (node) => {
-        // Modify the link URL or text as desired
-        node.url = 'https://modified-link.com';
-        node.children = [{ type: 'text', value: 'Modified Link Text' }];
-      });
-    };
-  };
+const getProcessor = (withMdx: boolean, markpromptConfig: MarkpromptConfig) => {
+  let chain = unified();
 
-  let chain = unified()
-    .use(remarkTransformLinks)
-    .use(remarkParse)
-    .use(remarkStringify)
-    .use(remarkFrontmatter, ['yaml']);
+  if (markpromptConfig.processorOptions?.linkRewrite) {
+    chain.use(remarkLinkRewrite, markpromptConfig.processorOptions.linkRewrite);
+  }
+
+  chain.use(remarkParse).use(remarkStringify).use(remarkFrontmatter, ['yaml']);
+
   if (withMdx) {
     chain = chain.use(remarkMdx);
   }
+
   return chain;
 };
 
@@ -170,13 +161,12 @@ const processMarkdown = (
   };
 
   try {
-    getProcessor(true).use(setTree).processSync(content);
-  } catch (e) {
-    console.log('Error', e);
+    getProcessor(true, markpromptConfig).use(setTree).processSync(content);
+  } catch {
     try {
-      getProcessor(false).use(setTree).processSync(content);
-    } catch (e) {
-      console.log('Error', e);
+      getProcessor(false, markpromptConfig).use(setTree).processSync(content);
+    } catch {
+      //
     }
   }
 
@@ -184,46 +174,12 @@ const processMarkdown = (
     return undefined;
   }
 
-  const filteredTree = filter(
+  // Remove all JSX and expressions from MDX
+  const mdTree = filter(
     tree,
     (node) =>
       ![
         'yaml',
-        'mdxjsEsm',
-        'mdxJsxFlowElement',
-        'mdxJsxTextElement',
-        'mdxFlowExpression',
-        'mdxTextExpression',
-      ].includes(node.type),
-  );
-  console.log('filteredTree', JSON.stringify(filteredTree, null, 2));
-
-  // console.log(JSON.stringify(String(file), null, 2));
-  // const processor = unified()
-  //   .use(remarkParse)
-  //   .use(remarkStringify)
-  //   // .use(remarkTransformLinks)
-  //   .use(remarkFrontmatter, ['yaml', 'toml']);
-
-  // const result = processor.processSync(content);
-
-  console.log('==============================');
-
-  const mdxTree = fromMarkdown(
-    content,
-    asMDX
-      ? {
-          extensions: [mdxjs()],
-          mdastExtensions: [mdxFromMarkdown()],
-        }
-      : {},
-  );
-
-  // Remove all JSX and expressions from MDX
-  const mdTree = filter(
-    mdxTree,
-    (node) =>
-      ![
         'mdxjsEsm',
         'mdxJsxFlowElement',
         'mdxJsxTextElement',
@@ -256,7 +212,6 @@ const processMarkdown = (
 
 const processMarkdoc = (
   content: string,
-  filePath: string,
   markpromptConfig: MarkpromptConfig,
 ): FileSectionsData | undefined => {
   // In Markdoc, we start by extracting the frontmatter, because
@@ -381,11 +336,7 @@ const processFileData = (
   let fileSectionsData: FileSectionsData | undefined;
   const fileType = getFileType(file.name);
   if (fileType === 'mdoc') {
-    fileSectionsData = processMarkdoc(
-      file.content,
-      file.path,
-      markpromptConfig,
-    );
+    fileSectionsData = processMarkdoc(file.content, markpromptConfig);
   } else if (fileType === 'html') {
     fileSectionsData = processHtml(file.content, file.path, markpromptConfig);
   } else {
@@ -395,11 +346,7 @@ const processFileData = (
       // Some repos use the .md extension for Markdoc, and this
       // would break if parsed as MDX, so attempt with Markoc
       // parsing here.
-      fileSectionsData = processMarkdoc(
-        file.content,
-        file.path,
-        markpromptConfig,
-      );
+      fileSectionsData = processMarkdoc(file.content, markpromptConfig);
     }
   }
 
