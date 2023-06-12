@@ -64,7 +64,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
   }, [theme, isDark]);
 
   const _canRemoveBranding = team && canRemoveBranding(team);
-  const _canEnableInstantSearch = team && canEnableInstantSearch(team);
+  // const _canEnableInstantSearch = team && canEnableInstantSearch(team);
 
   return (
     <div className="flex flex-col gap-2">
@@ -80,7 +80,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
           }}
         />
       </Row>
-      <Row label="Instant search">
+      {/* <Row label="Instant search">
         <div className="flex flex-row items-center justify-end gap-2">
           {!_canEnableInstantSearch && (
             <ButtonOrLinkWrapper
@@ -101,7 +101,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
             <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
           </Switch.Root>
         </div>
-      </Row>
+      </Row> */}
       <Row label="Include branding">
         <div className="flex flex-row items-center justify-end gap-2">
           {!_canRemoveBranding && (
