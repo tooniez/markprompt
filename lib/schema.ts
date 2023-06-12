@@ -1,14 +1,12 @@
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 
+import { RemarkLinkRewriteOptions } from './remark/remark-link-rewrite';
+
 export type MarkpromptConfig = {
   include?: string[];
   exclude?: string[];
   processorOptions?: {
-    linkRewrite?: {
-      pattern: string;
-      replace: string;
-      excludeExternalLinks?: boolean;
-    };
+    linkRewrite?: RemarkLinkRewriteOptions;
   };
 };
 
@@ -20,8 +18,14 @@ export const MARKPROMPT_CONFIG_SCHEMA: JTDSchemaType<MarkpromptConfig> = {
       optionalProperties: {
         linkRewrite: {
           properties: {
-            pattern: { type: 'string' },
-            replace: { type: 'string' },
+            rules: {
+              elements: {
+                properties: {
+                  pattern: { type: 'string' },
+                  replace: { type: 'string' },
+                },
+              },
+            },
           },
           optionalProperties: {
             excludeExternalLinks: { type: 'boolean' },

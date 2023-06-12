@@ -3,12 +3,14 @@ import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { load } from 'cheerio';
 import { backOff } from 'exponential-backoff';
 import type { Content, Root } from 'mdast';
-import { fromMarkdown } from 'mdast-util-from-markdown';
-import { mdxFromMarkdown } from 'mdast-util-mdx';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import { toString } from 'mdast-util-to-string';
-import { mdxjs } from 'micromark-extension-mdxjs';
+import remarkFrontmatter from 'remark-frontmatter';
+import remarkMdx from 'remark-mdx';
+import remarkParse from 'remark-parse';
+import remarkStringify from 'remark-stringify';
 import TurndownService from 'turndown';
+import { unified } from 'unified';
 import { u } from 'unist-builder';
 import { filter } from 'unist-util-filter';
 
@@ -17,11 +19,11 @@ import { createEmbedding } from '@/lib/openai.edge';
 import {
   createChecksum,
   getFileType,
+  removeFileExtension,
   splitIntoSubstringsOfMaxLength,
 } from '@/lib/utils';
-import { removeFileExtension } from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.node';
-import { Database, Json } from '@/types/supabase';
+import { Database } from '@/types/supabase';
 import {
   API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
   DbFile,
@@ -32,6 +34,7 @@ import {
   geLLMInfoFromModel,
 } from '@/types/types';
 
+import { remarkLinkRewrite } from './remark/remark-link-rewrite';
 import { MarkpromptConfig } from './schema';
 import { tokensToApproxParagraphs } from './stripe/tiers';
 import { getTokenAllowanceInfo } from './supabase';
@@ -45,11 +48,13 @@ type FileSectionData = {
 type FileSectionsData = {
   sections: FileSectionData[];
   meta: { title: string } & any;
+  leadFileHeading: string | undefined;
 };
 
 const defaultFileSectionsData: FileSectionsData = {
   sections: [],
   meta: { title: 'Untitled' },
+  leadFileHeading: undefined,
 };
 
 const turndown = new TurndownService({
@@ -92,19 +97,45 @@ const inferTitleFromPath = (path: string) => {
   return removeFileExtension(path.split('/').slice(-1)[0]);
 };
 
-const extractFrontmatterWithFallbackTitle = (content: string, path: string) => {
-  let meta = extractFrontmatter(content);
+const getProcessor = (withMdx: boolean, markpromptConfig: MarkpromptConfig) => {
+  let chain = unified();
 
-  if (!meta?.title) {
-    meta = {
-      ...meta,
-      title: path
-        ? inferTitleFromPath(path)
-        : defaultFileSectionsData.meta.title,
-    };
+  if (markpromptConfig.processorOptions?.linkRewrite) {
+    chain.use(remarkLinkRewrite, markpromptConfig.processorOptions.linkRewrite);
   }
 
-  return meta;
+  chain
+    .use(remarkParse)
+    .use(remarkStringify)
+    .use(remarkFrontmatter, ['yaml', 'toml']);
+
+  if (withMdx) {
+    chain = chain.use(remarkMdx);
+  }
+
+  return chain;
+};
+
+const augmentMetaWithTitle = (
+  meta: {
+    [key: string]: string;
+  },
+  leadFileHeading: string | undefined,
+  filePath: string,
+) => {
+  if (meta.title) {
+    return meta;
+  }
+
+  if (leadFileHeading) {
+    return { ...meta, title: leadFileHeading };
+  }
+
+  if (filePath) {
+    return { ...meta, title: inferTitleFromPath(filePath) };
+  }
+
+  return { ...meta, title: defaultFileSectionsData.meta.title };
 };
 
 // Use `asMDX = false` for Markdoc content. What might happen in Markdoc
@@ -122,30 +153,37 @@ const extractFrontmatterWithFallbackTitle = (content: string, path: string) => {
 const processMarkdown = (
   content: string,
   asMDX: boolean,
-  path: string,
-  extractMeta: boolean,
   markpromptConfig: MarkpromptConfig,
-): FileSectionsData => {
-  let meta: any = undefined;
-  if (extractMeta) {
-    meta = extractFrontmatterWithFallbackTitle(content, path);
+): FileSectionsData | undefined => {
+  const meta = extractFrontmatter(content);
+
+  let tree: Root | undefined = undefined;
+
+  const setTree = () => (t: Root) => {
+    tree = t;
+  };
+
+  try {
+    getProcessor(true, markpromptConfig).use(setTree).processSync(content);
+  } catch {
+    try {
+      getProcessor(false, markpromptConfig).use(setTree).processSync(content);
+    } catch {
+      //
+    }
   }
 
-  const mdxTree = fromMarkdown(
-    content,
-    asMDX
-      ? {
-          extensions: [mdxjs()],
-          mdastExtensions: [mdxFromMarkdown()],
-        }
-      : {},
-  );
+  if (!tree) {
+    return undefined;
+  }
 
   // Remove all JSX and expressions from MDX
   const mdTree = filter(
-    mdxTree,
+    tree,
     (node) =>
       ![
+        'yaml',
+        'toml',
         'mdxjsEsm',
         'mdxJsxFlowElement',
         'mdxJsxTextElement',
@@ -155,7 +193,7 @@ const processMarkdown = (
   );
 
   if (!mdTree) {
-    return { sections: [], meta };
+    return undefined;
   }
 
   const sectionTrees = splitTreeBy(mdTree, (node) => node.type === 'heading');
@@ -171,18 +209,21 @@ const processMarkdown = (
     };
   });
 
-  return {
-    sections,
-    meta,
-  };
+  const leadFileHeading = sections[0]?.leadHeading?.value;
+
+  return { sections, meta, leadFileHeading };
 };
 
 const processMarkdoc = (
   content: string,
-  path: string,
   markpromptConfig: MarkpromptConfig,
-): FileSectionsData => {
-  const meta = extractFrontmatterWithFallbackTitle(content, path);
+): FileSectionsData | undefined => {
+  // In Markdoc, we start by extracting the frontmatter, because
+  // the process is then to transform the Markdoc to HTML, and then
+  // pass it through the Markdown processor. This erases traces of
+  // the frontmatter. However, the frontmatter may not include
+  // a title, which we will obtain from the Markdown processing.
+  const meta = extractFrontmatter(content);
   const ast = Markdoc.parse(content);
   // In Markdoc, we make an exception and transform {% img %}
   // and {% image %} tags to <img> html since this is a common
@@ -196,18 +237,13 @@ const processMarkdoc = (
   });
   const html = Markdoc.renderers.html(transformed) || '';
   const md = turndown.turndown(html);
-  const fileSectionData = processMarkdown(
-    md,
-    false,
-    path,
-    false,
-    markpromptConfig,
-  );
+  const fileSectionData = processMarkdown(md, false, markpromptConfig);
 
-  return {
-    ...fileSectionData,
-    meta,
-  };
+  if (!fileSectionData) {
+    return undefined;
+  }
+
+  return { ...fileSectionData, meta };
 };
 
 const htmlExcludeTags = ['head', 'script', 'style', 'nav', 'footer', 'aside'];
@@ -216,7 +252,7 @@ const processHtml = (
   content: string,
   path: string,
   markpromptConfig: MarkpromptConfig,
-): FileSectionsData => {
+): FileSectionsData | undefined => {
   const $ = load(content);
 
   const title = $('title').text();
@@ -230,17 +266,15 @@ const processHtml = (
     cleanedHtml = $('body').html();
   }
 
-  let fileSectionsData = defaultFileSectionsData;
+  let fileSectionsData: FileSectionsData | undefined = defaultFileSectionsData;
 
   if (cleanedHtml) {
     const md = turndown.turndown(cleanedHtml);
-    fileSectionsData = processMarkdown(
-      md,
-      false,
-      path,
-      false,
-      markpromptConfig,
-    );
+    fileSectionsData = processMarkdown(md, false, markpromptConfig);
+  }
+
+  if (!fileSectionsData) {
+    return undefined;
   }
 
   return {
@@ -302,36 +336,26 @@ const splitWithinTokenCutoff = (section: string): string[] => {
 const processFileData = (
   file: FileData,
   markpromptConfig: MarkpromptConfig,
-): FileSectionsData => {
-  let fileSectionsData: FileSectionsData;
+): Omit<FileSectionsData, 'leadFileHeading'> | undefined => {
+  let fileSectionsData: FileSectionsData | undefined;
   const fileType = getFileType(file.name);
   if (fileType === 'mdoc') {
-    fileSectionsData = processMarkdoc(
-      file.content,
-      file.path,
-      markpromptConfig,
-    );
+    fileSectionsData = processMarkdoc(file.content, markpromptConfig);
   } else if (fileType === 'html') {
     fileSectionsData = processHtml(file.content, file.path, markpromptConfig);
   } else {
     try {
-      fileSectionsData = processMarkdown(
-        file.content,
-        true,
-        file.path,
-        true,
-        markpromptConfig,
-      );
+      fileSectionsData = processMarkdown(file.content, true, markpromptConfig);
     } catch (e) {
       // Some repos use the .md extension for Markdoc, and this
       // would break if parsed as MDX, so attempt with Markoc
       // parsing here.
-      fileSectionsData = processMarkdoc(
-        file.content,
-        file.path,
-        markpromptConfig,
-      );
+      fileSectionsData = processMarkdoc(file.content, markpromptConfig);
     }
+  }
+
+  if (!fileSectionsData) {
+    return undefined;
   }
 
   // Now that we have sections, break them up further to stay within
@@ -350,7 +374,14 @@ const processFileData = (
       [] as FileSectionData[],
     );
 
-  return { sections: trimmedSectionsData, meta: fileSectionsData.meta };
+  return {
+    sections: trimmedSectionsData,
+    meta: augmentMetaWithTitle(
+      fileSectionsData.meta,
+      fileSectionsData.leadFileHeading,
+      file.path,
+    ),
+  };
 };
 
 const getFileAtPath = async (
@@ -422,7 +453,13 @@ export const generateFileEmbeddings = async (
   let embeddingsTokenCount = 0;
   const errors: { path: string; message: string }[] = [];
 
-  const { meta, sections } = processFileData(file, markpromptConfig);
+  const fileData = processFileData(file, markpromptConfig);
+
+  if (!fileData) {
+    return [{ path: file.path, message: 'Empty content.' }];
+  }
+
+  const { meta, sections } = fileData;
 
   let fileId = await getFileAtPath(supabaseAdmin, sourceId, file.path);
 
