@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority';
 import cn from 'classnames';
 import Link from 'next/link';
 import { forwardRef, JSXElementConstructor, ReactNode } from 'react';
@@ -41,6 +42,7 @@ export type ButtonProps = {
   buttonSize?: 'xs' | 'sm' | 'base' | 'md' | 'lg';
   variant?: ButtonVariant;
   light?: boolean;
+  left?: boolean;
   href?: string;
   children?: ReactNode;
   target?: string;
@@ -62,6 +64,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       variant,
       light,
       href,
+      left,
       children,
       Icon,
       className,
@@ -88,8 +91,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           !noStyle &&
           cn(
             className,
-            'button-ring relative flex select-none flex-row items-center justify-center whitespace-nowrap rounded-md border disabled:cursor-not-allowed',
+            'button-ring relative flex select-none flex-row items-center whitespace-nowrap rounded-md border disabled:cursor-not-allowed',
             {
+              'justify-center': !left,
+              'justify-start': left,
               'border-transparent bg-white text-neutral-900 hover:bg-neutral-300 disabled:bg-neutral-900 disabled:text-neutral-500 hover:disabled:bg-neutral-900':
                 variant === 'cta',
               'button-glow-color border-transparent bg-fuchsia-600 text-white hover:bg-fuchsia-700':

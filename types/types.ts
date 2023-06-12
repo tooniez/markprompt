@@ -154,3 +154,8 @@ export class ApiError extends Error {
 }
 
 export type TagColor = 'fuchsia' | 'orange' | 'sky' | 'green';
+
+export type SerializedDateRange = {
+  from: number | undefined;
+  to: number | undefined;
+};
