@@ -87,7 +87,9 @@ export const isDefaultCustomConfig = (config: ModelConfig) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { model: configModel, ...rest } = config;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { model: defaultModel, ...defaultRest } = initialState.modelConfig;
+  const { model: defaultModel, ...defaultRest } = initialState.modelConfig || {
+    model: undefined,
+  };
   return objectEquals(rest, defaultRest);
 };
 
@@ -105,48 +107,50 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
   const { project } = useProject();
 
   const [theme, setTheme] = useLocalStorage<Theme>(
-    `${project?.id ?? 'undefined'}:config:theme`,
+    !project?.id ? null : `${project?.id}:config:theme`,
     defaultTheme,
   );
 
   const [isDark, setDark] = useLocalStorage<boolean>(
-    `${project?.id ?? 'undefined'}:config:model-dark`,
+    !project?.id ? null : `${project?.id}:config:model-dark`,
     CONFIG_DEFAULT_VALUES.isDark,
   );
 
   const [placeholder, setPlaceholder] = useLocalStorage<string>(
-    `${project?.id ?? 'undefined'}:config:placeholder`,
+    !project?.id ? null : `${project?.id}:config:placeholder`,
     CONFIG_DEFAULT_VALUES.placeholder,
   );
 
   const [iDontKnowMessage, setIDontKnowMessage] = useLocalStorage<string>(
-    `${project?.id ?? 'undefined'}:config:i-dont-know-message`,
+    !project?.id ? null : `${project?.id}:config:i-dont-know-message`,
     CONFIG_DEFAULT_VALUES.iDontKnowMessage,
   );
 
   const [referencesHeading, setReferencesHeading] = useLocalStorage<string>(
-    `${project?.id ?? 'undefined'}:config:references-heading`,
+    !project?.id ? null : `${project?.id}:config:references-heading`,
     CONFIG_DEFAULT_VALUES.referencesHeading,
   );
 
   const [loadingHeading, setLoadingHeading] = useLocalStorage<string>(
-    `${project?.id ?? 'undefined'}:config:loading-heading`,
+    !project?.id ? null : `${project?.id}:config:loading-heading`,
     CONFIG_DEFAULT_VALUES.loadingHeading,
   );
 
   const [includeBranding, setIncludeBranding] = useLocalStorage<boolean>(
-    `${project?.id ?? 'undefined'}:config:include-branding`,
+    !project?.id ? null : `${project?.id}:config:include-branding`,
     CONFIG_DEFAULT_VALUES.includeBranding,
   );
 
   const [isInstantSearchEnabled, setInstantSearchEnabled] =
     useLocalStorage<boolean>(
-      `${project?.id ?? 'undefined'}:config:instant-search-enabled`,
+      !project?.id ? null : `${project?.id}:config:instant-search-enabled`,
       CONFIG_DEFAULT_VALUES.isInstantSearchEnabled,
     );
 
-  const [modelConfig, setModelConfig] = useLocalStorage<ModelConfig>(
-    `${project?.id ?? 'undefined'}:config:model-config`,
+  const [modelConfig, setModelConfig] = useLocalStorage<
+    ModelConfig | undefined
+  >(
+    !project?.id ? null : `${project?.id}:config:model-config`,
     initialState.modelConfig,
   );
 
@@ -167,6 +171,9 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
 
   const setColor = useCallback(
     (colorKey: ThemeColorKeys, value: string) => {
+      if (!theme) {
+        return;
+      }
       const colors = isDark ? theme.colors.dark : theme.colors.light;
       const updatedTheme = {
         ...theme,
@@ -185,6 +192,9 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
 
   const setSize = useCallback(
     (size: Theme['size']) => {
+      if (!theme) {
+        return;
+      }
       const updatedTheme = { ...theme, size };
       updateOrCreateCustomTheme(updatedTheme);
     },
@@ -192,22 +202,29 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
   );
 
   const resetModelConfigDefaults = useCallback(() => {
+    if (!initialState.modelConfig) {
+      return;
+    }
     setModelConfig(initialState.modelConfig);
   }, [setModelConfig]);
 
   return (
     <ConfigContext.Provider
       value={{
-        theme,
-        isDark,
-        placeholder,
-        iDontKnowMessage,
-        referencesHeading,
-        loadingHeading,
-        includeBranding,
-        isInstantSearchEnabled,
-        modelConfig,
-        colors: isDark ? theme.colors.dark : theme.colors.light,
+        theme: theme || defaultTheme,
+        isDark: isDark || CONFIG_DEFAULT_VALUES.isDark,
+        placeholder: placeholder || CONFIG_DEFAULT_VALUES.placeholder,
+        iDontKnowMessage:
+          iDontKnowMessage || CONFIG_DEFAULT_VALUES.iDontKnowMessage,
+        referencesHeading:
+          referencesHeading || CONFIG_DEFAULT_VALUES.referencesHeading,
+        loadingHeading: loadingHeading || CONFIG_DEFAULT_VALUES.loadingHeading,
+        includeBranding: !!includeBranding,
+        isInstantSearchEnabled: !!isInstantSearchEnabled,
+        modelConfig: modelConfig || initialState.modelConfig,
+        colors: isDark
+          ? (theme || defaultTheme).colors.dark
+          : (theme || defaultTheme).colors.light,
         setTheme: updateOrCreateCustomTheme,
         setColor,
         setDark,

@@ -1,31 +1,34 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 
 export const useLocalStorage = <T>(
-  key: string,
+  key: string | null,
   initialValue: T,
-): [T, (value: T) => void] => {
-  const [isMounted, setIsMounted] = useState(false);
-
+): [T | undefined, (value: T) => void] => {
   const isServer = typeof window === 'undefined';
   const useEffectFn = !isServer ? useLayoutEffect : useEffect;
 
-  useEffectFn(() => {
-    setIsMounted(true);
-  }, []);
-
-  const [storedValue, setStoredValue] = useState<T | undefined>(initialValue);
+  const [storedOrDefaultValue, setStoredOrDefaultValue] = useState<
+    T | undefined
+  >(undefined);
 
   useEffectFn(() => {
+    if (!key) {
+      return;
+    }
+
     if (typeof window === 'undefined') {
-      return setStoredValue(initialValue);
+      return setStoredOrDefaultValue(undefined);
     }
 
     try {
       const item = localStorage.getItem(key);
-      setStoredValue(item ? JSON.parse(item) : initialValue);
+      if (key.includes('insights:date-range')) {
+        console.log('=======================================', item);
+      }
+      setStoredOrDefaultValue(item ? JSON.parse(item) : initialValue);
     } catch (e) {
       console.error('Error getting value from localStorage', e);
-      return setStoredValue(initialValue);
+      return setStoredOrDefaultValue(initialValue);
     }
   }, [key, initialValue]);
 
@@ -33,22 +36,17 @@ export const useLocalStorage = <T>(
     (value: T) => {
       try {
         const valueToStore =
-          value instanceof Function ? value(storedValue) : value;
-        setStoredValue(valueToStore);
-        if (typeof window !== 'undefined') {
+          value instanceof Function ? value(storedOrDefaultValue) : value;
+        setStoredOrDefaultValue(valueToStore);
+        if (typeof window !== 'undefined' && key) {
           localStorage.setItem(key, JSON.stringify(valueToStore));
         }
       } catch (e) {
         console.error('Error writing value to localStorage', e);
       }
     },
-    [key, storedValue],
+    [key, storedOrDefaultValue],
   );
 
-  return [
-    !isMounted || typeof storedValue === 'undefined'
-      ? initialValue
-      : storedValue,
-    setValue,
-  ];
+  return [!key ? undefined : storedOrDefaultValue, setValue];
 };
