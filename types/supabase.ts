@@ -358,6 +358,7 @@ export interface Database {
           processed: boolean
           project_id: string
           prompt: string | null
+          reference_paths: string[] | null
           response: string | null
           upvoted: boolean | null
         }
@@ -370,6 +371,7 @@ export interface Database {
           processed?: boolean
           project_id: string
           prompt?: string | null
+          reference_paths?: string[] | null
           response?: string | null
           upvoted?: boolean | null
         }
@@ -382,6 +384,7 @@ export interface Database {
           processed?: boolean
           project_id?: string
           prompt?: string | null
+          reference_paths?: string[] | null
           response?: string | null
           upvoted?: boolean | null
         }

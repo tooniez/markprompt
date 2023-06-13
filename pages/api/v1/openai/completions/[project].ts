@@ -214,7 +214,7 @@ export default async function handler(req: NextRequest) {
 
   let numTokens = 0;
   let contextText = '';
-  const references: DbFile['path'][] = [];
+  const referencePaths: DbFile['path'][] = [];
   for (const section of fileSections) {
     numTokens += section.token_count;
 
@@ -225,8 +225,9 @@ export default async function handler(req: NextRequest) {
     contextText += `Section id: ${section.path}\n\n${_prepareSectionText(
       section.content,
     )}\n---\n`;
-    if (!references.includes(section.path)) {
-      references.push(section.path);
+
+    if (!referencePaths.includes(section.path)) {
+      referencePaths.push(section.path);
     }
   }
 
@@ -272,6 +273,7 @@ export default async function handler(req: NextRequest) {
         null,
         promptEmbedding,
         true,
+        referencePaths,
       );
       return new Response(
         `Unable to retrieve completions response: ${message}`,
@@ -295,10 +297,14 @@ export default async function handler(req: NextRequest) {
         text,
         promptEmbedding,
         isIDontKnowResponse(text, iDontKnowMessage),
+        referencePaths,
       );
-      return new Response(JSON.stringify({ text, references, debugInfo }), {
-        status: 200,
-      });
+      return new Response(
+        JSON.stringify({ text, references: referencePaths, debugInfo }),
+        {
+          status: 200,
+        },
+      );
     }
   }
 
@@ -325,7 +331,7 @@ export default async function handler(req: NextRequest) {
             if (!didSendHeader) {
               // Done sending chunks, send references
               const queue = encoder.encode(
-                `${JSON.stringify(references || [])}${
+                `${JSON.stringify(referencePaths || [])}${
                   constants.STREAM_SEPARATOR
                 }`,
               );
@@ -381,6 +387,7 @@ export default async function handler(req: NextRequest) {
         responseText,
         promptEmbedding,
         isIDontKnowResponse(responseText, iDontKnowMessage),
+        referencePaths,
       );
 
       // We're done, wind down

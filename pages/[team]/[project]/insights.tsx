@@ -25,10 +25,8 @@ const deserializeRange = (range: {
   };
 };
 
-const defaultDateRange = serializeRange({
-  from: addDays(new Date(), -7),
-  to: new Date(),
-});
+const defaultDateRange = { from: addDays(new Date(), -7), to: new Date() };
+const defaultSerializedDateRange = serializeRange(defaultDateRange);
 
 const Insights = () => {
   const { project } = useProject();
@@ -37,7 +35,7 @@ const Insights = () => {
     SerializedDateRange | undefined
   >(
     !project?.id ? null : `${project.id}:insights:date-range`,
-    defaultDateRange,
+    defaultSerializedDateRange,
   );
 
   const range = useMemo(() => {
@@ -50,6 +48,7 @@ const Insights = () => {
     });
   }, [serializedRange?.from, serializedRange?.to]);
 
+  console.log('range', JSON.stringify(range, null, 2));
   useEffect(() => {
     console.log(project?.id, serializedRange);
   }, [project?.id, serializedRange]);
@@ -61,7 +60,7 @@ const Insights = () => {
       titleComponent={<div className="flex items-center">Insights</div>}
     >
       <DateRangePicker
-        range={range}
+        range={range ?? defaultDateRange}
         setRange={(range: DateRange | undefined) => {
           if (range) {
             setSerializedRange(serializeRange(range));

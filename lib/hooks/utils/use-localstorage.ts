@@ -22,13 +22,10 @@ export const useLocalStorage = <T>(
 
     try {
       const item = localStorage.getItem(key);
-      if (key.includes('insights:date-range')) {
-        console.log('=======================================', item);
-      }
       setStoredOrDefaultValue(item ? JSON.parse(item) : initialValue);
     } catch (e) {
       console.error('Error getting value from localStorage', e);
-      return setStoredOrDefaultValue(initialValue);
+      return setStoredOrDefaultValue(undefined);
     }
   }, [key, initialValue]);
 

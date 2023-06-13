@@ -23,6 +23,7 @@ export const storePrompt = async (
   response: string | null,
   embedding: any,
   noResponse: boolean,
+  referencePaths: string[],
 ) => {
   return supabase.from('query_stats').insert([
     {
@@ -31,6 +32,9 @@ export const storePrompt = async (
       ...(response ? { response } : {}),
       embedding,
       ...(noResponse ? { no_response: noResponse } : {}),
+      ...(referencePaths && referencePaths?.length > 0
+        ? { reference_paths: referencePaths }
+        : {}),
     },
   ]);
 };
@@ -147,6 +151,7 @@ export const getMatchingSections = async (
       null,
       promptEmbedding,
       true,
+      [],
     );
     throw new ApiError(400, 'No relevant sections found');
   }

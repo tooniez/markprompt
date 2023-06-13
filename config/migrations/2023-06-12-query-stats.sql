@@ -4,3 +4,7 @@ create view v_distinct_unprocessed_query_stats_project_ids as
   where processed = false
   group by project_id
   order by min_created_at asc;
+
+-- Add reference paths to each query stats
+alter table query_stats
+add column reference_paths text[];
