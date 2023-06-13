@@ -48,11 +48,6 @@ const Insights = () => {
     });
   }, [serializedRange?.from, serializedRange?.to]);
 
-  console.log('range', JSON.stringify(range, null, 2));
-  useEffect(() => {
-    console.log(project?.id, serializedRange);
-  }, [project?.id, serializedRange]);
-
   return (
     <ProjectSettingsLayout
       title="Insights"
