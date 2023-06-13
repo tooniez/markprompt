@@ -15,7 +15,11 @@ import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import { FileSection, getMatchingSections, storePrompt } from '@/lib/sections';
 import { getProjectConfigData, getTeamStripeInfo } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
-import { stringToLLMInfo } from '@/lib/utils';
+import {
+  getCompletionsResponseText,
+  getCompletionsUrl,
+  stringToLLMInfo,
+} from '@/lib/utils';
 import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
@@ -69,35 +73,10 @@ const getPayload = (
   }
 };
 
-const getCompletionsUrl = (model: OpenAIModelIdWithType) => {
-  switch (model.type) {
-    case 'chat_completions': {
-      return 'https://api.openai.com/v1/chat/completions';
-    }
-    default: {
-      return 'https://api.openai.com/v1/completions';
-    }
-  }
-};
-
 const getChunkText = (response: any, model: OpenAIModelIdWithType) => {
   switch (model.type) {
     case 'chat_completions': {
       return response.choices[0].delta.content;
-    }
-    default: {
-      return response.choices[0].text;
-    }
-  }
-};
-
-const getCompletionsResponseText = (
-  response: any,
-  model: OpenAIModelIdWithType,
-) => {
-  switch (model.type) {
-    case 'chat_completions': {
-      return response.choices[0].message.content;
     }
     default: {
       return response.choices[0].text;
@@ -235,7 +214,7 @@ export default async function handler(req: NextRequest) {
 
   let numTokens = 0;
   let contextText = '';
-  const references: DbFile['path'][] = [];
+  const referencePaths: DbFile['path'][] = [];
   for (const section of fileSections) {
     numTokens += section.token_count;
 
@@ -246,8 +225,9 @@ export default async function handler(req: NextRequest) {
     contextText += `Section id: ${section.path}\n\n${_prepareSectionText(
       section.content,
     )}\n---\n`;
-    if (!references.includes(section.path)) {
-      references.push(section.path);
+
+    if (!referencePaths.includes(section.path)) {
+      referencePaths.push(section.path);
     }
   }
 
@@ -293,6 +273,7 @@ export default async function handler(req: NextRequest) {
         null,
         promptEmbedding,
         true,
+        referencePaths,
       );
       return new Response(
         `Unable to retrieve completions response: ${message}`,
@@ -302,7 +283,12 @@ export default async function handler(req: NextRequest) {
       const json = await res.json();
       // TODO: track token count
       const tokenCount = safeParseInt(json.usage.total_tokens, 0);
-      await recordProjectTokenCount(projectId, modelInfo, tokenCount);
+      await recordProjectTokenCount(
+        projectId,
+        modelInfo,
+        tokenCount,
+        'completions',
+      );
       const text = getCompletionsResponseText(json, modelInfo.model);
       await storePrompt(
         supabaseAdmin,
@@ -311,10 +297,14 @@ export default async function handler(req: NextRequest) {
         text,
         promptEmbedding,
         isIDontKnowResponse(text, iDontKnowMessage),
+        referencePaths,
       );
-      return new Response(JSON.stringify({ text, references, debugInfo }), {
-        status: 200,
-      });
+      return new Response(
+        JSON.stringify({ text, references: referencePaths, debugInfo }),
+        {
+          status: 200,
+        },
+      );
     }
   }
 
@@ -341,7 +331,7 @@ export default async function handler(req: NextRequest) {
             if (!didSendHeader) {
               // Done sending chunks, send references
               const queue = encoder.encode(
-                `${JSON.stringify(references || [])}${
+                `${JSON.stringify(referencePaths || [])}${
                   constants.STREAM_SEPARATOR
                 }`,
               );
@@ -386,6 +376,7 @@ export default async function handler(req: NextRequest) {
           projectId,
           modelInfo,
           estimatedTokenCount,
+          'completions',
         );
       }
 
@@ -396,6 +387,7 @@ export default async function handler(req: NextRequest) {
         responseText,
         promptEmbedding,
         isIDontKnowResponse(responseText, iDontKnowMessage),
+        referencePaths,
       );
 
       // We're done, wind down

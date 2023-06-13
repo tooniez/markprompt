@@ -29,8 +29,6 @@ const initialContextState: State = {
   },
 };
 
-const publicRoutes = ['/login', '/signin', '/legal'];
-
 const AppContextProvider = (props: PropsWithChildren) => {
   const router = useRouter();
   const session = useSession();
@@ -41,7 +39,7 @@ const AppContextProvider = (props: PropsWithChildren) => {
 
   const [didCompleteFirstQuery, setDidCompleteFirstQuery] =
     useLocalStorage<boolean>(
-      `${user?.id ?? 'undefined'}:onboarding:didCompleteFirstQuery`,
+      !user?.id ? null : `${user?.id}:onboarding:didCompleteFirstQuery`,
       false,
     );
 
@@ -159,7 +157,7 @@ const AppContextProvider = (props: PropsWithChildren) => {
     <AppContext.Provider
       value={{
         isOnboarding: !loadingUser && !user?.has_completed_onboarding,
-        didCompleteFirstQuery,
+        didCompleteFirstQuery: !!didCompleteFirstQuery,
         setDidCompleteFirstQuery,
       }}
       {...props}

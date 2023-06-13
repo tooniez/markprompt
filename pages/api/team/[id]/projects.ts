@@ -3,7 +3,6 @@ import { SupabaseClient } from '@supabase/auth-helpers-react';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import {
-  generateKey,
   generatePKKey,
   generateRandomSlug,
   generateSKTestKey,

@@ -76,7 +76,7 @@ const SharePage: FC<InferGetStaticPropsType<typeof getStaticProps>> & {
   hideChat: boolean;
 } = ({ projectKey, promptConfig }) => {
   const [isDark, setDark] = useLocalStorage<boolean>(
-    `public:share:isDark`,
+    'public:share:isDark',
     true,
   );
 
@@ -89,14 +89,14 @@ const SharePage: FC<InferGetStaticPropsType<typeof getStaticProps>> & {
       <SharedHead title="Playground | Markprompt" />
       <div
         className={cn('grid-background relative h-screen w-screen', {
-          'grid-background-dark bg-neutral-900': isDark,
+          'grid-background-dark bg-neutral-900': !!isDark,
           'grid-background-light bg-neutral-100': !isDark,
         })}
       >
         <div className="absolute top-4 right-4 z-20">
           <div
             className={cn('cursor-pointer rounded p-2 transition', {
-              'text-neutral-300 hover:bg-white/5': isDark,
+              'text-neutral-300 hover:bg-white/5': !!isDark,
               'text-neutral-900 hover:bg-black/5': !isDark,
             })}
             onClick={() => {
@@ -113,7 +113,7 @@ const SharePage: FC<InferGetStaticPropsType<typeof getStaticProps>> & {
               iDontKnowMessage={promptConfig.iDontKnowMessage}
               theme={promptConfig.theme}
               placeholder={promptConfig.placeholder}
-              isDark={isDark}
+              isDark={!!isDark}
               modelConfig={promptConfig.modelConfig}
               referencesHeading={promptConfig.referencesHeading}
               loadingHeading={promptConfig.loadingHeading}

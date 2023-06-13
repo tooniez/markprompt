@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FC } from 'react';
 
-export type SubTabItem = { label: string; href: string };
+import { Tag } from '../ui/Tag';
+
+export type SubTabItem = { label: string; href: string; tag?: string };
 
 type SubTabsProps = {
   items: SubTabItem[];
@@ -29,7 +31,14 @@ const SubTabs: FC<SubTabsProps> = ({ items }) => {
                 },
               )}
             >
-              <Link href={item.href}>{item.label}</Link>
+              <Link href={item.href}>
+                {item.label}
+                {item.tag && (
+                  <Tag className="ml-1" color="sky">
+                    {item.tag}
+                  </Tag>
+                )}
+              </Link>
             </NavigationMenu.Link>
           </NavigationMenu.Item>
         ))}

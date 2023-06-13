@@ -601,6 +601,7 @@ export const generateFileEmbeddings = async (
       projectId,
       geLLMInfoFromModel(model),
       embeddingsTokenCount,
+      'generate-embeddings',
     );
   }
 

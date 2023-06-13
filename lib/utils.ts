@@ -25,6 +25,7 @@ import {
   HistogramStat,
   LLMInfo,
   MotifSourceDataType,
+  OpenAIModelIdWithType,
   Source,
   SourceType,
   TimeInterval,
@@ -432,6 +433,31 @@ export const stringToLLMInfo = (param?: string): LLMInfo => {
         vendor: 'openai',
         model: { type: 'chat_completions', value: 'gpt-3.5-turbo' },
       };
+  }
+};
+
+export const getCompletionsUrl = (model: OpenAIModelIdWithType) => {
+  switch (model.type) {
+    case 'chat_completions': {
+      return 'https://api.openai.com/v1/chat/completions';
+    }
+    default: {
+      return 'https://api.openai.com/v1/completions';
+    }
+  }
+};
+
+export const getCompletionsResponseText = (
+  response: any,
+  model: OpenAIModelIdWithType,
+) => {
+  switch (model.type) {
+    case 'chat_completions': {
+      return response.choices[0].message.content;
+    }
+    default: {
+      return response.choices[0].text;
+    }
   }
 };
 
