@@ -55,6 +55,8 @@ export default async function handler(
       return res.status(404).json({ error: 'User not found' });
     }
 
+    console.log('*** GOT USER', JSON.stringify(user, null, 2));
+
     return res.status(200).json(data);
   } else if (req.method === 'PATCH') {
     const { error } = await supabase
