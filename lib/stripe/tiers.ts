@@ -12,6 +12,9 @@ type Price = {
 
 export type PlanDetails = {
   useCustomPageFetcher?: boolean;
+  quotas?: {
+    embeddings?: number;
+  };
 };
 
 export type Tier = 'hobby' | 'starter' | 'pro' | 'enterprise';
@@ -276,7 +279,11 @@ export type TokenAllowance = number | 'unlimited';
 export const getNumTokensPerTeamAllowance = (
   isEnterprisePlan: boolean,
   stripePriceId: string | null | undefined,
+  planDetails: PlanDetails | null | undefined,
 ): TokenAllowance => {
+  if (planDetails?.quotas?.embeddings) {
+    return planDetails.quotas.embeddings;
+  }
   if (isEnterprisePlan) {
     return 'unlimited';
   } else if (stripePriceId) {

@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import { FileStats } from '@/types/types';
 
 import useTeam from './use-team';
-import { getNumTokensPerTeamAllowance } from '../stripe/tiers';
+import { PlanDetails, getNumTokensPerTeamAllowance } from '../stripe/tiers';
 import { fetcher } from '../utils';
 
 export default function useUsage() {
@@ -24,6 +24,7 @@ export default function useUsage() {
       getNumTokensPerTeamAllowance(
         !!team.is_enterprise_plan,
         team.stripe_price_id,
+        team.plan_details as PlanDetails,
       )) ||
     0;
 
