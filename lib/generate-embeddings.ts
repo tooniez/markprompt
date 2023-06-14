@@ -34,6 +34,7 @@ import {
   geLLMInfoFromModel,
 } from '@/types/types';
 
+import { rstToHTML } from './converters/rst-to-html';
 import { remarkLinkRewrite } from './remark/remark-link-rewrite';
 import { MarkpromptConfig } from './schema';
 import { tokensToApproxParagraphs } from './stripe/tiers';
@@ -246,11 +247,27 @@ const processMarkdoc = (
   return { ...fileSectionData, meta };
 };
 
+const processRST = (
+  content: string,
+  markpromptConfig: MarkpromptConfig,
+): FileSectionsData | undefined => {
+  const html = rstToHTML(content);
+  console.log('html', JSON.stringify(html, null, 2));
+  const md = turndown.turndown(html);
+  console.log('md', JSON.stringify(md, null, 2));
+  const fileSectionData = processMarkdown(md, false, markpromptConfig);
+
+  if (!fileSectionData) {
+    return undefined;
+  }
+
+  return { ...fileSectionData, meta: {} };
+};
+
 const htmlExcludeTags = ['head', 'script', 'style', 'nav', 'footer', 'aside'];
 
 const processHtml = (
   content: string,
-  path: string,
   markpromptConfig: MarkpromptConfig,
 ): FileSectionsData | undefined => {
   const $ = load(content);
@@ -341,8 +358,10 @@ const processFileData = (
   const fileType = getFileType(file.name);
   if (fileType === 'mdoc') {
     fileSectionsData = processMarkdoc(file.content, markpromptConfig);
+  } else if (fileType === 'rst') {
+    fileSectionsData = processRST(file.content, markpromptConfig);
   } else if (fileType === 'html') {
-    fileSectionsData = processHtml(file.content, file.path, markpromptConfig);
+    fileSectionsData = processHtml(file.content, markpromptConfig);
   } else {
     try {
       fileSectionsData = processMarkdown(file.content, true, markpromptConfig);

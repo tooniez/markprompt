@@ -1,4 +1,3 @@
-
 drop view v_team_project_usage_info;
 create view v_team_project_usage_info as
   select

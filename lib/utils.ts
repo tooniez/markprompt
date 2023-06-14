@@ -215,6 +215,8 @@ export const getFileType = (name: string): FileType => {
       return 'mdx';
     case 'md':
       return 'md';
+    case 'rst':
+      return 'rst';
     case 'html':
     case 'htm':
       return 'html';
@@ -223,7 +225,15 @@ export const getFileType = (name: string): FileType => {
   }
 };
 
-export const SUPPORTED_EXTENSIONS = ['md', 'mdx', 'mdoc', 'txt', 'html', 'htm'];
+export const SUPPORTED_EXTENSIONS = [
+  'md',
+  'mdx',
+  'mdoc',
+  'rst',
+  'txt',
+  'html',
+  'htm',
+];
 
 export const isSupportedFileType = (pathOrName: string): boolean => {
   const extension = getFileExtension(pathOrName);
