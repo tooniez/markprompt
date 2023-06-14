@@ -121,11 +121,20 @@ export type OAuthToken =
   Database['public']['Tables']['user_access_tokens']['Row'];
 export type PromptConfig =
   Database['public']['Tables']['prompt_configs']['Row'];
+export type QueryStat = Database['public']['Tables']['query_stats']['Row'];
 
 export type FileData = { path: string; name: string; content: string };
 export type PathContentData = Pick<FileData, 'path' | 'content'>;
 export type Checksum = Pick<DbFile, 'path' | 'checksum'>;
 export type SourceType = Pick<Source, 'type'>['type'];
+export type PromptQueryStat = Pick<
+  QueryStat,
+  'id' | 'created_at' | 'prompt' | 'no_response'
+>;
+export type ReferenceWithOccurrenceCount = {
+  path: string;
+  occurrences: number;
+};
 
 export type PromptReference = {
   path: string;

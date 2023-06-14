@@ -569,7 +569,7 @@ const Data = () => {
                         <th
                           key={header.id}
                           colSpan={header.colSpan}
-                          className="cursor-pointer py-2 px-2 text-left text-sm text-neutral-300"
+                          className="cursor-pointer py-2 px-2 text-left text-sm font-bold text-neutral-300"
                           onClick={header.column.getToggleSortingHandler()}
                         >
                           {header.isPlaceholder ? null : (

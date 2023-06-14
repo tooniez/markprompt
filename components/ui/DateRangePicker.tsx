@@ -20,7 +20,7 @@ export const DateRangePicker = ({
     <div className={cn('grid gap-2', className)}>
       <Popover.Root>
         <Popover.Trigger asChild>
-          <div className="flex items-center justify-center px-2">
+          <div className="flex items-center justify-center">
             <Button
               variant="plain"
               left

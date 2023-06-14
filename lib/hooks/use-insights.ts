@@ -1,9 +1,14 @@
 import { addDays } from 'date-fns';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import useSWR from 'swr';
 
-import { Project, SerializedDateRange } from '@/types/types';
+import {
+  Project,
+  PromptQueryStat,
+  ReferenceWithOccurrenceCount,
+  SerializedDateRange,
+} from '@/types/types';
 
 import useProject from './use-project';
 import { useLocalStorage } from './utils/use-localstorage';
@@ -34,6 +39,7 @@ const defaultSerializedDateRange = serializeRange(defaultInsightsDateRange);
 
 export default function useInsights() {
   const { project } = useProject();
+  const [page, setPage] = useState(0);
 
   const [serializedRange, setSerializedRange] = useLocalStorage<
     SerializedDateRange | undefined
@@ -53,21 +59,35 @@ export default function useInsights() {
   }, [serializedRange?.from, serializedRange?.to]);
 
   const {
-    data: insights,
+    data: queries,
     mutate,
     error,
   } = useSWR(
-    project?.id ? `/api/insights/${project.id}` : null,
-    fetcher<Project>,
+    project?.id && serializedRange?.from && serializedRange?.to
+      ? `/api/project/${project.id}/insights/queries?page=${page}&from=${serializedRange?.from}&to=${serializedRange?.to}`
+      : null,
+    fetcher<PromptQueryStat[]>,
   );
 
-  const loading = !project && !error;
+  const { data: topReferences } = useSWR(
+    project?.id && serializedRange?.from && serializedRange?.to
+      ? `/api/project/${project.id}/insights/references?from=${serializedRange?.from}&to=${serializedRange?.to}`
+      : null,
+    fetcher<ReferenceWithOccurrenceCount[]>,
+  );
 
-  const setDateRange = useCallback((range: DateRange | undefined) => {
-    if (range) {
-      setSerializedRange(serializeRange(range));
-    }
-  }, []);
+  console.log('topReferences', JSON.stringify(topReferences, null, 2));
 
-  return { loading, insights, dateRange, setDateRange, mutate };
+  const loading = !queries && !error;
+
+  const setDateRange = useCallback(
+    (range: DateRange | undefined) => {
+      if (range) {
+        setSerializedRange(serializeRange(range));
+      }
+    },
+    [setSerializedRange],
+  );
+
+  return { loading, queries, dateRange, setDateRange, page, setPage, mutate };
 }
