@@ -33,11 +33,11 @@ interface CustomAppProps<P = any> extends AppProps<P> {
   };
 }
 
-const getCustomerJwt = async () => {
-  return fetch('/api/user/jwt')
-    .then((res) => res.json())
-    .then((res) => res.customerJwt);
-};
+// const getCustomerJwt = async () => {
+//   return fetch('/api/user/jwt')
+//     .then((res) => res.json())
+//     .then((res) => res.customerJwt);
+// };
 
 export default function App({ Component, pageProps }: CustomAppProps) {
   const router = useRouter();
@@ -76,19 +76,17 @@ export default function App({ Component, pageProps }: CustomAppProps) {
             supabaseClient={supabase}
             initialSession={(pageProps as any).initialSession}
           >
-            <ManagedPlainProvider>
-              <ManagedAppContext>
-                <ManagedTrainingContext>
-                  <ManagedConfigContext>
-                    <Component {...pageProps}></Component>
-                    {!(Component as any).hideChat && (
-                      <PromptOutsideOnboarding />
-                    )}
-                    <Toaster />
-                  </ManagedConfigContext>
-                </ManagedTrainingContext>
-              </ManagedAppContext>
-            </ManagedPlainProvider>
+            {/* <ManagedPlainProvider> */}
+            <ManagedAppContext>
+              <ManagedTrainingContext>
+                <ManagedConfigContext>
+                  <Component {...pageProps}></Component>
+                  {!(Component as any).hideChat && <PromptOutsideOnboarding />}
+                  <Toaster />
+                </ManagedConfigContext>
+              </ManagedTrainingContext>
+            </ManagedAppContext>
+            {/* </ManagedPlainProvider> */}
           </SessionContextProvider>
         </ThemeProvider>
         <Analytics />
@@ -97,23 +95,23 @@ export default function App({ Component, pageProps }: CustomAppProps) {
   );
 }
 
-export const ManagedPlainProvider = ({ children }: { children: ReactNode }) => {
-  const session = useSession();
+// export const ManagedPlainProvider = ({ children }: { children: ReactNode }) => {
+//   const session = useSession();
 
-  return (
-    <PlainProvider
-      appKey={process.env.NEXT_PUBLIC_PLAIN_APP_KEY!}
-      customer={
-        session?.user
-          ? { type: 'logged-in', getCustomerJwt }
-          : { type: 'logged-out' }
-      }
-      theme={plainTheme}
-    >
-      {children}
-    </PlainProvider>
-  );
-};
+//   return (
+//     <PlainProvider
+//       appKey={process.env.NEXT_PUBLIC_PLAIN_APP_KEY!}
+//       customer={
+//         session?.user
+//           ? { type: 'logged-in', getCustomerJwt }
+//           : { type: 'logged-out' }
+//       }
+//       theme={plainTheme}
+//     >
+//       {children}
+//     </PlainProvider>
+//   );
+// };
 
 export const PromptOutsideOnboarding = () => {
   const { user } = useUser();
