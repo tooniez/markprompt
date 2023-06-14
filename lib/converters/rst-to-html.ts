@@ -1,3 +1,4 @@
+// Adapted from: https://github.com/thoward/rst2html
 import restructured from 'restructured';
 
 export const rstToHTML = (content: string, indent = 2) => {
