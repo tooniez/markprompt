@@ -9,7 +9,7 @@ type Data = {
   error?: string;
 };
 
-const allowedMethods = ['POST'];
+const allowedMethods = ['GET'];
 
 // Admin access to Supabase, bypassing RLS.
 const supabaseAdmin = createClient<Database>(

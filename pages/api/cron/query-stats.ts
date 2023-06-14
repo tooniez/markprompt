@@ -17,7 +17,7 @@ type Data = {
   error?: string;
 };
 
-const allowedMethods = ['POST'];
+const allowedMethods = ['GET'];
 
 // Admin access to Supabase, bypassing RLS.
 const supabaseAdmin = createClient<Database>(
@@ -28,6 +28,7 @@ const supabaseAdmin = createClient<Database>(
 type QueryStatData = {
   id: string;
   prompt: string | null;
+  response: string | null;
 };
 
 const processProjectQueryStats = async (projectId: Project['id']) => {
@@ -35,11 +36,11 @@ const processProjectQueryStats = async (projectId: Project['id']) => {
   // guarantee that prompts do not get mistakenly interchanged.
   const { data }: { data: QueryStatData[] | null } = await supabaseAdmin
     .from('query_stats')
-    .select('id,prompt')
+    .select('id,prompt,response')
     .match({ project_id: projectId, processed: false })
     .limit(20);
 
-  const prompt = `The following is a list of questions in JSON format. Please keep the JSON, and don't touch the ids, but remove any personally identifiable information from the prompt entry:\n\n${JSON.stringify(
+  const prompt = `The following is a list of questions and response in JSON format. Please keep the JSON, and don't touch the ids, but remove any personally identifiable information from the prompt and response entry:\n\n${JSON.stringify(
     data,
     null,
     2,
