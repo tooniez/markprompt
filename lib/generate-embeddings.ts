@@ -252,9 +252,7 @@ const processRST = (
   markpromptConfig: MarkpromptConfig,
 ): FileSectionsData | undefined => {
   const html = rstToHTML(content);
-  console.log('html', JSON.stringify(html, null, 2));
   const md = turndown.turndown(html);
-  console.log('md', JSON.stringify(md, null, 2));
   const fileSectionData = processMarkdown(md, false, markpromptConfig);
 
   if (!fileSectionData) {

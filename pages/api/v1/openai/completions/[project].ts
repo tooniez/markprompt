@@ -27,6 +27,7 @@ import {
   DbFile,
   OpenAIModelIdWithType,
   Project,
+  PromptReference,
 } from '@/types/types';
 
 export const config = {
@@ -214,7 +215,9 @@ export default async function handler(req: NextRequest) {
 
   let numTokens = 0;
   let contextText = '';
-  const referencePaths: DbFile['path'][] = [];
+  const referencesMap: {
+    [key: string]: PromptReference;
+  } = {};
   for (const section of fileSections) {
     numTokens += section.token_count;
 
@@ -226,10 +229,21 @@ export default async function handler(req: NextRequest) {
       section.content,
     )}\n---\n`;
 
-    if (!referencePaths.includes(section.path)) {
-      referencePaths.push(section.path);
+    const reference = {
+      path: section.path,
+      source: {
+        type: section.source_type,
+        data: section.source_data,
+      },
+    };
+    const key = JSON.stringify(reference);
+    if (!referencesMap[key]) {
+      referencesMap[key] = reference;
     }
   }
+
+  const referencesWithSources = Object.values(referencesMap);
+  const referencePaths = referencesWithSources.map((r) => r.path);
 
   const fullPrompt = stripIndent(
     ((params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE.template)
@@ -273,7 +287,7 @@ export default async function handler(req: NextRequest) {
         null,
         promptEmbedding,
         true,
-        referencePaths,
+        referencesWithSources,
       );
       return new Response(
         `Unable to retrieve completions response: ${message}`,
@@ -297,10 +311,15 @@ export default async function handler(req: NextRequest) {
         text,
         promptEmbedding,
         isIDontKnowResponse(text, iDontKnowMessage),
-        referencePaths,
+        referencesWithSources,
       );
       return new Response(
-        JSON.stringify({ text, references: referencePaths, debugInfo }),
+        JSON.stringify({
+          text,
+          references: referencePaths,
+          referencesWithSources,
+          debugInfo,
+        }),
         {
           status: 200,
         },
@@ -387,7 +406,7 @@ export default async function handler(req: NextRequest) {
         responseText,
         promptEmbedding,
         isIDontKnowResponse(responseText, iDontKnowMessage),
-        referencePaths,
+        referencesWithSources,
       );
 
       // We're done, wind down

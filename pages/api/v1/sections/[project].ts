@@ -114,6 +114,8 @@ export default async function handler(
         path: section.path,
         content: section.content,
         similarity: section.similarity,
+        source_type: section.source_type,
+        source_data: section.source_data,
       };
     }),
   });

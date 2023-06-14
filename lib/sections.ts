@@ -3,7 +3,14 @@ import { backOff } from 'exponential-backoff';
 import { CreateEmbeddingResponse } from 'openai';
 
 import { Database } from '@/types/supabase';
-import { ApiError, OpenAIEmbeddingsModelId, Project } from '@/types/types';
+import {
+  ApiError,
+  OpenAIEmbeddingsModelId,
+  Project,
+  PromptReference,
+  SourceDataType,
+  SourceType,
+} from '@/types/types';
 
 import { createEmbedding, createModeration } from './openai.edge';
 import { recordProjectTokenCount } from './tinybird';
@@ -14,6 +21,8 @@ export type FileSection = {
   content: string;
   similarity: number;
   token_count: number;
+  source_type: SourceType;
+  source_data: SourceDataType | null;
 };
 
 export const storePrompt = async (
@@ -23,7 +32,7 @@ export const storePrompt = async (
   response: string | null,
   embedding: any,
   noResponse: boolean,
-  referencePaths: string[],
+  references: PromptReference[],
 ) => {
   return supabase.from('query_stats').insert([
     {
@@ -32,9 +41,7 @@ export const storePrompt = async (
       ...(response ? { response } : {}),
       embedding,
       ...(noResponse ? { no_response: noResponse } : {}),
-      ...(referencePaths && referencePaths?.length > 0
-        ? { reference_paths: referencePaths }
-        : {}),
+      ...(references && references?.length > 0 ? { meta: { references } } : {}),
     },
   ]);
 };
@@ -118,6 +125,8 @@ export const getMatchingSections = async (
           content: string;
           token_count: number;
           similarity: number;
+          source_type: SourceType;
+          source_data: any;
         }[]
       | null;
   } = await supabaseAdmin.rpc('match_file_sections', {

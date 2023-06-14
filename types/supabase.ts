@@ -354,6 +354,7 @@ export interface Database {
           downvoted: boolean | null
           embedding: string | null
           id: string
+          meta: Json | null
           no_response: boolean | null
           processed: boolean
           project_id: string
@@ -367,6 +368,7 @@ export interface Database {
           downvoted?: boolean | null
           embedding?: string | null
           id?: string
+          meta?: Json | null
           no_response?: boolean | null
           processed?: boolean
           project_id: string
@@ -380,6 +382,7 @@ export interface Database {
           downvoted?: boolean | null
           embedding?: string | null
           id?: string
+          meta?: Json | null
           no_response?: boolean | null
           processed?: boolean
           project_id?: string
@@ -817,36 +820,35 @@ export interface Database {
         }
         Returns: unknown
       }
-      match_file_sections:
-        | {
-            Args: {
-              embedding: string
-              match_threshold: number
-              match_count: number
-              min_content_length: number
-            }
-            Returns: {
-              path: string
-              content: string
-              token_count: number
-              similarity: number
-            }[]
-          }
-        | {
-            Args: {
-              project_id: string
-              embedding: string
-              match_threshold: number
-              match_count: number
-              min_content_length: number
-            }
-            Returns: {
-              path: string
-              content: string
-              token_count: number
-              similarity: number
-            }[]
-          }
+      match_file_sections: {
+        Args: {
+          project_id: string
+          embedding: string
+          match_threshold: number
+          match_count: number
+          min_content_length: number
+        }
+        Returns: {
+          path: string
+          content: string
+          token_count: number
+          similarity: number
+          source_type: Database["public"]["Enums"]["source_type"]
+          source_data: Json
+        }[]
+      }
+      query_stats_top_references: {
+        Args: {
+          project_id: string
+          from_tz: string
+          to_tz: string
+          match_count: number
+        }
+        Returns: {
+          path: string
+          occurrences: number
+        }[]
+      }
       refresh_materialized_view: {
         Args: {
           view_name: string
