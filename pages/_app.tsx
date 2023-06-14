@@ -1,11 +1,7 @@
 import '@/styles/globals.css';
 
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import {
-  SessionContextProvider,
-  useSession,
-} from '@supabase/auth-helpers-react';
-import { PlainProvider } from '@team-plain/react-chat-ui';
+import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { Analytics } from '@vercel/analytics/react';
 import * as Fathom from 'fathom-client';
 import { NextComponentType, NextPageContext } from 'next';
@@ -16,10 +12,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { SWRConfig } from 'swr';
 
 import { Toaster } from '@/components/ui/Toaster';
-import {
-  MarkpromptPromptWindow,
-  plainTheme,
-} from '@/components/user/ChatWindow';
+import { MarkpromptPromptWindow } from '@/components/user/ChatWindow';
 import { ManagedAppContext } from '@/lib/context/app';
 import { ManagedConfigContext } from '@/lib/context/config';
 import { ManagedTrainingContext } from '@/lib/context/training';
@@ -32,12 +25,6 @@ interface CustomAppProps<P = any> extends AppProps<P> {
     title?: string;
   };
 }
-
-// const getCustomerJwt = async () => {
-//   return fetch('/api/user/jwt')
-//     .then((res) => res.json())
-//     .then((res) => res.customerJwt);
-// };
 
 export default function App({ Component, pageProps }: CustomAppProps) {
   const router = useRouter();
@@ -76,7 +63,6 @@ export default function App({ Component, pageProps }: CustomAppProps) {
             supabaseClient={supabase}
             initialSession={(pageProps as any).initialSession}
           >
-            {/* <ManagedPlainProvider> */}
             <ManagedAppContext>
               <ManagedTrainingContext>
                 <ManagedConfigContext>
@@ -86,7 +72,6 @@ export default function App({ Component, pageProps }: CustomAppProps) {
                 </ManagedConfigContext>
               </ManagedTrainingContext>
             </ManagedAppContext>
-            {/* </ManagedPlainProvider> */}
           </SessionContextProvider>
         </ThemeProvider>
         <Analytics />
@@ -94,24 +79,6 @@ export default function App({ Component, pageProps }: CustomAppProps) {
     </>
   );
 }
-
-// export const ManagedPlainProvider = ({ children }: { children: ReactNode }) => {
-//   const session = useSession();
-
-//   return (
-//     <PlainProvider
-//       appKey={process.env.NEXT_PUBLIC_PLAIN_APP_KEY!}
-//       customer={
-//         session?.user
-//           ? { type: 'logged-in', getCustomerJwt }
-//           : { type: 'logged-out' }
-//       }
-//       theme={plainTheme}
-//     >
-//       {children}
-//     </PlainProvider>
-//   );
-// };
 
 export const PromptOutsideOnboarding = () => {
   const { user } = useUser();

@@ -35,7 +35,6 @@ Markprompt is built on top of the following stack:
 - [Upstash](https://upstash.com/) - Redis and rate limiting
 - [Supabase](https://supabase.com/) - database and auth
 - [Stripe](https://stripe.com/) - payments
-- [Plain](https://plain.com/) - support chat
 - [Fathom](https://usefathom.com/) - analytics
 
 ### Supabase
@@ -58,7 +57,7 @@ Authentication is handled by Supabase Auth. Follow the [Login with GitHub](https
 
 ### Setting environment variables
 
-A sample file containing required environment variables can be found in [example.env](https://github.com/motifland/markprompt/blob/main/example.env). In addition to the keys for the above services, you will need keys for [Upstash](https://upstash.com/) (rate limiting and key-value storage), [Plain.com](https://plain.com) (support chat), and [Fathom](https://usefathom.com/) (analytics).
+A sample file containing required environment variables can be found in [example.env](https://github.com/motifland/markprompt/blob/main/example.env). In addition to the keys for the above services, you will need keys for [Upstash](https://upstash.com/) (rate limiting and key-value storage), and [Fathom](https://usefathom.com/) (analytics).
 
 ## Using the React and Web components
 
