@@ -273,6 +273,7 @@ create view v_team_project_usage_info as
     teams.id as team_id,
     teams.is_enterprise_plan as is_enterprise_plan,
     teams.stripe_price_id as stripe_price_id,
+    teams.plan_details as plan_details,
     sum(file_sections.token_count) as team_token_count
   from file_sections
   left join files on file_sections.file_id = files.id
@@ -287,6 +288,7 @@ create view v_team_project_info as
     teams.id as team_id,
     teams.is_enterprise_plan as is_enterprise_plan,
     teams.stripe_price_id as stripe_price_id
+    teams.plan_details as plan_details
   from projects
   left join teams on projects.team_id = teams.id
 

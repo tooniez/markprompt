@@ -754,6 +754,7 @@ export interface Database {
       v_team_project_info: {
         Row: {
           is_enterprise_plan: boolean | null
+          plan_details: Json | null
           project_id: string | null
           stripe_price_id: string | null
           team_id: string | null
@@ -763,6 +764,7 @@ export interface Database {
       v_team_project_usage_info: {
         Row: {
           is_enterprise_plan: boolean | null
+          plan_details: Json | null
           project_id: string | null
           stripe_price_id: string | null
           team_id: string | null

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { PostgrestError } from '@supabase/supabase-js';
 
-import { Database } from '@/types/supabase';
+import { Database, Json } from '@/types/supabase';
 import {
   DbUser,
   GitHubSourceDataType,
@@ -16,7 +16,11 @@ import {
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
 import { MarkpromptConfig } from './schema';
-import { TokenAllowance, getNumTokensPerTeamAllowance } from './stripe/tiers';
+import {
+  PlanDetails,
+  TokenAllowance,
+  getNumTokensPerTeamAllowance,
+} from './stripe/tiers';
 import { generateKey } from './utils';
 
 export const getBYOOpenAIKey = async (
@@ -235,11 +239,12 @@ export const getTeamUsageInfoByTeamOrProject = async (
   is_enterprise_plan: boolean;
   stripe_price_id: string | null;
   team_token_count: number;
+  plan_details: Json | null;
 }> => {
   // eslint-disable-next-line prefer-const
   let { data, error } = await supabase
     .from('v_team_project_usage_info')
-    .select('is_enterprise_plan,stripe_price_id,team_token_count')
+    .select('is_enterprise_plan,stripe_price_id,team_token_count,plan_details')
     .eq(
       teamOrProjectId.teamId ? 'team_id' : 'project_id',
       teamOrProjectId.teamId ?? teamOrProjectId.projectId,
@@ -257,6 +262,7 @@ export const getTeamUsageInfoByTeamOrProject = async (
         is_enterprise_plan: boolean | null;
         stripe_price_id: string | null;
         team_token_count: number | null;
+        plan_details: Json | null;
       } | null;
     } = await supabase
       .from('v_team_project_info')
@@ -275,6 +281,7 @@ export const getTeamUsageInfoByTeamOrProject = async (
     is_enterprise_plan: !!data?.is_enterprise_plan,
     stripe_price_id: data?.stripe_price_id || null,
     team_token_count: data?.team_token_count || 0,
+    plan_details: data?.plan_details || null,
   };
 };
 
@@ -294,6 +301,7 @@ export const getTokenAllowanceInfo = async (
   const tokenAllowance = getNumTokensPerTeamAllowance(
     !!teamUsageInfo?.is_enterprise_plan,
     teamUsageInfo?.stripe_price_id,
+    teamUsageInfo?.plan_details as PlanDetails,
   );
   const numRemainingTokensOnPlan =
     tokenAllowance === 'unlimited'
