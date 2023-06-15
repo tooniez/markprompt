@@ -20,6 +20,7 @@ import {
 
 type Data = {
   status?: string;
+  processed?: number;
   error?: string;
 };
 
@@ -57,7 +58,9 @@ const trimQueries = (queries: QueryStatData[], maxTokens: number) => {
   return trimmedQueries;
 };
 
-const processProjectQueryStats = async (projectId: Project['id']) => {
+const processProjectQueryStats = async (
+  projectId: Project['id'],
+): Promise<number> => {
   // We don't want to mix questions in the same GPT-4 prompt, as we want to
   // guarantee that prompts do not get mistakenly interchanged.
   const { data: queries }: { data: QueryStatData[] | null } =
@@ -68,7 +71,7 @@ const processProjectQueryStats = async (projectId: Project['id']) => {
       .limit(10);
 
   if (!queries || queries.length === 0) {
-    return;
+    return 0;
   }
 
   // Ensure that no queries alone are too large for the prompt. If one
@@ -148,7 +151,7 @@ Return as a JSON with the exact same structure.`;
       '[QUERY-STATS] Error fetching completions:',
       JSON.stringify(json),
     );
-    return;
+    return 0;
   }
 
   const tokenCount = safeParseInt(json.usage.total_tokens, 0);
@@ -176,7 +179,6 @@ Return as a JSON with the exact same structure.`;
           response: entry.response,
         })
         .eq('id', entry.id);
-
       if (error) {
         console.error(
           '[QUERY-STATS] Error updating queries:',
@@ -184,9 +186,13 @@ Return as a JSON with the exact same structure.`;
         );
       }
     }
+
+    return processedQueryStatData.length;
   } catch {
     console.error('[QUERY-STATS] Error updating response:', text);
   }
+
+  return 0;
 };
 
 export default async function handler(
@@ -200,7 +206,8 @@ export default async function handler(
 
   const projectId = req.query.projectId as Project['id'];
   if (projectId) {
-    await processProjectQueryStats(projectId);
+    const processed = await processProjectQueryStats(projectId);
+    return res.status(200).send({ status: 'ok', processed });
   } else {
     // First in line are projects whose unprocessed prompts are oldest.
     const { data } = await supabaseAdmin
@@ -209,15 +216,16 @@ export default async function handler(
       .limit(20);
 
     if (!data) {
-      return res.status(200).send({ status: 'ok' });
+      return res.status(200).send({ status: 'ok', processed: 0 });
     }
 
+    let totalProcessed = 0;
     for (const { project_id } of data) {
       if (project_id) {
-        await processProjectQueryStats(project_id);
+        const processed = await processProjectQueryStats(project_id);
+        totalProcessed += processed;
       }
     }
+    return res.status(200).send({ status: 'ok', processed: totalProcessed });
   }
-
-  return res.status(200).send({ status: 'ok' });
 }
