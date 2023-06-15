@@ -1,3 +1,4 @@
+import * as Dialog from '@radix-ui/react-dialog';
 import cn from 'classnames';
 import { motion } from 'framer-motion';
 import {
@@ -43,12 +44,13 @@ import {
   removeFileExtension,
   showConfetti,
 } from '@/lib/utils';
-import { SourceType } from '@/types/types';
+import { Source, SourceType } from '@/types/types';
 
 import StatusMessage from './StatusMessage';
 import { UpgradeNote } from './UpgradeNote';
 import GetCode from '../dialogs/project/GetCode';
 import Share from '../dialogs/project/Share';
+import { RemoveSourceDialog } from '../dialogs/sources/RemoveSource';
 import { ModelConfigurator } from '../files/ModelConfigurator';
 import { Playground } from '../files/Playground';
 import { UIConfigurator } from '../files/UIConfigurator';
@@ -323,6 +325,9 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   });
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
   const [isPlaygroundVisible, setPlaygroundVisible] = useState(true);
+  const [sourceToRemove, setSourceToRemove] = useState<Source | undefined>(
+    undefined,
+  );
   const playgroundRef = useRef<HTMLDivElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const overlayMessageRef = useRef<HTMLDivElement>(null);
@@ -581,18 +586,12 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                     >
                       <Icon className="h-4 w-4 flex-none text-sky-400" />
                       <p className="flex-grow overflow-hidden text-xs text-sky-400">
-                        {getLabelForSource(source)}
+                        {getLabelForSource(source, false)}
                       </p>
                       <button
                         className="button-ring rounded-md p-1 outline-none"
-                        onClick={async () => {
-                          if (!project?.id) {
-                            return;
-                          }
-                          await deleteSource(project.id, source.id);
-                          await mutateSources();
-                          await mutateFiles();
-                          toast.success('The source has been removed.');
+                        onClick={() => {
+                          setSourceToRemove(source);
                         }}
                       >
                         <X className="h-3 w-3 text-sky-400" />
@@ -880,6 +879,19 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
           </div>
         </div>
       </div>
+
+      <Dialog.Root
+        open={!!sourceToRemove}
+        onOpenChange={() => setSourceToRemove(undefined)}
+      >
+        {sourceToRemove && project && (
+          <RemoveSourceDialog
+            projectId={project.id}
+            source={sourceToRemove}
+            onComplete={() => setSourceToRemove(undefined)}
+          />
+        )}
+      </Dialog.Root>
     </div>
   );
 };

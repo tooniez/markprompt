@@ -47,6 +47,7 @@ const _addSource = async (
     toast.success(
       `The source ${getLabelForSource(
         newSource,
+        true,
       )} has been added to the project.`,
     );
   } catch (e) {

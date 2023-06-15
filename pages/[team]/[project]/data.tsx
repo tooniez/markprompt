@@ -22,6 +22,7 @@ import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
 import ConfirmDialog from '@/components/dialogs/Confirm';
+import { RemoveSourceDialog } from '@/components/dialogs/sources/RemoveSource';
 import { FileDnd } from '@/components/files/FileDnd';
 import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
@@ -30,7 +31,7 @@ import { MotifIcon } from '@/components/icons/Motif';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Button from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { deleteFiles, deleteSource } from '@/lib/api';
+import { deleteFiles } from '@/lib/api';
 import { useTrainingContext } from '@/lib/context/training';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
@@ -45,7 +46,7 @@ import {
   isUrl,
   pluralize,
 } from '@/lib/utils';
-import { Project, Source } from '@/types/types';
+import { Source } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
@@ -105,7 +106,7 @@ const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
     <div className="flex w-full cursor-default flex-row items-center gap-2 text-sm">
       <Icon className="h-4 w-4 flex-none text-neutral-500" />
       <p className="flex-grow overflow-hidden text-neutral-300">
-        {getLabelForSource(source)}
+        {getLabelForSource(source, false)}
       </p>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
@@ -130,51 +131,6 @@ const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
     </div>
-  );
-};
-
-type RemoveSourceDialogProps = {
-  projectId: Project['id'];
-  source: Source;
-  onComplete: () => void;
-};
-
-const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
-  projectId,
-  source,
-  onComplete,
-}) => {
-  const { mutate: mutateFiles } = useFiles();
-  const { mutate: mutateSources } = useSources();
-  const [loading, setLoading] = useState(false);
-
-  return (
-    <ConfirmDialog
-      title={`Remove ${getLabelForSource(source)}?`}
-      description={<>All associated files and training data will be deleted.</>}
-      cta="Remove"
-      variant="danger"
-      loading={loading}
-      onCTAClick={async () => {
-        setLoading(true);
-        try {
-          await deleteSource(projectId, source.id);
-          await mutateSources();
-          await mutateFiles();
-          toast.success(
-            `The source ${getLabelForSource(
-              source,
-            )} has been removed from the project.`,
-          );
-        } catch (e) {
-          console.error(e);
-          toast.error('Error deleting source.');
-        } finally {
-          setLoading(false);
-          onComplete();
-        }
-      }}
-    />
   );
 };
 
@@ -312,7 +268,7 @@ const Data = () => {
           const value = info.getValue();
           const source = sources.find((s) => s.id === value);
           if (source) {
-            return getLabelForSource(source);
+            return getLabelForSource(source, false);
           } else {
             return '';
           }

@@ -574,7 +574,7 @@ export const getGitHubOwnerRepoString = (url: string) => {
   return `${info.owner}/${info.repo}`;
 };
 
-export const getLabelForSource = (source: Source) => {
+export const getLabelForSource = (source: Source, inline: boolean) => {
   switch (source.type) {
     case 'github': {
       const data = source.data as GitHubSourceDataType;
@@ -589,7 +589,7 @@ export const getLabelForSource = (source: Source) => {
       return removeSchema(toNormalizedUrl(data.url));
     }
     case 'file-upload':
-      return 'File uploads';
+      return inline ? 'file uploads' : 'File uploads';
     case 'api-upload':
       return 'API uploads';
     default:
