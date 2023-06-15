@@ -264,6 +264,41 @@ begin
 end;
 $$;
 
+create or replace function query_stats_top_references(
+  project_id uuid,
+  from_tz timestamptz,
+  to_tz timestamptz,
+  match_count int
+)
+returns table (
+  path text,
+  source_type text,
+  source_data jsonb,
+  occurrences bigint
+)
+language plpgsql
+as $$
+begin
+  return query
+  select
+    reference->>'path' as path,
+    reference->'source'->>'type' as source_type,
+    reference->'source'->'data' as source_data,
+    count(*) as occurrences
+  from query_stats,
+    jsonb_array_elements(meta->'references') as reference
+  where
+    query_stats.project_id = query_stats_top_references.project_id
+    and query_stats.created_at >= query_stats_top_references.from_tz
+    and query_stats.created_at <= query_stats_top_references.to_tz
+    and reference->>'path' is not null
+    and reference->'source'->>'type' is not null
+  group by path, source_data, source_type
+  order by occurrences desc
+  limit query_stats_top_references.match_count;
+end;
+$$;
+
 -- Triggers
 
 -- This trigger automatically creates a user entry when a new user signs up
@@ -380,6 +415,7 @@ create index idx_projects_team_id on projects(team_id);
 create index idx_memberships_user_id on memberships(user_id);
 create index idx_tokens_project_id on tokens(project_id);
 create index idx_domain_project_id on domains(project_id);
+create index idx_query_stats_project_id_created_at_processed on query_stats(project_id, created_at, processed);
 -- Need a unique index for the materialized view refresh to work
 create unique index idx_section_id_fts on mv_fts (section_id);
 create index idx_file_sections_fts

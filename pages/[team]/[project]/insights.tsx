@@ -1,67 +1,68 @@
-import { addDays } from 'date-fns';
-import { useEffect, useMemo } from 'react';
-import { DateRange } from 'react-day-picker';
-
+import { Card } from '@/components/dashboard/Card';
+import { columns } from '@/components/insights/queries/columns';
+import { QueriesDataTable } from '@/components/insights/queries/table';
+import { TopReferences } from '@/components/insights/top-references';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
-import useProject from '@/lib/hooks/use-project';
-import { useLocalStorage } from '@/lib/hooks/utils/use-localstorage';
-import { SerializedDateRange } from '@/types/types';
-
-const serializeRange = (range: DateRange) => {
-  return {
-    from: range.from?.getTime(),
-    to: range.to?.getTime(),
-  };
-};
-
-const deserializeRange = (range: {
-  from: number | undefined;
-  to: number | undefined;
-}): DateRange => {
-  return {
-    from: range.from ? new Date(range.from) : undefined,
-    to: range.to ? new Date(range.to) : undefined,
-  };
-};
-
-const defaultDateRange = { from: addDays(new Date(), -7), to: new Date() };
-const defaultSerializedDateRange = serializeRange(defaultDateRange);
+import useInsights, {
+  defaultInsightsDateRange,
+} from '@/lib/hooks/use-insights';
+import useTeam from '@/lib/hooks/use-team';
+import { canViewAccessFullInsights } from '@/lib/stripe/tiers';
 
 const Insights = () => {
-  const { project } = useProject();
-
-  const [serializedRange, setSerializedRange] = useLocalStorage<
-    SerializedDateRange | undefined
-  >(
-    !project?.id ? null : `${project.id}:insights:date-range`,
-    defaultSerializedDateRange,
-  );
-
-  const range = useMemo(() => {
-    if (!serializedRange?.from && !serializedRange?.to) {
-      return undefined;
-    }
-    return deserializeRange({
-      from: serializedRange?.from,
-      to: serializedRange?.to,
-    });
-  }, [serializedRange?.from, serializedRange?.to]);
+  const { team } = useTeam();
+  const {
+    loadingQueries,
+    loadingTopReferences,
+    dateRange,
+    setDateRange,
+    queries,
+    topReferences,
+  } = useInsights();
 
   return (
-    <ProjectSettingsLayout
-      title="Insights"
-      width="xl"
-      titleComponent={<div className="flex items-center">Insights</div>}
-    >
-      <DateRangePicker
-        range={range ?? defaultDateRange}
-        setRange={(range: DateRange | undefined) => {
-          if (range) {
-            setSerializedRange(serializeRange(range));
-          }
-        }}
-      />
+    <ProjectSettingsLayout title="Insights" width="xl">
+      <div className="flex cursor-not-allowed justify-start">
+        <DateRangePicker
+          disabled={team && !canViewAccessFullInsights(team)}
+          range={dateRange ?? defaultInsightsDateRange}
+          setRange={setDateRange}
+        />
+      </div>
+      <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-3">
+        <div className="col-span-2">
+          <Card title="Latest questions">
+            {!loadingQueries && queries?.length === 0 ? (
+              <p className="mt-2 text-sm text-neutral-500">
+                No questions asked in this time range.
+              </p>
+            ) : (
+              <QueriesDataTable
+                loading={loadingQueries}
+                columns={columns}
+                data={queries || []}
+                showUpgradeMessage={team && !canViewAccessFullInsights(team)}
+              />
+            )}
+          </Card>
+        </div>
+        <Card title="Most cited references">
+          {!loadingTopReferences && topReferences?.length === 0 ? (
+            <p className="mt-2 text-sm text-neutral-500">
+              No references cited in this time range.
+            </p>
+          ) : (
+            <div className="mt-4">
+              <TopReferences
+                loading={loadingTopReferences}
+                topReferences={topReferences || []}
+                showUpgradeMessage={team && !canViewAccessFullInsights(team)}
+              />
+            </div>
+          )}
+        </Card>
+      </div>
     </ProjectSettingsLayout>
   );
 };

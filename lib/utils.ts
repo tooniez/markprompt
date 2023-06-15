@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
+import { format } from 'date-fns';
 import dayjs from 'dayjs';
 import { ChevronsUp, Globe, Upload } from 'lucide-react';
 import minimatch from 'minimatch';
@@ -323,6 +324,18 @@ export const formatNumQueries = (quota: number) => {
   return quota === -1
     ? 'Unlimited queries'
     : `Up to ${formatNumberK(quota)} tokens`;
+};
+
+const now = new Date();
+
+export const formatShortDateTime = (date: Date) => {
+  // Short date and time
+  // Jun 12, 8:20 PM
+  // Jun 12 2022, 8:20 PM
+  return format(
+    date,
+    `MMM d${date.getFullYear() !== now.getFullYear() ? ', yyyy' : ''}, h:mm a`,
+  );
 };
 
 export const truncate = (text: string, maxLength: number) => {
