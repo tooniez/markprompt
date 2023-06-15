@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO } from '@/lib/constants';
 import { getProjectConfigData } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import { getCompletionsResponseText, getCompletionsUrl } from '@/lib/utils';
@@ -31,17 +32,46 @@ type QueryStatData = {
   response: string | null;
 };
 
+const trimQueries = (queries: QueryStatData[], maxTokens: number) => {
+  let tokenCount = 0;
+  const trimmedQueries: QueryStatData[] = [];
+  for (const query of queries) {
+    tokenCount += JSON.stringify(query).length;
+
+    if (tokenCount >= maxTokens) {
+      break;
+    }
+
+    trimmedQueries.push(query);
+  }
+
+  return trimmedQueries;
+};
+
 const processProjectQueryStats = async (projectId: Project['id']) => {
   // We don't want to mix questions in the same GPT-4 prompt, as we want to
   // guarantee that prompts do not get mistakenly interchanged.
-  const { data }: { data: QueryStatData[] | null } = await supabaseAdmin
-    .from('query_stats')
-    .select('id,prompt,response')
-    .match({ project_id: projectId, processed: false })
-    .limit(20);
+  const { data: queries }: { data: QueryStatData[] | null } =
+    await supabaseAdmin
+      .from('query_stats')
+      .select('id,prompt,response')
+      .match({ project_id: projectId, processed: false })
+      .limit(10);
 
-  const prompt = `The following is a list of questions and response in JSON format. Please keep the JSON, and don't touch the ids, but remove any personally identifiable information from the prompt and response entry:\n\n${JSON.stringify(
-    data,
+  if (!queries || queries.length === 0) {
+    return;
+  }
+
+  const trimmedQueries = trimQueries(
+    queries,
+    CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO * 0.8,
+  );
+
+  console.log('!!! queries', queries.length);
+  console.log('!!! trimmedQueries', trimmedQueries.length);
+
+  const prompt = `The following is a list of questions and responses in JSON format. Please keep the JSON, and don't touch the ids, but remove any personally identifiable information from the prompt and response entry:\n\n${JSON.stringify(
+    trimmedQueries,
     null,
     2,
   )}
@@ -82,6 +112,12 @@ Return as a JSON with the exact same structure.`;
 
   const json = await res.json();
 
+  if (json.error) {
+    console.error('Error fetching completions:', JSON.stringify(json));
+  }
+
+  console.error('************* json', JSON.stringify(json, null, 2));
+
   const tokenCount = safeParseInt(json.usage.total_tokens, 0);
   await recordProjectTokenCount(
     projectId,
@@ -118,7 +154,6 @@ export default async function handler(
   }
 
   const projectId = req.query.projectId as Project['id'];
-  console.log('Processing query stats for project', projectId);
   if (projectId) {
     await processProjectQueryStats(projectId);
   } else {

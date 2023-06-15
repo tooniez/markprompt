@@ -841,3 +841,11 @@ export const safeParseNumber = (
 
   return fallbackValue;
 };
+
+const APPROX_CHARS_PER_TOKEN = 3.8;
+
+// Fast approximate token count. We use a slightly smaller value
+// to ensure we stay within boundaries.
+export const approximatedTokenCount = (text: string) => {
+  return Math.round(text.length * APPROX_CHARS_PER_TOKEN);
+};
