@@ -118,7 +118,6 @@ Return as a JSON with the exact same structure.`;
     messages: [{ role: 'user', content: prompt }],
   };
 
-  console.log('FETCHING COMPLETIONS');
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -132,9 +131,11 @@ Return as a JSON with the exact same structure.`;
 
   const json = await res.json();
 
-  console.log('JSON', JSON.stringify(json, null, 2));
   if (json.error) {
-    console.error('Error fetching completions:', JSON.stringify(json));
+    console.error(
+      '[QUERY-STATS] Error fetching completions:',
+      JSON.stringify(json),
+    );
     return;
   }
 
@@ -147,12 +148,12 @@ Return as a JSON with the exact same structure.`;
   );
 
   const text = getCompletionsResponseText(json, model);
-  console.error('RESPONSE text', text?.substring(0, 40));
+  console.info('[QUERY-STATS] Text', text?.substring(0, 40));
 
   try {
     const result = JSON.parse(text) as QueryStatData[];
-    console.error(
-      '!!!text',
+    console.info(
+      '[QUERY-STATS] Result',
       JSON.stringify(
         result.map((r) => r.id),
         null,
@@ -170,12 +171,12 @@ Return as a JSON with the exact same structure.`;
     );
     if (error) {
       console.error(
-        '[QUERY_STATS] Error updating queries:',
+        '[QUERY-STATS] Error updating queries:',
         JSON.stringify(error),
       );
     }
   } catch {
-    console.error('Error updating response:', text);
+    console.error('[QUERY-STATS] Error updating response:', text);
   }
 };
 
