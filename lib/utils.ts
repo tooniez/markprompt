@@ -601,11 +601,12 @@ export const getAccessoryLabelForSource = (source: Source) => {
   switch (source.type) {
     case 'github': {
       const data = source.data as GitHubSourceDataType;
-      return '#' + data.branch;
+      if (data.branch) {
+        return '#' + data.branch;
+      }
     }
-    default:
-      return undefined;
   }
+  return undefined;
 };
 
 export const getFileNameForSourceAtPath = (source: Source, path: string) => {
