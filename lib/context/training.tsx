@@ -322,6 +322,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             console.info('Fetching GitHub archive for', data.url);
             const fileData = await getGitHubFiles(
               data.url,
+              data.branch,
               config.include || [],
               config.exclude || [],
             );
@@ -344,8 +345,8 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               },
             );
           } catch (e) {
-            const repoOwner = getGitHubOwnerRepoString(data.url);
-            onError(`Error processing repo ${repoOwner}: ${e}`);
+            const ownerAndRepo = getGitHubOwnerRepoString(data.url);
+            onError(`Error processing repo ${ownerAndRepo}: ${e}`);
             break;
           }
           break;

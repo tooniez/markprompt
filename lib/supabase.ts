@@ -179,7 +179,7 @@ export const getSource = async (
     case 'github':
       return sources.find((s) => {
         const _data = s.data as GitHubSourceDataType;
-        return _data.url && _data.url === data.url;
+        return _data.url === data.url && _data.branch === data.branch;
       });
     case 'motif': {
       return sources.find((s) => {

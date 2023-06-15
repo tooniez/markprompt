@@ -136,19 +136,23 @@ export default async function handler(
 
   let githubRes;
 
+  const branchToFetch = req.body.branch || 'main';
   try {
-    // Fetch main branch
+    // Fetch branch. If none is specified, fetch main branch.
     githubRes = await fetchRepo(
       req.body.owner,
       req.body.repo,
-      'main',
+      branchToFetch,
       accessToken?.access_token || undefined,
     );
   } catch (e) {
-    console.error('Error fetching main branch:', e);
+    console.error(`Error fetching ${branchToFetch} branch:`, e);
   }
 
-  if (githubRes?.status !== 200) {
+  if (githubRes?.status !== 200 && branchToFetch === 'main') {
+    // If the previous fetch failed, fallback to the master branch,
+    // but only we were trying to fetch the main branch. If another
+    // branch was specified explicitly, we should error.
     try {
       console.info('Trying master branch instead...');
       // If main branch doesn't exist, fallback to master

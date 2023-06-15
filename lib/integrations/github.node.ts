@@ -16,6 +16,7 @@ import {
 
 export const isGitHubRepoAccessible = async (
   url: string,
+  branch: string | null,
   accessToken?: string,
 ) => {
   const octokit = new Octokit(accessToken ? { auth: accessToken } : {});
@@ -24,7 +25,11 @@ export const isGitHubRepoAccessible = async (
     return false;
   }
   try {
-    const res = await octokit.request(`GET /repos/${info.owner}/${info.repo}`);
+    let requestUrl = `/repos/${info.owner}/${info.repo}`;
+    if (branch && branch.length > 0) {
+      requestUrl = requestUrl + `/branches/${branch}`;
+    }
+    const res = await octokit.request(`GET ${requestUrl}`);
     if (res.status === 200) {
       return true;
     }
@@ -124,13 +129,21 @@ export const getRepositoryMDFilesInfo = async (
 const paginatedFetchRepo = async (
   owner: string,
   repo: string,
+  branch: string | undefined,
   offset: number,
   includeGlobs: string[],
   excludeGlobs: string[],
 ): Promise<{ files: PathContentData[]; capped?: boolean }> => {
   const res = await fetch('/api/github/fetch', {
     method: 'POST',
-    body: JSON.stringify({ owner, repo, offset, includeGlobs, excludeGlobs }),
+    body: JSON.stringify({
+      owner,
+      repo,
+      branch,
+      offset,
+      includeGlobs,
+      excludeGlobs,
+    }),
     headers: { 'Content-Type': 'application/json' },
   });
   if (!res.ok) {
@@ -142,6 +155,7 @@ const paginatedFetchRepo = async (
 
 export const getGitHubFiles = async (
   url: string,
+  branch: string | undefined,
   includeGlobs: string[],
   excludeGlobs: string[],
 ): Promise<FileData[]> => {
@@ -153,6 +167,7 @@ export const getGitHubFiles = async (
   let data = await paginatedFetchRepo(
     info.owner,
     info.repo,
+    branch,
     0,
     includeGlobs,
     excludeGlobs,
@@ -164,6 +179,7 @@ export const getGitHubFiles = async (
     data = await paginatedFetchRepo(
       info.owner,
       info.repo,
+      branch,
       allFilesData.length,
       includeGlobs,
       excludeGlobs,

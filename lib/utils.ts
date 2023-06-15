@@ -597,6 +597,17 @@ export const getLabelForSource = (source: Source, inline: boolean) => {
   }
 };
 
+export const getAccessoryLabelForSource = (source: Source) => {
+  switch (source.type) {
+    case 'github': {
+      const data = source.data as GitHubSourceDataType;
+      return '#' + data.branch;
+    }
+    default:
+      return undefined;
+  }
+};
+
 export const getFileNameForSourceAtPath = (source: Source, path: string) => {
   switch (source.type) {
     case 'website': {

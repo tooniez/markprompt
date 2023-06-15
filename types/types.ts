@@ -152,7 +152,7 @@ export type SourceDataType =
   | GitHubSourceDataType
   | MotifSourceDataType
   | WebsiteSourceDataType;
-export type GitHubSourceDataType = { url: string };
+export type GitHubSourceDataType = { url: string; branch?: string };
 export type MotifSourceDataType = { projectDomain: string };
 export type WebsiteSourceDataType = { url: string };
 
@@ -173,7 +173,7 @@ export class ApiError extends Error {
   }
 }
 
-export type TagColor = 'fuchsia' | 'orange' | 'sky' | 'green';
+export type TagColor = 'fuchsia' | 'orange' | 'sky' | 'green' | 'neutral';
 
 export type SerializedDateRange = {
   from: number | undefined;

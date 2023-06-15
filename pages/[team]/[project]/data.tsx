@@ -31,6 +31,7 @@ import { MotifIcon } from '@/components/icons/Motif';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Button from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { Tag } from '@/components/ui/Tag';
 import { deleteFiles } from '@/lib/api';
 import { useTrainingContext } from '@/lib/context/training';
 import useFiles from '@/lib/hooks/use-files';
@@ -39,6 +40,7 @@ import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import {
+  getAccessoryLabelForSource,
   getFileNameForSourceAtPath,
   getIconForSource,
   getLabelForSource,
@@ -102,12 +104,14 @@ type SourceItemProps = {
 
 const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
   const Icon = getIconForSource(source.type);
+  const accessory = getAccessoryLabelForSource(source);
   return (
     <div className="flex w-full cursor-default flex-row items-center gap-2 text-sm">
       <Icon className="h-4 w-4 flex-none text-neutral-500" />
       <p className="flex-grow overflow-hidden text-neutral-300">
         {getLabelForSource(source, false)}
       </p>
+      {accessory && <Tag color="neutral">{accessory}</Tag>}
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
           <button

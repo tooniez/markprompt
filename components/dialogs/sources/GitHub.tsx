@@ -37,11 +37,13 @@ import { GitHubRepository, Project } from '@/types/types';
 const _addSource = async (
   projectId: Project['id'],
   url: string,
+  branch: string | null,
   mutate: () => void,
 ) => {
   try {
     const newSource = await addSource(projectId, 'github', {
       url,
+      ...(branch && branch.length > 0 ? { branch } : {}),
     });
     await mutate();
     toast.success(
@@ -87,7 +89,7 @@ const ConnectButton: FC<ConnectButtonProps> = ({
             await deleteSource(projectId, source.id);
           }
         }
-        await _addSource(projectId, repository.url, mutate);
+        await _addSource(projectId, repository.url, null, mutate);
         setLoading(false);
         onComplete?.();
       }}
@@ -130,13 +132,14 @@ const GitHubSource: FC<GitHubSourceProps> = ({
   return (
     <>
       <Formik
-        initialValues={{ repoUrl: '' }}
+        initialValues={{ repoUrl: '', branch: '' }}
         validateOnMount
         validate={async (values) => {
           const errors: FormikErrors<FormikValues> = {};
           if (values.repoUrl) {
             const isAccessible = await isGitHubRepoAccessible(
               values.repoUrl,
+              values.branch,
               githubAccessToken?.access_token || undefined,
             );
             if (!isAccessible) {
@@ -155,7 +158,7 @@ const GitHubSource: FC<GitHubSourceProps> = ({
               await deleteSource(project.id, source.id);
             }
           }
-          await _addSource(project.id, values.repoUrl, mutate);
+          await _addSource(project.id, values.repoUrl, values.branch, mutate);
           setSubmitting(false);
           onDidAddSource();
         }}
@@ -172,6 +175,15 @@ const GitHubSource: FC<GitHubSourceProps> = ({
                     className="flex-grow"
                     type="text"
                     name="repoUrl"
+                    inputSize="sm"
+                    as={NoAutoInput}
+                    disabled={isSubmitting}
+                  />
+                  <Field
+                    className="w-20 flex-none"
+                    type="text"
+                    name="branch"
+                    placeholder="main"
                     inputSize="sm"
                     as={NoAutoInput}
                     disabled={isSubmitting}
