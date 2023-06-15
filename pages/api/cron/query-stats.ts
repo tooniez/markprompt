@@ -151,29 +151,24 @@ Return as a JSON with the exact same structure.`;
   console.info('[QUERY-STATS] Text', text?.substring(0, 40));
 
   try {
-    const result = JSON.parse(text) as QueryStatData[];
-    console.info(
-      '[QUERY-STATS] Result',
-      JSON.stringify(
-        result.map((r) => r.id),
-        null,
-        2,
-      ),
-    );
-    const { error } = await supabaseAdmin.from('query_stats').upsert(
-      result.map((r) => {
-        return {
-          ...r,
+    const processedQueryStatData = JSON.parse(text) as QueryStatData[];
+    for (const entry of processedQueryStatData) {
+      console.info('Updating', entry.id);
+      const { error } = await supabaseAdmin
+        .from('query_stats')
+        .update({
           processed: true,
-          project_id: projectId,
-        };
-      }),
-    );
-    if (error) {
-      console.error(
-        '[QUERY-STATS] Error updating queries:',
-        JSON.stringify(error),
-      );
+          prompt: entry.prompt,
+          response: entry.response,
+        })
+        .eq('id', entry.id);
+
+      if (error) {
+        console.error(
+          '[QUERY-STATS] Error updating queries:',
+          JSON.stringify(error),
+        );
+      }
     }
   } catch {
     console.error('[QUERY-STATS] Error updating response:', text);
