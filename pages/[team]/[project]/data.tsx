@@ -361,9 +361,9 @@ const Data = () => {
                   await mutateFiles(
                     files?.filter((f) => !fileIds.includes(f.id)),
                   );
+                  await mutateFileStats();
                   setRowSelection([]);
                   setIsDeleting(false);
-                  mutateFileStats();
                   toast.success(
                     `${pluralize(fileIds.length, 'file', 'files')} deleted.`,
                   );

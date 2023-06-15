@@ -5,6 +5,7 @@ import ConfirmDialog from '@/components/dialogs/Confirm';
 import { deleteSource } from '@/lib/api';
 import useFiles from '@/lib/hooks/use-files';
 import useSources from '@/lib/hooks/use-sources';
+import useUsage from '@/lib/hooks/use-usage';
 import { getLabelForSource } from '@/lib/utils';
 import { Project, Source } from '@/types/types';
 
@@ -21,6 +22,7 @@ export const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
 }) => {
   const { mutate: mutateFiles } = useFiles();
   const { mutate: mutateSources } = useSources();
+  const { mutate: mutateFileStats } = useUsage();
   const [loading, setLoading] = useState(false);
 
   return (
@@ -36,6 +38,7 @@ export const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
           await deleteSource(projectId, source.id);
           await mutateSources();
           await mutateFiles();
+          await mutateFileStats();
           toast.success(
             `The source ${getLabelForSource(
               source,
