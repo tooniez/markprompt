@@ -75,7 +75,7 @@ const Onboarding = () => {
               </div>
             </form>
             <Button
-              variant="cta"
+              variant="glow"
               onClick={() => {
                 finishOnboarding();
               }}
