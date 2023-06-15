@@ -38,6 +38,7 @@ import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import {
+  getAccessoryLabelForSource,
   getIconForSource,
   getLabelForSource,
   getNameFromPath,
@@ -579,6 +580,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
               <div className="mt-4 flex flex-col gap-2">
                 {sources.map((source, i) => {
                   const Icon = getIconForSource(source.type);
+                  const accessory = getAccessoryLabelForSource(source);
                   return (
                     <div
                       key={`source-icon-${i}`}
@@ -588,6 +590,11 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                       <p className="flex-grow overflow-hidden text-xs text-sky-400">
                         {getLabelForSource(source, false)}
                       </p>
+                      {accessory && (
+                        <p className="ml-4 overflow-hidden text-xs text-sky-700">
+                          {accessory}
+                        </p>
+                      )}
                       <button
                         className="button-ring rounded-md p-1 outline-none"
                         onClick={() => {

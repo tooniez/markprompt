@@ -173,7 +173,13 @@ export class ApiError extends Error {
   }
 }
 
-export type TagColor = 'fuchsia' | 'orange' | 'sky' | 'green' | 'neutral';
+export type TagColor =
+  | 'fuchsia'
+  | 'orange'
+  | 'sky'
+  | 'green'
+  | 'neutral'
+  | 'red';
 
 export type SerializedDateRange = {
   from: number | undefined;

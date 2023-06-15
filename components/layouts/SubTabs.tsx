@@ -34,7 +34,7 @@ const SubTabs: FC<SubTabsProps> = ({ items }) => {
               <Link href={item.href}>
                 {item.label}
                 {item.tag && (
-                  <Tag className="ml-1" color="green">
+                  <Tag className="ml-1" color="sky">
                     {item.tag}
                   </Tag>
                 )}
