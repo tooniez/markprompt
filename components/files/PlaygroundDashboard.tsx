@@ -33,6 +33,7 @@ import { useConfigContext } from '@/lib/context/config';
 import { useTrainingContext } from '@/lib/context/training';
 import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import useFiles from '@/lib/hooks/use-files';
+import useOnboarding from '@/lib/hooks/use-onboarding';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
@@ -61,7 +62,6 @@ import { SpinnerIcon } from '../icons/Spinner';
 import Button from '../ui/Button';
 import { InfoTooltip } from '../ui/InfoTooltip';
 import { PulseDot } from '../ui/PulseDot';
-import useOnboarding from '@/lib/hooks/use-onboarding';
 
 const WebsiteAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Website'),
