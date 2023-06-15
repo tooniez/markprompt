@@ -846,6 +846,8 @@ export interface Database {
         }
         Returns: {
           path: string
+          source_type: Database["public"]["Enums"]["source_type"]
+          source_data: Json
           occurrences: number
         }[]
       }

@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { format } from 'date-fns';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { safeParseInt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import { Project, PromptQueryStat } from '@/types/types';
 
@@ -42,8 +43,8 @@ export default async function handler(
   const projectId = req.query.id as Project['id'];
 
   if (req.method === 'GET') {
-    const pageSize = 20;
-    const page = parseInt(req.query.page as string);
+    const limit = Math.min(safeParseInt(req.query.limit as string, 50), 50);
+    const page = safeParseInt(req.query.page as string, 0);
     const from = format(
       new Date(parseInt(req.query.from as string)),
       'yyyy-MM-dd',
@@ -58,7 +59,7 @@ export default async function handler(
       .lte('created_at', to)
       .not('prompt', 'is', null)
       .order('created_at', { ascending: false })
-      .range(page * pageSize, (page + 1) * pageSize);
+      .range(page * limit, (page + 1) * (limit - 1));
 
     if (error) {
       return res.status(400).json({ error: error.message });

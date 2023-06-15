@@ -1,17 +1,18 @@
 import { addDays } from 'date-fns';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import useSWR from 'swr';
 
 import {
-  Project,
   PromptQueryStat,
   ReferenceWithOccurrenceCount,
   SerializedDateRange,
 } from '@/types/types';
 
 import useProject from './use-project';
+import useTeam from './use-team';
 import { useLocalStorage } from './utils/use-localstorage';
+import { canViewAccessFullInsights } from '../stripe/tiers';
 import { fetcher } from '../utils';
 
 const serializeRange = (range: DateRange) => {
@@ -38,6 +39,7 @@ export const defaultInsightsDateRange = {
 const defaultSerializedDateRange = serializeRange(defaultInsightsDateRange);
 
 export default function useInsights() {
+  const { team } = useTeam();
   const { project } = useProject();
   const [page, setPage] = useState(0);
 
@@ -61,24 +63,31 @@ export default function useInsights() {
   const {
     data: queries,
     mutate,
-    error,
+    error: queriesError,
   } = useSWR(
     project?.id && serializedRange?.from && serializedRange?.to
-      ? `/api/project/${project.id}/insights/queries?page=${page}&from=${serializedRange?.from}&to=${serializedRange?.to}`
+      ? `/api/project/${project.id}/insights/queries?page=${page}&from=${
+          serializedRange?.from
+        }&to=${serializedRange?.to}&limit=${
+          team && canViewAccessFullInsights(team) ? 50 : 3
+        }`
       : null,
     fetcher<PromptQueryStat[]>,
   );
 
-  const { data: topReferences } = useSWR(
+  const { data: topReferences, error: topReferencesError } = useSWR(
     project?.id && serializedRange?.from && serializedRange?.to
-      ? `/api/project/${project.id}/insights/references?from=${serializedRange?.from}&to=${serializedRange?.to}`
+      ? `/api/project/${project.id}/insights/references?from=${
+          serializedRange?.from
+        }&to=${serializedRange?.to}&limit=${
+          team && canViewAccessFullInsights(team) ? 50 : 2
+        }`
       : null,
     fetcher<ReferenceWithOccurrenceCount[]>,
   );
 
-  console.log('topReferences', JSON.stringify(topReferences, null, 2));
-
-  const loading = !queries && !error;
+  const loadingQueries = !queries && !queriesError;
+  const loadingTopReferences = !topReferences && !topReferencesError;
 
   const setDateRange = useCallback(
     (range: DateRange | undefined) => {
@@ -89,5 +98,15 @@ export default function useInsights() {
     [setSerializedRange],
   );
 
-  return { loading, queries, dateRange, setDateRange, page, setPage, mutate };
+  return {
+    loadingQueries,
+    loadingTopReferences,
+    queries,
+    topReferences,
+    dateRange,
+    setDateRange,
+    page,
+    setPage,
+    mutate,
+  };
 }

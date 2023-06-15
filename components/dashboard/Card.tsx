@@ -12,14 +12,14 @@ type CardProps = {
 
 export const Card: FC<CardProps> = ({ title, description, children }) => {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="relative flex flex-col gap-2">
       <div className="flex flex-col gap-2">
         <h2 className="text-base font-bold text-neutral-100">{title}</h2>
         {description && (
           <h3 className="text-sm text-neutral-500">{description}</h3>
         )}
       </div>
-      {children}
+      <div>{children}</div>
     </div>
   );
 };

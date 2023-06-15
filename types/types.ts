@@ -134,6 +134,8 @@ export type PromptQueryStat = Pick<
 export type ReferenceWithOccurrenceCount = {
   path: string;
   occurrences: number;
+  source_type: SourceType;
+  source_data: SourceDataType | null;
 };
 
 export type PromptReference = {

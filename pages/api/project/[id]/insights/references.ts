@@ -3,8 +3,13 @@ import { createClient } from '@supabase/supabase-js';
 import { format } from 'date-fns';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { safeParseInt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
-import { Project, ReferenceWithOccurrenceCount } from '@/types/types';
+import {
+  Project,
+  ReferenceWithOccurrenceCount,
+  SourceType,
+} from '@/types/types';
 
 type Data =
   | {
@@ -42,7 +47,7 @@ export default async function handler(
   const projectId = req.query.id as Project['id'];
 
   if (req.method === 'GET') {
-    const pageSize = 20;
+    const limit = Math.min(safeParseInt(req.query.limit as string, 50), 50);
     const from = format(
       new Date(parseInt(req.query.from as string)),
       'yyyy-MM-dd',
@@ -57,13 +62,15 @@ export default async function handler(
         | {
             path: string;
             occurrences: number;
+            source_type: SourceType;
+            source_data: any;
           }[]
         | null;
     } = await supabaseAdmin.rpc('query_stats_top_references', {
       project_id: projectId,
       from_tz: from,
       to_tz: to,
-      match_count: pageSize,
+      match_count: limit,
     });
 
     if (error) {

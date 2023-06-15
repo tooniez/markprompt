@@ -196,7 +196,7 @@ export const TIERS: Record<Tier, TierDetails> = {
       '1000 GPT-4 completions per month',
       'Prompt templates',
       'Model customization',
-      'Advanced analytics',
+      'Insights',
     ],
     prices: [
       {
@@ -229,7 +229,6 @@ export const TIERS: Record<Tier, TierDetails> = {
     items: [
       'Teams',
       'Integrations',
-      'Insights (soon)',
       'Unbranded prompts',
       'Unlimited completions',
       'Custom source processing',
@@ -325,5 +324,9 @@ export const canEnableInstantSearch = (team: Team) => {
 };
 
 export const canConfigureModel = (team: Team) => {
+  return isAtLeastPro(team.stripe_price_id, !!team.is_enterprise_plan);
+};
+
+export const canViewAccessFullInsights = (team: Team) => {
   return isAtLeastPro(team.stripe_price_id, !!team.is_enterprise_plan);
 };

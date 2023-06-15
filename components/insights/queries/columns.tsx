@@ -10,26 +10,26 @@ import { formatShortDateTime } from '@/lib/utils';
 import { PromptQueryStat } from '@/types/types';
 
 export const columns: ColumnDef<PromptQueryStat>[] = [
-  {
-    id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        indeterminate={table.getIsSomeRowsSelected()}
-        onChange={table.getToggleAllRowsSelectedHandler()}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onChange={row.getToggleSelectedHandler()}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+  // {
+  //   id: 'select',
+  //   header: ({ table }) => (
+  //     <Checkbox
+  //       checked={table.getIsAllPageRowsSelected()}
+  //       indeterminate={table.getIsSomeRowsSelected()}
+  //       onChange={table.getToggleAllRowsSelectedHandler()}
+  //       aria-label="Select all"
+  //     />
+  //   ),
+  //   cell: ({ row }) => (
+  //     <Checkbox
+  //       checked={row.getIsSelected()}
+  //       onChange={row.getToggleSelectedHandler()}
+  //       aria-label="Select row"
+  //     />
+  //   ),
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // },
   {
     accessorKey: 'prompt',
     header: ({ column }) => {
@@ -120,33 +120,33 @@ export const columns: ColumnDef<PromptQueryStat>[] = [
       );
     },
   },
-  {
-    id: 'actions',
-    enableHiding: false,
-    cell: ({ row }) => {
-      const payment = row.original;
+  // {
+  //   id: 'actions',
+  //   enableHiding: false,
+  //   cell: ({ row }) => {
+  //     const payment = row.original;
 
-      return (
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <Button noStyle className="flex items-center">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4 text-neutral-500" />
-            </Button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content align="end">
-            <DropdownMenu.Label>Actions</DropdownMenu.Label>
-            <DropdownMenu.Item
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
-            </DropdownMenu.Item>
-            <DropdownMenu.Separator />
-            <DropdownMenu.Item>View customer</DropdownMenu.Item>
-            <DropdownMenu.Item>View payment details</DropdownMenu.Item>
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
-      );
-    },
-  },
+  //     return (
+  //       <DropdownMenu.Root>
+  //         <DropdownMenu.Trigger asChild>
+  //           <Button noStyle className="flex items-center">
+  //             <span className="sr-only">Open menu</span>
+  //             <MoreHorizontal className="h-4 w-4 text-neutral-500" />
+  //           </Button>
+  //         </DropdownMenu.Trigger>
+  //         <DropdownMenu.Content align="end">
+  //           <DropdownMenu.Label>Actions</DropdownMenu.Label>
+  //           <DropdownMenu.Item
+  //             onClick={() => navigator.clipboard.writeText(payment.id)}
+  //           >
+  //             Copy payment ID
+  //           </DropdownMenu.Item>
+  //           <DropdownMenu.Separator />
+  //           <DropdownMenu.Item>View customer</DropdownMenu.Item>
+  //           <DropdownMenu.Item>View payment details</DropdownMenu.Item>
+  //         </DropdownMenu.Content>
+  //       </DropdownMenu.Root>
+  //     );
+  //   },
+  // },
 ];
