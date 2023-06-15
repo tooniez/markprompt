@@ -309,3 +309,14 @@ const clientRefreshMaterializedViews = async (
     },
   });
 };
+
+export const processQueryStats = async (projectId: Project['id']) => {
+  const res = await fetch(`/api/cron/query-stats?projectId=${projectId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+  });
+  return getResponseOrThrow<void>(res);
+};

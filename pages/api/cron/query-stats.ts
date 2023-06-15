@@ -117,19 +117,25 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
-  // First in line are projects whose unprocessed prompts are oldest.
-  const { data } = await supabaseAdmin
-    .from('v_distinct_unprocessed_query_stats_project_ids')
-    .select('project_id')
-    .limit(20);
+  const projectId = req.query.projectId as Project['id'];
+  console.log('Processing query stats for project', projectId);
+  if (projectId) {
+    await processProjectQueryStats(projectId);
+  } else {
+    // First in line are projects whose unprocessed prompts are oldest.
+    const { data } = await supabaseAdmin
+      .from('v_distinct_unprocessed_query_stats_project_ids')
+      .select('project_id')
+      .limit(20);
 
-  if (!data) {
-    return res.status(200).send({ status: 'ok' });
-  }
+    if (!data) {
+      return res.status(200).send({ status: 'ok' });
+    }
 
-  for (const { project_id } of data) {
-    if (project_id) {
-      await processProjectQueryStats(project_id);
+    for (const { project_id } of data) {
+      if (project_id) {
+        await processProjectQueryStats(project_id);
+      }
     }
   }
 

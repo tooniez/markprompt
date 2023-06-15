@@ -1,16 +1,21 @@
+import { useEffect } from 'react';
+
 import { Card } from '@/components/dashboard/Card';
 import { columns } from '@/components/insights/queries/columns';
 import { QueriesDataTable } from '@/components/insights/queries/table';
 import { TopReferences } from '@/components/insights/top-references';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
+import { processQueryStats } from '@/lib/api';
 import useInsights, {
   defaultInsightsDateRange,
 } from '@/lib/hooks/use-insights';
+import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
 import { canViewAccessFullInsights } from '@/lib/stripe/tiers';
 
 const Insights = () => {
+  const { project } = useProject();
   const { team } = useTeam();
   const {
     loadingQueries,
@@ -20,6 +25,13 @@ const Insights = () => {
     queries,
     topReferences,
   } = useInsights();
+
+  useEffect(() => {
+    if (!project?.id) {
+      return;
+    }
+    processQueryStats(project.id);
+  }, [project?.id]);
 
   return (
     <ProjectSettingsLayout title="Insights" width="xl">
