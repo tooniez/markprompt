@@ -71,7 +71,7 @@ export const checkEmbeddingsRateLimits = async (
   identifier: RateLimitIdType,
 ) => {
   // For now, impose a hard limit of 200 training per minute. Later, tie it to the plan associated to a team/project.
-  const result = await getRateLimit(rateLimitTypeToKey(identifier), 100, '1 m');
+  const result = await getRateLimit(rateLimitTypeToKey(identifier), 200, '1 m');
   return { result, ...getResetTime(result) };
 };
 
@@ -80,7 +80,7 @@ export const checkCompletionsRateLimits = async (
 ) => {
   // For now, impose a hard limit of 10 completions per minute
   // per hostname. Later, tie it to the plan associated to a team/project.
-  const result = await getRateLimit(rateLimitTypeToKey(identifier), 10, '60 s');
+  const result = await getRateLimit(rateLimitTypeToKey(identifier), 10, '30 s');
   return { result, ...getResetTime(result) };
 };
 
