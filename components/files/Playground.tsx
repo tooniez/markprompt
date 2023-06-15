@@ -650,7 +650,7 @@ export const Playground = forwardRef(
               rel="noreferrer"
               style={{ color: colors?.primary }}
             >
-              Markprompt
+              Markprompt AI
             </a>
           </div>
         )}

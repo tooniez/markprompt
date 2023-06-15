@@ -61,6 +61,7 @@ import { SpinnerIcon } from '../icons/Spinner';
 import Button from '../ui/Button';
 import { InfoTooltip } from '../ui/InfoTooltip';
 import { PulseDot } from '../ui/PulseDot';
+import useOnboarding from '@/lib/hooks/use-onboarding';
 
 const WebsiteAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Website'),
@@ -332,6 +333,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   const playgroundRef = useRef<HTMLDivElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const overlayMessageRef = useRef<HTMLDivElement>(null);
+  const { finishOnboarding } = useOnboarding();
 
   const startTraining = useCallback(async () => {
     await trainAllSources(
@@ -393,7 +395,15 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
         <span>
           <Stars className="mr-1 mt-[-2px] inline-block h-4 w-4 text-amber-400" />
           You are all set! Get the embed code, configure the design and model,
-          or continue to the dashboard
+          or{' '}
+          <span
+            className="border-b border-dotted border-neutral-300 font-medium"
+            onClick={() => {
+              finishOnboarding();
+            }}
+          >
+            continue to the dashboard
+          </span>
         </span>
       );
     }
@@ -407,6 +417,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     isLoading,
     didCompleteFirstQuery,
     isLoadingResponse,
+    finishOnboarding,
   ]);
 
   const isShowingOnboardingMessages = !!overlayMessage;
