@@ -1,10 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { isPresent } from 'ts-is-present';
 
 import { CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO } from '@/lib/constants';
 import { getProjectConfigData } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
-import { getCompletionsResponseText, getCompletionsUrl } from '@/lib/utils';
+import {
+  approximatedTokenCount,
+  getCompletionsResponseText,
+  getCompletionsUrl,
+} from '@/lib/utils';
 import { safeParseInt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
@@ -32,11 +37,15 @@ type QueryStatData = {
   response: string | null;
 };
 
+const estimateQueryTokenCount = (query: QueryStatData) => {
+  return approximatedTokenCount(JSON.stringify(query));
+};
+
 const trimQueries = (queries: QueryStatData[], maxTokens: number) => {
   let tokenCount = 0;
   const trimmedQueries: QueryStatData[] = [];
   for (const query of queries) {
-    tokenCount += JSON.stringify(query).length;
+    tokenCount += estimateQueryTokenCount(query);
 
     if (tokenCount >= maxTokens) {
       break;
@@ -62,13 +71,23 @@ const processProjectQueryStats = async (projectId: Project['id']) => {
     return;
   }
 
-  const trimmedQueries = trimQueries(
-    queries,
-    CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO * 0.8,
-  );
+  const maxTokens = CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO * 0.8;
+  // Ensure that no queries alone are too large for the prompt. If one
+  // such query exists, we'd have a deadlock situation, preventing
+  // subsequent queries from being processed. The solution here is
+  // to delete all individual queries that exceed the token threshold
+  const overflowingQueryIds = queries
+    .map((q) => (estimateQueryTokenCount(q) > maxTokens ? q.id : null))
+    .filter(isPresent);
 
-  console.log('!!! queries', queries.length);
-  console.log('!!! trimmedQueries', trimmedQueries.length);
+  if (overflowingQueryIds.length > 0) {
+    await supabaseAdmin
+      .from('query_stats')
+      .delete()
+      .in('id', overflowingQueryIds);
+  }
+
+  const trimmedQueries = trimQueries(queries, maxTokens);
 
   const prompt = `The following is a list of questions and responses in JSON format. Please keep the JSON, and don't touch the ids, but remove any personally identifiable information from the prompt and response entry:\n\n${JSON.stringify(
     trimmedQueries,
@@ -99,6 +118,7 @@ Return as a JSON with the exact same structure.`;
     messages: [{ role: 'user', content: prompt }],
   };
 
+  console.log('FETCHING COMPLETIONS');
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -112,11 +132,11 @@ Return as a JSON with the exact same structure.`;
 
   const json = await res.json();
 
+  console.log('JSON', JSON.stringify(json, null, 2));
   if (json.error) {
     console.error('Error fetching completions:', JSON.stringify(json));
+    return;
   }
-
-  console.error('************* json', JSON.stringify(json, null, 2));
 
   const tokenCount = safeParseInt(json.usage.total_tokens, 0);
   await recordProjectTokenCount(
@@ -127,9 +147,18 @@ Return as a JSON with the exact same structure.`;
   );
 
   const text = getCompletionsResponseText(json, model);
+  console.error('RESPONSE text', text?.substring(0, 40));
 
   try {
     const result = JSON.parse(text) as QueryStatData[];
+    console.error(
+      '!!!text',
+      JSON.stringify(
+        result.map((r) => r.id),
+        null,
+        2,
+      ),
+    );
     await supabaseAdmin.from('query_stats').upsert(
       result.map((r) => {
         return {

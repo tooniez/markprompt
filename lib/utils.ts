@@ -473,7 +473,7 @@ export const getCompletionsUrl = (model: OpenAIModelIdWithType) => {
 export const getCompletionsResponseText = (
   response: any,
   model: OpenAIModelIdWithType,
-) => {
+): string => {
   switch (model.type) {
     case 'chat_completions': {
       return response.choices[0].message.content;
@@ -847,5 +847,5 @@ const APPROX_CHARS_PER_TOKEN = 3.8;
 // Fast approximate token count. We use a slightly smaller value
 // to ensure we stay within boundaries.
 export const approximatedTokenCount = (text: string) => {
-  return Math.round(text.length * APPROX_CHARS_PER_TOKEN);
+  return Math.round(text.length / APPROX_CHARS_PER_TOKEN);
 };
