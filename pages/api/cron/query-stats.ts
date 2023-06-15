@@ -159,7 +159,7 @@ Return as a JSON with the exact same structure.`;
         2,
       ),
     );
-    await supabaseAdmin.from('query_stats').upsert(
+    const { error } = await supabaseAdmin.from('query_stats').upsert(
       result.map((r) => {
         return {
           ...r,
@@ -168,6 +168,12 @@ Return as a JSON with the exact same structure.`;
         };
       }),
     );
+    if (error) {
+      console.error(
+        '[QUERY_STATS] Error updating queries:',
+        JSON.stringify(error),
+      );
+    }
   } catch {
     console.error('Error updating response:', text);
   }
