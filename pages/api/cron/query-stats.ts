@@ -71,16 +71,20 @@ const processProjectQueryStats = async (projectId: Project['id']) => {
     return;
   }
 
-  const maxTokens = CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO * 0.8;
   // Ensure that no queries alone are too large for the prompt. If one
   // such query exists, we'd have a deadlock situation, preventing
   // subsequent queries from being processed. The solution here is
-  // to delete all individual queries that exceed the token threshold
+  // to delete all individual queries that exceed the token threshold.
+  // We also go substantially below the token cutoff to ensure the prompt
+  // output remains small. Otherwise, we may have a timeout.
+  const maxTokens = CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO * 0.5;
   const overflowingQueryIds = queries
     .map((q) => (estimateQueryTokenCount(q) > maxTokens ? q.id : null))
     .filter(isPresent);
 
   if (overflowingQueryIds.length > 0) {
+    console.info(`[QUERY-STATS] Too long ${overflowingQueryIds.length}`);
+
     await supabaseAdmin
       .from('query_stats')
       .delete()
@@ -108,7 +112,7 @@ Return as a JSON with the exact same structure.`;
 
   const payload = {
     model: model.value,
-    temperature: 1,
+    temperature: 0.1,
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
@@ -117,6 +121,14 @@ Return as a JSON with the exact same structure.`;
     n: 1,
     messages: [{ role: 'user', content: prompt }],
   };
+
+  console.info(
+    `[QUERY-STATS] Processing ${
+      queries?.length
+    } prompts for ${projectId}. Prompt length: ${
+      JSON.stringify(payload).length
+    }`,
+  );
 
   const res = await fetch(url, {
     headers: {
@@ -148,10 +160,12 @@ Return as a JSON with the exact same structure.`;
   );
 
   const text = getCompletionsResponseText(json, model);
-  console.info('[QUERY-STATS] Text', text?.substring(0, 40));
 
   try {
     const processedQueryStatData = JSON.parse(text) as QueryStatData[];
+    console.info(
+      `[QUERY-STATS] Processed ${processedQueryStatData.length} prompts`,
+    );
     for (const entry of processedQueryStatData) {
       console.info('Updating', entry.id);
       const { error } = await supabaseAdmin
