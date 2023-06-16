@@ -21,7 +21,7 @@ export type BarChartData = {
   value: number;
 };
 
-type BarChartProps = {
+type FixedBarChartProps = {
   data: BarChartData[];
   isLoading: boolean;
   interval: TimeInterval;
@@ -43,7 +43,7 @@ type TooltipData = {
   value: number;
 };
 
-const BarChart: FC<BarChartProps & ResponsiveBarChartProps> = ({
+const FixedBarChart: FC<FixedBarChartProps & ResponsiveBarChartProps> = ({
   data: _data,
   isLoading,
   height,
@@ -208,12 +208,12 @@ const BarChart: FC<BarChartProps & ResponsiveBarChartProps> = ({
   );
 };
 
-const ResponsizeBarChart: FC<BarChartProps> = (props) => {
+const BarChart: FC<FixedBarChartProps> = (props) => {
   return (
     <ParentSize debounceTime={20}>
-      {(parent) => <BarChart {...props} parentWidth={parent.width} />}
+      {(parent) => <FixedBarChart {...props} parentWidth={parent.width} />}
     </ParentSize>
   );
 };
 
-export default ResponsizeBarChart;
+export default BarChart;

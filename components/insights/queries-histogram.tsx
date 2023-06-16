@@ -3,7 +3,7 @@ import { FC, useMemo } from 'react';
 
 import { DateCountHistogramEntry } from '@/types/types';
 
-import ResponsizeAreaChart from '../charts/area-chart';
+import AreaChart from '../charts/area-chart';
 import { SkeletonTable } from '../ui/Skeletons';
 
 type QueriesHistogramProps = {
@@ -24,9 +24,7 @@ export const QueriesHistogram: FC<QueriesHistogramProps> = ({
   return (
     <div className="relative flex h-[200px] flex-col gap-2">
       <SkeletonTable loading={loading} />
-      {data?.length > 0 && (
-        <ResponsizeAreaChart data={chartData} height={180} />
-      )}
+      {data?.length > 0 && <AreaChart data={chartData} height={180} />}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { addDays } from 'date-fns';
+import { addMonths } from 'date-fns';
 import { useCallback, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import useSWR from 'swr';
@@ -34,7 +34,7 @@ const deserializeRange = (range: {
 };
 
 export const defaultInsightsDateRange = {
-  from: addDays(new Date(), -7),
+  from: addMonths(new Date(), -1),
   to: new Date(),
 };
 const defaultSerializedDateRange = serializeRange(defaultInsightsDateRange);
