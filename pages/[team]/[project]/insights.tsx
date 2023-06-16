@@ -36,7 +36,6 @@ const Insights = () => {
     processQueryStats(project.id);
   }, [project?.id]);
 
-  console.log('topReferences', topReferences);
   return (
     <ProjectSettingsLayout title="Insights" width="xl">
       <div className="flex cursor-not-allowed justify-start">
