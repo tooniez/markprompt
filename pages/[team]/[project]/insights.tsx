@@ -36,6 +36,7 @@ const Insights = () => {
     processQueryStats(project.id);
   }, [project?.id]);
 
+  console.log('topReferences', topReferences);
   return (
     <ProjectSettingsLayout title="Insights" width="xl">
       <div className="flex cursor-not-allowed justify-start">
@@ -78,7 +79,8 @@ const Insights = () => {
               )
             }
           >
-            {!loadingQueriesHistogram && queriesHistogram?.length === 0 ? (
+            {!loadingQueriesHistogram &&
+            (!queriesHistogram || queriesHistogram?.length === 0) ? (
               <p className="mt-2 text-sm text-neutral-500">
                 No questions asked in this time range.
               </p>
@@ -89,7 +91,7 @@ const Insights = () => {
               />
             )}
           </Card>
-          <Card title="Most cited references">
+          <Card title="Most cited sources">
             {!loadingTopReferences && topReferences?.length === 0 ? (
               <p className="mt-2 text-sm text-neutral-500">
                 No references cited in this time range.

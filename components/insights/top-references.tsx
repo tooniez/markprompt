@@ -43,7 +43,7 @@ export const TopReferences: FC<TopReferencesProps> = ({
               </span>
             </div>
             <div
-              className="absolute left-0 top-0 bottom-0 z-0 rounded-md bg-neutral-1000"
+              className="absolute left-0 top-0 bottom-0 z-0 rounded-md bg-neutral-900"
               style={{
                 width:
                   minMaxOccurrences.max > 0

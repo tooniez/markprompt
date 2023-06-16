@@ -36,6 +36,7 @@ const tooltipStyles = {
   borderStyle: 'solid',
   borderColor: colors.neutral['800'],
   color: colors.neutral['300'],
+  fontSize: '11px',
 };
 
 const formatDate = d3TimeFormat.timeFormat("%b %d, '%y");
@@ -188,7 +189,7 @@ const AreaChart = withTooltip<AreaProps, TooltipData>(
               />
               <circle
                 cx={tooltipLeft}
-                cy={tooltipTop + 1}
+                cy={tooltipTop - 1}
                 r={4}
                 fill="black"
                 fillOpacity={0.1}
@@ -213,20 +214,20 @@ const AreaChart = withTooltip<AreaProps, TooltipData>(
           <div>
             <TooltipWithBounds
               key={Math.random()}
-              top={tooltipTop - 12}
-              left={tooltipLeft + 12}
+              top={tooltipTop - 40}
+              left={tooltipLeft}
               style={tooltipStyles}
             >
               {getValue(tooltipData)}
             </TooltipWithBounds>
             <Tooltip
-              top={innerHeight + margin.top - 14}
+              top={innerHeight + margin.top}
               left={tooltipLeft}
               style={{
                 ...defaultStyles,
                 ...tooltipStyles,
                 background: colors.black,
-                minWidth: 72,
+                minWidth: 80,
                 textAlign: 'center',
                 transform: 'translateX(-50%)',
               }}
