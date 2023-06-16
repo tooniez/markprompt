@@ -1,3 +1,7 @@
+-- Extensions
+create extension if not exists vector with schema public;
+create extension if not exists pgroonga with schema public;
+
 -- Users
 create table users (
   id                           uuid references auth.users on delete cascade not null primary key,
@@ -322,17 +326,17 @@ create view v_team_project_usage_info as
   left join sources on files.source_id = sources.id
   left join projects on sources.project_id = projects.id
   left join teams on projects.team_id = teams.id
-  group by projects.id, teams.id
+  group by projects.id, teams.id;
 
 create view v_team_project_info as
   select
     projects.id as project_id,
     teams.id as team_id,
     teams.is_enterprise_plan as is_enterprise_plan,
-    teams.stripe_price_id as stripe_price_id
+    teams.stripe_price_id as stripe_price_id,
     teams.plan_details as plan_details
   from projects
-  left join teams on projects.team_id = teams.id
+  left join teams on projects.team_id = teams.id;
 
 create view v_file_section_search_infos as
   select
@@ -455,10 +459,6 @@ using pgroonga ((array[
     (file_meta->>'title')::text,
     (section_meta->'leadHeading'->>'value')::text
   ]));
--- Extensions
-
-create extension if not exists vector with schema public;
-create extension if not exists pgroonga with schema public;
 
 -- RLS
 
