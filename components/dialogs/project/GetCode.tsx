@@ -728,7 +728,7 @@ markprompt(
       placeholder: ${options.placeholder}
     },
     references: {
-      loadingText: ${options.loadingText}
+      loadingText: ${options.loadingText},
       referencesText: ${options.referencesText}
     }
   }
