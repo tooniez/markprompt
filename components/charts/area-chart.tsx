@@ -118,7 +118,7 @@ const FixedAreaChart = withTooltip<FixedAreaChartProps, TooltipData>(
     );
 
     return (
-      <div className="relative pb-12">
+      <div className="relative pb-16">
         <div className="overflow-hidden rounded-md border border-dashed border-neutral-800 pl-[-1px]">
           <svg width={width} height={height} className="z-10">
             <rect
@@ -241,7 +241,7 @@ const FixedAreaChart = withTooltip<FixedAreaChartProps, TooltipData>(
             </div>
           )}
         </div>
-        <div className="inset-x-0 bottom-0 z-0 ml-[1px] h-12">
+        <div className="inset-x-0 bottom-0 z-0 ml-[1px] mt-1 h-12">
           <svg width={width} height={48}>
             <AxisBottom
               scale={dateScale}
