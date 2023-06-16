@@ -4,6 +4,7 @@ import { DateRange } from 'react-day-picker';
 import useSWR from 'swr';
 
 import {
+  DateCountHistogramEntry,
   PromptQueryStat,
   ReferenceWithOccurrenceCount,
   SerializedDateRange,
@@ -60,6 +61,15 @@ export default function useInsights() {
     });
   }, [serializedRange?.from, serializedRange?.to]);
 
+  const setDateRange = useCallback(
+    (range: DateRange | undefined) => {
+      if (range) {
+        setSerializedRange(serializeRange(range));
+      }
+    },
+    [setSerializedRange],
+  );
+
   const {
     data: queries,
     mutate,
@@ -75,34 +85,37 @@ export default function useInsights() {
     fetcher<PromptQueryStat[]>,
   );
 
+  const loadingQueries = !queries && !queriesError;
+
   const { data: topReferences, error: topReferencesError } = useSWR(
     project?.id && serializedRange?.from && serializedRange?.to
       ? `/api/project/${project.id}/insights/references?from=${
           serializedRange?.from
         }&to=${serializedRange?.to}&limit=${
-          team && canViewAccessFullInsights(team) ? 50 : 2
+          team && canViewAccessFullInsights(team) ? 20 : 2
         }`
       : null,
     fetcher<ReferenceWithOccurrenceCount[]>,
   );
 
-  const loadingQueries = !queries && !queriesError;
   const loadingTopReferences = !topReferences && !topReferencesError;
 
-  const setDateRange = useCallback(
-    (range: DateRange | undefined) => {
-      if (range) {
-        setSerializedRange(serializeRange(range));
-      }
-    },
-    [setSerializedRange],
+  const { data: queriesHistogram, error: queriesHistogramError } = useSWR(
+    project?.id && serializedRange?.from && serializedRange?.to
+      ? `/api/project/${project.id}/insights/queries-histogram?from=${serializedRange?.from}&to=${serializedRange?.to}`
+      : null,
+    fetcher<DateCountHistogramEntry[]>,
   );
 
+  const loadingQueriesHistogram = !queriesHistogram && !queriesHistogramError;
+
   return {
-    loadingQueries,
-    loadingTopReferences,
     queries,
     topReferences,
+    loadingQueries,
+    loadingTopReferences,
+    queriesHistogram,
+    loadingQueriesHistogram,
     dateRange,
     setDateRange,
     page,

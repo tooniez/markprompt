@@ -208,7 +208,7 @@ const BarChart: FC<BarChartProps & ResponsiveBarChartProps> = ({
   );
 };
 
-const ResponsizeBarChar: FC<BarChartProps> = (props) => {
+const ResponsizeBarChart: FC<BarChartProps> = (props) => {
   return (
     <ParentSize debounceTime={20}>
       {(parent) => <BarChart {...props} parentWidth={parent.width} />}
@@ -216,4 +216,4 @@ const ResponsizeBarChar: FC<BarChartProps> = (props) => {
   );
 };
 
-export default ResponsizeBarChar;
+export default ResponsizeBarChart;
