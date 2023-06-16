@@ -754,6 +754,201 @@ export interface Database {
         }
         Relationships: []
       }
+      v_insights_query_histogram_day: {
+        Row: {
+          count: number | null
+          date: string | null
+          project_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
+      }
+      v_insights_query_histogram_hour: {
+        Row: {
+          count: number | null
+          date: string | null
+          project_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
+      }
+      v_insights_query_histogram_month: {
+        Row: {
+          count: number | null
+          date: string | null
+          project_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
+      }
+      v_insights_query_histogram_week: {
+        Row: {
+          count: number | null
+          date: string | null
+          project_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
+      }
+      v_insights_query_histogram_year: {
+        Row: {
+          count: number | null
+          date: string | null
+          project_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "mv_fts"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
+      }
       v_team_project_info: {
         Row: {
           is_enterprise_plan: boolean | null
@@ -846,7 +1041,7 @@ export interface Database {
         }
         Returns: {
           path: string
-          source_type: Database["public"]["Enums"]["source_type"]
+          source_type: string
           source_data: Json
           occurrences: number
         }[]

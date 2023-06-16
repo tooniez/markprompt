@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { Card } from '@/components/dashboard/Card';
 import { columns } from '@/components/insights/queries/columns';
 import { QueriesDataTable } from '@/components/insights/queries/table';
+import { QueriesHistogram } from '@/components/insights/queries-histogram';
 import { TopReferences } from '@/components/insights/top-references';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
@@ -18,12 +19,14 @@ const Insights = () => {
   const { project } = useProject();
   const { team } = useTeam();
   const {
+    queries,
     loadingQueries,
+    topReferences,
     loadingTopReferences,
+    queriesHistogram,
+    loadingQueriesHistogram,
     dateRange,
     setDateRange,
-    queries,
-    topReferences,
   } = useInsights();
 
   useEffect(() => {
@@ -59,21 +62,49 @@ const Insights = () => {
             )}
           </Card>
         </div>
-        <Card title="Most cited references">
-          {!loadingTopReferences && topReferences?.length === 0 ? (
-            <p className="mt-2 text-sm text-neutral-500">
-              No references cited in this time range.
-            </p>
-          ) : (
-            <div className="mt-4">
-              <TopReferences
-                loading={loadingTopReferences}
-                topReferences={topReferences || []}
-                showUpgradeMessage={team && !canViewAccessFullInsights(team)}
+        <div className="flex flex-col gap-8">
+          <Card
+            title="Questions per day"
+            accessory={
+              queriesHistogram ? (
+                <div className="text-sm text-neutral-500">
+                  In selected range:{' '}
+                  <span className="font-medium text-neutral-100">
+                    {queriesHistogram.reduce((acc, q) => acc + q.count, 0)}
+                  </span>
+                </div>
+              ) : (
+                <></>
+              )
+            }
+          >
+            {!loadingQueriesHistogram && queriesHistogram?.length === 0 ? (
+              <p className="mt-2 text-sm text-neutral-500">
+                No questions asked in this time range.
+              </p>
+            ) : (
+              <QueriesHistogram
+                loading={loadingQueriesHistogram}
+                data={queriesHistogram || []}
               />
-            </div>
-          )}
-        </Card>
+            )}
+          </Card>
+          <Card title="Most cited references">
+            {!loadingTopReferences && topReferences?.length === 0 ? (
+              <p className="mt-2 text-sm text-neutral-500">
+                No references cited in this time range.
+              </p>
+            ) : (
+              <div className="mt-4">
+                <TopReferences
+                  loading={loadingTopReferences}
+                  topReferences={topReferences || []}
+                  showUpgradeMessage={team && !canViewAccessFullInsights(team)}
+                />
+              </div>
+            )}
+          </Card>
+        </div>
       </div>
     </ProjectSettingsLayout>
   );

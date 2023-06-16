@@ -365,6 +365,36 @@ create view v_distinct_unprocessed_query_stats_project_ids as
   group by project_id
   order by min_created_at asc;
 
+create view v_insights_query_histogram_hour as
+select project_id, date_trunc('hour', created_at) as created_at, count(*) as count
+from query_stats
+group by created_at, project_id
+order by created_at;
+
+create view v_insights_query_histogram_day as
+select project_id, date_trunc('day', created_at) as created_at, count(*) as count
+from query_stats
+group by created_at, project_id
+order by created_at;
+
+create view v_insights_query_histogram_week as
+select project_id, date_trunc('week', created_at) as created_at, count(*) as count
+from query_stats
+group by created_at, project_id
+order by created_at;
+
+create view v_insights_query_histogram_month as
+select project_id, date_trunc('month', created_at) as created_at, count(*) as count
+from query_stats
+group by created_at, project_id
+order by created_at;
+
+create view v_insights_query_histogram_year as
+select project_id, date_trunc('year', created_at) as created_at, count(*) as count
+from query_stats
+group by created_at, project_id
+order by created_at;
+
 -- Materialized views
 
 create materialized view mv_fts as

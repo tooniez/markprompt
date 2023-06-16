@@ -137,6 +137,10 @@ export type ReferenceWithOccurrenceCount = {
   source_type: SourceType;
   source_data: SourceDataType | null;
 };
+export type PromptQueryHistogram = {
+  date: string | null;
+  count: number | null;
+};
 
 export type PromptReference = {
   path: string;

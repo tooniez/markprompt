@@ -6,13 +6,13 @@ import { ReferenceWithOccurrenceCount } from '@/types/types';
 
 import { SkeletonTable } from '../ui/Skeletons';
 
-type TopReferences = {
+type TopReferencesProps = {
   topReferences: ReferenceWithOccurrenceCount[] | null;
   loading?: boolean;
   showUpgradeMessage?: boolean;
 };
 
-export const TopReferences: FC<TopReferences> = ({
+export const TopReferences: FC<TopReferencesProps> = ({
   topReferences,
   loading,
   showUpgradeMessage,
@@ -29,7 +29,7 @@ export const TopReferences: FC<TopReferences> = ({
   }, [topReferences]);
 
   return (
-    <div className="relative flex min-h-[200px] flex-col gap-2">
+    <div className="relative flex max-h-[500px] min-h-[200px] flex-col gap-2 overflow-y-auto">
       <SkeletonTable loading={loading} />
       {topReferences?.map((r, i) => {
         const Icon = getIconForSource(r.source_type);
