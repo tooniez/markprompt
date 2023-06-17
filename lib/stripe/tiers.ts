@@ -196,7 +196,7 @@ export const TIERS: Record<Tier, TierDetails> = {
       '1000 GPT-4 completions per month',
       'Prompt templates',
       'Model customization',
-      'Insights',
+      'Basic insights',
     ],
     prices: [
       {
@@ -229,6 +229,7 @@ export const TIERS: Record<Tier, TierDetails> = {
     items: [
       'Teams',
       'Integrations',
+      'Advanced insights',
       'Unbranded prompts',
       'Unlimited completions',
       'Custom source processing',
