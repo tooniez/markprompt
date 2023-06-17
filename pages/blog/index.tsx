@@ -50,7 +50,7 @@ const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
                 />
               </div>
               <div className="prose prose-invert col-span-2 flex flex-col pt-12 sm:prose-lg">
-                <h2 className="mb-4">
+                <h2 className="text-neutral-100" style={{ marginBottom: 4 }}>
                   <Balancer>{firstEntry.frontmatter.title}</Balancer>
                 </h2>
                 <div className="flex flex-row items-center gap-4">
@@ -86,7 +86,7 @@ const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
                       alt={entry.frontmatter.title || 'Cover image'}
                       className="h-48 w-full rounded-lg border border-neutral-900 object-cover"
                     />
-                    <h3 className="text-lg font-bold">
+                    <h3 className="text-lg font-bold text-neutral-100">
                       {entry.frontmatter.title}
                     </h3>
                     <div>

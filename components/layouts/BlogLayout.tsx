@@ -68,45 +68,80 @@ export const CloudinaryImage: FC<CloudinaryImageProps> = ({
 
 export const AuthorList = ({
   authors,
-  size,
+  size = 'base',
   justify,
   highlight,
+  linkTwitter,
 }: {
   authors: { name: string; avatar: string }[];
   size?: 'sm' | 'base';
   justify?: 'center';
   highlight?: boolean;
+  linkTwitter?: boolean;
 }) => {
   return (
-    <div className="flex flex-row flex-wrap gap-4">
-      {authors?.map((author: { name: string; avatar: string }) => {
-        return (
-          <div
-            className={cn('not-prose flex flex-row items-center gap-2', {
-              'justify-center': justify === 'center',
-            })}
-            key={author.name}
-          >
-            <CloudinaryImage
-              src={author.avatar}
-              alt={author.name || 'Avatar'}
-              className="h-6 w-6 rounded-full object-cover"
-            />
-            <p
-              className={cn(
-                'flex justify-center whitespace-nowrap font-normal',
-                {
-                  'text-sm': size === 'sm',
-                  'text-neutral-500': !highlight,
-                  'text-neutral-300': highlight,
-                },
-              )}
-            >
-              {author?.name}
-            </p>
-          </div>
-        );
+    <div
+      className={cn('flex flex-row flex-wrap gap-4', {
+        'gap-4': size === 'sm',
+        'gap-8': size === 'base',
       })}
+    >
+      {authors?.map(
+        (author: { name: string; avatar: string; twitter?: string }) => {
+          const showTwitterHandle = linkTwitter && author?.twitter;
+          return (
+            <div className="not-prose group transition" key={author.name}>
+              <a
+                href={
+                  showTwitterHandle
+                    ? `https://twitter.com/${author.twitter}`
+                    : undefined
+                }
+                target="_blank"
+                rel="noreferrer"
+                className={cn('not-prose flex flex-row items-center', {
+                  'justify-center': justify === 'center',
+                  'gap-2': size === 'sm',
+                  'gap-4': size === 'base',
+                })}
+              >
+                <CloudinaryImage
+                  src={author.avatar}
+                  alt={author.name || 'Avatar'}
+                  className={cn('rounded-full object-cover', {
+                    'h-6 w-6': size === 'sm',
+                    'h-8 w-8': size === 'base',
+                  })}
+                />
+                <div
+                  className={cn(
+                    'flex flex-col justify-center gap-0 whitespace-nowrap font-normal',
+                    {
+                      'text-sm': size === 'sm',
+                      'text-neutral-400 group-hover:text-neutral-300':
+                        !highlight,
+                      'text-neutral-300': highlight,
+                    },
+                  )}
+                >
+                  <span
+                    className={cn('leading-none', {
+                      'font-medium': size === 'base',
+                    })}
+                  >
+                    {author?.name}
+                  </span>
+                  {showTwitterHandle && (
+                    <span className="text-sm text-neutral-600 group-hover:text-neutral-500">
+                      @{author.twitter}
+                    </span>
+                  )}
+                </div>
+              </a>
+            </div>
+          );
+        },
+      )}
     </div>
   );
 };
@@ -136,9 +171,13 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
                 </h1>
               </div>
             )}
-            <div className="mt-4 mb-2 flex flex-row items-center  justify-center gap-4">
+            <div className="mt-4 mb-4 flex flex-row items-center  justify-center gap-4">
               {frontmatter?.authors && (
-                <AuthorList authors={frontmatter.authors} justify="center" />
+                <AuthorList
+                  authors={frontmatter.authors}
+                  justify="center"
+                  linkTwitter
+                />
               )}
             </div>
             <div className="mb-8">
