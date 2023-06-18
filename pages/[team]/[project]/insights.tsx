@@ -64,7 +64,7 @@ const Insights = () => {
         </div>
         <div className="flex flex-col gap-8">
           <Card
-            title="Questions per day"
+            title="New questions"
             accessory={
               queriesHistogram ? (
                 <div className="text-sm text-neutral-500">
