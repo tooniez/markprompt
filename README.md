@@ -3,7 +3,7 @@
   <h1 align="center">Markprompt</h1>
 </a>
 
-Markprompt is a platform for building GPT-powered prompts. It takes Markdown, Markdoc, MDX, HTML and plain text files (from a GitHub repo, website, file uploads or API requests), and creates embeddings that you can use to create a prompt, for instance using the companion [Markprompt React or Web component](https://markprompt.com/docs#components). Markprompt also offers analytics, so you can gain insights on how visitors interact with your docs.
+Markprompt is a platform for building GPT-powered prompts. It takes Markdown, Markdoc, MDX, reStructuredText, HTML and plain text files (from a GitHub repo, website, file uploads or API requests), and creates embeddings that you can use to create a prompt, for instance using the companion [Markprompt React or Web component](https://markprompt.com/docs#components). Markprompt also offers analytics, so you can gain insights on how users interact with your docs.
 
 <br />
 <br />
@@ -24,40 +24,15 @@ Markprompt is a platform for building GPT-powered prompts. It takes Markdown, Ma
 
 To use the Markprompt platform as is, please refer to the [Markprompt documentation](https://markprompt.com/docs).
 
-## Self-hosting
-
 Markprompt is built on top of the following stack:
 
 - [Next.js](https://nextjs.org/) - framework
 - [Vercel](https://vercel.com/) - hosting
+- [Supabase](https://supabase.com/) - database and auth
+- [Upstash](https://upstash.com/) - Redis and rate limiting
 - [Typescript](https://www.typescriptlang.org/) - language
 - [Tailwind](https://tailwindcss.com/) - CSS
-- [Upstash](https://upstash.com/) - Redis and rate limiting
-- [Supabase](https://supabase.com/) - database and auth
 - [Stripe](https://stripe.com/) - payments
-- [Fathom](https://usefathom.com/) - analytics
-
-### Supabase
-
-Supabase is used for storage and auth, and if self-hosting, you will need to set it up on the [Supabase admin console](https://app.supabase.com/).
-
-#### Schema
-
-The schema is defined in [schema.sql](https://github.com/motifland/markprompt/blob/main/config/schema.sql). Create a Supabase database and paste the content of this file into the SQL editor. Then run the Typescript types generation script using:
-
-```sh
-npx supabase gen types typescript --project-id <supabase-project-id> --schema public > types/supabase.ts
-```
-
-where `<supabase-project-id>` is the id of your Supabase project.
-
-#### Auth provider
-
-Authentication is handled by Supabase Auth. Follow the [Login with GitHub](https://supabase.com/docs/guides/auth/social-login/auth-github) and [Login with Google](https://supabase.com/docs/guides/auth/social-login/auth-google) guides to set it up.
-
-### Setting environment variables
-
-A sample file containing required environment variables can be found in [example.env](https://github.com/motifland/markprompt/blob/main/example.env). In addition to the keys for the above services, you will need keys for [Upstash](https://upstash.com/) (rate limiting and key-value storage), and [Fathom](https://usefathom.com/) (analytics).
 
 ## Using the React and Web components
 
@@ -77,11 +52,9 @@ Markprompt keeps the data as long as you need to query it. If you remove a file 
 
 ## Community
 
-- [Twitter @markprompt](https://twitter.com/markprompt)
-- [Twitter @motifland](https://twitter.com/motifland)
+- [Twitter](https://twitter.com/markprompt)
 - [Discord](https://discord.gg/MBMh4apz6X)
 
-## Authors
+## License
 
-Created by the team behind [Motif](https://motif.land)
-([@motifland](https://twitter.com/motifland)).
+[Apache](./LICENSE) © [Markprompt](https://markprompt.com)
