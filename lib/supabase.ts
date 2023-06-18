@@ -313,19 +313,10 @@ export const getTokenAllowanceInfo = async (
 export const serverRefreshFTSMaterializedView = async (
   supabaseAdmin: SupabaseClient<Database>,
 ) => {
-  return serverRefreshMaterializedViews(supabaseAdmin, ['mv_fts']);
-};
-
-export const serverRefreshMaterializedViews = async (
-  supabaseAdmin: SupabaseClient<Database>,
-  views: (keyof Database['public']['Views'])[],
-) => {
-  for (const viewName of views) {
-    const { error } = await supabaseAdmin.rpc('refresh_materialized_view', {
-      view_name: viewName,
-    });
-    if (error) {
-      console.error(error);
-    }
+  const { error } = await supabaseAdmin.rpc('refresh_materialized_view', {
+    view_name: 'mv_fts',
+  });
+  if (error) {
+    console.error(error);
   }
 };

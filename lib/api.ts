@@ -294,19 +294,9 @@ export const cancelSubscription = (teamId: Team['id']) => {
 };
 
 export const clientRefreshFTSMaterializedView = async () => {
-  return clientRefreshMaterializedViews(['mv_fts']);
-};
-
-const clientRefreshMaterializedViews = async (
-  views: (keyof Database['public']['Views'])[],
-) => {
-  return fetch('/api/db/refresh-materialized-views', {
+  return fetch('/api/db/refresh-fts', {
     method: 'POST',
-    body: JSON.stringify({ views }),
-    headers: {
-      'Content-Type': 'application/json',
-      accept: 'application/json',
-    },
+    headers: { accept: 'application/json' },
   });
 };
 

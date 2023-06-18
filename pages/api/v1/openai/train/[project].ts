@@ -342,8 +342,5 @@ export default async function handler(
 
   const message = generateResponseMessage(allFileErrors, numFilesSuccess);
 
-  res.status(200).json({
-    status: 'ok',
-    message,
-  });
+  res.status(200).json({ status: 'ok', message });
 }
