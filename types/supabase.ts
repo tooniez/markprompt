@@ -972,6 +972,10 @@ export interface Database {
       }
     }
     Functions: {
+      create_fts_index: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       fts: {
         Args: {
           project_id: string
@@ -988,12 +992,10 @@ export interface Database {
           source_data: Json
         }[]
       }
-      full_text_search: {
+      fts_with_private_dev_api_key: {
         Args: {
           search_term: string
           match_count: number
-          token_param?: string
-          public_api_key_param?: string
           private_dev_api_key_param?: string
         }
         Returns: {
@@ -1006,7 +1008,34 @@ export interface Database {
           source_type: Database["public"]["Enums"]["source_type"]
           source_data: Json
           project_id: string
-          score: number
+          tokens: string[]
+          domains: string[]
+          stripe_price_id: string
+          is_enterprise_plan: boolean
+          plan_details: Json
+        }[]
+      }
+      fts_with_public_api_key: {
+        Args: {
+          search_term: string
+          match_count: number
+          public_api_key_param?: string
+        }
+        Returns: {
+          file_id: number
+          file_path: string
+          file_meta: Json
+          section_id: number
+          section_content: string
+          section_meta: Json
+          source_type: Database["public"]["Enums"]["source_type"]
+          source_data: Json
+          project_id: string
+          tokens: string[]
+          domains: string[]
+          stripe_price_id: string
+          is_enterprise_plan: boolean
+          plan_details: Json
         }[]
       }
       ivfflathandler: {

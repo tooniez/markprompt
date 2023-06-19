@@ -152,13 +152,16 @@ export default async function handler(
     });
   }
 
-  const token: string | undefined = req.query.token as string;
-  let publicApiKey: string | undefined = undefined;
-  let privateDevApiKey: string | undefined = undefined;
+  let searchFunctionName:
+    | 'fts_with_private_dev_api_key'
+    | 'fts_with_public_api_key';
+  let keyParams: any = {};
   if (isSKTestKey(req.query.projectKey as string)) {
-    privateDevApiKey = req.query.projectKey as string;
+    searchFunctionName = 'fts_with_private_dev_api_key';
+    keyParams = { private_dev_api_key_param: req.query.projectKey as string };
   } else {
-    publicApiKey = req.query.projectKey as string;
+    searchFunctionName = 'fts_with_public_api_key';
+    keyParams = { public_api_key_param: req.query.projectKey as string };
   }
 
   const ts = Date.now();
@@ -169,12 +172,10 @@ export default async function handler(
   }: {
     data: FTSResult[] | null | any;
     error: { message: string; code: string } | null;
-  } = await supabaseAdmin.rpc('full_text_search', {
+  } = await supabaseAdmin.rpc(searchFunctionName, {
     search_term: query,
     match_count: limit,
-    token_param: token,
-    public_api_key_param: publicApiKey,
-    private_dev_api_key_param: privateDevApiKey,
+    ...keyParams,
   });
 
   console.log('[SUPABASE] Took', Date.now() - ts);

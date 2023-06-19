@@ -234,59 +234,9 @@ begin
 end;
 $$;
 
-create or replace function full_text_search(
-  search_term text,
-  match_count int,
-  token_param text default null,
-  public_api_key_param text default null,
-  private_dev_api_key_param text default null
-)
-returns table (
-  file_id bigint,
-  file_path text,
-  file_meta jsonb,
-  section_id bigint,
-  section_content text,
-  section_meta jsonb,
-  source_type source_type,
-  source_data jsonb,
-  project_id uuid,
-  score double precision
-)
-language plpgsql
-as $$
-begin
-  return query
-  select
-    mv_fts.file_id,
-    mv_fts.file_path,
-    mv_fts.file_meta,
-    mv_fts.section_id,
-    mv_fts.section_content,
-    mv_fts.section_meta jsonb,
-    mv_fts.source_type source_type,
-    mv_fts.source_data jsonb,
-    mv_fts.project_id,
-    pgroonga_score(mv_fts.tableoid, mv_fts.ctid) as score
-  from mv_fts
-  where
-    (
-      array[
-        mv_fts.section_content,
-        (mv_fts.file_meta->>'title')::text,
-        (mv_fts.section_meta->'leadHeading'->>'value')::text
-      ] &@ (full_text_search.search_term, array[1, 100, 10], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
-    )
-    and (
-      full_text_search.token_param = any(mv_fts.tokens)
-      or mv_fts.public_api_key = full_text_search.public_api_key_param
-      or mv_fts.private_dev_api_key = full_text_search.private_dev_api_key_param
-    )
-  limit match_count;
-end;
-$$;
-
-
+-- We create two different search functions, depending on the API key
+-- being used (private or public), to avoid unnecessary extra checks
+-- in the where clause.
 create or replace function fts_with_public_api_key(
   search_term text,
   match_count int,
@@ -301,7 +251,12 @@ returns table (
   section_meta jsonb,
   source_type source_type,
   source_data jsonb,
-  project_id uuid
+  project_id uuid,
+  tokens text[],
+  domains text[],
+  stripe_price_id text,
+  is_enterprise_plan boolean,
+  plan_details jsonb
 )
 language plpgsql
 as $$
@@ -321,9 +276,64 @@ begin
     mv_fts.domains,
     mv_fts.stripe_price_id,
     mv_fts.is_enterprise_plan,
+    mv_fts.plan_details
   from mv_fts
   where
     (mv_fts.public_api_key = full_text_search.public_api_key_param)
+    and (
+      array[
+        mv_fts.section_content,
+        (mv_fts.file_meta->>'title')::text,
+        (mv_fts.section_meta->'leadHeading'->>'value')::text
+      ] &@ (full_text_search.search_term, array[1, 100, 10], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
+    )
+  limit match_count;
+end;
+$$;
+
+create or replace function fts_with_private_dev_api_key(
+  search_term text,
+  match_count int,
+  private_dev_api_key_param text default null
+)
+returns table (
+  file_id bigint,
+  file_path text,
+  file_meta jsonb,
+  section_id bigint,
+  section_content text,
+  section_meta jsonb,
+  source_type source_type,
+  source_data jsonb,
+  project_id uuid,
+  tokens text[],
+  domains text[],
+  stripe_price_id text,
+  is_enterprise_plan boolean,
+  plan_details jsonb
+)
+language plpgsql
+as $$
+begin
+  return query
+  select
+    mv_fts.file_id,
+    mv_fts.file_path,
+    mv_fts.file_meta,
+    mv_fts.section_id,
+    mv_fts.section_content,
+    mv_fts.section_meta jsonb,
+    mv_fts.source_type source_type,
+    mv_fts.source_data jsonb,
+    mv_fts.project_id,
+    mv_fts.tokens,
+    mv_fts.domains,
+    mv_fts.stripe_price_id,
+    mv_fts.is_enterprise_plan,
+    mv_fts.plan_details
+  from mv_fts
+  where
+    (mv_fts.private_dev_api_key = full_text_search.private_dev_api_key_param)
     and (
       array[
         mv_fts.section_content,
