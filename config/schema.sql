@@ -279,13 +279,13 @@ begin
     mv_fts.plan_details
   from mv_fts
   where
-    (mv_fts.public_api_key = full_text_search.public_api_key_param)
+    (mv_fts.public_api_key = fts_with_public_api_key.public_api_key_param)
     and (
       array[
         mv_fts.section_content,
         (mv_fts.file_meta->>'title')::text,
         (mv_fts.section_meta->'leadHeading'->>'value')::text
-      ] &@ (full_text_search.search_term, array[1, 100, 10], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
+      ] &@ (fts_with_public_api_key.search_term, array[1, 100, 10], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
     )
   limit match_count;
 end;
@@ -333,13 +333,13 @@ begin
     mv_fts.plan_details
   from mv_fts
   where
-    (mv_fts.private_dev_api_key = full_text_search.private_dev_api_key_param)
+    (mv_fts.private_dev_api_key = fts_with_private_dev_api_key.private_dev_api_key_param)
     and (
       array[
         mv_fts.section_content,
         (mv_fts.file_meta->>'title')::text,
         (mv_fts.section_meta->'leadHeading'->>'value')::text
-      ] &@ (full_text_search.search_term, array[1, 100, 10], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
+      ] &@ (fts_with_private_dev_api_key.search_term, array[1, 100, 10], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
     )
   limit match_count;
 end;
