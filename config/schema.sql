@@ -172,6 +172,24 @@ begin
 end;
 $$ language plpgsql;
 
+-- Make sure security definer is set, cf.
+-- https://stackoverflow.com/questions/67530999/error-must-be-owner-of-materialized-view-postgresql
+create or replace function create_fts_index()
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  create index idx_file_sections_fts
+  on mv_fts
+  using pgroonga ((array[
+      section_content,
+      (file_meta->>'title')::text,
+      (section_meta->'leadHeading'->>'value')::text
+    ]));
+end;
+$$;
+
 create or replace function match_file_sections(
   project_id uuid,
   embedding vector(1536),
@@ -263,6 +281,55 @@ begin
       full_text_search.token_param = any(mv_fts.tokens)
       or mv_fts.public_api_key = full_text_search.public_api_key_param
       or mv_fts.private_dev_api_key = full_text_search.private_dev_api_key_param
+    )
+  limit match_count;
+end;
+$$;
+
+
+create or replace function fts_with_public_api_key(
+  search_term text,
+  match_count int,
+  public_api_key_param text default null
+)
+returns table (
+  file_id bigint,
+  file_path text,
+  file_meta jsonb,
+  section_id bigint,
+  section_content text,
+  section_meta jsonb,
+  source_type source_type,
+  source_data jsonb,
+  project_id uuid
+)
+language plpgsql
+as $$
+begin
+  return query
+  select
+    mv_fts.file_id,
+    mv_fts.file_path,
+    mv_fts.file_meta,
+    mv_fts.section_id,
+    mv_fts.section_content,
+    mv_fts.section_meta jsonb,
+    mv_fts.source_type source_type,
+    mv_fts.source_data jsonb,
+    mv_fts.project_id,
+    mv_fts.tokens,
+    mv_fts.domains,
+    mv_fts.stripe_price_id,
+    mv_fts.is_enterprise_plan,
+  from mv_fts
+  where
+    (mv_fts.public_api_key = full_text_search.public_api_key_param)
+    and (
+      array[
+        mv_fts.section_content,
+        (mv_fts.file_meta->>'title')::text,
+        (mv_fts.section_meta->'leadHeading'->>'value')::text
+      ] &@ (full_text_search.search_term, array[1, 100, 10], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
     )
   limit match_count;
 end;
@@ -417,7 +484,8 @@ create materialized view mv_fts as
     array_agg(distinct tok.value) as tokens,
     array_agg(distinct d.name) as domains,
     t.stripe_price_id as stripe_price_id,
-    t.is_enterprise_plan as is_enterprise_plan
+    t.is_enterprise_plan as is_enterprise_plan,
+    t.plan_details as plan_details
   from file_sections fs
   left join files f on fs.file_id = f.id
   left join sources s on f.source_id = s.id
@@ -438,7 +506,8 @@ create materialized view mv_fts as
     p.public_api_key,
     p.private_dev_api_key,
     t.stripe_price_id,
-    t.is_enterprise_plan;
+    t.is_enterprise_plan,
+    t.plan_details;
 
 -- Indexes
 
