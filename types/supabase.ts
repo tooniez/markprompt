@@ -914,6 +914,7 @@ export interface Database {
           id: number
           content: string
           meta: Json
+          file_id: number
           file_meta: Json
         }[]
       }

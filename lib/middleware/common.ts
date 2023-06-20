@@ -67,7 +67,7 @@ export const getProjectIdFromKey = async (
 ): Promise<Project['id']> => {
   const _isSKTestKey = isSKTestKey(projectKey);
 
-  // Admin supabase needed here, as the projects table is subject to RLS
+  // Admin Supabase needed here, as the projects table is subject to RLS
   const { data } = await supabaseAdmin
     .from('projects')
     .select('id')

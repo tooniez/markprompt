@@ -86,6 +86,7 @@ returns table (
   id bigint,
   content text,
   meta jsonb,
+  file_id bigint,
   file_meta jsonb
 )
 language plpgsql
@@ -96,6 +97,7 @@ begin
     fs.id,
     fs.content,
     fs.meta,
+    fs.file_id as file_id,
     fs.cf_file_meta as file_meta
   from file_sections fs
   where

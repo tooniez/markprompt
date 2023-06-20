@@ -4,7 +4,7 @@ import { remark } from 'remark';
 import strip from 'strip-markdown';
 
 import { track } from '@/lib/posthog';
-import { isSKTestKey, safeParseNumber } from '@/lib/utils';
+import { safeParseNumber } from '@/lib/utils';
 import { Database } from '@/types/supabase';
 import { SourceType } from '@/types/types';
 
@@ -16,34 +16,20 @@ const supabaseAdmin = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY || '',
 );
 
-type FTSResult = {
-  project_id: string;
-  file_id: string;
-  file_path: string;
-  file_meta?: {
-    title?: string;
-  };
-  section_content: string;
-  section_meta?: {
-    leadHeading?: {
-      depth?: number;
-      value: string;
-    };
-  };
-  source_type: SourceType;
-  source_data: any;
-  score: number;
-};
+type FTSResult = Database['public']['Functions']['fts']['Returns'][number];
 
-type SearchResult = {
+type SearchResultFileData = {
   path: string;
   meta: any;
-  score: number;
   source: {
     type: SourceType;
     data?: any;
   };
-  sections: { meta?: any; content: string }[];
+};
+
+type SearchResult = SearchResultFileData & {
+  score: number;
+  sections: { content: string; meta?: any }[];
 };
 
 type Data =
@@ -141,6 +127,7 @@ export default async function handler(
   // }
 
   const query = req.query.query as string;
+  const projectId = req.query.projectId as string;
   const limit = Math.min(
     MAX_SEARCH_RESULTS,
     safeParseNumber(req.query.limit as string, 10),
@@ -152,73 +139,75 @@ export default async function handler(
     });
   }
 
-  return res.status(200).json({
-    data: [],
+  const {
+    data: _data,
+    error,
+  }: {
+    data: FTSResult[] | null | any;
+    error: { message: string; code: string } | null;
+  } = await supabaseAdmin.rpc('fts', {
+    search_term: query,
+    match_count: limit,
+    project_id: projectId,
   });
 
-  // let searchFunctionName:
-  //   | 'fts_with_private_dev_api_key'
-  //   | 'fts_with_public_api_key';
-  // let keyParams: any = {};
-  // if (isSKTestKey(req.query.projectKey as string)) {
-  //   searchFunctionName = 'fts_with_private_dev_api_key';
-  //   keyParams = { private_dev_api_key_param: req.query.projectKey as string };
-  // } else {
-  //   searchFunctionName = 'fts_with_public_api_key';
-  //   keyParams = { public_api_key_param: req.query.projectKey as string };
-  // }
+  if (error || !_data) {
+    return res
+      .status(400)
+      .json({ error: error?.message || 'Error retrieving sections' });
+  }
 
-  // const ts = Date.now();
+  if (_data.project_id) {
+    track(_data.project_id, 'search', { projectId: _data.project_id });
+  }
 
-  // const {
-  //   data: _data,
-  //   error,
-  // }: {
-  //   data: FTSResult[] | null | any;
-  //   error: { message: string; code: string } | null;
-  // } = await supabaseAdmin.rpc(searchFunctionName, {
-  //   search_term: query,
-  //   match_count: limit,
-  //   ...keyParams,
-  // });
+  const data = _data as FTSResult[];
 
-  // console.log('[SUPABASE] Took', Date.now() - ts);
+  const fileDatas: { [key: string]: SearchResultFileData } = {};
 
-  // if (error || !_data) {
-  //   return res
-  //     .status(400)
-  //     .json({ error: error?.message || 'Error retrieving sections' });
-  // }
+  const resultsByFile: { [key: string]: SearchResult } = {};
+  for (const result of data) {
+    const fileId = result.file_id;
+    let fileData = fileDatas[fileId];
+    if (!fileData) {
+      const { data: _fileData, error } = await supabaseAdmin
+        .from('files')
+        .select('path, meta, sources(data, type)')
+        .eq('id', fileId)
+        .limit(1)
+        .maybeSingle();
+      if (!error && _fileData) {
+        const source = _fileData.sources as any;
+        fileData = {
+          path: _fileData.path,
+          meta: _fileData.meta,
+          source: {
+            type: source.type,
+            data: source.data,
+          },
+        };
 
-  // if (_data.project_id) {
-  //   track(_data.project_id, 'search', { projectId: _data.project_id });
-  // }
+        fileDatas[fileId] = fileData;
+      } else {
+        continue;
+      }
+    }
 
-  // const data = _data as FTSResult[];
+    resultsByFile[result.file_id] = {
+      ...fileData,
+      // Score is not returned currently
+      score: 0,
+      sections: [
+        ...(resultsByFile[fileId]?.sections || []),
+        {
+          ...(result.meta ? { meta: result.meta } : {}),
+          content: await createKWICSnippet(result.content || '', query),
+        },
+      ],
+    };
+  }
 
-  // const resultsByFile: { [key: string]: SearchResult } = {};
-  // for (const result of data) {
-  //   resultsByFile[result.file_id] = {
-  //     path: result.file_path,
-  //     meta: result.file_meta,
-  //     // Score is not returned currently
-  //     // score: result.score,
-  //     score: 0,
-  //     source: {
-  //       type: result.source_type,
-  //       ...(result.source_data ? { data: result.source_data } : {}),
-  //     },
-  //     sections: [
-  //       ...(resultsByFile[result.file_id]?.sections || []),
-  //       {
-  //         ...(result.section_meta ? { meta: result.section_meta } : {}),
-  //         content: await createKWICSnippet(result.section_content || '', query),
-  //       },
-  //     ],
-  //   };
-  // }
-
-  // return res.status(200).json({
-  //   data: Object.values(resultsByFile),
-  // });
+  return res.status(200).json({
+    data: Object.values(resultsByFile),
+  });
 }

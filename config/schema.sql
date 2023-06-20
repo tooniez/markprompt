@@ -208,6 +208,8 @@ begin
 end;
 $$;
 
+-- FTS
+
 create or replace function fts(
   search_term text,
   match_count int,
@@ -217,6 +219,7 @@ returns table (
   id bigint,
   content text,
   meta jsonb,
+  file_id bigint,
   file_meta jsonb
 )
 language plpgsql
@@ -227,6 +230,7 @@ begin
     fs.id,
     fs.content,
     fs.meta,
+    fs.file_id as file_id,
     fs.cf_file_meta as file_meta
   from file_sections fs
   where
@@ -241,6 +245,42 @@ begin
   limit match_count;
 end;
 $$;
+
+create or replace function fts_metadata(
+  file_id bigint
+)
+returns table (
+  id bigint,
+  content text,
+  meta jsonb,
+  file_id bigint,
+  file_meta jsonb
+)
+language plpgsql
+as $$
+begin
+  return query
+  select
+    fs.id,
+    fs.content,
+    fs.meta,
+    fs.file_id as file_id,
+    fs.cf_file_meta as file_meta
+  from file_sections fs
+  where
+    fs.cf_project_id = fts.project_id
+    and (
+      array[
+        (fs.cf_file_meta->>'title')::text,
+        (fs.meta->'leadHeading'->>'value')::text,
+        fs.content
+      ] &@ (fts.search_term, array[100, 10, 1], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
+    )
+  limit match_count;
+end;
+$$;
+
+-- Query stats top references
 
 create or replace function query_stats_top_references(
   project_id uuid,

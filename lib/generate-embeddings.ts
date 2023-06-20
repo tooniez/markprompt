@@ -602,7 +602,7 @@ export const generateFileEmbeddings = async (
     .insert(embeddingsData);
 
   if (error) {
-    console.error('Error storing embeddings:', error);
+    console.error('Error storing embeddings:', JSON.stringify(error));
     errors.push({
       path: file.path,
       message: `Error storing embeddings: ${error.message}`,

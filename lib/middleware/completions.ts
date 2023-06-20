@@ -106,7 +106,7 @@ export default async function CompletionsMiddleware(req: NextRequest) {
       projectId = await getProjectIdFromKey(supabaseAdmin, projectKey);
       // Now that we have a project id, we need to check that the
       // the project has whitelisted the domain the request comes from.
-      // Admin supabase needed here, as the projects table is subject to RLS.
+      // Admin Supabase needed here, as the projects table is subject to RLS.
       // We bypass this check if the key is a test key or if the request
       // comes from the app host (e.g. markprompt.com/s/[key]]).
       await checkWhitelistedDomainIfProjectKey(
