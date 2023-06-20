@@ -2,7 +2,6 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { serverRefreshFTSMaterializedView } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 import { DbFile, Project } from '@/types/types';
 
@@ -80,8 +79,6 @@ export default async function handler(
     if (error) {
       return res.status(400).json({ error: error.message });
     }
-
-    await serverRefreshFTSMaterializedView(supabaseAdmin);
 
     return res.status(200).json({ status: 'ok' });
   }

@@ -293,13 +293,6 @@ export const cancelSubscription = (teamId: Team['id']) => {
   });
 };
 
-export const clientRefreshFTSMaterializedView = async () => {
-  return fetch('/api/db/refresh-fts', {
-    method: 'POST',
-    headers: { accept: 'application/json' },
-  });
-};
-
 export const processQueryStats = async (projectId: Project['id']) => {
   const res = await fetch(`/api/cron/query-stats?projectId=${projectId}`, {
     method: 'GET',

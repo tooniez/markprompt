@@ -4,7 +4,6 @@ import { FC, useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
 
-import { clientRefreshFTSMaterializedView } from '@/lib/api';
 import {
   getTrainingStateMessage,
   useTrainingContext,
@@ -112,13 +111,6 @@ export const FileDnd: FC<FileDndProps> = ({
         mutateFiles();
       },
     );
-
-    // File upload is a special case of training that has to be handled
-    // differently from trainAllSources, since the source is not accessible
-    // subsequently. So here we upload the content and train all of it
-    // at the same time. This also means we need to remember to call
-    // clientRefreshFTSMaterializedView.
-    await clientRefreshFTSMaterializedView();
 
     setIsTrainingInitiatedByFileDnd(false);
     setPickedFiles([]);

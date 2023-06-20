@@ -38,12 +38,6 @@ export interface Database {
           {
             foreignKeyName: "domains_project_id_fkey"
             columns: ["project_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["project_id"]
-          },
-          {
-            foreignKeyName: "domains_project_id_fkey"
-            columns: ["project_id"]
             referencedRelation: "v_file_section_search_infos"
             referencedColumns: ["project_id"]
           },
@@ -63,6 +57,8 @@ export interface Database {
       }
       file_sections: {
         Row: {
+          cf_file_meta: Json | null
+          cf_project_id: string | null
           content: string | null
           embedding: string | null
           file_id: number
@@ -71,6 +67,8 @@ export interface Database {
           token_count: number | null
         }
         Insert: {
+          cf_file_meta?: Json | null
+          cf_project_id?: string | null
           content?: string | null
           embedding?: string | null
           file_id: number
@@ -79,6 +77,8 @@ export interface Database {
           token_count?: number | null
         }
         Update: {
+          cf_file_meta?: Json | null
+          cf_project_id?: string | null
           content?: string | null
           embedding?: string | null
           file_id?: number
@@ -88,16 +88,34 @@ export interface Database {
         }
         Relationships: [
           {
-            foreignKeyName: "file_sections_file_id_fkey"
-            columns: ["file_id"]
-            referencedRelation: "files"
+            foreignKeyName: "file_sections_cf_project_id_fkey"
+            columns: ["cf_project_id"]
+            referencedRelation: "projects"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "file_sections_cf_project_id_fkey"
+            columns: ["cf_project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "file_sections_cf_project_id_fkey"
+            columns: ["cf_project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "file_sections_cf_project_id_fkey"
+            columns: ["cf_project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
           },
           {
             foreignKeyName: "file_sections_file_id_fkey"
             columns: ["file_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["file_id"]
+            referencedRelation: "files"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "file_sections_file_id_fkey"
@@ -141,12 +159,6 @@ export interface Database {
             columns: ["project_id"]
             referencedRelation: "projects"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "files_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["project_id"]
           },
           {
             foreignKeyName: "files_project_id_fkey"
@@ -325,12 +337,6 @@ export interface Database {
           {
             foreignKeyName: "prompt_configs_project_id_fkey"
             columns: ["project_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["project_id"]
-          },
-          {
-            foreignKeyName: "prompt_configs_project_id_fkey"
-            columns: ["project_id"]
             referencedRelation: "v_file_section_search_infos"
             referencedColumns: ["project_id"]
           },
@@ -401,12 +407,6 @@ export interface Database {
           {
             foreignKeyName: "query_stats_project_id_fkey"
             columns: ["project_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["project_id"]
-          },
-          {
-            foreignKeyName: "query_stats_project_id_fkey"
-            columns: ["project_id"]
             referencedRelation: "v_file_section_search_infos"
             referencedColumns: ["project_id"]
           },
@@ -452,12 +452,6 @@ export interface Database {
             columns: ["project_id"]
             referencedRelation: "projects"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sources_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["project_id"]
           },
           {
             foreignKeyName: "sources_project_id_fkey"
@@ -562,12 +556,6 @@ export interface Database {
             columns: ["project_id"]
             referencedRelation: "projects"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tokens_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["project_id"]
           },
           {
             foreignKeyName: "tokens_project_id_fkey"
@@ -677,26 +665,6 @@ export interface Database {
       }
     }
     Views: {
-      mv_fts: {
-        Row: {
-          domains: string[] | null
-          file_id: number | null
-          file_meta: Json | null
-          file_path: string | null
-          is_enterprise_plan: boolean | null
-          private_dev_api_key: string | null
-          project_id: string | null
-          public_api_key: string | null
-          section_content: string | null
-          section_id: number | null
-          section_meta: Json | null
-          source_data: Json | null
-          source_type: Database["public"]["Enums"]["source_type"] | null
-          stripe_price_id: string | null
-          tokens: string[] | null
-        }
-        Relationships: []
-      }
       v_distinct_unprocessed_query_stats_project_ids: {
         Row: {
           min_created_at: string | null
@@ -708,12 +676,6 @@ export interface Database {
             columns: ["project_id"]
             referencedRelation: "projects"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "query_stats_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["project_id"]
           },
           {
             foreignKeyName: "query_stats_project_id_fkey"
@@ -770,12 +732,6 @@ export interface Database {
           {
             foreignKeyName: "query_stats_project_id_fkey"
             columns: ["project_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["project_id"]
-          },
-          {
-            foreignKeyName: "query_stats_project_id_fkey"
-            columns: ["project_id"]
             referencedRelation: "v_file_section_search_infos"
             referencedColumns: ["project_id"]
           },
@@ -805,12 +761,6 @@ export interface Database {
             columns: ["project_id"]
             referencedRelation: "projects"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "query_stats_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["project_id"]
           },
           {
             foreignKeyName: "query_stats_project_id_fkey"
@@ -848,12 +798,6 @@ export interface Database {
           {
             foreignKeyName: "query_stats_project_id_fkey"
             columns: ["project_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["project_id"]
-          },
-          {
-            foreignKeyName: "query_stats_project_id_fkey"
-            columns: ["project_id"]
             referencedRelation: "v_file_section_search_infos"
             referencedColumns: ["project_id"]
           },
@@ -887,12 +831,6 @@ export interface Database {
           {
             foreignKeyName: "query_stats_project_id_fkey"
             columns: ["project_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["project_id"]
-          },
-          {
-            foreignKeyName: "query_stats_project_id_fkey"
-            columns: ["project_id"]
             referencedRelation: "v_file_section_search_infos"
             referencedColumns: ["project_id"]
           },
@@ -922,12 +860,6 @@ export interface Database {
             columns: ["project_id"]
             referencedRelation: "projects"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "query_stats_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "mv_fts"
-            referencedColumns: ["project_id"]
           },
           {
             foreignKeyName: "query_stats_project_id_fkey"
@@ -972,70 +904,17 @@ export interface Database {
       }
     }
     Functions: {
-      create_fts_index: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       fts: {
         Args: {
-          project_id: string
-          query: string
-          match_count: number
-        }
-        Returns: {
-          file_id: string
-          file_path: string
-          file_meta: Json
-          section_content: string
-          section_meta: Json
-          source_type: string
-          source_data: Json
-        }[]
-      }
-      fts_with_private_dev_api_key: {
-        Args: {
           search_term: string
           match_count: number
-          private_dev_api_key_param?: string
+          project_id: string
         }
         Returns: {
-          file_id: number
-          file_path: string
+          id: number
+          content: string
+          meta: Json
           file_meta: Json
-          section_id: number
-          section_content: string
-          section_meta: Json
-          source_type: Database["public"]["Enums"]["source_type"]
-          source_data: Json
-          project_id: string
-          tokens: string[]
-          domains: string[]
-          stripe_price_id: string
-          is_enterprise_plan: boolean
-          plan_details: Json
-        }[]
-      }
-      fts_with_public_api_key: {
-        Args: {
-          search_term: string
-          match_count: number
-          public_api_key_param?: string
-        }
-        Returns: {
-          file_id: number
-          file_path: string
-          file_meta: Json
-          section_id: number
-          section_content: string
-          section_meta: Json
-          source_type: Database["public"]["Enums"]["source_type"]
-          source_data: Json
-          project_id: string
-          tokens: string[]
-          domains: string[]
-          stripe_price_id: string
-          is_enterprise_plan: boolean
-          plan_details: Json
         }[]
       }
       ivfflathandler: {
@@ -1074,12 +953,6 @@ export interface Database {
           source_data: Json
           occurrences: number
         }[]
-      }
-      refresh_materialized_view: {
-        Args: {
-          view_name: string
-        }
-        Returns: undefined
       }
       vector_avg: {
         Args: {

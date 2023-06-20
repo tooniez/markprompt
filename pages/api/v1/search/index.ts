@@ -152,67 +152,73 @@ export default async function handler(
     });
   }
 
-  let searchFunctionName:
-    | 'fts_with_private_dev_api_key'
-    | 'fts_with_public_api_key';
-  let keyParams: any = {};
-  if (isSKTestKey(req.query.projectKey as string)) {
-    searchFunctionName = 'fts_with_private_dev_api_key';
-    keyParams = { private_dev_api_key_param: req.query.projectKey as string };
-  } else {
-    searchFunctionName = 'fts_with_public_api_key';
-    keyParams = { public_api_key_param: req.query.projectKey as string };
-  }
-
-  const ts = Date.now();
-
-  const {
-    data: _data,
-    error,
-  }: {
-    data: FTSResult[] | null | any;
-    error: { message: string; code: string } | null;
-  } = await supabaseAdmin.rpc(searchFunctionName, {
-    search_term: query,
-    match_count: limit,
-    ...keyParams,
-  });
-
-  console.log('[SUPABASE] Took', Date.now() - ts);
-
-  if (error || !_data) {
-    return res
-      .status(400)
-      .json({ error: error?.message || 'Error retrieving sections' });
-  }
-
-  if (_data.project_id) {
-    track(_data.project_id, 'search', { projectId: _data.project_id });
-  }
-
-  const data = _data as FTSResult[];
-
-  const resultsByFile: { [key: string]: SearchResult } = {};
-  for (const result of data) {
-    resultsByFile[result.file_id] = {
-      path: result.file_path,
-      meta: result.file_meta,
-      score: result.score,
-      source: {
-        type: result.source_type,
-        ...(result.source_data ? { data: result.source_data } : {}),
-      },
-      sections: [
-        ...(resultsByFile[result.file_id]?.sections || []),
-        {
-          ...(result.section_meta ? { meta: result.section_meta } : {}),
-          content: await createKWICSnippet(result.section_content || '', query),
-        },
-      ],
-    };
-  }
-
   return res.status(200).json({
-    data: Object.values(resultsByFile),
+    data: [],
   });
+
+  // let searchFunctionName:
+  //   | 'fts_with_private_dev_api_key'
+  //   | 'fts_with_public_api_key';
+  // let keyParams: any = {};
+  // if (isSKTestKey(req.query.projectKey as string)) {
+  //   searchFunctionName = 'fts_with_private_dev_api_key';
+  //   keyParams = { private_dev_api_key_param: req.query.projectKey as string };
+  // } else {
+  //   searchFunctionName = 'fts_with_public_api_key';
+  //   keyParams = { public_api_key_param: req.query.projectKey as string };
+  // }
+
+  // const ts = Date.now();
+
+  // const {
+  //   data: _data,
+  //   error,
+  // }: {
+  //   data: FTSResult[] | null | any;
+  //   error: { message: string; code: string } | null;
+  // } = await supabaseAdmin.rpc(searchFunctionName, {
+  //   search_term: query,
+  //   match_count: limit,
+  //   ...keyParams,
+  // });
+
+  // console.log('[SUPABASE] Took', Date.now() - ts);
+
+  // if (error || !_data) {
+  //   return res
+  //     .status(400)
+  //     .json({ error: error?.message || 'Error retrieving sections' });
+  // }
+
+  // if (_data.project_id) {
+  //   track(_data.project_id, 'search', { projectId: _data.project_id });
+  // }
+
+  // const data = _data as FTSResult[];
+
+  // const resultsByFile: { [key: string]: SearchResult } = {};
+  // for (const result of data) {
+  //   resultsByFile[result.file_id] = {
+  //     path: result.file_path,
+  //     meta: result.file_meta,
+  //     // Score is not returned currently
+  //     // score: result.score,
+  //     score: 0,
+  //     source: {
+  //       type: result.source_type,
+  //       ...(result.source_data ? { data: result.source_data } : {}),
+  //     },
+  //     sections: [
+  //       ...(resultsByFile[result.file_id]?.sections || []),
+  //       {
+  //         ...(result.section_meta ? { meta: result.section_meta } : {}),
+  //         content: await createKWICSnippet(result.section_content || '', query),
+  //       },
+  //     ],
+  //   };
+  // }
+
+  // return res.status(200).json({
+  //   data: Object.values(resultsByFile),
+  // });
 }
