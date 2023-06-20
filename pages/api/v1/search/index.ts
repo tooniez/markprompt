@@ -197,7 +197,9 @@ export default async function handler(
     resultsByFile[result.file_id] = {
       path: result.file_path,
       meta: result.file_meta,
-      score: result.score,
+      // Score is not returned currently
+      // score: result.score,
+      score: 0,
       source: {
         type: result.source_type,
         ...(result.source_data ? { data: result.source_data } : {}),
