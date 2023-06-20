@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/types/supabase';
 import { ApiError, Project } from '@/types/types';
 
+import { get, getProjectIdByKey, setWithExpiration } from '../redis';
 import { isSKTestKey, truncateMiddle } from '../utils';
 import { isAppHost } from '../utils.edge';
 
@@ -65,19 +66,20 @@ export const getProjectIdFromKey = async (
   supabaseAdmin: SupabaseClient<Database>,
   projectKey: string,
 ): Promise<Project['id']> => {
+  const redisKey = getProjectIdByKey(projectKey);
+  const projectId = await get(redisKey);
+  if (projectId) {
+    return projectId;
+  }
+
   const _isSKTestKey = isSKTestKey(projectKey);
 
   // Admin Supabase needed here, as the projects table is subject to RLS
   const { data } = await supabaseAdmin
     .from('projects')
     .select('id')
-    .match(
-      _isSKTestKey
-        ? { private_dev_api_key: projectKey }
-        : { public_api_key: projectKey },
-    )
+    .eq(_isSKTestKey ? 'private_dev_api_key' : 'public_api_key', projectKey)
     .limit(1)
-    .select()
     .maybeSingle();
 
   if (!data?.id) {
@@ -90,6 +92,8 @@ export const getProjectIdFromKey = async (
     );
   }
 
+  // Cache for 24 hours
+  await setWithExpiration(redisKey, data.id, 60 * 60 * 24);
   return data.id;
 };
 

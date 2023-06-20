@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { uniq } from 'lodash-es';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { remark } from 'remark';
 import strip from 'strip-markdown';
@@ -37,7 +38,7 @@ type Data =
       status?: string;
       error?: string;
     }
-  | { data: SearchResult[] };
+  | { data: SearchResult[]; debug?: any };
 
 const allowedMethods = ['GET'];
 
@@ -128,6 +129,7 @@ export default async function handler(
 
   const query = req.query.query as string;
   const projectId = req.query.projectId as string;
+
   const limit = Math.min(
     MAX_SEARCH_RESULTS,
     safeParseNumber(req.query.limit as string, 10),
@@ -138,6 +140,8 @@ export default async function handler(
       data: [],
     });
   }
+
+  const dbTs = Date.now();
 
   const {
     data: _data,
@@ -151,6 +155,8 @@ export default async function handler(
     project_id: projectId,
   });
 
+  const dbDelta = Date.now() - dbTs;
+
   if (error || !_data) {
     return res
       .status(400)
@@ -162,36 +168,32 @@ export default async function handler(
   }
 
   const data = _data as FTSResult[];
-
   const fileDatas: { [key: string]: SearchResultFileData } = {};
+
+  const fileIds = uniq(data.map((d) => d.file_id)).sort();
+  const { data: _fileData } = await supabaseAdmin
+    .from('files')
+    .select('id, path, meta, sources(data, type)')
+    .in('id', fileIds);
 
   const resultsByFile: { [key: string]: SearchResult } = {};
   for (const result of data) {
     const fileId = result.file_id;
-    let fileData = fileDatas[fileId];
-    if (!fileData) {
-      const { data: _fileData, error } = await supabaseAdmin
-        .from('files')
-        .select('path, meta, sources(data, type)')
-        .eq('id', fileId)
-        .limit(1)
-        .maybeSingle();
-      if (!error && _fileData) {
-        const source = _fileData.sources as any;
-        fileData = {
-          path: _fileData.path,
-          meta: _fileData.meta,
-          source: {
-            type: source.type,
-            data: source.data,
-          },
-        };
-
-        fileDatas[fileId] = fileData;
-      } else {
-        continue;
-      }
+    const fileDataByFile = _fileData?.find((d) => d.id === fileId);
+    if (!fileDataByFile) {
+      continue;
     }
+    const source = fileDataByFile.sources as any;
+    const fileData = {
+      path: fileDataByFile.path,
+      meta: fileDataByFile.meta,
+      source: {
+        type: source.type,
+        data: source.data,
+      },
+    };
+
+    fileDatas[fileId] = fileData;
 
     resultsByFile[result.file_id] = {
       ...fileData,
@@ -208,6 +210,10 @@ export default async function handler(
   }
 
   return res.status(200).json({
+    debug: {
+      middleware: JSON.parse(req.query.tss as string),
+      db: dbDelta,
+    },
     data: Object.values(resultsByFile),
   });
 }

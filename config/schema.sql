@@ -459,9 +459,12 @@ create index idx_files_source_id on files(source_id);
 create index idx_sources_project_id on sources(project_id);
 create index idx_file_sections_file_id on file_sections(file_id);
 create index idx_projects_team_id on projects(team_id);
+create index idx_projects_private_dev_api_key on projects(private_dev_api_key);
+create index idx_projects_public_api_key on projects(public_api_key);
 create index idx_memberships_user_id on memberships(user_id);
 create index idx_tokens_project_id on tokens(project_id);
 create index idx_domain_project_id on domains(project_id);
+create index idx_file_sections_cf_project_id on file_sections (cf_project_id);
 create index idx_query_stats_project_id_created_at_processed on query_stats(project_id, created_at, processed);
 create index idx_file_sections_fts
 on file_sections

@@ -17,6 +17,10 @@ export const getProjectEmbeddingsMonthTokenCountKey = (
   )}`;
 };
 
+export const getProjectIdByKey = (apiKey: string) => {
+  return `${process.env.NODE_ENV}:project_id:by_api_key:${apiKey}`;
+};
+
 export const getRedisClient = () => {
   if (!redis) {
     redis = new Redis({

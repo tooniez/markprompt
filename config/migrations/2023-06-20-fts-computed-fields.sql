@@ -19,6 +19,9 @@ add column cf_project_id uuid references public.projects;
 -- Note that creating this index in the dashboard times out for
 -- large tables, hence the `create_fts_index` defined below to
 -- trigger it via API.
+create index idx_projects_private_dev_api_key on projects(private_dev_api_key);
+create index idx_projects_public_api_key on projects(public_api_key);
+create index idx_file_sections_cf_project_id on file_sections (cf_project_id);
 create index idx_file_sections_fts
 on file_sections
 using pgroonga ((array[
