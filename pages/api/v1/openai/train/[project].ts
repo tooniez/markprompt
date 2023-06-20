@@ -17,7 +17,6 @@ import {
   getOrCreateSource,
   getProjectConfigData,
   getProjectTeam,
-  serverRefreshFTSMaterializedView,
 } from '@/lib/supabase';
 import {
   createChecksum,
@@ -325,11 +324,8 @@ export default async function handler(
       e.code === API_ERROR_CODE_CONTENT_TOKEN_QUOTA_EXCEEDED
     ) {
       // If this is a quota exceeded error, return immediately, and with an
-      // error code. Also return the cumulative "success" message, and make
-      // sure to update the materialized views.
+      // error code. Also return the cumulative "success" message.
       const message = generateResponseMessage(allFileErrors, numFilesSuccess);
-
-      await serverRefreshFTSMaterializedView(supabaseAdmin);
 
       return res.status(403).json({
         error: message,
@@ -337,8 +333,6 @@ export default async function handler(
       });
     }
   }
-
-  await serverRefreshFTSMaterializedView(supabaseAdmin);
 
   const message = generateResponseMessage(allFileErrors, numFilesSuccess);
 

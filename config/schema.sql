@@ -413,49 +413,6 @@ from query_stats
 group by created_at, project_id
 order by created_at;
 
--- Materialized views
-
-create materialized view mv_fts as
-  select
-    f.id as file_id,
-    f.path as file_path,
-    f.meta as file_meta,
-    fs.id as section_id,
-    fs.content as section_content,
-    fs.meta as section_meta,
-    s.type as source_type,
-    s.data as source_data,
-    p.id as project_id,
-    p.public_api_key as public_api_key,
-    p.private_dev_api_key as private_dev_api_key,
-    array_agg(distinct tok.value) as tokens,
-    array_agg(distinct d.name) as domains,
-    t.stripe_price_id as stripe_price_id,
-    t.is_enterprise_plan as is_enterprise_plan,
-    t.plan_details as plan_details
-  from file_sections fs
-  left join files f on fs.file_id = f.id
-  left join sources s on f.source_id = s.id
-  left join projects p on s.project_id = p.id
-  left join tokens tok on p.id = tok.project_id
-  left join domains d on p.id = d.project_id
-  left join teams t on t.id = p.team_id
-  group by
-    f.id,
-    f.path,
-    f.meta,
-    fs.id,
-    fs.content,
-    fs.meta,
-    s.type,
-    s.data,
-    p.id,
-    p.public_api_key,
-    p.private_dev_api_key,
-    t.stripe_price_id,
-    t.is_enterprise_plan,
-    t.plan_details;
-
 -- Indexes
 
 create index idx_files_source_id on files(source_id);

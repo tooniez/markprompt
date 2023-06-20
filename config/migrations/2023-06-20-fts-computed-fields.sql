@@ -5,6 +5,7 @@ drop function create_fts_index;
 drop function refresh_materialized_view;
 drop index idx_section_id_fts;
 drop index idx_file_sections_fts;
+drop index ix_file_sections_content;
 
 -- Tables
 
@@ -15,6 +16,9 @@ add column cf_project_id uuid references public.projects;
 
 -- Indexes
 
+-- Note that creating this index in the dashboard times out for
+-- large tables, hence the `create_fts_index` defined below to
+-- trigger it via API.
 create index idx_file_sections_fts
 on file_sections
 using pgroonga ((array[
@@ -24,6 +28,24 @@ using pgroonga ((array[
   ]));
 
 -- Functions
+
+-- Helper function to create the index via API (as it times out in
+-- the dashboard).
+
+create or replace function create_fts_index()
+returns void
+security definer
+as $$
+begin
+  create index idx_file_sections_fts
+    on file_sections
+    using pgroonga ((array[
+        content,
+        (cf_file_meta->>'title')::text,
+        (meta->'leadHeading'->>'value')::text
+      ]));
+end;
+$$ language plpgsql;
 
 -- Automatically compute the file meta
 create or replace function update_file_sections_cf_file_meta()

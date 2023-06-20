@@ -309,14 +309,3 @@ export const getTokenAllowanceInfo = async (
       : Math.max(0, tokenAllowance - usedTokens);
   return { numRemainingTokensOnPlan, usedTokens, tokenAllowance };
 };
-
-export const serverRefreshFTSMaterializedView = async (
-  supabaseAdmin: SupabaseClient<Database>,
-) => {
-  const { error } = await supabaseAdmin.rpc('refresh_materialized_view', {
-    view_name: 'mv_fts',
-  });
-  if (error) {
-    console.error(error);
-  }
-};
