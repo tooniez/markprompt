@@ -123,10 +123,6 @@ export default async function SearchMiddleware(req: NextRequest) {
     );
   }
 
-  // return NextResponse.rewrite(
-  //   new URL(`/api/v1/openai/completions/${projectId}`, req.url),
-  // );
-
   // We pass the search query string as part of the rewritten response.
   // This is the only way I found to pass along GET query params to the
   // API handler function.
@@ -136,91 +132,4 @@ export default async function SearchMiddleware(req: NextRequest) {
       req.url,
     ),
   );
-
-  // let url: URL | undefined = undefined;
-
-  // if (token) {
-  //   const rateLimitResult = await checkSearchRateLimits({
-  //     value: token,
-  //     type: 'token',
-  //   });
-
-  //   if (!rateLimitResult.result.success) {
-  //     console.error(
-  //       `[SEARCH] [RATE-LIMIT] IP: ${req.ip}, token: ${truncateMiddle(
-  //         token,
-  //         2,
-  //         2,
-  //       )}`,
-  //     );
-  //     return new Response('Too many requests', { status: 429 });
-  //   }
-
-  //   url = new URL(
-  //     `/api/v1/search${req.nextUrl.search}&token=${token}`,
-  //     req.url,
-  //   );
-  // }
-
-  // if (projectKey) {
-  //   const rateLimitResult = await checkSearchRateLimits({
-  //     value: projectKey,
-  //     type: 'projectKey',
-  //   });
-
-  //   if (!rateLimitResult.result.success) {
-  //     console.error(
-  //       `[SEARCH] [RATE-LIMIT] IP: ${req.ip}, projectKey: ${truncateMiddle(
-  //         projectKey,
-  //         2,
-  //         2,
-  //       )}`,
-  //     );
-  //     return new Response('Too many requests', { status: 429 });
-  //   }
-
-  //   // Don't pass projectKey here, as it's already in the query params
-  //   url = new URL(
-  //     `/api/v1/search${req.nextUrl.search}&host=${requesterHost}`,
-  //     req.url,
-  //   );
-
-  //   // TODO: check whitelisted domain (or may do that in the handler function)
-  //   // try {
-  //   //   projectId = await getProjectIdFromKey(supabaseAdmin, projectKey);
-  //   //   // Now that we have a project id, we need to check that the
-  //   //   // the project has whitelisted the domain the request comes from.
-  //   //   // Admin Supabase needed here, as the projects table is subject to RLS.
-  //   //   // We bypass this check if the key is a test key or if the request
-  //   //   // comes from the app host (e.g. markprompt.com/s/[key]]).
-  //   //   await checkWhitelistedDomainIfProjectKey(
-  //   //     supabaseAdmin,
-  //   //     projectKey,
-  //   //     projectId,
-  //   //     requesterHost,
-  //   //   );
-  //   // } catch (e) {
-  //   //   const apiError = e as ApiError;
-  //   //   return new Response(apiError.message, { status: apiError.code });
-  //   // }
-  // }
-
-  // // if (!projectId) {
-  // //   return new Response(
-  // //     'No project found matching the provided key or authorization token.',
-  // //     { status: 401 },
-  // //   );
-  // // }
-
-  // if (!url) {
-  //   return noTokenOrProjectKeyResponse;
-  // }
-
-  // // We pass the search query string as part of the rewritten response.
-  // // This is the only way I found to pass along GET query params to the
-  // // API handler function.
-  // return NextResponse.rewrite(
-  //   // new URL(`/api/v1/search/${projectId}${req.nextUrl.search}`, req.url),
-  //   new URL(url, req.url),
-  // );
 }
