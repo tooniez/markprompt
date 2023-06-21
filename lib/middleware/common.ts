@@ -5,7 +5,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/types/supabase';
 import { ApiError, Project } from '@/types/types';
 
-import { get, getProjectIdByKey, setWithExpiration } from '../redis';
+import {
+  get,
+  getIsDomainWhitelistedForProjectKey,
+  getProjectIdByKey,
+  setWithExpiration,
+} from '../redis';
 import { isSKTestKey, truncateMiddle } from '../utils';
 import { isAppHost } from '../utils.edge';
 
@@ -97,20 +102,53 @@ export const getProjectIdFromKey = async (
   return data.id;
 };
 
+const isDomainWhitelisted = async (
+  supabaseAdmin: SupabaseClient<Database>,
+  projectId: Project['id'],
+  requesterHost: string | null,
+): Promise<boolean> => {
+  if (!requesterHost) {
+    return false;
+  }
+  const redisKey = getIsDomainWhitelistedForProjectKey(
+    projectId,
+    requesterHost,
+  );
+  const cachedIsDomainWhitelisted = await get(redisKey);
+  if (cachedIsDomainWhitelisted !== null) {
+    return cachedIsDomainWhitelisted === JSON.stringify(true);
+  }
+
+  const { count } = await supabaseAdmin
+    .from('domains')
+    .select('id', { count: 'exact' })
+    .match({ project_id: projectId, name: requesterHost });
+  const _isDomainWhitelisted = count !== null && count > 0;
+
+  // Store in cache for 24 hours
+  await setWithExpiration(
+    redisKey,
+    JSON.stringify(_isDomainWhitelisted),
+    60 * 60 * 24,
+  );
+
+  return _isDomainWhitelisted;
+};
+
 export const checkWhitelistedDomainIfProjectKey = async (
   supabaseAdmin: SupabaseClient<Database>,
   projectKey: string,
   projectId: Project['id'],
   requesterHost: string | null,
 ) => {
-  const _isSKTestKey = isSKTestKey(projectKey);
-  if (!_isSKTestKey && !isAppHost(requesterHost!)) {
-    const { count } = await supabaseAdmin
-      .from('domains')
-      .select('id', { count: 'exact' })
-      .match({ project_id: projectId, name: requesterHost });
+  if (!isSKTestKey(projectKey) && !isAppHost(requesterHost!)) {
+    const isWhitelisted = await isDomainWhitelisted(
+      supabaseAdmin,
+      projectId,
+      requesterHost,
+    );
 
-    if (count === 0) {
+    if (!isWhitelisted) {
       throw new ApiError(
         401,
         `The domain ${requesterHost} is not allowed to access completions for the project with key ${truncateMiddle(

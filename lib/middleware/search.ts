@@ -5,6 +5,7 @@ import { Database } from '@/types/supabase';
 import { ApiError, Project } from '@/types/types';
 
 import {
+  checkWhitelistedDomainIfProjectKey,
   getProjectIdFromKey,
   getProjectIdFromToken,
   noProjectForTokenResponse,
@@ -21,9 +22,6 @@ const supabaseAdmin = createClient<Database>(
 );
 
 export default async function SearchMiddleware(req: NextRequest) {
-  let ts = Date.now();
-  const tss: any[] = [];
-
   if (process.env.NODE_ENV === 'production') {
     // Check that IP is present and not rate limited
     if (!req.ip) {
@@ -45,9 +43,6 @@ export default async function SearchMiddleware(req: NextRequest) {
     }
   }
 
-  tss.push({ job: 'ip-rate-limiting', duration: Date.now() - ts });
-  ts = Date.now();
-
   const requesterOrigin = req.headers.get('origin');
   const requesterHost = requesterOrigin && removeSchema(requesterOrigin);
 
@@ -65,9 +60,6 @@ export default async function SearchMiddleware(req: NextRequest) {
       return new Response('Too many requests', { status: 429 });
     }
   }
-
-  tss.push({ job: 'host-rate-limiting', duration: Date.now() - ts });
-  ts = Date.now();
 
   const token = getAuthorizationToken(req.headers.get('Authorization'));
   const projectKey = req.nextUrl.searchParams.get('projectKey');
@@ -104,26 +96,21 @@ export default async function SearchMiddleware(req: NextRequest) {
     }
   }
 
-  tss.push({ job: 'token-check', duration: Date.now() - ts });
-
   if (projectKey) {
     try {
-      ts = Date.now();
       projectId = await getProjectIdFromKey(supabaseAdmin, projectKey);
-      tss.push({ job: 'project-id', duration: Date.now() - ts });
-      ts = Date.now();
 
       // Now that we have a project id, we need to check that the
       // the project has whitelisted the domain the request comes from.
       // Admin Supabase needed here, as the projects table is subject to RLS.
       // We bypass this check if the key is a test key or if the request
       // comes from the app host (e.g. markprompt.com/s/[key]]).
-      // await checkWhitelistedDomainIfProjectKey(
-      //   supabaseAdmin,
-      //   projectKey,
-      //   projectId,
-      //   requesterHost,
-      // );
+      await checkWhitelistedDomainIfProjectKey(
+        supabaseAdmin,
+        projectKey,
+        projectId,
+        requesterHost,
+      );
     } catch (e) {
       const apiError = e as ApiError;
       return new Response(apiError.message, { status: apiError.code });
@@ -142,11 +129,7 @@ export default async function SearchMiddleware(req: NextRequest) {
   // API handler function.
   return NextResponse.rewrite(
     new URL(
-      `/api/v1/search${
-        req.nextUrl.search
-      }&projectId=${projectId}&projectKey=${projectKey}&tss=${encodeURIComponent(
-        JSON.stringify(tss),
-      )}`,
+      `/api/v1/search${req.nextUrl.search}&projectId=${projectId}`,
       req.url,
     ),
   );

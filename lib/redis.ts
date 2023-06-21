@@ -21,6 +21,13 @@ export const getProjectIdByKey = (apiKey: string) => {
   return `${process.env.NODE_ENV}:project_id:by_api_key:${apiKey}`;
 };
 
+export const getIsDomainWhitelistedForProjectKey = (
+  projectId: Project['id'],
+  domain: string,
+) => {
+  return `${process.env.NODE_ENV}:project_id:${projectId}:domain:${domain}:is_whitelisted`;
+};
+
 export const getRedisClient = () => {
   if (!redis) {
     redis = new Redis({
