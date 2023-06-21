@@ -515,6 +515,8 @@ export const generateFileEmbeddings = async (
     meta: any;
     embedding: unknown;
     token_count: number;
+    cf_file_meta: any;
+    cf_project_id: Project['id'];
   }[] = [];
 
   const model: OpenAIModelIdWithType = {
@@ -586,6 +588,8 @@ export const generateFileEmbeddings = async (
           : undefined,
         embedding: embeddingResult.data[0].embedding,
         token_count: embeddingResult.usage.total_tokens ?? 0,
+        cf_file_meta: meta,
+        cf_project_id: projectId,
       });
     } catch (error) {
       const snippet = input.slice(0, 20);
