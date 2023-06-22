@@ -110,14 +110,14 @@ const isDomainWhitelisted = async (
   if (!requesterHost) {
     return false;
   }
-  const redisKey = getIsDomainWhitelistedForProjectKey(
-    projectId,
-    requesterHost,
-  );
-  const cachedIsDomainWhitelisted = await get(redisKey);
-  if (cachedIsDomainWhitelisted !== null) {
-    return cachedIsDomainWhitelisted === JSON.stringify(true);
-  }
+  // const redisKey = getIsDomainWhitelistedForProjectKey(
+  //  projectId,
+  //  requesterHost,
+  // );
+  // const cachedIsDomainWhitelisted = await get(redisKey);
+  // if (cachedIsDomainWhitelisted !== null) {
+  //  return cachedIsDomainWhitelisted === JSON.stringify(true);
+  //}
 
   const { count } = await supabaseAdmin
     .from('domains')
@@ -126,11 +126,11 @@ const isDomainWhitelisted = async (
   const _isDomainWhitelisted = count !== null && count > 0;
 
   // Store in cache for 24 hours
-  await setWithExpiration(
-    redisKey,
-    JSON.stringify(_isDomainWhitelisted),
-    60 * 60 * 24,
-  );
+  // await setWithExpiration(
+  //  redisKey,
+  //  JSON.stringify(_isDomainWhitelisted),
+  //  60 * 60 * 24,
+  // );
 
   return _isDomainWhitelisted;
 };
