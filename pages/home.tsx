@@ -9,8 +9,9 @@ export const getStaticProps = _getStaticProps;
 
 const Home: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
   stars,
+  status,
 }) => {
-  return <LandingPage stars={stars} />;
+  return <LandingPage stars={stars} status={status} />;
 };
 
 export default Home;
