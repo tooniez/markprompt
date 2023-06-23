@@ -5,7 +5,6 @@ import { Database } from '@/types/supabase';
 import { ApiError, Project } from '@/types/types';
 
 import {
-  checkWhitelistedDomainIfProjectKey,
   getProjectIdFromKey,
   getProjectIdFromToken,
   noProjectForTokenResponse,

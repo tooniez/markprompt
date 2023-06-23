@@ -132,7 +132,7 @@ export default async function handler(
 
   const limit = Math.min(
     MAX_SEARCH_RESULTS,
-    safeParseNumber(req.query.limit as string, 10),
+    safeParseNumber(req.query.limit as string, 5),
   );
 
   if (!query || query.trim() === '') {
