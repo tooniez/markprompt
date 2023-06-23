@@ -211,7 +211,6 @@ export default async function handler(
 
   return res.status(200).json({
     debug: {
-      middleware: JSON.parse(req.query.tss as string),
       db: dbDelta,
     },
     data: Object.values(resultsByFile),

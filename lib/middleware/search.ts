@@ -105,12 +105,12 @@ export default async function SearchMiddleware(req: NextRequest) {
       // Admin Supabase needed here, as the projects table is subject to RLS.
       // We bypass this check if the key is a test key or if the request
       // comes from the app host (e.g. markprompt.com/s/[key]]).
-      await checkWhitelistedDomainIfProjectKey(
-        supabaseAdmin,
-        projectKey,
-        projectId,
-        requesterHost,
-      );
+      // await checkWhitelistedDomainIfProjectKey(
+      //   supabaseAdmin,
+      //   projectKey,
+      //   projectId,
+      //   requesterHost,
+      // );
     } catch (e) {
       const apiError = e as ApiError;
       return new Response(apiError.message, { status: apiError.code });
