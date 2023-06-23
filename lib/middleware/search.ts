@@ -21,6 +21,9 @@ const supabaseAdmin = createClient<Database>(
 );
 
 export default async function SearchMiddleware(req: NextRequest) {
+  const mts: any[] = [];
+  let ts = Date.now();
+
   if (process.env.NODE_ENV === 'production') {
     // Check that IP is present and not rate limited
     if (!req.ip) {
@@ -69,6 +72,9 @@ export default async function SearchMiddleware(req: NextRequest) {
 
   let projectId: Project['id'] | undefined = undefined;
 
+  mts.push({ checkRateLimits: Date.now() - ts });
+  ts = Date.now();
+
   if (token) {
     // If authorization token is present, use this to find the project id
     const rateLimitResult = await checkSearchRateLimits({
@@ -116,6 +122,9 @@ export default async function SearchMiddleware(req: NextRequest) {
     }
   }
 
+  mts.push({ getProjectId: Date.now() - ts });
+  ts = Date.now();
+
   if (!projectId) {
     return new Response(
       'No project found matching the provided key or authorization token.',
@@ -128,7 +137,9 @@ export default async function SearchMiddleware(req: NextRequest) {
   // API handler function.
   return NextResponse.rewrite(
     new URL(
-      `/api/v1/search${req.nextUrl.search}&projectId=${projectId}`,
+      `/api/v1/search${
+        req.nextUrl.search
+      }&projectId=${projectId}&mts=${JSON.stringify(mts)}`,
       req.url,
     ),
   );

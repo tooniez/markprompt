@@ -24,7 +24,6 @@ import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
   ApiError,
-  DbFile,
   OpenAIModelIdWithType,
   Project,
   PromptReference,

@@ -837,23 +837,6 @@ export const roundToLowerOrderDecimal = (n: number) => {
   return roundedNumber;
 };
 
-export const safeParseNumber = (
-  value: string | undefined | null,
-  fallbackValue: number,
-): number => {
-  if (typeof value !== 'string') {
-    return fallbackValue;
-  }
-
-  try {
-    return parseInt(value);
-  } catch {
-    //
-  }
-
-  return fallbackValue;
-};
-
 const APPROX_CHARS_PER_TOKEN = 3.8;
 
 // Fast approximate token count. We use a slightly smaller value

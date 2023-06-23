@@ -5,7 +5,7 @@ import { remark } from 'remark';
 import strip from 'strip-markdown';
 
 import { track } from '@/lib/posthog';
-import { safeParseNumber } from '@/lib/utils';
+import { safeParseInt, safeParseJSON } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import { SourceType } from '@/types/types';
 
@@ -132,7 +132,7 @@ export default async function handler(
 
   const limit = Math.min(
     MAX_SEARCH_RESULTS,
-    safeParseNumber(req.query.limit as string, 5),
+    safeParseInt(req.query.limit as string, 5),
   );
 
   if (!query || query.trim() === '') {
@@ -141,7 +141,7 @@ export default async function handler(
     });
   }
 
-  const dbTs = Date.now();
+  const ftsTs = Date.now();
 
   const {
     data: _data,
@@ -155,7 +155,7 @@ export default async function handler(
     project_id: projectId,
   });
 
-  const dbDelta = Date.now() - dbTs;
+  const ftsDelta = Date.now() - ftsTs;
 
   if (error || !_data) {
     return res
@@ -170,11 +170,13 @@ export default async function handler(
   const data = _data as FTSResult[];
   const fileDatas: { [key: string]: SearchResultFileData } = {};
 
+  const metadataTs = Date.now();
   const fileIds = uniq(data.map((d) => d.file_id)).sort();
   const { data: _fileData } = await supabaseAdmin
     .from('files')
     .select('id, path, meta, sources(data, type)')
     .in('id', fileIds);
+  const metadataDelta = Date.now() - metadataTs;
 
   const resultsByFile: { [key: string]: SearchResult } = {};
   for (const result of data) {
@@ -211,7 +213,9 @@ export default async function handler(
 
   return res.status(200).json({
     debug: {
-      db: dbDelta,
+      middleware: safeParseJSON(req.query.mts as string, []),
+      fts: ftsDelta,
+      metadata: metadataDelta,
     },
     data: Object.values(resultsByFile),
   });

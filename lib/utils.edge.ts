@@ -23,13 +23,38 @@ export const removeSchema = (origin: string) => {
   return origin.replace(/(^\w+:|^)\/\//, '');
 };
 
-export const safeParseInt = (value: any, defaultValue = 0) => {
+export const safeParseInt = (
+  value: string | undefined | null,
+  fallbackValue: number,
+): number => {
+  if (typeof value !== 'string') {
+    return fallbackValue;
+  }
+
   try {
     return parseInt(value);
   } catch {
-    // Do nothing
+    //
   }
-  return defaultValue;
+
+  return fallbackValue;
+};
+
+export const safeParseJSON = <T>(
+  value: string | undefined | null,
+  fallbackValue: T,
+): T => {
+  if (typeof value !== 'string') {
+    return fallbackValue;
+  }
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    //
+  }
+
+  return fallbackValue;
 };
 
 export const isRequestFromMarkprompt = (origin: string | undefined | null) => {
