@@ -189,3 +189,5 @@ export type SerializedDateRange = {
   from: number | undefined;
   to: number | undefined;
 };
+
+export type SystemStatus = 'operational' | 'downtime' | 'degraded';

@@ -18,6 +18,7 @@ import Button from '@/components/ui/Button';
 import { Pattern } from '@/components/ui/Pattern';
 import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import { PricedModel, TierDetails, TIERS } from '@/lib/stripe/tiers';
+import { SystemStatus } from '@/types/types';
 
 import StepsSection from './sections/Steps';
 import VideoSection from './sections/Video';
@@ -26,6 +27,7 @@ import { AnalyticsExample } from '../examples/analytics';
 import { DiscordIcon } from '../icons/Discord';
 import { ListItem } from '../ui/ListItem';
 import { Segment } from '../ui/Segment';
+import { SystemStatusButton } from '../ui/SystemStatusButton';
 import { Tag } from '../ui/Tag';
 
 const PricingCard = ({
@@ -187,6 +189,7 @@ const PricingCard = ({
 
 type LandingPageProps = {
   stars: number;
+  status: SystemStatus;
 };
 
 const formatNumStars = (stars: number) => {
@@ -196,7 +199,7 @@ const formatNumStars = (stars: number) => {
   return stars;
 };
 
-const LandingPage: FC<LandingPageProps> = ({ stars }) => {
+const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
   const [model, setModel] = useState<PricedModel>('gpt-3.5-turbo');
 
   useEffect(() => {
@@ -414,7 +417,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars }) => {
           </div>
         </div>
         <div className="mt-48 grid grid-cols-1 gap-8 border-t border-neutral-900/50 px-6 pt-12 pb-20 sm:grid-cols-3 sm:py-12 sm:px-8">
-          <div></div>
+          <SystemStatusButton status={status} />
           <div className="flex flex-row items-baseline justify-center gap-1 text-center text-sm text-neutral-500">
             Built by the{' '}
             <MotifIcon className="inline-block h-4 w-4 translate-y-[3px] transform text-neutral-300" />

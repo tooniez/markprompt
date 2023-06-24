@@ -13,6 +13,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import emitter, { EVENT_OPEN_PROMPT, EVENT_OPEN_CONTACT } from '@/lib/events';
+import useSystemStatus from '@/lib/hooks/use-system-status';
 import useUser from '@/lib/hooks/use-user';
 import { isValidEmail } from '@/lib/utils';
 
@@ -21,6 +22,7 @@ import { DocsPrompt } from '../ui/DocsPrompt';
 import { ErrorLabel } from '../ui/Forms';
 import { NoAutoInput } from '../ui/Input';
 import { CTABar } from '../ui/SettingsCard';
+import { SystemStatusButton } from '../ui/SystemStatusButton';
 import TextArea from '../ui/TextArea';
 
 export const ContactWindow = ({
@@ -30,6 +32,7 @@ export const ContactWindow = ({
   Component?: ReactNode;
 }) => {
   const { user } = useUser();
+  const { status } = useSystemStatus();
   const [isContactWindowOpen, setContactWindowOpen] = useState(false);
 
   useEffect(() => {
@@ -85,7 +88,12 @@ export const ContactWindow = ({
       <Dialog.Portal>
         <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
         <Dialog.Content className="animate-dialog-slide-in dialog-content max-h-[90%] w-[90%] max-w-[540px]">
-          <Dialog.Title className="dialog-title">Contact us</Dialog.Title>
+          <Dialog.Title className="dialog-title flex flex-row items-center gap-4">
+            <span className="flex-grow">Contact us</span>
+            <div className="flex-none">
+              <SystemStatusButton status={status} />
+            </div>
+          </Dialog.Title>
           <Dialog.Description className="dialog-description pb-4">
             Share feedback, request a feature, report a bug, or contact us.
           </Dialog.Description>
