@@ -1,3 +1,6 @@
+import '@markprompt/css';
+
+import { Markprompt } from '@markprompt/react';
 import * as Dialog from '@radix-ui/react-dialog';
 import cn from 'classnames';
 import { motion } from 'framer-motion';
@@ -794,6 +797,44 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                       },
                     )}
                   >
+                    <Markprompt
+                      projectKey={project.private_dev_api_key}
+                      showBranding={includeBranding}
+                      prompt={{
+                        iDontKnowMessage: iDontKnowMessage,
+                        placeholder: placeholder,
+                        ...modelConfig,
+                      }}
+                      trigger={{ floating: true }}
+                      references={{
+                        loadingText: loadingHeading,
+                        referencesText: referencesHeading,
+                        transformReferenceId: (path: string) => {
+                          const file = files?.find((f) => f.path === path);
+
+                          if (file) {
+                            let name = path;
+                            const metaTitle = (file.meta as any).title;
+                            if (metaTitle) {
+                              name = metaTitle;
+                            } else {
+                              name = removeFileExtension(getNameFromPath(path));
+                            }
+
+                            return {
+                              text: name,
+                              href: path,
+                            };
+                          }
+
+                          return {
+                            text: 'Unknown reference',
+                            href: '#',
+                          };
+                        },
+                      }}
+                    />
+
                     <Playground
                       ref={playgroundRef}
                       onStateChanged={setIsLoadingResponse}
@@ -814,7 +855,6 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                       modelConfig={modelConfig}
                       referencesHeading={referencesHeading}
                       loadingHeading={loadingHeading}
-                      includeBranding={includeBranding}
                       getReferenceInfo={(path: string) => {
                         const file = files?.find((f) => f.path === path);
                         if (file) {
