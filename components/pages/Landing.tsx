@@ -24,6 +24,7 @@ import StepsSection from './sections/Steps';
 import VideoSection from './sections/Video';
 import { SharedHead } from './SharedHead';
 import { AnalyticsExample } from '../examples/analytics';
+import { CernIcon } from '../icons/Cern';
 import { DiscordIcon } from '../icons/Discord';
 import { ListItem } from '../ui/ListItem';
 import { Segment } from '../ui/Segment';
@@ -269,8 +270,9 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
                 Live with
               </p>
               <div className="flex flex-row items-center justify-start gap-8 overflow-x-auto pt-4 sm:items-center sm:gap-12 sm:pt-4">
+                <AngeListIcon className="mt-1 w-[76px] text-neutral-500 sm:w-[92px]" />
+                <CernIcon className="w-[60px] text-neutral-500 sm:w-[72px]" />
                 <CalIcon className="w-[72px] text-neutral-500 sm:w-[90px]" />
-                <AngeListIcon className="w-[72px] text-neutral-500 sm:w-[90px]" />
                 <ReploIcon className="w-[72px] text-neutral-500 sm:w-[90px]" />
               </div>
             </div>
