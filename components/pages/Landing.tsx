@@ -355,7 +355,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
               * BYO: Bring your own API key
             </p>
           </div> */}
-          <div className="relative mt-16 grid w-full max-w-screen-xl grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
+          <div className="relative mt-16 grid w-full max-w-screen-xl grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-4">
             <Blurs />
             <PricingCard
               tier={TIERS.hobby}
@@ -416,9 +416,13 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             </Button>
           </div>
         </div>
-        <div className="mt-48 grid grid-cols-1 gap-8 border-t border-neutral-900/50 px-6 pt-12 pb-20 sm:grid-cols-3 sm:py-12 sm:px-8">
-          <SystemStatusButton status={status} />
-          <div className="flex flex-row items-baseline justify-center gap-1 text-center text-sm text-neutral-500">
+        <div className="mt-48 grid grid-cols-1 items-center gap-8 border-t border-neutral-900/50 px-6 pt-12 pb-20 sm:grid-cols-2 sm:py-12 sm:px-8 lg:grid-cols-3">
+          <div className="flex flex-row items-center justify-center gap-6 text-sm text-neutral-500 md:justify-start">
+            <SystemStatusButton status={status} />
+            <Link href="/legal/terms">Terms</Link>
+            <Link href="/legal/privacy">Privacy</Link>
+          </div>
+          <div className="hidden flex-row items-baseline justify-center gap-1 text-center text-sm text-neutral-500 lg:flex">
             Built by the{' '}
             <MotifIcon className="inline-block h-4 w-4 translate-y-[3px] transform text-neutral-300" />
             <a
@@ -429,7 +433,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             </a>{' '}
             team
           </div>
-          <div className="mr-0 flex flex-row items-center justify-center gap-4 text-neutral-700 sm:mr-12 sm:justify-end xl:mr-0">
+          <div className="mr-0 flex flex-row items-center justify-center gap-4 text-neutral-700 sm:mr-8 sm:justify-end md:mr-12 xl:mr-0">
             <a
               className="transition hover:text-neutral-500"
               href="https://github.com/motifland/markprompt"
