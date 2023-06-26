@@ -17,19 +17,15 @@ import Button from '@/components/ui/Button';
 import { ListItem } from '@/components/ui/ListItem';
 import { Segment } from '@/components/ui/Segment';
 import { cancelSubscription } from '@/lib/api';
-import emitter, {
-  EVENT_OPEN_CONTACT,
-  EVENT_OPEN_PLAN_PICKER_DIALOG,
-} from '@/lib/events';
+import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import useTeam from '@/lib/hooks/use-team';
 import { getStripe } from '@/lib/stripe/client';
 import {
   comparePlans,
-  getTierDetailsFromPriceId,
   getTierFromPriceId,
   isYearlyPrice,
-  PricedModel,
   Tier,
+  TierDetails,
   TIERS,
 } from '@/lib/stripe/tiers';
 
@@ -37,20 +33,17 @@ const env =
   process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? 'production' : 'test';
 
 const PricingCard = ({
-  tier,
+  tierId,
+  tierDetails,
   isPro,
-  currentPriceId,
-  isOnEnterprisePlan,
   customPrice,
   cta,
   ctaHref,
   onCtaClick,
 }: {
-  tier: Tier;
-  model: PricedModel;
+  tierId?: Tier;
+  tierDetails: TierDetails;
   isPro?: boolean;
-  currentPriceId?: string;
-  isOnEnterprisePlan?: boolean;
   customPrice?: string;
   cta?: string;
   ctaHref?: string;
@@ -59,10 +52,10 @@ const PricingCard = ({
   const router = useRouter();
   const { team, mutate: mutateTeam } = useTeam();
 
-  const tierDetails = TIERS[tier];
   const [loading, setLoading] = useState(false);
   const hasMonthlyOption =
     tierDetails.prices && tierDetails.prices?.some((p) => p.price?.monthly);
+  const currentPriceId = team?.stripe_price_id || undefined;
 
   const [showAnnual, setShowAnnual] = useState<boolean | undefined>(undefined);
   const [priceStep, setPriceStep] = useState<number>(-1);
@@ -92,6 +85,7 @@ const PricingCard = ({
   const amount = priceIdsAndAmount?.amount || 0;
   const priceId = priceIdsAndAmount?.priceIds[env];
   const isFree = amount === 0 && !tierDetails.enterprise;
+  const isOnEnterprisePlan = !!team?.is_enterprise_plan;
 
   let isCurrentPlan = false;
   if (!currentPriceId) {
@@ -119,7 +113,7 @@ const PricingCard = ({
     } else if (comp === -1) {
       buttonLabel = 'Downgrade';
     }
-  } else if (isOnEnterprisePlan && tier !== 'enterprise') {
+  } else if (isOnEnterprisePlan && tierId !== 'enterprise') {
     buttonLabel = 'Downgrade';
   }
 
@@ -138,7 +132,7 @@ const PricingCard = ({
     // If card priceId and currentPriceId are of the same tier,
     // keep highlighted (e.g. when sliding quota range).
     isHighlighted = true;
-  } else if (tier === 'enterprise' && isOnEnterprisePlan) {
+  } else if (tierId === 'enterprise' && isOnEnterprisePlan) {
     isHighlighted = true;
   }
 
@@ -330,56 +324,32 @@ const PricingCard = ({
 
 const PlanPicker = () => {
   const { team } = useTeam();
-  const [model, setModel] = useState<PricedModel>('gpt-3.5-turbo');
-  const [hasSwitched, setHasSwitched] = useState(false);
 
-  let tierName: string | undefined;
-  if (team?.is_enterprise_plan) {
-    tierName = 'Enterprise';
-  } else if (team?.stripe_price_id) {
-    tierName = getTierDetailsFromPriceId(team.stripe_price_id)?.name;
-  } else {
-    tierName = 'Hobby';
-  }
-
-  if (!team) {
-    return <></>;
-  }
-
+  const tiers = (team?.plan_details as any)?.tiers as TierDetails[];
   return (
     <>
       <div className="-ml-6 grid w-[calc(100%+48px)] grid-cols-1 gap-4 sm:grid-cols-4">
         <PricingCard
-          tier="hobby"
-          model={model}
-          currentPriceId={team?.stripe_price_id || undefined}
-          isOnEnterprisePlan={!!team?.is_enterprise_plan}
+          tierId="hobby"
+          tierDetails={TIERS['hobby']}
           customPrice="Free"
         />
-        <PricingCard
-          tier="starter"
-          model={model}
-          currentPriceId={team?.stripe_price_id || undefined}
-          isOnEnterprisePlan={!!team?.is_enterprise_plan}
-        />
-        <PricingCard
-          tier="pro"
-          isPro
-          model={model}
-          currentPriceId={team?.stripe_price_id || undefined}
-          isOnEnterprisePlan={!!team?.is_enterprise_plan}
-        />
-        <PricingCard
-          tier="enterprise"
-          model={model}
-          currentPriceId={team?.stripe_price_id || undefined}
-          isOnEnterprisePlan={!!team?.is_enterprise_plan}
-          customPrice="Custom"
-          cta="Contact Sales"
-          onCtaClick={() => {
-            emitter.emit(EVENT_OPEN_CONTACT);
-          }}
-        />
+        <PricingCard tierId="starter" tierDetails={TIERS['starter']} />
+        <PricingCard tierId="pro" tierDetails={TIERS['pro']} isPro />
+        {!tiers && (
+          <PricingCard
+            tierId="enterprise"
+            tierDetails={TIERS['enterprise']}
+            customPrice="Custom"
+            cta="Contact Sales"
+            onCtaClick={() => {
+              emitter.emit(EVENT_OPEN_CONTACT);
+            }}
+          />
+        )}
+        {tiers?.map((tier, i) => {
+          return <PricingCard key={`${tier.name}-${i}`} tierDetails={tier} />;
+        })}
       </div>
     </>
   );

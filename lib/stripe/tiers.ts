@@ -30,6 +30,11 @@ export const modelLabels: Record<PricedModel, string> = {
 const env =
   process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? 'production' : 'test';
 
+type TokenUsageQuotas = {
+  embeddings?: number;
+  completions?: number;
+};
+
 export type TierPriceDetails = {
   name: string;
   quota: number;
@@ -38,12 +43,24 @@ export type TierPriceDetails = {
     monthly?: Price;
     yearly: Price;
   };
+  // The field below are the extended version of the above
+  quotas?: TokenUsageQuotas;
+  maxTeamMembers?: number;
+  maxProjects?: number;
+  features?: {
+    customPageFetcher?: {
+      enabled: boolean;
+    };
+    insights?: {
+      type: 'basic';
+    };
+  };
 };
 
 export type TierDetails = {
   name: string;
   enterprise?: boolean;
-  description: string;
+  description?: string;
   items: string[];
   notes?: string[];
   prices: TierPriceDetails[];

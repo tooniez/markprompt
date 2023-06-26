@@ -137,7 +137,6 @@ create table public.prompt_configs (
 comment on table public.prompt_configs is 'Prompt configs.';
 
 -- Query stats
-
 create table public.query_stats (
   id              uuid primary key default uuid_generate_v4(),
   created_at      timestamp with time zone default timezone('utc'::text, now()) not null,
