@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { format } from 'date-fns';
 import dayjs from 'dayjs';
 import { ChevronsUp, Globe, Upload } from 'lucide-react';
-import minimatch from 'minimatch';
+import { minimatch } from 'minimatch';
 import { customAlphabet } from 'nanoid';
 import pako from 'pako';
 import tailwindColors from 'tailwindcss/colors';
