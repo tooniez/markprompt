@@ -23,7 +23,6 @@ create table public.teams (
   is_personal         boolean default false,
   stripe_customer_id  text,
   stripe_price_id     text,
-  is_enterprise_plan  boolean,
   plan_details        jsonb,
   billing_cycle_start timestamp with time zone,
   created_by          uuid references public.users not null
@@ -385,7 +384,6 @@ create view v_team_project_info as
   select
     projects.id as project_id,
     teams.id as team_id,
-    teams.is_enterprise_plan as is_enterprise_plan,
     teams.stripe_price_id as stripe_price_id,
     teams.plan_details as plan_details
   from projects
@@ -405,8 +403,7 @@ create view v_file_section_search_infos as
     p.private_dev_api_key as private_dev_api_key,
     tok.value as token,
     d.name as domain,
-    t.stripe_price_id as stripe_price_id,
-    t.is_enterprise_plan as is_enterprise_plan
+    t.stripe_price_id as stripe_price_id
   from file_sections fs
   left join files f on fs.file_id = f.id
   left join sources s on f.source_id = s.id
