@@ -1,163 +1,61 @@
+import { merge } from 'lodash-es';
+
 import { Team } from '@/types/types';
 
 import { roundToLowerOrderDecimal } from '../utils';
 
 type Price = {
   amount: number;
-  priceIds: {
-    test: string;
-    production: string;
-  };
+  priceId: string;
 };
 
 export type PlanDetails = {
-  useCustomPageFetcher?: boolean;
-  quotas?: {
-    embeddings?: number;
-  };
-};
-
-export type Tier = 'hobby' | 'starter' | 'pro' | 'enterprise';
-
-export type PricedModel = 'gpt-4' | 'gpt-3.5-turbo' | 'byo';
-
-export const modelLabels: Record<PricedModel, string> = {
-  'gpt-4': 'GPT-4',
-  'gpt-3.5-turbo': 'Chat',
-  byo: 'BYO',
-};
-
-const env =
-  process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? 'production' : 'test';
-
-type TokenUsageQuotas = {
-  embeddings?: number;
-  completions?: number;
-};
-
-export type TierPriceDetails = {
-  name: string;
-  quota: number;
-  numTokensPerTeam: number;
-  price?: {
-    monthly?: Price;
-    yearly: Price;
-  };
-  // The field below are the extended version of the above
-  quotas?: TokenUsageQuotas;
-  maxTeamMembers?: number;
-  maxProjects?: number;
-  features?: {
-    customPageFetcher?: {
-      enabled: boolean;
-    };
-    insights?: {
-      type: 'basic';
-    };
-  };
+  // When a team has not signed up for a tier, these options are
+  // enabled by default, e.g. during a testing period.
+  fallback?: TierDetails;
+  // These tiers are offered as options to a team, in addition to
+  // the default ones.
+  tiers: Tier[];
 };
 
 export type TierDetails = {
-  name: string;
-  enterprise?: boolean;
+  quotas?: { embeddings?: number; completions?: number };
+  features?: {
+    insights?: { type: 'basic' | 'advanced' };
+    customPageFetcher?: { enabled: boolean };
+    canRemoveBranding?: boolean;
+  };
+  maxProjects?: number;
+  maxTeamMembers?: number;
+};
+
+export type Tier = {
+  id: 'hobby' | 'starter' | 'pro' | 'placeholder-enterprise' | string;
+  name?: string;
   description?: string;
-  items: string[];
-  notes?: string[];
-  prices: TierPriceDetails[];
+  items?: string[];
+  price?: {
+    monthly?: Price;
+    yearly?: Price;
+  };
+  details?: TierDetails;
 };
 
-export const getTierPriceDetailsFromPriceId = (
-  priceId: string,
-): TierPriceDetails | undefined => {
-  for (const tier of Object.values(TIERS)) {
-    for (const price of tier.prices) {
-      if (
-        price?.price?.monthly?.priceIds[env] === priceId ||
-        price?.price?.yearly?.priceIds[env] === priceId
-      ) {
-        return price;
-      }
-    }
-  }
-  return undefined;
-};
+export type TeamTierInfo = Pick<Team, 'stripe_price_id' | 'plan_details'>;
 
-export const getTierDetailsFromPriceId = (
-  priceId: string,
-): TierDetails | undefined => {
-  for (const tierDetail of Object.values(TIERS)) {
-    for (const price of tierDetail.prices) {
-      if (
-        price?.price?.monthly?.priceIds[env] === priceId ||
-        price?.price?.yearly?.priceIds[env] === priceId
-      ) {
-        return tierDetail;
-      }
-    }
-  }
-  return undefined;
-};
+// export type PricedModel = 'gpt-4' | 'gpt-3.5-turbo' | 'byo';
 
-export const isYearlyPrice = (priceId: string) => {
-  for (const tierDetail of Object.values(TIERS)) {
-    for (const price of tierDetail.prices) {
-      if (price?.price?.yearly?.priceIds[env] === priceId) {
-        return true;
-      }
-    }
-  }
-  return false;
-};
+// export const modelLabels: Record<PricedModel, string> = {
+//   'gpt-4': 'GPT-4',
+//   'gpt-3.5-turbo': 'Chat',
+//   byo: 'BYO',
+// };
 
-export const getTierFromPriceId = (priceId: string): Tier | undefined => {
-  for (const tier of Object.keys(TIERS) as Tier[]) {
-    for (const price of TIERS[tier].prices) {
-      if (
-        price?.price?.monthly?.priceIds[env] === priceId ||
-        price?.price?.yearly?.priceIds[env] === priceId
-      ) {
-        return tier;
-      }
-    }
-  }
-  return undefined;
-};
+const useTestPriceId = process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production';
 
-export const comparePlans = (
-  priceId: string,
-  otherPriceId: string,
-): -1 | 0 | 1 => {
-  if (priceId === otherPriceId) {
-    return 0;
-  }
-  // We assume that the TIERS list is ordered from lower to higher.
-  for (const tierDetail of Object.values(TIERS)) {
-    for (const price of tierDetail.prices) {
-      const monthlyPriceId = price?.price?.monthly?.priceIds[env];
-      const yearlyPriceId = price?.price?.yearly?.priceIds[env];
-      if (
-        (monthlyPriceId === priceId && yearlyPriceId === otherPriceId) ||
-        (monthlyPriceId === otherPriceId && yearlyPriceId === priceId)
-      ) {
-        // Consider equal if one is yearly and other is monthly of
-        // the same plan.
-        return 0;
-      }
-      if (monthlyPriceId === priceId || yearlyPriceId === priceId) {
-        // priceId came first in list, so it's lower
-        return -1;
-      }
-      if (monthlyPriceId === otherPriceId || yearlyPriceId === otherPriceId) {
-        // otherPriceId came first in list, so it's lower
-        return 1;
-      }
-    }
-  }
-  return 1;
-};
-
-export const TIERS: Record<Tier, TierDetails> = {
-  hobby: {
+export const DEFAULT_TIERS: Tier[] = [
+  {
+    id: 'hobby',
     name: 'Hobby',
     description: 'For personal and non-commercial projects',
     items: [
@@ -165,15 +63,15 @@ export const TIERS: Record<Tier, TierDetails> = {
       '25 GPT-4 completions per month',
       'Public/private GitHub repos',
     ],
-    prices: [
-      {
-        name: 'Free',
-        quota: 25,
-        numTokensPerTeam: 30_000,
+    details: {
+      quotas: {
+        completions: 25,
+        embeddings: 30000,
       },
-    ],
+    },
   },
-  starter: {
+  {
+    id: 'starter',
     name: 'Starter',
     description: 'For small projects',
     items: [
@@ -181,31 +79,29 @@ export const TIERS: Record<Tier, TierDetails> = {
       '200 GPT-4 completions per month',
       'Usage analytics',
     ],
-    prices: [
-      {
-        name: 'Starter',
-        quota: 200,
-        numTokensPerTeam: 120_000,
-        price: {
-          monthly: {
-            amount: 25,
-            priceIds: {
-              test: 'price_1N8Wh6Cv3sM26vDeKjjg71C7',
-              production: 'price_1N8WfxCv3sM26vDeN9BnA5D3',
-            },
-          },
-          yearly: {
-            amount: 20,
-            priceIds: {
-              test: 'price_1N8Wh6Cv3sM26vDeNTZ2D1K2',
-              production: 'price_1N8WfxCv3sM26vDerkB8Tkmz',
-            },
-          },
-        },
+    price: {
+      monthly: {
+        amount: 25,
+        priceId: useTestPriceId
+          ? 'price_1N8Wh6Cv3sM26vDeKjjg71C7'
+          : 'price_1N8WfxCv3sM26vDeN9BnA5D3',
       },
-    ],
+      yearly: {
+        amount: 20,
+        priceId: useTestPriceId
+          ? 'price_1N8Wh6Cv3sM26vDeNTZ2D1K2'
+          : 'price_1N8WfxCv3sM26vDerkB8Tkmz',
+      },
+    },
+    details: {
+      quotas: {
+        completions: 200,
+        embeddings: 120_000,
+      },
+    },
   },
-  pro: {
+  {
+    id: 'pro',
     name: 'Pro',
     description: 'For production',
     items: [
@@ -215,118 +111,136 @@ export const TIERS: Record<Tier, TierDetails> = {
       'Model customization',
       'Basic insights',
     ],
-    prices: [
-      {
-        name: 'Pro',
-        quota: 1000,
-        numTokensPerTeam: 600_000,
-        price: {
-          monthly: {
-            amount: 120,
-            priceIds: {
-              test: 'price_1N0TzLCv3sM26vDeQ7VxLKWP',
-              production: 'price_1N0U0ICv3sM26vDes1KHwQ4y',
-            },
-          },
-          yearly: {
-            amount: 100,
-            priceIds: {
-              test: 'price_1N0TzLCv3sM26vDeIwhDValY',
-              production: 'price_1N0U0ICv3sM26vDebBlSdU2k',
-            },
-          },
-        },
+    price: {
+      monthly: {
+        amount: 120,
+        priceId: useTestPriceId
+          ? 'price_1N0TzLCv3sM26vDeQ7VxLKWP'
+          : 'price_1N0U0ICv3sM26vDes1KHwQ4y',
       },
-    ],
-  },
-  enterprise: {
-    name: 'Enterprise',
-    enterprise: true,
-    description: 'For projects at scale',
-    items: [
-      'Teams',
-      'Integrations',
-      'Advanced insights',
-      'Unbranded prompts',
-      'Unlimited completions',
-      'Custom source processing',
-      'SSO/SAML',
-      'Dedicated support',
-      'White glove onboarding',
-    ],
-    prices: [
-      {
-        name: 'Enterprise',
-        quota: -1,
-        numTokensPerTeam: -1,
+      yearly: {
+        amount: 100,
+        priceId: useTestPriceId
+          ? 'price_1N0TzLCv3sM26vDeIwhDValY'
+          : 'price_1N0U0ICv3sM26vDebBlSdU2k',
       },
-    ],
+    },
+    details: {
+      quotas: {
+        completions: 1000,
+        embeddings: 600_000,
+      },
+    },
   },
+];
+
+export const PLACEHOLDER_ENTERPRISE_TIER: Tier = {
+  id: 'placeholder-enterprise',
+  name: 'Enterprise',
+  description: 'For production',
+  items: [
+    'Teams',
+    'Integrations',
+    'Advanced insights',
+    'Unbranded prompts',
+    'Unlimited completions',
+    'Custom source processing',
+    'SSO/SAML',
+    'Dedicated support',
+    'White glove onboarding',
+  ],
 };
 
-const maxAllowanceForEnterprise = 1_000_000;
-const quotaForLegacyPriceId = TIERS.pro.prices[0].quota;
-
-export const getMonthlyQueryAllowance = (team: Team) => {
-  if (team.is_enterprise_plan) {
-    return maxAllowanceForEnterprise;
-  } else if (team.stripe_price_id) {
-    const priceDetails = getTierPriceDetailsFromPriceId(team.stripe_price_id);
-    if (priceDetails) {
-      return priceDetails.quota;
-    }
-    return quotaForLegacyPriceId;
-  } else {
-    return TIERS.hobby.prices[0].quota;
-  }
-};
-
-export const isAtLeastPro = (
-  stripePriceId: string | null,
-  isEnterprisePlan: boolean,
-): boolean => {
-  return !!(
-    isEnterprisePlan ||
-    (stripePriceId && getTierFromPriceId(stripePriceId) === 'pro')
-  );
-};
-
-export type TokenAllowance = number | 'unlimited';
-
-export const getNumTokensPerTeamAllowance = (
-  isEnterprisePlan: boolean,
-  stripePriceId: string | null | undefined,
-  planDetails: PlanDetails | null | undefined,
-): TokenAllowance => {
-  if (planDetails?.quotas?.embeddings) {
-    return planDetails.quotas.embeddings;
-  }
-  if (isEnterprisePlan) {
-    return 'unlimited';
-  } else if (stripePriceId) {
-    const priceDetails = getTierPriceDetailsFromPriceId(stripePriceId);
-    if (priceDetails) {
-      return priceDetails.numTokensPerTeam;
-    }
-    // Deprecated plans were similar to the current pro plan, so if a
-    // user is on a deprecated plan, use the same allowance as the current
-    // pro plan.
-    return TIERS.pro.prices[0].numTokensPerTeam;
-  } else {
-    return TIERS.hobby.prices[0].numTokensPerTeam;
-  }
-};
-
-export const getTeamTier = (team: Team): Tier => {
-  if (team.is_enterprise_plan) {
-    return 'enterprise';
-  } else if (team.stripe_price_id) {
-    const tier = getTierFromPriceId(team.stripe_price_id);
-    if (tier) {
+export const getDefaultTierFromPriceId = (
+  priceId: string,
+): Tier | undefined => {
+  for (const tier of DEFAULT_TIERS) {
+    if (
+      tier.price?.monthly?.priceId === priceId ||
+      tier.price?.yearly?.priceId === priceId
+    ) {
       return tier;
     }
   }
-  return 'hobby';
+  return undefined;
+};
+
+const getCustomTier = (teamTierInfo: TeamTierInfo): Tier | undefined => {
+  // Return the custom tier that the team has subscribed to. This means
+  // there is a valid stripe_price_id which matches with one tier in the
+  // list of offered custom tiers for this team.
+  if (!teamTierInfo.stripe_price_id) {
+    return undefined;
+  }
+  return (teamTierInfo.plan_details as PlanDetails)?.tiers?.find((t) => {
+    return (
+      t.price?.monthly?.priceId === teamTierInfo.stripe_price_id ||
+      t.price?.yearly?.priceId === teamTierInfo.stripe_price_id
+    );
+  });
+};
+
+const getProTier = (): Tier => {
+  return DEFAULT_TIERS.find((t) => t.id === 'pro')!;
+};
+
+export const getTier = (teamTierInfo: TeamTierInfo): Tier => {
+  const customTier = getCustomTier(teamTierInfo);
+  console.log('teamTierInfo', JSON.stringify(teamTierInfo, null, 2));
+  console.log('customTier', JSON.stringify(customTier, null, 2));
+  if (customTier) {
+    return customTier;
+  }
+  if (teamTierInfo.stripe_price_id) {
+    const tier = DEFAULT_TIERS.find((t) => {
+      return (
+        t.price?.monthly?.priceId === teamTierInfo.stripe_price_id ||
+        t.price?.yearly?.priceId === teamTierInfo.stripe_price_id
+      );
+    });
+    // If the plan is deprecated, assume it is a pro plan.
+    return tier || getProTier();
+  }
+  return DEFAULT_TIERS.find((t) => t.id === 'hobby')!;
+};
+
+export const getTierName = (tier: Tier) => {
+  // Unnamed tiers / non-default tiers are custom enterprise tiers.
+  return tier.name || 'Enterprise';
+};
+
+const getTierDetails = (teamTierInfo: TeamTierInfo): TierDetails => {
+  // If team has signed up for a custom tier, return the associated tier
+  // details. If not, return the fallback tier if set (e.g. during a
+  // trial period, before any stripe_price_id is set), merged with the
+  // default team tier details, if it exists. The fallback tier values
+  // take precedence over the ones coming from the tier. If a custom tier
+  // is set, the fallback tier details are ignored.
+  // Also, a custom tier includes all features of the pro team, so we merge
+  // the custom tier details / fallback details with those of the Pro tier,
+  // giving precedence to the former.
+  const customTier = getCustomTier(teamTierInfo);
+  if (customTier?.details) {
+    const proTier = getProTier();
+    return merge(proTier.details, customTier.details);
+  }
+  const tierDetails = getTier(teamTierInfo)?.details || {};
+  const fallbackTier = (teamTierInfo.plan_details as PlanDetails)?.fallback;
+  return merge(tierDetails, fallbackTier);
+};
+
+const isProOrCustomTier = (team: Team): boolean => {
+  // A team is at least Pro if it is on the default Pro plan, or if
+  // it is on a custom plan.
+  const customTier = getCustomTier(team);
+  if (customTier) {
+    return true;
+  }
+  const defaultTier = getTier(team);
+  if (defaultTier) {
+    return defaultTier.id === 'pro';
+  }
+  return false;
 };
 
 export const tokensToApproxParagraphs = (numTokens: number): number => {
@@ -334,17 +248,28 @@ export const tokensToApproxParagraphs = (numTokens: number): number => {
 };
 
 export const canRemoveBranding = (team: Team) => {
-  return team.is_enterprise_plan;
-};
-
-export const canEnableInstantSearch = (team: Team) => {
-  return isAtLeastPro(team.stripe_price_id, !!team.is_enterprise_plan);
+  return !!getTierDetails(team).features?.canRemoveBranding;
 };
 
 export const canConfigureModel = (team: Team) => {
-  return isAtLeastPro(team.stripe_price_id, !!team.is_enterprise_plan);
+  return isProOrCustomTier(team);
 };
 
-export const canViewAccessFullInsights = (team: Team) => {
-  return isAtLeastPro(team.stripe_price_id, !!team.is_enterprise_plan);
+export const canViewInsights = (team: Team) => {
+  const insightsType = getTierDetails(team).features?.insights?.type;
+  return insightsType === 'basic' || insightsType === 'advanced';
+};
+
+export const getMonthlyCompletionsAllowance = (team: Team): number => {
+  const tierDetails = getTierDetails(team);
+  return tierDetails.quotas?.completions || 0;
+};
+
+export const getEmbeddingTokensAllowance = (
+  teamTierInfo: TeamTierInfo,
+): number => {
+  // This is an accumulated allowance, not a monthly allowance like
+  // completions tokens.
+  const tierDetails = getTierDetails(teamTierInfo);
+  return tierDetails.quotas?.embeddings || 0;
 };

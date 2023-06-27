@@ -22,7 +22,7 @@ import useProjects from '@/lib/hooks/use-projects';
 import useTeam from '@/lib/hooks/use-team';
 import useTeams from '@/lib/hooks/use-teams';
 import useUser from '@/lib/hooks/use-user';
-import { TIERS, Tier, getTeamTier } from '@/lib/stripe/tiers';
+import { Tier, getTier, getTierName } from '@/lib/stripe/tiers';
 import { TagColor } from '@/types/types';
 
 import Button from '../ui/Button';
@@ -49,15 +49,16 @@ type TeamProjectPickerProps = {
 };
 
 const getColorForTier = (tier: Tier): TagColor => {
-  switch (tier) {
-    case 'enterprise':
-      return 'fuchsia';
+  switch (tier.id) {
     case 'pro':
       return 'sky';
     case 'starter':
       return 'sky';
-    default:
+    case 'hobby':
       return 'green';
+    default:
+      // Custom and enterprise tiers
+      return 'fuchsia';
   }
 };
 
@@ -71,7 +72,7 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
     return <></>;
   }
 
-  const tier = team && getTeamTier(team);
+  const tier = team && getTier(team);
 
   return (
     <DropdownMenu.Root open={isOpen} onOpenChange={setOpen}>
@@ -83,7 +84,7 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
           >
             {team?.name || ''}
             {tier && (
-              <Tag color={getColorForTier(tier)}>{TIERS[tier].name}</Tag>
+              <Tag color={getColorForTier(tier)}>{getTierName(tier)}</Tag>
             )}
             <ChevronsUpDown className="h-3 w-3" />
           </button>

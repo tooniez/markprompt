@@ -1,16 +1,7 @@
-import * as Dialog from '@radix-ui/react-dialog';
-import * as Slider from '@radix-ui/react-slider';
 import cn from 'classnames';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import {
-  Children,
-  cloneElement,
-  FC,
-  isValidElement,
-  ReactNode,
-  useEffect,
-  useState,
-} from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import Button from '@/components/ui/Button';
@@ -21,128 +12,90 @@ import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import useTeam from '@/lib/hooks/use-team';
 import { getStripe } from '@/lib/stripe/client';
 import {
-  comparePlans,
-  getTierFromPriceId,
-  isYearlyPrice,
+  DEFAULT_TIERS,
+  PLACEHOLDER_ENTERPRISE_TIER,
+  PlanDetails,
   Tier,
-  TierDetails,
-  TIERS,
+  getTier,
+  getTierName,
 } from '@/lib/stripe/tiers';
 
-const env =
-  process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? 'production' : 'test';
+const HOBBY_TIER = DEFAULT_TIERS.find((t) => t.id === 'hobby')!;
+
+const isMonthlySubscription = (tier: Tier, stripePriceId: string | null) => {
+  return stripePriceId && tier.price?.monthly?.priceId === stripePriceId;
+};
 
 const PricingCard = ({
-  tierId,
-  tierDetails,
-  isPro,
-  customPrice,
-  cta,
-  ctaHref,
+  tier,
+  priceLabel,
   onCtaClick,
 }: {
-  tierId?: Tier;
-  tierDetails: TierDetails;
-  isPro?: boolean;
-  customPrice?: string;
-  cta?: string;
-  ctaHref?: string;
+  tier: Tier;
+  priceLabel?: string;
   onCtaClick?: () => void;
 }) => {
   const router = useRouter();
   const { team, mutate: mutateTeam } = useTeam();
-
   const [loading, setLoading] = useState(false);
-  const hasMonthlyOption =
-    tierDetails.prices && tierDetails.prices?.some((p) => p.price?.monthly);
-  const currentPriceId = team?.stripe_price_id || undefined;
-
   const [showAnnual, setShowAnnual] = useState<boolean | undefined>(undefined);
-  const [priceStep, setPriceStep] = useState<number>(-1);
+  const hasMonthlyYearlyOption = !!tier.price?.monthly && !!tier.price?.yearly;
+  const currentTeamTier = team ? getTier(team) : HOBBY_TIER;
+  const currentTeamTierIsMonthlySubscription = !!(
+    team && isMonthlySubscription(currentTeamTier, team.stripe_price_id)
+  );
+  const isCurrentTeamTier = currentTeamTier.id === tier.id;
+  const amount = tier.price?.[showAnnual ? 'yearly' : 'monthly']?.amount || 0;
 
   useEffect(() => {
-    const initialPriceStep = Math.max(
-      0,
-      tierDetails.prices?.findIndex(
-        (p) =>
-          p.price?.monthly?.priceIds[env] === currentPriceId ||
-          p.price?.yearly?.priceIds[env] === currentPriceId,
-      ) || 0,
-    );
-
-    const annual =
-      !currentPriceId || !!(currentPriceId && isYearlyPrice(currentPriceId));
-    setPriceStep(initialPriceStep);
-    setShowAnnual(annual);
-  }, [currentPriceId, hasMonthlyOption, tierDetails.prices]);
-
-  const priceIdsAndAmount =
-    priceStep > -1
-      ? tierDetails.prices[priceStep].price?.[
-          showAnnual || !hasMonthlyOption ? 'yearly' : 'monthly'
-        ]
-      : undefined;
-  const amount = priceIdsAndAmount?.amount || 0;
-  const priceId = priceIdsAndAmount?.priceIds[env];
-  const isFree = amount === 0 && !tierDetails.enterprise;
-  const isOnEnterprisePlan = !!team?.is_enterprise_plan;
-
-  let isCurrentPlan = false;
-  if (!currentPriceId) {
-    // Free and Enterprise do not have any price ids attached
-    if (isOnEnterprisePlan && tierDetails.enterprise) {
-      isCurrentPlan = true;
-    } else if (!isOnEnterprisePlan && !tierDetails.enterprise) {
-      isCurrentPlan = priceId === undefined;
+    if (!isCurrentTeamTier) {
+      if (tier.price?.yearly) {
+        // If this is not the current team's tier, show yearly pricing
+        // by default if the tier has a yearly option.
+        setShowAnnual(true);
+      } else {
+        setShowAnnual(false);
+      }
+      return;
+    } else {
+      if (currentTeamTierIsMonthlySubscription) {
+        setShowAnnual(false);
+      } else {
+        setShowAnnual(true);
+      }
     }
-  } else {
-    isCurrentPlan = priceId === currentPriceId;
-  }
+  }, [
+    currentTeamTierIsMonthlySubscription,
+    isCurrentTeamTier,
+    tier.price?.yearly,
+  ]);
 
-  let buttonLabel = 'Upgrade';
-  if (cta) {
-    buttonLabel = cta;
-  } else if (isCurrentPlan) {
-    buttonLabel = 'Current plan';
-  } else if (isFree) {
-    buttonLabel = 'Downgrade';
-  } else if (priceId && currentPriceId) {
-    const comp = comparePlans(priceId, currentPriceId);
-    if (comp === 0) {
-      buttonLabel = 'Update';
-    } else if (comp === -1) {
-      buttonLabel = 'Downgrade';
+  const buttonLabel = (() => {
+    if (isCurrentTeamTier) {
+      if (currentTeamTierIsMonthlySubscription === !showAnnual) {
+        return 'Current plan';
+      } else if (showAnnual) {
+        return 'Switch to yearly';
+      } else {
+        return 'Switch to monthly';
+      }
     }
-  } else if (isOnEnterprisePlan && tierId !== 'enterprise') {
-    buttonLabel = 'Downgrade';
-  }
-
-  let isHighlighted = false;
-  if (isPro && !currentPriceId && !isOnEnterprisePlan) {
-    // If we are on a free plan, highlight Standard
-    isHighlighted = true;
-  } else if (isPro && !isFree && !isOnEnterprisePlan) {
-    // If this is the current plan, and it's not Free, highlight
-    isHighlighted = true;
-  } else if (
-    currentPriceId &&
-    priceId &&
-    getTierFromPriceId(currentPriceId) === getTierFromPriceId(priceId)
-  ) {
-    // If card priceId and currentPriceId are of the same tier,
-    // keep highlighted (e.g. when sliding quota range).
-    isHighlighted = true;
-  } else if (tierId === 'enterprise' && isOnEnterprisePlan) {
-    isHighlighted = true;
-  }
+    if (tier.id === 'hobby') {
+      return 'Downgrade to free';
+    }
+    if (tier.id === 'placeholder-enterprise') {
+      return 'Contact sales';
+    }
+    return 'Subscribe';
+  })();
 
   return (
     <div
       className={cn(
         'flex w-full flex-col gap-4 rounded-lg border px-6 pb-8 pt-12',
         {
-          'border-neutral-900 bg-neutral-1000/50': isHighlighted,
-          'border-transparent': !isHighlighted,
+          'border-neutral-900 bg-neutral-1000': isCurrentTeamTier,
+          'border-neutral-900': !isCurrentTeamTier,
         },
       )}
     >
@@ -150,7 +103,7 @@ const PricingCard = ({
         className={cn(
           '-mt-4 w-min whitespace-nowrap rounded-full bg-sky-600/20 px-2 py-0.5 text-xs font-medium text-sky-500 transition duration-300',
           {
-            'opacity-0': !isCurrentPlan,
+            'opacity-0': !isCurrentTeamTier,
           },
         )}
       >
@@ -158,129 +111,92 @@ const PricingCard = ({
       </p>
       <div className="flex flex-col items-start gap-4">
         <h2 className="flex-none flex-grow truncate text-xl font-semibold text-neutral-300">
-          {tierDetails.name}
+          {getTierName(tier)}
         </h2>
-        <div className="h-12">
-          {hasMonthlyOption && typeof showAnnual !== 'undefined' && (
+        <div className="h-8">
+          {hasMonthlyYearlyOption && typeof showAnnual !== 'undefined' && (
             <div className="flex-none">
               <Segment
                 size="sm"
-                items={['Monthly', 'Annually']}
+                items={['Monthly', 'Yearly']}
                 selected={showAnnual ? 1 : 0}
                 id="billing-period"
                 onChange={(i) => setShowAnnual(i === 1)}
               />
             </div>
           )}
-          {!hasMonthlyOption && !isFree && (
+          {tier.id === 'placeholder-enterprise' && (
             <p className="flex-none rounded-md bg-neutral-900 px-2 py-0.5 text-xs font-medium text-neutral-300">
-              Billed annually
+              Billed yearly
             </p>
           )}
         </div>
       </div>
       <div className="flex h-16 w-full">
-        {tierDetails.prices && (
-          <div className="relative flex w-full flex-col">
-            <p className="text-3xl font-semibold text-neutral-300">
-              {customPrice ?? (
-                <>
-                  ${amount}
-                  <span className="text-base font-normal text-neutral-500">
-                    /month
-                  </span>
-                </>
-              )}
-            </p>
-            {/* <Flashing active={quotaModels.findIndex((m) => m === model)}>
-              {quotaModels.map((model) => {
-                return (
-                  <p
-                    key={`pricing-quota-${tierDetails.name}-${priceStep}-${model}`}
-                    className="mt-2 h-8 w-full text-left text-neutral-500"
-                  >
-                    {quotas ? formatNumQueries(quotas[model]) : ''}
-                  </p>
-                );
-              })}
-            </Flashing> */}
-            {tierDetails.prices.length > 1 && (
-              <Slider.Root
-                onValueChange={([p]) => {
-                  setPriceStep(p);
-                }}
-                className="absolute -bottom-12 flex h-5 w-full select-none items-center md:mt-2"
-                defaultValue={[0]}
-                value={[priceStep]}
-                min={0}
-                max={tierDetails.prices.length - 1}
-                step={1}
-                aria-label="Price"
-              >
-                <Slider.Track className="relative h-1 flex-grow rounded-full bg-fuchsia-900/30">
-                  <Slider.Range className="absolute h-full rounded-full bg-fuchsia-900" />
-                </Slider.Track>
-                <Slider.Thumb className="block h-4 w-4 rounded-full bg-white" />
-              </Slider.Root>
+        <div className="relative flex w-full flex-col">
+          <p className="text-3xl font-semibold text-neutral-300">
+            {amount ? (
+              <>
+                ${amount}
+                <span className="text-base font-normal text-neutral-500">
+                  /month
+                </span>
+              </>
+            ) : (
+              priceLabel
             )}
-          </div>
-        )}
+          </p>
+        </div>
       </div>
       <ul className="mb-4 flex w-full flex-grow flex-col gap-1">
-        {tierDetails.items.map((item, i) => {
+        {tier.items?.map((item, i) => {
           return (
             <ListItem
               variant="discreet"
               size="sm"
-              key={`pricing-${tierDetails.name}-${i}`}
+              key={`pricing-${getTierName(tier)}-item-${i}`}
             >
               {item}
             </ListItem>
           );
         })}
-        {tierDetails.notes && (
-          <ul className="mt-6 flex w-full flex-grow flex-col gap-1">
-            {tierDetails.notes.map((note, i) => {
-              return (
-                <li
-                  className="text-xs text-neutral-500"
-                  key={`note-${note}-${i}`}
-                >
-                  {note}
-                </li>
-              );
-            })}
-          </ul>
-        )}
       </ul>
       <div className="w-full">
         <Button
           loading={loading}
-          disabled={isCurrentPlan}
+          disabled={
+            isCurrentTeamTier &&
+            currentTeamTierIsMonthlySubscription === !showAnnual
+          }
           buttonSize="sm"
           className="w-full"
           variant="plain"
-          href={ctaHref}
           onClick={async () => {
-            if (!team) {
-              return;
-            }
             if (onCtaClick) {
               onCtaClick();
               return;
             }
+
+            if (!team) {
+              return;
+            }
+
             try {
               setLoading(true);
-
-              if (isFree) {
+              if (tier.id === 'hobby') {
                 const res = await cancelSubscription(team.id);
                 if (res.status === 200) {
                   await mutateTeam();
-                  toast.success('Downgraded to free.');
+                  toast.success('Downgraded to Hobby.');
                 } else {
                   toast.error(res.statusText);
                 }
               } else {
+                const priceId =
+                  tier.price?.[showAnnual ? 'yearly' : 'monthly']?.priceId;
+                if (!priceId) {
+                  toast.error('No plan associated to this option.');
+                }
                 const { sessionId } = await fetch(
                   '/api/subscriptions/create-checkout-session',
                   {
@@ -288,14 +204,7 @@ const PricingCard = ({
                     body: JSON.stringify({
                       redirect: router.asPath,
                       teamId: team.id,
-                      priceId:
-                        priceStep > -1
-                          ? tierDetails.prices?.[priceStep].price?.[
-                              showAnnual || !hasMonthlyOption
-                                ? 'yearly'
-                                : 'monthly'
-                            ]?.priceIds[env]
-                          : undefined,
+                      priceId,
                     }),
                     headers: {
                       'Content-Type': 'application/json',
@@ -325,31 +234,38 @@ const PricingCard = ({
 const PlanPicker = () => {
   const { team } = useTeam();
 
-  const tiers = (team?.plan_details as any)?.tiers as TierDetails[];
+  const tiers = (team?.plan_details as PlanDetails)?.tiers;
+
   return (
     <>
-      <div className="-ml-6 grid w-[calc(100%+48px)] grid-cols-1 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <PricingCard
-          tierId="hobby"
-          tierDetails={TIERS['hobby']}
-          customPrice="Free"
+          tier={DEFAULT_TIERS.find((t) => t.id === 'hobby')!}
+          priceLabel="Free"
         />
-        <PricingCard tierId="starter" tierDetails={TIERS['starter']} />
-        <PricingCard tierId="pro" tierDetails={TIERS['pro']} isPro />
+        <PricingCard tier={DEFAULT_TIERS.find((t) => t.id === 'starter')!} />
+        <PricingCard tier={DEFAULT_TIERS.find((t) => t.id === 'pro')!} />
         {!tiers && (
           <PricingCard
-            tierId="enterprise"
-            tierDetails={TIERS['enterprise']}
-            customPrice="Custom"
-            cta="Contact Sales"
+            tier={PLACEHOLDER_ENTERPRISE_TIER}
+            priceLabel="Custom"
             onCtaClick={() => {
               emitter.emit(EVENT_OPEN_CONTACT);
             }}
           />
         )}
         {tiers?.map((tier, i) => {
-          return <PricingCard key={`${tier.name}-${i}`} tierDetails={tier} />;
+          return <PricingCard key={`${tier.name}-${i}`} tier={tier} />;
         })}
+      </div>
+      <div className="flex justify-center">
+        <p className="mt-12 rounded-lg border border-neutral-900 px-6 py-4 text-center text-sm text-neutral-500">
+          * 1 token ≈ ¾ words. 1 document ≈ 1200 tokens.{' '}
+          <Link className="subtle-underline" href="/docs#what-are-tokens">
+            Learn more
+          </Link>
+          .
+        </p>
       </div>
     </>
   );

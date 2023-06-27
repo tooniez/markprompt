@@ -9,7 +9,6 @@ import { AngeListIcon } from '@/components/icons/AngelList';
 import { CalIcon } from '@/components/icons/Cal';
 import { GitHubIcon } from '@/components/icons/GitHub';
 import { MarkpromptIcon } from '@/components/icons/Markprompt';
-import { MotifIcon } from '@/components/icons/Motif';
 import { ReploIcon } from '@/components/icons/Replo';
 import { TwitterIcon } from '@/components/icons/Twitter';
 import LandingNavbar from '@/components/layouts/LandingNavbar';
@@ -17,7 +16,11 @@ import { Blurs } from '@/components/ui/Blurs';
 import Button from '@/components/ui/Button';
 import { Pattern } from '@/components/ui/Pattern';
 import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
-import { PricedModel, TierDetails, TIERS } from '@/lib/stripe/tiers';
+import {
+  DEFAULT_TIERS,
+  PLACEHOLDER_ENTERPRISE_TIER,
+  Tier,
+} from '@/lib/stripe/tiers';
 import { SystemStatus } from '@/types/types';
 
 import StepsSection from './sections/Steps';
@@ -33,27 +36,21 @@ import { Tag } from '../ui/Tag';
 
 const PricingCard = ({
   tier,
-  model,
   highlight,
   cta,
   ctaHref,
   onCtaClick,
-  customPrice,
+  priceLabel,
 }: {
-  tier: TierDetails;
-  model: PricedModel;
+  tier: Tier;
   highlight?: boolean;
   cta: string;
   ctaHref?: string;
   onCtaClick?: () => void;
-  customPrice?: string;
+  priceLabel?: string;
 }) => {
-  const [priceStep, setPriceStep] = useState(0);
   const [showAnnual, setShowAnnual] = useState(true);
-  const hasMonthlyOption =
-    tier.prices && tier.prices?.some((p) => p.price?.monthly);
-  // const quotas = tier.prices[priceStep].quota;
-  // const quotaModels = Object.keys(quotas) as PricedModel[];
+  const hasMonthlyOption = !!tier.price?.monthly;
 
   return (
     <div
@@ -83,7 +80,7 @@ const PricingCard = ({
             <div>
               <Segment
                 size="sm"
-                items={['Monthly', 'Annually']}
+                items={['Monthly', 'Yearly']}
                 selected={showAnnual ? 1 : 0}
                 id="billing-period"
                 onChange={(i) => setShowAnnual(i === 1)}
@@ -93,84 +90,36 @@ const PricingCard = ({
         )}
       </div>
       <div className="z-10 flex h-20 w-full items-center justify-center bg-neutral-900/0 px-4 sm:h-24 md:px-6">
-        {tier.prices && (
-          <div className="relative -mt-4 flex w-full flex-col items-center">
-            <p className="text-[36px] font-semibold text-neutral-300 sm:text-[28px] md:text-[36px]">
-              {customPrice ?? (
-                <>
-                  $
-                  {tier.prices[priceStep].price?.[
-                    showAnnual || !hasMonthlyOption ? 'yearly' : 'monthly'
-                  ]?.amount || 0}
-                  <span className="text-base font-normal text-neutral-500">
-                    /month
-                  </span>
-                </>
-              )}
-            </p>
-            {/* <Flashing active={quotaModels.findIndex((m) => m === model)}>
-              {quotaModels.map((model) => {
-                return (
-                  <p
-                    key={`pricing-quota-${tier.name}-${priceStep}-${model}`}
-                    className="rounded-full bg-sky-600/10 px-3 py-0.5 text-sm text-sky-500"
-                  >
-                    {formatNumQueries(quotas[model])}
-                  </p>
-                );
-              })}
-            </Flashing> */}
-            <>
-              {tier.prices.length > 1 && (
-                <Slider.Root
-                  onValueChange={([p]) => {
-                    setPriceStep(p);
-                  }}
-                  className="absolute inset-x-4 -bottom-7 flex h-5 select-none items-center md:inset-x-8 md:mt-2"
-                  defaultValue={[0]}
-                  min={0}
-                  max={tier.prices.length - 1}
-                  step={1}
-                  aria-label="Price"
-                >
-                  <Slider.Track className="relative h-1 flex-grow rounded-full bg-fuchsia-900/50">
-                    <Slider.Range className="absolute h-full rounded-full bg-fuchsia-700" />
-                  </Slider.Track>
-                  <Slider.Thumb className="block h-4 w-4 rounded-full bg-white" />
-                </Slider.Root>
-              )}
-            </>
-          </div>
-        )}
+        <div className="relative -mt-4 flex w-full flex-col items-center">
+          <p className="text-[36px] font-semibold text-neutral-300 sm:text-[28px] md:text-[36px]">
+            {priceLabel ?? (
+              <>
+                $
+                {tier.price?.[
+                  showAnnual || !hasMonthlyOption ? 'yearly' : 'monthly'
+                ]?.amount || 0}
+                <span className="text-base font-normal text-neutral-500">
+                  /month
+                </span>
+              </>
+            )}
+          </p>
+        </div>
       </div>
       <div className="z-10 flex w-full flex-grow flex-col gap-1">
         <ul className="flex w-full flex-col gap-1 px-4 md:px-6">
-          {tier.items.map((item, i) => {
+          {tier.items?.map((item, i) => {
             return (
               <ListItem
                 size="sm"
                 variant="discreet"
                 key={`pricing-${tier.name}-${i}`}
               >
-                {typeof item === 'string' ? item : item[model]}
+                {item}
               </ListItem>
             );
           })}
         </ul>
-        {tier.notes && (
-          <ul className="mt-4 flex w-full flex-grow flex-col gap-1 px-4 md:px-6">
-            {tier.notes.map((note, i) => {
-              return (
-                <li
-                  className="text-xs text-neutral-500"
-                  key={`note-${note}-${i}`}
-                >
-                  {note}
-                </li>
-              );
-            })}
-          </ul>
-        )}
       </div>
       <div className="z-10 mt-4 w-full px-4 md:px-6">
         <Button
@@ -201,8 +150,6 @@ const formatNumStars = (stars: number) => {
 };
 
 const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
-  const [model, setModel] = useState<PricedModel>('gpt-3.5-turbo');
-
   useEffect(() => {
     const canvas: any = document.getElementById('animation-canvas');
     if (canvas) {
@@ -331,10 +278,10 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             id="pricing"
             className="gradient-heading mt-40 pt-8 text-center text-4xl"
           >
-            <Balancer>Generous free-tier, scale with usage</Balancer>
+            <Balancer>Simple pricing that scales as you grow</Balancer>
           </h2>
           <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg text-neutral-500">
-            Start for free, no credit card required. Scale as you grow.
+            Start for free, no credit card required.
           </p>
           {/* <div className="relative mt-8">
             <Segment
@@ -360,34 +307,30 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
           <div className="relative mt-16 grid w-full max-w-screen-xl grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-4">
             <Blurs />
             <PricingCard
-              tier={TIERS.hobby}
+              tier={DEFAULT_TIERS.find((t) => t.id === 'hobby')!}
               cta="Get started with Hobby"
-              model={model}
-              customPrice="Free"
+              priceLabel="Free"
             />
             <PricingCard
-              tier={TIERS.starter}
+              tier={DEFAULT_TIERS.find((t) => t.id === 'starter')!}
               cta="Get started with Starter"
-              model={model}
             />
             <PricingCard
-              tier={TIERS.pro}
+              tier={DEFAULT_TIERS.find((t) => t.id === 'pro')!}
               highlight
               cta="Get started with Pro"
-              model={model}
             />
             <PricingCard
-              tier={TIERS.enterprise}
+              tier={PLACEHOLDER_ENTERPRISE_TIER}
               cta="Contact Sales"
               onCtaClick={() => {
                 emitter.emit(EVENT_OPEN_CONTACT);
               }}
-              model={model}
-              customPrice="Custom"
+              priceLabel="Custom"
             />
           </div>
           <p className="mt-12 rounded-lg border border-neutral-900 px-6 py-4 text-center text-sm text-neutral-500">
-            * 1 token ≈ ¾ words. 1 document ≈ 900 words ≈ 1200 tokens.{' '}
+            * 1 token ≈ ¾ words. 1 document ≈ 1200 tokens.{' '}
             <Link className="subtle-underline" href="/docs#what-are-tokens">
               Learn more
             </Link>
@@ -424,17 +367,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             <Link href="/legal/terms">Terms</Link>
             <Link href="/legal/privacy">Privacy</Link>
           </div>
-          <div className="hidden flex-row items-baseline justify-center gap-1 text-center text-sm text-neutral-500 lg:flex">
-            Built by the{' '}
-            <MotifIcon className="inline-block h-4 w-4 translate-y-[3px] transform text-neutral-300" />
-            <a
-              className="border-b border-dotted border-neutral-700 text-neutral-300"
-              href="https://motif.land"
-            >
-              Motif
-            </a>{' '}
-            team
-          </div>
+          <div className="hidden flex-row items-baseline justify-center gap-1 text-center text-sm text-neutral-500 lg:flex"></div>
           <div className="mr-0 flex flex-row items-center justify-center gap-4 text-neutral-700 sm:mr-8 sm:justify-end md:mr-12 xl:mr-0">
             <a
               className="transition hover:text-neutral-500"

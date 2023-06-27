@@ -11,7 +11,7 @@ import BarChart, { BarChartData } from '@/components/charts/bar-chart';
 import { TeamSettingsLayout } from '@/components/layouts/TeamSettingsLayout';
 import Button from '@/components/ui/Button';
 import useTeam from '@/lib/hooks/use-team';
-import { getMonthlyQueryAllowance } from '@/lib/stripe/tiers';
+import { getMonthlyCompletionsAllowance } from '@/lib/stripe/tiers';
 import { fetcher } from '@/lib/utils';
 import { ProjectUsageHistogram } from '@/types/types';
 
@@ -90,12 +90,13 @@ const Usage = () => {
     }, 0);
   }, [barChartData]);
 
-  const monthyQueryAllowance = (team && getMonthlyQueryAllowance(team)) || 0;
+  const monthyCompletionsAllowance =
+    (team && getMonthlyCompletionsAllowance(team)) || 0;
 
   const monthlyUsedQueriesPercentage =
     Math.min(
       100,
-      Math.round((monthlyUsedQueries / monthyQueryAllowance) * 100),
+      Math.round((monthlyUsedQueries / monthyCompletionsAllowance) * 100),
     ) || 0;
 
   return (
@@ -188,7 +189,7 @@ const Usage = () => {
           />
         </Progress.Root>
         <span className="text-sm text-neutral-500">
-          {monthlyUsedQueries} out of {monthyQueryAllowance} queries
+          {monthlyUsedQueries} out of {monthyCompletionsAllowance} queries
         </span>
         {team?.slug && !team.is_enterprise_plan && (
           <Button

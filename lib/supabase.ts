@@ -16,11 +16,7 @@ import {
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
 import { MarkpromptConfig } from './schema';
-import {
-  PlanDetails,
-  TokenAllowance,
-  getNumTokensPerTeamAllowance,
-} from './stripe/tiers';
+import { PlanDetails, getEmbeddingTokensAllowance } from './stripe/tiers';
 import { generateKey } from './utils';
 
 export const getBYOOpenAIKey = async (
@@ -236,7 +232,6 @@ export const getTeamUsageInfoByTeamOrProject = async (
   supabase: SupabaseClient<Database>,
   teamOrProjectId: { teamId?: Team['id']; projectId?: Project['id'] },
 ): Promise<{
-  is_enterprise_plan: boolean;
   stripe_price_id: string | null;
   team_token_count: number;
   plan_details: Json | null;
@@ -244,7 +239,7 @@ export const getTeamUsageInfoByTeamOrProject = async (
   // eslint-disable-next-line prefer-const
   let { data, error } = await supabase
     .from('v_team_project_usage_info')
-    .select('is_enterprise_plan,stripe_price_id,team_token_count,plan_details')
+    .select('stripe_price_id,team_token_count,plan_details')
     .eq(
       teamOrProjectId.teamId ? 'team_id' : 'project_id',
       teamOrProjectId.teamId ?? teamOrProjectId.projectId,
@@ -255,18 +250,9 @@ export const getTeamUsageInfoByTeamOrProject = async (
   // Important: data will be null in the above query if no content has been
   // indexed. In that case, just fetch the team plan details.
   if (!data || error) {
-    const {
-      data: teamProjectInfoData,
-    }: {
-      data: {
-        is_enterprise_plan: boolean | null;
-        stripe_price_id: string | null;
-        team_token_count: number | null;
-        plan_details: Json | null;
-      } | null;
-    } = await supabase
+    const { data: teamProjectInfoData } = await supabase
       .from('v_team_project_info')
-      .select('is_enterprise_plan,stripe_price_id')
+      .select('stripe_price_id,plan_details')
       .eq(
         teamOrProjectId.teamId ? 'team_id' : 'project_id',
         teamOrProjectId.teamId ?? teamOrProjectId.projectId,
@@ -274,11 +260,12 @@ export const getTeamUsageInfoByTeamOrProject = async (
       .limit(1)
       .maybeSingle();
 
-    data = teamProjectInfoData;
+    if (teamProjectInfoData) {
+      data = { ...teamProjectInfoData, team_token_count: 0 };
+    }
   }
 
   return {
-    is_enterprise_plan: !!data?.is_enterprise_plan,
     stripe_price_id: data?.stripe_price_id || null,
     team_token_count: data?.team_token_count || 0,
     plan_details: data?.plan_details || null,
@@ -291,21 +278,17 @@ export const getTokenAllowanceInfo = async (
 ): Promise<{
   numRemainingTokensOnPlan: number;
   usedTokens: number;
-  tokenAllowance: TokenAllowance;
+  tokenAllowance: number;
 }> => {
   const teamUsageInfo = await getTeamUsageInfoByTeamOrProject(
     supabase,
     teamOrProjectId,
   );
   const usedTokens = teamUsageInfo?.team_token_count || 0;
-  const tokenAllowance = getNumTokensPerTeamAllowance(
-    !!teamUsageInfo?.is_enterprise_plan,
-    teamUsageInfo?.stripe_price_id,
-    teamUsageInfo?.plan_details as PlanDetails,
-  );
-  const numRemainingTokensOnPlan =
-    tokenAllowance === 'unlimited'
-      ? 1_000_000_000
-      : Math.max(0, tokenAllowance - usedTokens);
+  const tokenAllowance = getEmbeddingTokensAllowance({
+    stripe_price_id: teamUsageInfo?.stripe_price_id,
+    plan_details: teamUsageInfo?.plan_details as PlanDetails,
+  });
+  const numRemainingTokensOnPlan = Math.max(0, tokenAllowance - usedTokens);
   return { numRemainingTokensOnPlan, usedTokens, tokenAllowance };
 };

@@ -13,7 +13,7 @@ import {
 import useProject from './use-project';
 import useTeam from './use-team';
 import { useLocalStorage } from './utils/use-localstorage';
-import { canViewAccessFullInsights } from '../stripe/tiers';
+import { canViewInsights } from '../stripe/tiers';
 import { fetcher } from '../utils';
 
 const serializeRange = (range: DateRange) => {
@@ -79,7 +79,7 @@ export default function useInsights() {
       ? `/api/project/${project.id}/insights/queries?page=${page}&from=${
           serializedRange?.from
         }&to=${serializedRange?.to}&limit=${
-          team && canViewAccessFullInsights(team) ? 50 : 3
+          team && canViewInsights(team) ? 50 : 3
         }`
       : null,
     fetcher<PromptQueryStat[]>,
@@ -92,7 +92,7 @@ export default function useInsights() {
       ? `/api/project/${project.id}/insights/references?from=${
           serializedRange?.from
         }&to=${serializedRange?.to}&limit=${
-          team && canViewAccessFullInsights(team) ? 20 : 2
+          team && canViewInsights(team) ? 20 : 2
         }`
       : null,
     fetcher<ReferenceWithOccurrenceCount[]>,

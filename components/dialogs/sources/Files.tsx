@@ -14,7 +14,6 @@ const FilesAddSourceDialog = ({
   onDidAddSource?: () => void;
   children: ReactNode;
 }) => {
-  const { numTokensPerTeamAllowance } = useUsage();
   const [fileDialogOpen, setFileDialogOpen] = useState(false);
 
   return (
@@ -36,11 +35,9 @@ const FilesAddSourceDialog = ({
               }}
             />
           </div>
-          {numTokensPerTeamAllowance !== 'unlimited' && (
-            <div className="border-t border-neutral-900">
-              <DocsLimit />
-            </div>
-          )}
+          <div className="border-t border-neutral-900">
+            <DocsLimit />
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

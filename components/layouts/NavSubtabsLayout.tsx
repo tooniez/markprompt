@@ -11,7 +11,7 @@ export type NavSubtabsLayoutProps = {
   title: string;
   titleComponent?: ReactNode;
   noHeading?: boolean;
-  width?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  width?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   subTabItems?: SubTabItem[];
   SubHeading?: JSXElementConstructor<any>;
   RightHeading?: JSXElementConstructor<any>;
@@ -44,7 +44,8 @@ export const NavSubtabsLayout: FC<NavSubtabsLayoutProps> = ({
             </div>
             <div
               className={cn('relative mx-auto px-4 md:px-8', {
-                'max-w-screen-2xl': width === 'xl',
+                'max-w-screen-2xl': width === '2xl',
+                'max-w-screen-xl': width === 'xl',
                 'max-w-screen-lg': width === 'lg',
                 'max-w-screen-md': width === 'md',
                 'max-w-screen-sm': width === 'sm',

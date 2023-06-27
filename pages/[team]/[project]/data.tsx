@@ -311,7 +311,7 @@ const Data = () => {
   return (
     <ProjectSettingsLayout
       title="Data"
-      width="xl"
+      width="2xl"
       RightHeading={() => (
         <div className="flex w-full items-center gap-4">
           <div className="flex-grow" />

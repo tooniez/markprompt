@@ -6,7 +6,7 @@ import { ChangeEvent, FC, useMemo } from 'react';
 import { useConfigContext } from '@/lib/context/config';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';
 import useTeam from '@/lib/hooks/use-team';
-import { canEnableInstantSearch, canRemoveBranding } from '@/lib/stripe/tiers';
+import { canRemoveBranding } from '@/lib/stripe/tiers';
 import { Theme, ThemeColorKeys, ThemeColors } from '@/lib/themes';
 
 import { Row } from './PlaygroundDashboard';
