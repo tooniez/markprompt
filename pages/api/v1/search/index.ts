@@ -113,7 +113,7 @@ export default async function handler(
   // if (!isRequestFromMarkprompt(req.headers.origin)) {
   //   // Search is part of the Enterprise plans when used outside of
   //   // the Markprompt dashboard.
-  //   const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
+  //   const teamStripeInfo = await getTeamTierInfo(supabaseAdmin, projectId);
   //   if (
   //     !teamStripeInfo ||
   //     !isAtLeastPro(

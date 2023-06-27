@@ -187,13 +187,15 @@ const PricingCard = ({
               const res = await cancelSubscription(team.id);
               if (res.status === 200) {
                 await mutateTeam();
-                toast.success('Downgraded to Hobby.');
               } else {
                 toast.error(res.statusText);
+                return;
               }
 
               // Unless it's a downgrade to Hobby, subscribe for new tier.
               if (tier.id !== 'hobby') {
+                toast.success('Downgraded to Hobby.');
+              } else {
                 const priceId =
                   tier.price?.[showAnnual ? 'yearly' : 'monthly']?.priceId;
                 if (!priceId) {

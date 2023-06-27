@@ -13,7 +13,8 @@ import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import { FileSection, getMatchingSections, storePrompt } from '@/lib/sections';
-import { getProjectConfigData, getTeamStripeInfo } from '@/lib/supabase';
+import { canUseCustomModelConfig } from '@/lib/stripe/tiers';
+import { getProjectConfigData, getTeamTierInfo } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import {
   getCompletionsResponseText,
@@ -153,8 +154,8 @@ export default async function handler(req: NextRequest) {
   if (!isRequestFromMarkprompt(req.headers.get('origin'))) {
     // Custom model configurations are part of the Pro and Enterprise plans
     // when used outside of the Markprompt dashboard.
-    const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
-    if (!teamStripeInfo?.stripePriceId && !teamStripeInfo?.isEnterprisePlan) {
+    const teamTierInfo = await getTeamTierInfo(supabaseAdmin, projectId);
+    if (!teamTierInfo || !canUseCustomModelConfig(teamTierInfo)) {
       // Custom model configurations are part of the Pro and Enterprise plans.
       params = {
         ...params,

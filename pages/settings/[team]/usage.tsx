@@ -191,7 +191,7 @@ const Usage = () => {
         <span className="text-sm text-neutral-500">
           {monthlyUsedQueries} out of {monthyCompletionsAllowance} queries
         </span>
-        {team?.slug && !team.is_enterprise_plan && (
+        {team?.slug && (
           <Button
             href={`/settings/${team.slug}/plans`}
             variant="bordered"

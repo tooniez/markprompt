@@ -62,7 +62,6 @@ export default async function handler(
       stripe_customer_id: null,
       stripe_price_id: null,
       billing_cycle_start: null,
-      is_enterprise_plan: false,
     })
     .eq('id', req.body.teamId);
 

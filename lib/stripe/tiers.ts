@@ -22,6 +22,8 @@ export type TierDetails = {
   quotas?: { embeddings?: number; completions?: number };
   features?: {
     insights?: { type: 'basic' | 'advanced' };
+    sectionsAPI?: { enabled: boolean };
+    customModelConfig?: { enabled: boolean };
     customPageFetcher?: { enabled: boolean };
     canRemoveBranding?: boolean;
   };
@@ -234,14 +236,14 @@ const getTierDetails = (teamTierInfo: TeamTierInfo): TierDetails => {
   return merge(tierDetails, fallbackTier);
 };
 
-const isProOrCustomTier = (team: Team): boolean => {
+const isProOrCustomTier = (teamTierInfo: TeamTierInfo): boolean => {
   // A team is at least Pro if it is on the default Pro plan, or if
   // it is on a custom plan.
-  const customTier = getCustomTier(team);
+  const customTier = getCustomTier(teamTierInfo);
   if (customTier) {
     return true;
   }
-  const defaultTier = getTier(team);
+  const defaultTier = getTier(teamTierInfo);
   if (defaultTier) {
     return defaultTier.id === 'pro';
   }
@@ -252,26 +254,37 @@ export const tokensToApproxParagraphs = (numTokens: number): number => {
   return roundToLowerOrderDecimal(numTokens / 200);
 };
 
-export const canRemoveBranding = (team: Team) => {
-  return !!getTierDetails(team).features?.canRemoveBranding;
+export const canRemoveBranding = (teamTierInfo: TeamTierInfo) => {
+  return !!getTierDetails(teamTierInfo).features?.canRemoveBranding;
 };
 
-export const canConfigureModel = (team: Team) => {
-  return isProOrCustomTier(team);
+export const canConfigureModel = (teamTierInfo: TeamTierInfo) => {
+  return isProOrCustomTier(teamTierInfo);
 };
 
-export const canViewInsights = (team: Team) => {
-  const insightsType = getTierDetails(team).features?.insights?.type;
+export const canViewInsights = (teamTierInfo: TeamTierInfo) => {
+  const insightsType = getTierDetails(teamTierInfo).features?.insights?.type;
   return insightsType === 'basic' || insightsType === 'advanced';
 };
 
-export const isCustomPageFetcherEnabled = (team: Team) => {
-  return !!getTierDetails(team).features?.customPageFetcher?.enabled;
+export const isCustomPageFetcherEnabled = (teamTierInfo: TeamTierInfo) => {
+  return !!getTierDetails(teamTierInfo).features?.customPageFetcher?.enabled;
 };
 
-export const getMonthlyCompletionsAllowance = (team: Team): number => {
-  const tierDetails = getTierDetails(team);
-  return tierDetails.quotas?.completions || 0;
+export const getMonthlyCompletionsAllowance = (
+  teamTierInfo: TeamTierInfo,
+): number => {
+  return getTierDetails(teamTierInfo).quotas?.completions || 0;
+};
+
+export const canAccessSectionsAPI = (teamTierInfo: TeamTierInfo): boolean => {
+  return !!getTierDetails(teamTierInfo).features?.sectionsAPI?.enabled;
+};
+
+export const canUseCustomModelConfig = (
+  teamTierInfo: TeamTierInfo,
+): boolean => {
+  return !!getTierDetails(teamTierInfo).features?.customModelConfig?.enabled;
 };
 
 export const getEmbeddingTokensAllowance = (

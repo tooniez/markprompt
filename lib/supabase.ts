@@ -16,7 +16,11 @@ import {
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
 import { MarkpromptConfig } from './schema';
-import { PlanDetails, getEmbeddingTokensAllowance } from './stripe/tiers';
+import {
+  PlanDetails,
+  TeamTierInfo,
+  getEmbeddingTokensAllowance,
+} from './stripe/tiers';
 import { generateKey } from './utils';
 
 export const getBYOOpenAIKey = async (
@@ -61,23 +65,21 @@ export const getProjectConfigData = async (
   };
 };
 
-export const getTeamStripeInfo = async (
+export const getTeamTierInfo = async (
   supabaseAdmin: SupabaseClient<Database>,
   projectId: Project['id'],
-): Promise<
-  { stripePriceId: string | null; isEnterprisePlan: boolean } | undefined
-> => {
+): Promise<TeamTierInfo | undefined> => {
   const { data } = await supabaseAdmin
     .from('teams')
-    .select('stripe_price_id, is_enterprise_plan, projects!inner (id)')
+    .select('stripe_price_id,plan_details,projects!inner (id)')
     .match({ 'projects.id': projectId })
     .limit(1)
     .maybeSingle();
 
   return data
     ? {
-        stripePriceId: data.stripe_price_id,
-        isEnterprisePlan: !!data.is_enterprise_plan,
+        stripe_price_id: data.stripe_price_id,
+        plan_details: data.plan_details as PlanDetails,
       }
     : undefined;
 };
