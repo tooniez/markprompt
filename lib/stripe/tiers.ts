@@ -1,4 +1,4 @@
-import { merge } from 'lodash-es';
+import merge from 'lodash.merge';
 
 import { Team } from '@/types/types';
 
