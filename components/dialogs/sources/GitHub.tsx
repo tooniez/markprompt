@@ -113,7 +113,7 @@ const GitHubSource: FC<GitHubSourceProps> = ({
   const { user } = useUser();
   const { sources, mutate } = useSources();
   const { showAuthPopup, githubAccessToken } = useOAuth();
-  const { numTokensPerTeamRemainingAllowance } = useUsage();
+  const { isInfiniteEmbeddingsTokensAllowance } = useUsage();
   const {
     repositories,
     tokenState,
@@ -216,7 +216,7 @@ const GitHubSource: FC<GitHubSourceProps> = ({
                   not build on top of other people&apos;s work unless you have
                   explicit authorization to do so.
                 </Note>
-                {numTokensPerTeamRemainingAllowance !== 'unlimited' && (
+                {!isInfiniteEmbeddingsTokensAllowance && (
                   <div className="mt-2 rounded-md border border-neutral-900">
                     <DocsLimit />
                   </div>

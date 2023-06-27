@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import Button from '@/components/ui/Button';
@@ -14,8 +14,8 @@ import { getStripe } from '@/lib/stripe/client';
 import {
   DEFAULT_TIERS,
   PLACEHOLDER_ENTERPRISE_TIER,
-  PlanDetails,
   Tier,
+  getOfferedCustomTiers,
   getTier,
   getTierName,
 } from '@/lib/stripe/tiers';
@@ -183,15 +183,17 @@ const PricingCard = ({
 
             try {
               setLoading(true);
-              if (tier.id === 'hobby') {
-                const res = await cancelSubscription(team.id);
-                if (res.status === 200) {
-                  await mutateTeam();
-                  toast.success('Downgraded to Hobby.');
-                } else {
-                  toast.error(res.statusText);
-                }
+              // Cancel any existing subscription
+              const res = await cancelSubscription(team.id);
+              if (res.status === 200) {
+                await mutateTeam();
+                toast.success('Downgraded to Hobby.');
               } else {
+                toast.error(res.statusText);
+              }
+
+              // Unless it's a downgrade to Hobby, subscribe for new tier.
+              if (tier.id !== 'hobby') {
                 const priceId =
                   tier.price?.[showAnnual ? 'yearly' : 'monthly']?.priceId;
                 if (!priceId) {
@@ -234,7 +236,7 @@ const PricingCard = ({
 const PlanPicker = () => {
   const { team } = useTeam();
 
-  const tiers = (team?.plan_details as PlanDetails)?.tiers;
+  const tiers = (team && getOfferedCustomTiers(team)) || [];
 
   return (
     <>

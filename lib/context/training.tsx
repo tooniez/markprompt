@@ -40,6 +40,7 @@ import {
   fetchSitemapUrls,
   isSitemapUrl,
 } from '../integrations/website';
+import { isCustomPageFetcherEnabled } from '../stripe/tiers';
 import {
   completeHrefWithBaseUrl,
   createChecksum,
@@ -127,10 +128,11 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
   const supabase = useSupabaseClient();
   const { project, config } = useProject();
   const { sources } = useSources();
-  const { planDetails } = useTeam();
+  const { team } = useTeam();
   const [state, setState] = useState<TrainingState>({ state: 'idle' });
   const [errors, setErrors] = useState<string[]>([]);
   const stopFlag = useRef(false);
+  const useCustomPageFetcher = !!(team && isCustomPageFetcherEnabled(team));
 
   const _generateEmbeddingForFile = useCallback(
     async (
@@ -406,7 +408,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                   const content = await fetchPageContent(
                     url,
                     false,
-                    !!planDetails?.useCustomPageFetcher,
+                    useCustomPageFetcher,
                   );
                   if (!content) {
                     return undefined;
@@ -424,7 +426,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             if (isSitemapUrl(baseUrl)) {
               const sitemapUrls = await fetchSitemapUrls(
                 baseUrl,
-                !!planDetails?.useCustomPageFetcher,
+                useCustomPageFetcher,
               );
               await generateEmbeddingsForUrls(sitemapUrls.slice(0, 10));
             } else {
@@ -472,7 +474,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         }
       }
     },
-    [config.exclude, config.include, generateEmbeddings, planDetails],
+    [config.exclude, config.include, generateEmbeddings, useCustomPageFetcher],
   );
 
   const trainAllSources = useCallback(

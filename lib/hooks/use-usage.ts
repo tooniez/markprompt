@@ -3,7 +3,10 @@ import useSWR from 'swr';
 import { FileStats } from '@/types/types';
 
 import useTeam from './use-team';
-import { getEmbeddingTokensAllowance } from '../stripe/tiers';
+import {
+  getEmbeddingTokensAllowance,
+  isInifiniteEmbeddingsTokensAllowance as _isInifiniteEmbeddingsTokensAllowance,
+} from '../stripe/tiers';
 import { fetcher } from '../utils';
 
 export default function useUsage() {
@@ -27,10 +30,14 @@ export default function useUsage() {
     numTokensPerTeamAllowance - (fileStats?.tokenCount || 0),
   );
 
+  const isInfiniteEmbeddingsTokensAllowance =
+    _isInifiniteEmbeddingsTokensAllowance(numTokensPerTeamRemainingAllowance);
+
   return {
     numTokensInTeam: fileStats?.tokenCount || 0,
     numTokensPerTeamAllowance,
     numTokensPerTeamRemainingAllowance,
+    isInfiniteEmbeddingsTokensAllowance,
     loading,
     mutate,
   };

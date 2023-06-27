@@ -12,7 +12,7 @@ type Price = {
 export type PlanDetails = {
   // When a team has not signed up for a tier, these options are
   // enabled by default, e.g. during a testing period.
-  fallback?: TierDetails;
+  fallback?: { expires?: string; details: TierDetails };
   // These tiers are offered as options to a team, in addition to
   // the default ones.
   tiers: Tier[];
@@ -180,6 +180,10 @@ const getCustomTier = (teamTierInfo: TeamTierInfo): Tier | undefined => {
   });
 };
 
+export const getOfferedCustomTiers = (teamTierInfo: TeamTierInfo): Tier[] => {
+  return (teamTierInfo?.plan_details as PlanDetails)?.tiers || [];
+};
+
 const getProTier = (): Tier => {
   return DEFAULT_TIERS.find((t) => t.id === 'pro')!;
 };
@@ -225,7 +229,8 @@ const getTierDetails = (teamTierInfo: TeamTierInfo): TierDetails => {
     return merge(proTier.details, customTier.details);
   }
   const tierDetails = getTier(teamTierInfo)?.details || {};
-  const fallbackTier = (teamTierInfo.plan_details as PlanDetails)?.fallback;
+  const fallbackTier = (teamTierInfo.plan_details as PlanDetails)?.fallback
+    ?.details;
   return merge(tierDetails, fallbackTier);
 };
 
@@ -260,6 +265,10 @@ export const canViewInsights = (team: Team) => {
   return insightsType === 'basic' || insightsType === 'advanced';
 };
 
+export const isCustomPageFetcherEnabled = (team: Team) => {
+  return !!getTierDetails(team).features?.customPageFetcher?.enabled;
+};
+
 export const getMonthlyCompletionsAllowance = (team: Team): number => {
   const tierDetails = getTierDetails(team);
   return tierDetails.quotas?.completions || 0;
@@ -272,4 +281,14 @@ export const getEmbeddingTokensAllowance = (
   // completions tokens.
   const tierDetails = getTierDetails(teamTierInfo);
   return tierDetails.quotas?.embeddings || 0;
+};
+
+const MAX_EMBEDDINGS_TOKEN_ALLOWANCE = 1_000_000_000;
+
+// Plans with infinite embeddings tokens allowance still have a limit, not
+// visible to the user.
+export const isInifiniteEmbeddingsTokensAllowance = (
+  numTokensPerTeamRemainingAllowance: number,
+) => {
+  return numTokensPerTeamRemainingAllowance === MAX_EMBEDDINGS_TOKEN_ALLOWANCE;
 };

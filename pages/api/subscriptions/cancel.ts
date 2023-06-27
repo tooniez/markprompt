@@ -1,5 +1,4 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { stripe } from '@/lib/stripe/server';
@@ -32,34 +31,27 @@ export default async function handler(
 
   const { data, error } = await supabase
     .from('teams')
-    .select('stripe_customer_id,is_enterprise_plan')
+    .select('stripe_customer_id')
     .eq('id', req.body.teamId)
     .maybeSingle();
 
-  if (
-    error ||
-    !data ||
-    (!data.stripe_customer_id && !data.is_enterprise_plan)
-  ) {
+  if (error || !data || !data.stripe_customer_id) {
     return res.status(400).json({ error: 'Customer not found.' });
   }
 
-  // Enterprise plans can potentially be without a stripe_customer_id
-  if (data.stripe_customer_id) {
-    const subscription = await stripe.subscriptions.list({
-      customer: data.stripe_customer_id,
-      limit: 1,
-    });
+  const subscription = await stripe.subscriptions.list({
+    customer: data.stripe_customer_id,
+    limit: 1,
+  });
 
-    const subscriptionId = subscription.data[0].id;
-    if (!subscriptionId) {
-      return res.status(400).json({ error: 'No subscription found.' });
-    }
+  const subscriptionId = subscription.data[0].id;
+  if (!subscriptionId) {
+    return res.status(400).json({ error: 'No subscription found.' });
+  }
 
-    const deleted = await stripe.subscriptions.del(subscriptionId);
-    if (!deleted?.id) {
-      return res.status(400).json({ error: 'Unable to cancel subscription.' });
-    }
+  const deleted = await stripe.subscriptions.del(subscriptionId);
+  if (!deleted?.id) {
+    return res.status(400).json({ error: 'Unable to cancel subscription.' });
   }
 
   // If there was a subscription, we can safely assume it was cancelled,

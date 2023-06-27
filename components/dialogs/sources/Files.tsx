@@ -14,6 +14,7 @@ const FilesAddSourceDialog = ({
   onDidAddSource?: () => void;
   children: ReactNode;
 }) => {
+  const { isInfiniteEmbeddingsTokensAllowance } = useUsage();
   const [fileDialogOpen, setFileDialogOpen] = useState(false);
 
   return (
@@ -35,9 +36,11 @@ const FilesAddSourceDialog = ({
               }}
             />
           </div>
-          <div className="border-t border-neutral-900">
-            <DocsLimit />
-          </div>
+          {!isInfiniteEmbeddingsTokensAllowance && (
+            <div className="border-t border-neutral-900">
+              <DocsLimit />
+            </div>
+          )}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
