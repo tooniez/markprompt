@@ -249,7 +249,7 @@ const PlanPicker = () => {
         />
         <PricingCard tier={DEFAULT_TIERS.find((t) => t.id === 'starter')!} />
         <PricingCard tier={DEFAULT_TIERS.find((t) => t.id === 'pro')!} />
-        {!tiers && (
+        {tiers.length === 0 && (
           <PricingCard
             tier={PLACEHOLDER_ENTERPRISE_TIER}
             priceLabel="Custom"
