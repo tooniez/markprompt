@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { track } from '@/lib/posthog';
 import { Database } from '@/types/supabase';
 import { ApiError, Project } from '@/types/types';
 

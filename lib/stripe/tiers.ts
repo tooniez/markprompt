@@ -12,7 +12,7 @@ type Price = {
 export type PlanDetails = {
   // When a team has not signed up for a tier, these options are
   // enabled by default, e.g. during a testing period.
-  fallback?: { expires?: string; details: TierDetails };
+  trial?: { expires?: string; details: TierDetails };
   // These tiers are offered as options to a team, in addition to
   // the default ones.
   tiers: Tier[];
@@ -44,14 +44,6 @@ export type Tier = {
 };
 
 export type TeamTierInfo = Pick<Team, 'stripe_price_id' | 'plan_details'>;
-
-// export type PricedModel = 'gpt-4' | 'gpt-3.5-turbo' | 'byo';
-
-// export const modelLabels: Record<PricedModel, string> = {
-//   'gpt-4': 'GPT-4',
-//   'gpt-3.5-turbo': 'Chat',
-//   byo: 'BYO',
-// };
 
 const useTestPriceId = process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production';
 
@@ -192,8 +184,6 @@ const getProTier = (): Tier => {
 
 export const getTier = (teamTierInfo: TeamTierInfo): Tier => {
   const customTier = getCustomTier(teamTierInfo);
-  console.log('teamTierInfo', JSON.stringify(teamTierInfo, null, 2));
-  console.log('customTier', JSON.stringify(customTier, null, 2));
   if (customTier) {
     return customTier;
   }
@@ -217,13 +207,13 @@ export const getTierName = (tier: Tier) => {
 
 const getTierDetails = (teamTierInfo: TeamTierInfo): TierDetails => {
   // If team has signed up for a custom tier, return the associated tier
-  // details. If not, return the fallback tier if set (e.g. during a
+  // details. If not, return the trial tier if set (e.g. during a
   // trial period, before any stripe_price_id is set), merged with the
-  // default team tier details, if it exists. The fallback tier values
+  // default team tier details, if it exists. The trial tier values
   // take precedence over the ones coming from the tier. If a custom tier
-  // is set, the fallback tier details are ignored.
+  // is set, the trial tier details are ignored.
   // Also, a custom tier includes all features of the pro team, so we merge
-  // the custom tier details / fallback details with those of the Pro tier,
+  // the custom/trial tier details with those of the Pro tier,
   // giving precedence to the former.
   const customTier = getCustomTier(teamTierInfo);
   if (customTier?.details) {
@@ -231,9 +221,8 @@ const getTierDetails = (teamTierInfo: TeamTierInfo): TierDetails => {
     return merge(proTier.details, customTier.details);
   }
   const tierDetails = getTier(teamTierInfo)?.details || {};
-  const fallbackTier = (teamTierInfo.plan_details as PlanDetails)?.fallback
-    ?.details;
-  return merge(tierDetails, fallbackTier);
+  const trialTier = (teamTierInfo.plan_details as PlanDetails)?.trial?.details;
+  return merge(tierDetails, trialTier);
 };
 
 const isProOrCustomTier = (teamTierInfo: TeamTierInfo): boolean => {
@@ -300,8 +289,6 @@ const MAX_EMBEDDINGS_TOKEN_ALLOWANCE = 1_000_000_000;
 
 // Plans with infinite embeddings tokens allowance still have a limit, not
 // visible to the user.
-export const isInifiniteEmbeddingsTokensAllowance = (
-  numTokensPerTeamRemainingAllowance: number,
-) => {
-  return numTokensPerTeamRemainingAllowance === MAX_EMBEDDINGS_TOKEN_ALLOWANCE;
+export const isInifiniteEmbeddingsTokensAllowance = (numTokens: number) => {
+  return numTokens >= MAX_EMBEDDINGS_TOKEN_ALLOWANCE;
 };

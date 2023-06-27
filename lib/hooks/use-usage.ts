@@ -31,7 +31,7 @@ export default function useUsage() {
   );
 
   const isInfiniteEmbeddingsTokensAllowance =
-    _isInifiniteEmbeddingsTokensAllowance(numTokensPerTeamRemainingAllowance);
+    _isInifiniteEmbeddingsTokensAllowance(numTokensPerTeamAllowance);
 
   return {
     numTokensInTeam: fileStats?.tokenCount || 0,
