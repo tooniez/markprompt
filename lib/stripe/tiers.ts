@@ -1,8 +1,7 @@
-import merge from 'lodash.merge';
-
 import { Team } from '@/types/types';
 
 import { roundToLowerOrderDecimal } from '../utils';
+import { deepMerge } from '../utils.edge';
 
 type Price = {
   amount: number;
@@ -218,11 +217,11 @@ const getTierDetails = (teamTierInfo: TeamTierInfo): TierDetails => {
   const customTier = getCustomTier(teamTierInfo);
   if (customTier?.details) {
     const proTier = getProTier();
-    return merge(proTier.details, customTier.details);
+    return deepMerge(proTier.details, customTier.details);
   }
   const tierDetails = getTier(teamTierInfo)?.details || {};
   const trialTier = (teamTierInfo.plan_details as PlanDetails)?.trial?.details;
-  return merge(tierDetails, trialTier);
+  return deepMerge(tierDetails, trialTier);
 };
 
 const isProOrCustomTier = (teamTierInfo: TeamTierInfo): boolean => {

@@ -61,3 +61,17 @@ export const isRequestFromMarkprompt = (origin: string | undefined | null) => {
   const requesterHost = origin && removeSchema(origin);
   return requesterHost === getAppHost();
 };
+
+// Source: https://gist.github.com/ahtcx/0cd94e62691f539160b32ecda18af3d6?permalink_comment_id=4594127#gistcomment-4594127.
+// We use our own implementation here, rather than lodash.merge, since
+// lodash.merge makes use of non-edge-compatible functions.
+export const deepMerge = (target: any, source: any) => {
+  const result = { ...target, ...source };
+  for (const key of Object.keys(result)) {
+    result[key] =
+      typeof target[key] == 'object' && typeof source[key] == 'object'
+        ? deepMerge(target[key], source[key])
+        : structuredClone(result[key]);
+  }
+  return result;
+};
