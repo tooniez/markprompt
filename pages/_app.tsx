@@ -17,7 +17,7 @@ import { ManagedAppContext } from '@/lib/context/app';
 import { ManagedConfigContext } from '@/lib/context/config';
 import { ManagedTrainingContext } from '@/lib/context/training';
 import useUser from '@/lib/hooks/use-user';
-import { getAppHost } from '@/lib/utils.edge';
+import { deepMerge, getAppHost } from '@/lib/utils.edge';
 
 interface CustomAppProps<P = any> extends AppProps<P> {
   Component: NextComponentType<NextPageContext, any, P> & {

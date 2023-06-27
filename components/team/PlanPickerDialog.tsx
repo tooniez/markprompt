@@ -29,7 +29,7 @@ const PlanPickerDialog: FC<PlanPickerDialogProps> = ({ children }) => {
       <Dialog.Trigger asChild>{children}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-        <Dialog.Content className="animate-dialog-slide-in dialog-content max-h-[90%] w-[90%] max-w-[1200px] overflow-y-auto py-12 px-12">
+        <Dialog.Content className="animate-dialog-slide-in dialog-content max-h-[90%] w-[90%] max-w-[1200px] overflow-y-auto px-12 pt-8 pb-12">
           <h1 className="mb-8 text-center text-xl font-bold text-neutral-100">
             Choose plan
           </h1>

@@ -24,6 +24,7 @@ import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
 import { isWebsiteAccessible } from '@/lib/integrations/website';
+import { isCustomPageFetcherEnabled } from '@/lib/stripe/tiers';
 import { getLabelForSource, toNormalizedUrl } from '@/lib/utils';
 import { Project } from '@/types/types';
 
@@ -59,10 +60,10 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
   clearPrevious,
   onDidAddSource,
 }) => {
-  const { planDetails } = useTeam();
+  const { team } = useTeam();
   const { project } = useProject();
   const { user } = useUser();
-  const { numTokensPerTeamRemainingAllowance } = useUsage();
+  const { isInfiniteEmbeddingsTokensAllowance } = useUsage();
   const { sources, mutate } = useSources();
   const [website, setWebsite] = useState('');
 
@@ -82,7 +83,9 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
 
           let url = toNormalizedUrl(website);
 
-          const useCustomPageFetcher = !!planDetails?.useCustomPageFetcher;
+          const useCustomPageFetcher = !!(
+            team && isCustomPageFetcherEnabled(team)
+          );
           let isAccessible = await isWebsiteAccessible(
             url,
             useCustomPageFetcher,
@@ -151,7 +154,7 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
                   build on top of other people&apos;s work unless you have
                   explicit authorization to do so.
                 </Note>
-                {numTokensPerTeamRemainingAllowance !== 'unlimited' && (
+                {!isInfiniteEmbeddingsTokensAllowance && (
                   <div className="mt-2 rounded-md border border-neutral-900">
                     <DocsLimit />
                   </div>

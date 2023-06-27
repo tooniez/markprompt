@@ -12,9 +12,7 @@ export const DocsLimit = () => {
     <div className="flex flex-row items-center gap-2 p-4">
       <div
         className={cn('flex-grow text-sm text-neutral-300', {
-          'text-rose-600':
-            numTokensPerTeamRemainingAllowance !== 'unlimited' &&
-            numTokensPerTeamRemainingAllowance < 2,
+          'text-rose-600': numTokensPerTeamRemainingAllowance < 2,
         })}
       >
         Remaining tokens:{' '}

@@ -304,14 +304,12 @@ const Data = () => {
   const numSelected = Object.values(rowSelection).filter(Boolean).length;
   const hasFiles = files && files.length > 0;
   const canTrain = hasFiles || hasNonFileSources(sources);
-  const canAddMoreContent =
-    numTokensPerTeamRemainingAllowance === 'unlimited' ||
-    numTokensPerTeamRemainingAllowance > 0;
+  const canAddMoreContent = numTokensPerTeamRemainingAllowance > 0;
 
   return (
     <ProjectSettingsLayout
       title="Data"
-      width="xl"
+      width="2xl"
       RightHeading={() => (
         <div className="flex w-full items-center gap-4">
           <div className="flex-grow" />

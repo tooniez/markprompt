@@ -425,9 +425,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   const isShowingOverlay =
     project &&
     (isTraining || (!isLoading && (!hasConnectedSources || !isTrained)));
-  const canAddMoreContent =
-    numTokensPerTeamRemainingAllowance === 'unlimited' ||
-    numTokensPerTeamRemainingAllowance > 0;
+  const canAddMoreContent = numTokensPerTeamRemainingAllowance > 0;
 
   useEffect(() => {
     if (!isShowingOnboardingMessages) {

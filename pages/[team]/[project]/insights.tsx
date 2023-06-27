@@ -13,7 +13,7 @@ import useInsights, {
 } from '@/lib/hooks/use-insights';
 import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
-import { canViewAccessFullInsights } from '@/lib/stripe/tiers';
+import { canViewInsights } from '@/lib/stripe/tiers';
 
 const Insights = () => {
   const { project } = useProject();
@@ -37,10 +37,10 @@ const Insights = () => {
   }, [project?.id]);
 
   return (
-    <ProjectSettingsLayout title="Insights" width="xl">
+    <ProjectSettingsLayout title="Insights" width="2xl">
       <div className="flex cursor-not-allowed justify-start">
         <DateRangePicker
-          disabled={team && !canViewAccessFullInsights(team)}
+          disabled={team && !canViewInsights(team)}
           range={dateRange ?? defaultInsightsDateRange}
           setRange={setDateRange}
         />
@@ -57,7 +57,7 @@ const Insights = () => {
                 loading={loadingQueries}
                 columns={columns}
                 data={queries || []}
-                showUpgradeMessage={team && !canViewAccessFullInsights(team)}
+                showUpgradeMessage={team && !canViewInsights(team)}
               />
             )}
           </Card>
@@ -100,7 +100,7 @@ const Insights = () => {
                 <TopReferences
                   loading={loadingTopReferences}
                   topReferences={topReferences || []}
-                  showUpgradeMessage={team && !canViewAccessFullInsights(team)}
+                  showUpgradeMessage={team && !canViewInsights(team)}
                 />
               </div>
             )}

@@ -1,10 +1,7 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import {
-  getTeamUsageInfoByTeamOrProject,
-  getTokenAllowanceInfo,
-} from '@/lib/supabase';
+import { getTokenAllowanceInfo } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 import { FileStats, Team } from '@/types/types';
 

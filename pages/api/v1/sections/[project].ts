@@ -5,7 +5,8 @@ import { getRequesterIp } from '@/lib/middleware/common';
 import { track } from '@/lib/posthog';
 import { checkSectionsRateLimits } from '@/lib/rate-limits';
 import { FileSection, getMatchingSections } from '@/lib/sections';
-import { getBYOOpenAIKey, getTeamStripeInfo } from '@/lib/supabase';
+import { canAccessSectionsAPI } from '@/lib/stripe/tiers';
+import { getBYOOpenAIKey, getTeamTierInfo } from '@/lib/supabase';
 import { isRequestFromMarkprompt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import { ApiError, Project } from '@/types/types';
@@ -69,10 +70,10 @@ export default async function handler(
   if (!isRequestFromMarkprompt(req.headers.origin)) {
     // Section queries are part of the Enterprise plans when used outside of
     // the Markprompt dashboard.
-    const teamStripeInfo = await getTeamStripeInfo(supabaseAdmin, projectId);
-    if (!teamStripeInfo?.isEnterprisePlan) {
+    const teamTierInfo = await getTeamTierInfo(supabaseAdmin, projectId);
+    if (!teamTierInfo || !canAccessSectionsAPI(teamTierInfo)) {
       return res.status(401).json({
-        error: `The sections endpoint is only accessible on the Enterprise plan. Please contact ${process.env.NEXT_PUBLIC_SALES_EMAIL} to get set up.`,
+        error: `The sections endpoint is only accessible on Enterprise plans. Please contact ${process.env.NEXT_PUBLIC_SALES_EMAIL} to get set up.`,
       });
     }
   }
