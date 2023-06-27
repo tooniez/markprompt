@@ -262,7 +262,7 @@ export const isCustomPageFetcherEnabled = (teamTierInfo: TeamTierInfo) => {
 export const getMonthlyCompletionsAllowance = (
   teamTierInfo: TeamTierInfo,
 ): number => {
-  return getTierDetails(teamTierInfo).quotas?.completions || 0;
+  return getTierDetails(teamTierInfo)?.quotas?.completions || 0;
 };
 
 export const canAccessSectionsAPI = (teamTierInfo: TeamTierInfo): boolean => {
@@ -281,7 +281,7 @@ export const getEmbeddingTokensAllowance = (
   // This is an accumulated allowance, not a monthly allowance like
   // completions tokens.
   const tierDetails = getTierDetails(teamTierInfo);
-  return tierDetails.quotas?.embeddings || 0;
+  return tierDetails?.quotas?.embeddings || 0;
 };
 
 const MAX_EMBEDDINGS_TOKEN_ALLOWANCE = 1_000_000_000;
