@@ -217,10 +217,18 @@ const getTierDetails = (teamTierInfo: TeamTierInfo): TierDetails => {
   const customTier = getCustomTier(teamTierInfo);
   if (customTier?.details) {
     const proTier = getProTier();
+    console.log(
+      'TIER DETAILS 1',
+      JSON.stringify(deepMerge(proTier.details, customTier.details), null, 2),
+    );
     return deepMerge(proTier.details, customTier.details);
   }
   const tierDetails = getTier(teamTierInfo)?.details || {};
   const trialTier = (teamTierInfo.plan_details as PlanDetails)?.trial?.details;
+  console.log(
+    'TIER DETAILS 1',
+    JSON.stringify(deepMerge(tierDetails, trialTier), null, 2),
+  );
   return deepMerge(tierDetails, trialTier);
 };
 
