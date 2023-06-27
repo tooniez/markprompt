@@ -217,18 +217,11 @@ const getTierDetails = (teamTierInfo: TeamTierInfo): TierDetails => {
   const customTier = getCustomTier(teamTierInfo);
   if (customTier?.details) {
     const proTier = getProTier();
-    console.log(
-      'TIER DETAILS 1',
-      JSON.stringify(deepMerge(proTier.details, customTier.details), null, 2),
-    );
     return deepMerge(proTier.details, customTier.details);
   }
   const tierDetails = getTier(teamTierInfo)?.details || {};
-  const trialTier = (teamTierInfo.plan_details as PlanDetails)?.trial?.details;
-  console.log(
-    'TIER DETAILS 1',
-    JSON.stringify(deepMerge(tierDetails, trialTier), null, 2),
-  );
+  const trialTier =
+    (teamTierInfo.plan_details as PlanDetails)?.trial?.details || {};
   return deepMerge(tierDetails, trialTier);
 };
 
@@ -270,7 +263,7 @@ export const isCustomPageFetcherEnabled = (teamTierInfo: TeamTierInfo) => {
 export const getMonthlyCompletionsAllowance = (
   teamTierInfo: TeamTierInfo,
 ): number => {
-  return getTierDetails(teamTierInfo)?.quotas?.completions || 0;
+  return getTierDetails(teamTierInfo).quotas?.completions || 0;
 };
 
 export const canAccessSectionsAPI = (teamTierInfo: TeamTierInfo): boolean => {
@@ -288,8 +281,7 @@ export const getEmbeddingTokensAllowance = (
 ): number => {
   // This is an accumulated allowance, not a monthly allowance like
   // completions tokens.
-  const tierDetails = getTierDetails(teamTierInfo);
-  return tierDetails?.quotas?.embeddings || 0;
+  return getTierDetails(teamTierInfo).quotas?.embeddings || 0;
 };
 
 const MAX_EMBEDDINGS_TOKEN_ALLOWANCE = 1_000_000_000;
