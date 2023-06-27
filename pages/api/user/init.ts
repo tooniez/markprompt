@@ -61,9 +61,18 @@ export default async function handler(
       candidateSlug = slugify(session.user.user_metadata.user_name);
     } else if (session.user.user_metadata?.name) {
       candidateSlug = slugify(session.user.user_metadata.name);
-    } else if (session.user.email) {
-      candidateSlug = slugFromEmail(session.user.email);
-    } else {
+    }
+
+    // In some cases, slugify on (user)names returns an empty string
+    // (observed with Japanese characters). In this case, generate
+    // the slug from email, or fallback to a random slug.
+    if (!candidateSlug) {
+      if (session.user.email) {
+        candidateSlug = slugFromEmail(session.user.email);
+      }
+    }
+
+    if (!candidateSlug) {
       candidateSlug = generateRandomSlug();
     }
 
@@ -85,8 +94,11 @@ export default async function handler(
       .select('*')
       .limit(1)
       .maybeSingle();
+
     if (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({
+        error: `Error generating team with slug ${slug} (candidate used: ${candidateSlug}): ${error.message}`,
+      });
     }
 
     team = data;
