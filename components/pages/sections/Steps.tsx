@@ -85,7 +85,7 @@ const SourceIcon = ({
 };
 
 type StepProps = {
-  title: string;
+  title: string | ReactNode;
   description: string;
   Icon: JSXElementConstructor<any>;
   position: 'left' | 'middle' | 'right';
@@ -288,8 +288,14 @@ const StepsSection = () => {
       </h2>
       <div className="grid grid-cols-1 items-center justify-center gap-12 sm:mt-16 sm:gap-0 md:grid-cols-3">
         <Step
-          title="Connect multiple sources"
-          description="Sync a website, a GitHub repo, a Gitbook docs site, a Zendesk knowledge base. Drag and drop files. Or upload via API."
+          title={
+            <p>
+              Connect{' '}
+              <span className="border-b border-neutral-600 font-bold">any</span>{' '}
+              source of content
+            </p>
+          }
+          description="Ingest a website, a GitHub repo, a Zendesk knowledge base, a Gitbook docs site. Drag and drop files. Or upload programmatically via API."
           Icon={Unplug}
           position="left"
         >
