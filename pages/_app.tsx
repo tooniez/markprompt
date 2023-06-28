@@ -6,6 +6,7 @@ import { Analytics } from '@vercel/analytics/react';
 import * as Fathom from 'fathom-client';
 import { NextComponentType, NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
+import { Inter } from 'next/font/google';
 import { useRouter } from 'next/router';
 import { ThemeProvider } from 'next-themes';
 import { ReactNode, useEffect, useState } from 'react';
@@ -17,7 +18,9 @@ import { ManagedAppContext } from '@/lib/context/app';
 import { ManagedConfigContext } from '@/lib/context/config';
 import { ManagedTrainingContext } from '@/lib/context/training';
 import useUser from '@/lib/hooks/use-user';
-import { deepMerge, getAppHost } from '@/lib/utils.edge';
+import { getAppHost } from '@/lib/utils.edge';
+
+const inter = Inter({ subsets: ['latin'] });
 
 interface CustomAppProps<P = any> extends AppProps<P> {
   Component: NextComponentType<NextPageContext, any, P> & {
@@ -52,7 +55,7 @@ export default function App({ Component, pageProps }: CustomAppProps) {
   }, []);
 
   return (
-    <>
+    <main className={inter.className}>
       <SWRConfig
         value={{
           dedupingInterval: 10000,
@@ -76,7 +79,7 @@ export default function App({ Component, pageProps }: CustomAppProps) {
         </ThemeProvider>
         <Analytics />
       </SWRConfig>
-    </>
+    </main>
   );
 }
 
