@@ -45,6 +45,7 @@ import {
   removeFileExtension,
   showConfetti,
 } from '@/lib/utils';
+import { getApiUrl, getAppOrigin } from '@/lib/utils.edge';
 import { Source, SourceType } from '@/types/types';
 
 import StatusMessage from './StatusMessage';
@@ -501,13 +502,16 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       projectKey: project.private_dev_api_key,
       showBranding: includeBranding,
       prompt: {
-        completionsUrl: 'http://api.localhost:3000/v1/completions',
+        completionsUrl: getApiUrl('completions', false),
         iDontKnowMessage: iDontKnowMessage,
         placeholder: placeholder,
         ...modelConfig,
       },
       trigger: { floating: true },
-      search: { enabled: true },
+      search: {
+        searchUrl: getApiUrl('search', false),
+        enabled: true,
+      },
       references: {
         loadingText: loadingHeading,
         referencesText: referencesHeading,

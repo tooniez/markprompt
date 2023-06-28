@@ -18,7 +18,7 @@ import remarkGfm from 'remark-gfm';
 import { I_DONT_KNOW, STREAM_SEPARATOR } from '@/lib/constants';
 import { Theme } from '@/lib/themes';
 import { timeout } from '@/lib/utils';
-import { getAppOrigin } from '@/lib/utils.edge';
+import { getApiUrl, getAppOrigin } from '@/lib/utils.edge';
 import { ModelConfig, ReferenceInfo } from '@/types/types';
 
 type CaretProps = {
@@ -225,22 +225,19 @@ export const Playground = forwardRef(
         setLoading(true);
 
         try {
-          const res = await fetch(
-            `${getAppOrigin('api', !!forceUseProdAPI)}/v1/completions`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                prompt,
-                iDontKnowMessage: _iDontKnowMessage,
-                ...modelConfig,
-                projectKey,
-                includeDebugInfo: true,
-              }),
+          const res = await fetch(getApiUrl('completions', !!forceUseProdAPI), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
             },
-          );
+            body: JSON.stringify({
+              prompt,
+              iDontKnowMessage: _iDontKnowMessage,
+              ...modelConfig,
+              projectKey,
+              includeDebugInfo: true,
+            }),
+          });
 
           if (!res.ok || !res.body) {
             const text = await res.text();
