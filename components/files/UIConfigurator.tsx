@@ -51,10 +51,12 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
     iDontKnowMessage,
     setPlaceholder,
     referencesHeading,
+    askAILabel,
     setIDontKnowMessage,
     setReferencesHeading,
     loadingHeading,
     setLoadingHeading,
+    setAskAILabel,
     setIncludeBranding,
     setInstantSearchEnabled,
   } = useConfigContext();
@@ -64,44 +66,23 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
   }, [theme, isDark]);
 
   const _canRemoveBranding = team && canRemoveBranding(team);
-  // const _canEnableInstantSearch = team && canEnableInstantSearch(team);
 
   return (
     <div className="flex flex-col gap-2">
       <Row label="Theme">
         <ThemePicker />
       </Row>
-      <Row label="Placeholder">
-        <Input
-          inputSize="sm"
-          value={placeholder}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            setPlaceholder(event.target.value);
-          }}
-        />
-      </Row>
-      {/* <Row label="Instant search">
+      <Row label="Instant search">
         <div className="flex flex-row items-center justify-end gap-2">
-          {!_canEnableInstantSearch && (
-            <ButtonOrLinkWrapper
-              className="mr-1 flex flex-none items-center rounded-full"
-              onClick={() => {
-                emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
-              }}
-            >
-              <Tag color="fuchsia">Pro</Tag>
-            </ButtonOrLinkWrapper>
-          )}
           <Switch.Root
             className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 disabled:cursor-not-allowed data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600 disabled:data-[state='checked']:opacity-40"
-            checked={isInstantSearchEnabled || !_canEnableInstantSearch}
-            disabled={!_canEnableInstantSearch}
+            checked={isInstantSearchEnabled}
             onCheckedChange={(b: boolean) => setInstantSearchEnabled(b)}
           >
             <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
           </Switch.Root>
         </div>
-      </Row> */}
+      </Row>
       <Row label="Include branding">
         <div className="flex flex-row items-center justify-end gap-2">
           {!_canRemoveBranding && (
@@ -210,6 +191,9 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                   colorKey="primaryForeground"
                 />
               </Row>
+              <Row label="Primary muted">
+                <ThemeColorPicker colors={colors} colorKey="primaryMuted" />
+              </Row>
               {/* Secondary colors for buttons */}
               <Row label="Secondary">
                 <ThemeColorPicker colors={colors} colorKey="secondary" />
@@ -257,7 +241,16 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                   }}
                 />
               </Row>
-              <Row className="mt-4" label="Don't know message">
+              <Row className="mt-4" label="Placeholder">
+                <Input
+                  inputSize="sm"
+                  value={placeholder}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    setPlaceholder(event.target.value);
+                  }}
+                />
+              </Row>
+              <Row label="Don't know message">
                 <Input
                   inputSize="sm"
                   value={iDontKnowMessage}
@@ -284,6 +277,17 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                   }}
                 />
               </Row>
+              {isInstantSearchEnabled && (
+                <Row label="Ask AI label">
+                  <Input
+                    inputSize="sm"
+                    value={askAILabel}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                      setAskAILabel(event.target.value);
+                    }}
+                  />
+                </Row>
+              )}
             </div>
           </AccordionContent>
         </Accordion.Item>

@@ -29,6 +29,7 @@ export type State = {
   iDontKnowMessage: string;
   referencesHeading: string;
   loadingHeading: string;
+  askAILabel: string;
   includeBranding: boolean;
   isInstantSearchEnabled: boolean;
   modelConfig: ModelConfig;
@@ -38,6 +39,7 @@ export type State = {
   setSize: (size: Theme['size']) => void;
   setPlaceholder: (placeholder: string) => void;
   setIDontKnowMessage: (iDontKnowMessage: string) => void;
+  setAskAILabel: (askAILabel: string) => void;
   setReferencesHeading: (referencesHeading: string) => void;
   setLoadingHeading: (loadingHeading: string) => void;
   setIncludeBranding: (includeBranding: boolean) => void;
@@ -66,6 +68,7 @@ const initialState: State = {
   iDontKnowMessage: '',
   referencesHeading: '',
   loadingHeading: '',
+  askAILabel: '',
   includeBranding: true,
   isInstantSearchEnabled: false,
   modelConfig: DEFAULT_MODEL_CONFIG,
@@ -77,6 +80,7 @@ const initialState: State = {
   setIDontKnowMessage: () => {},
   setReferencesHeading: () => {},
   setLoadingHeading: () => {},
+  setAskAILabel: () => {},
   setIncludeBranding: () => {},
   setInstantSearchEnabled: () => {},
   setModelConfig: () => {},
@@ -98,6 +102,7 @@ export const CONFIG_DEFAULT_VALUES = {
   iDontKnowMessage: 'Sorry, I am not sure how to answer that.',
   referencesHeading: 'Answer generated from the following pages:',
   loadingHeading: 'Fetching relevant pages…',
+  askAILabel: 'Ask AI…',
   includeBranding: true,
   isInstantSearchEnabled: false,
   isDark: false,
@@ -134,6 +139,11 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
   const [loadingHeading, setLoadingHeading] = useLocalStorage<string>(
     !project?.id ? null : `${project?.id}:config:loading-heading`,
     CONFIG_DEFAULT_VALUES.loadingHeading,
+  );
+
+  const [askAILabel, setAskAILabel] = useLocalStorage<string>(
+    !project?.id ? null : `${project?.id}:config:ask-ai-label`,
+    CONFIG_DEFAULT_VALUES.askAILabel,
   );
 
   const [includeBranding, setIncludeBranding] = useLocalStorage<boolean>(
@@ -219,6 +229,7 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
         referencesHeading:
           referencesHeading || CONFIG_DEFAULT_VALUES.referencesHeading,
         loadingHeading: loadingHeading || CONFIG_DEFAULT_VALUES.loadingHeading,
+        askAILabel: askAILabel || CONFIG_DEFAULT_VALUES.askAILabel,
         includeBranding: !!includeBranding,
         isInstantSearchEnabled: !!isInstantSearchEnabled,
         modelConfig: modelConfig || initialState.modelConfig,
@@ -233,6 +244,7 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
         setIDontKnowMessage,
         setReferencesHeading,
         setLoadingHeading,
+        setAskAILabel,
         setIncludeBranding,
         setInstantSearchEnabled,
         setModelConfig,

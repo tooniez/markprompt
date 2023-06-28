@@ -7,6 +7,7 @@ export type ThemeColors = {
   input: string;
   primary: string;
   primaryForeground: string;
+  primaryMuted: string;
   secondary: string;
   secondaryForeground: string;
   primaryHighlight: string;
@@ -46,6 +47,7 @@ export const defaultTheme: Theme = {
       input: '#FFFFFF',
       primary: '#0ea5e9',
       primaryForeground: '#FFFFFF',
+      primaryMuted: '#38bdf8',
       secondary: '#FAFAFA',
       secondaryForeground: '#171717',
       primaryHighlight: '#EC4899',
@@ -62,6 +64,7 @@ export const defaultTheme: Theme = {
       input: '#FFFFFF',
       primary: '#0ea5e9',
       primaryForeground: '#FFFFFF',
+      primaryMuted: '#38bdf8',
       secondary: '#0E0E0E',
       secondaryForeground: '#FFFFFF',
       primaryHighlight: '#EC4899',
@@ -82,12 +85,14 @@ const indigoTheme: Theme = {
     light: {
       ...defaultTheme.colors.light,
       primary: '#6366f1',
+      primaryMuted: '#818cf8',
       primaryHighlight: '#EC4899',
       secondaryHighlight: '#A855F7',
     },
     dark: {
       ...defaultTheme.colors.dark,
       primary: '#6366f1',
+      primaryMuted: '#818cf8',
       primaryHighlight: '#EC4899',
       secondaryHighlight: '#A855F7',
     },
@@ -104,12 +109,14 @@ const tealTheme: Theme = {
     light: {
       ...defaultTheme.colors.light,
       primary: '#14b8a6',
+      primaryMuted: '#2dd4bf',
       primaryHighlight: '#a3e635',
       secondaryHighlight: '#22d3ee',
     },
     dark: {
       ...defaultTheme.colors.dark,
       primary: '#14b8a6',
+      primaryMuted: '#2dd4bf',
       primaryHighlight: '#a3e635',
       secondaryHighlight: '#22d3ee',
     },
@@ -126,17 +133,17 @@ const monoTheme: Theme = {
     light: {
       ...defaultTheme.colors.light,
       primary: '#000000',
+      primaryMuted: '#171717',
       primaryHighlight: '#D4D4D4',
       secondaryHighlight: '#525252',
-      border: '#000000',
     },
     dark: {
       ...defaultTheme.colors.dark,
       primary: '#FFFFFF',
+      primaryMuted: '#f5f5f5',
       primaryForeground: '#000000',
       primaryHighlight: '#D4D4D4',
       secondaryHighlight: '#525252',
-      border: '#FFFFFF',
     },
   },
   dimensions: {

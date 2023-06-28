@@ -303,11 +303,13 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     theme,
     isDark,
     includeBranding,
+    isInstantSearchEnabled,
     modelConfig,
     placeholder,
     iDontKnowMessage,
     referencesHeading,
     loadingHeading,
+    askAILabel,
   } = useConfigContext();
   const { numTokensPerTeamRemainingAllowance, numTokensPerTeamAllowance } =
     useUsage();
@@ -505,12 +507,13 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
         completionsUrl: getApiUrl('completions', false),
         iDontKnowMessage: iDontKnowMessage,
         placeholder: placeholder,
+        cta: askAILabel,
         ...modelConfig,
       },
       trigger: { floating: true },
       search: {
         searchUrl: getApiUrl('search', false),
-        enabled: true,
+        enabled: isInstantSearchEnabled,
       },
       references: {
         loadingText: loadingHeading,
@@ -548,12 +551,14 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     files,
     iDontKnowMessage,
     includeBranding,
+    isInstantSearchEnabled,
     isPlaygroundLoaded,
     loadingHeading,
     modelConfig,
     placeholder,
     project,
     referencesHeading,
+    askAILabel,
     theme,
     isDark,
   ]);
