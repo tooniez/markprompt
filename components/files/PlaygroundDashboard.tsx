@@ -1,6 +1,3 @@
-import '@markprompt/css';
-
-import { Markprompt } from '@markprompt/react';
 import * as Dialog from '@radix-ui/react-dialog';
 import cn from 'classnames';
 import { motion } from 'framer-motion';
@@ -9,7 +6,6 @@ import {
   Globe,
   X,
   Code,
-  MessageCircle,
   Stars,
   Share as ShareIcon,
 } from 'lucide-react';
@@ -29,7 +25,7 @@ import {
 import { toast } from 'react-hot-toast';
 import colors from 'tailwindcss/colors';
 
-import { addSource, deleteSource } from '@/lib/api';
+import { addSource } from '@/lib/api';
 import { SAMPLE_REPO_URL } from '@/lib/constants';
 import { useAppContext } from '@/lib/context/app';
 import { useConfigContext } from '@/lib/context/config';
@@ -57,7 +53,6 @@ import GetCode from '../dialogs/project/GetCode';
 import Share from '../dialogs/project/Share';
 import { RemoveSourceDialog } from '../dialogs/sources/RemoveSource';
 import { ModelConfigurator } from '../files/ModelConfigurator';
-import { Playground } from '../files/Playground';
 import { UIConfigurator } from '../files/UIConfigurator';
 import { GitHubIcon } from '../icons/GitHub';
 import { MotifIcon } from '../icons/Motif';
@@ -305,7 +300,6 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   const { state: trainingState, trainAllSources } = useTrainingContext();
   const {
     theme,
-    colors,
     isDark,
     includeBranding,
     modelConfig,
@@ -330,10 +324,12 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   });
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
   const [isPlaygroundVisible, setPlaygroundVisible] = useState(true);
+  const [isPlaygroundLoaded, setPlaygroundLoaded] = useState(false);
   const [sourceToRemove, setSourceToRemove] = useState<Source | undefined>(
     undefined,
   );
-  const playgroundRef = useRef<HTMLDivElement>(null);
+  // const playgroundRef = useRef<HTMLDivElement>(null);
+  const playgroundRef = useRef<HTMLIFrameElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const overlayMessageRef = useRef<HTMLDivElement>(null);
   const { finishOnboarding } = useOnboarding();
@@ -491,6 +487,72 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       observer.disconnect();
     };
   }, [isShowingOnboardingMessages]);
+
+  useEffect(() => {
+    if (
+      !isPlaygroundLoaded ||
+      !playgroundRef.current?.contentWindow ||
+      !project
+    ) {
+      return;
+    }
+
+    const props = {
+      projectKey: project.private_dev_api_key,
+      showBranding: includeBranding,
+      prompt: {
+        completionsUrl: 'http://api.localhost:3000/v1/completions',
+        iDontKnowMessage: iDontKnowMessage,
+        placeholder: placeholder,
+        ...modelConfig,
+      },
+      trigger: { floating: true },
+      search: { enabled: true },
+      references: {
+        loadingText: loadingHeading,
+        referencesText: referencesHeading,
+        // transformReferenceId: (path: string) => {
+        //   const file = files?.find((f) => f.path === path);
+
+        //   if (file) {
+        //     let name = path;
+        //     const metaTitle = (file.meta as any).title;
+        //     if (metaTitle) {
+        //       name = metaTitle;
+        //     } else {
+        //       name = removeFileExtension(getNameFromPath(path));
+        //     }
+
+        //     return {
+        //       text: name,
+        //       href: path,
+        //     };
+        //   }
+
+        //   return { text: 'Unknown', href: '#' };
+        // },
+      },
+    };
+
+    const colors = isDark ? theme.colors.dark : theme.colors.light;
+    theme.size;
+    playgroundRef.current.contentWindow.postMessage(
+      { props, colors, size: theme.size, dimensions: theme.dimensions },
+      '*',
+    );
+  }, [
+    files,
+    iDontKnowMessage,
+    includeBranding,
+    isPlaygroundLoaded,
+    loadingHeading,
+    modelConfig,
+    placeholder,
+    project,
+    referencesHeading,
+    theme,
+    isDark,
+  ]);
 
   return (
     <div className="absolute inset-0 grid grid-cols-1 sm:grid-cols-4">
@@ -786,8 +848,18 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                       : {}
                   }
                 />
-                <div className="absolute inset-x-0 top-4 bottom-0 z-10 flex flex-col gap-4 px-16 py-8">
-                  <div
+                <div className="absolute inset-0">
+                  <iframe
+                    ref={playgroundRef}
+                    src="/static/html/chatbot-playground.html"
+                    className="absolute inset-0 h-full w-full"
+                    onLoad={() => {
+                      setTimeout(() => {
+                        setPlaygroundLoaded(true);
+                      }, 100);
+                    }}
+                  />
+                  {/* <div
                     className={cn(
                       'w-full flex-grow transform overflow-hidden transition',
                       {
@@ -796,8 +868,8 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                           !isPlaygroundVisible,
                       },
                     )}
-                  >
-                    <Markprompt
+                  > */}
+                  {/* <Markprompt
                       projectKey={project.private_dev_api_key}
                       showBranding={includeBranding}
                       prompt={{
@@ -805,7 +877,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                         placeholder: placeholder,
                         ...modelConfig,
                       }}
-                      trigger={{ floating: true }}
+                      trigger={{ customElement: true }}
                       references={{
                         loadingText: loadingHeading,
                         referencesText: referencesHeading,
@@ -833,9 +905,9 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                           };
                         },
                       }}
-                    />
+                    /> */}
 
-                    <Playground
+                  {/* <Playground
                       ref={playgroundRef}
                       onStateChanged={setIsLoadingResponse}
                       didCompleteFirstQuery={() => {
@@ -872,9 +944,9 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                           };
                         }
                       }}
-                    />
-                  </div>
-                  <div className="flex flex-none flex-row justify-end">
+                    /> */}
+                  {/* </div> */}
+                  {/* <div className="flex flex-none flex-row justify-end">
                     <div
                       className="cursor-pointer rounded-full border p-3 hover:bg-opacity-90"
                       style={{
@@ -882,7 +954,8 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                         borderColor: colors.border,
                       }}
                       onClick={() => {
-                        setPlaygroundVisible(true);
+                        openMarkprompt();
+                        // setPlaygroundVisible(true);
                       }}
                     >
                       <MessageCircle
@@ -892,7 +965,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                         }}
                       />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

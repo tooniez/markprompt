@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot Playground</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="https://esm.sh/@markprompt/css@0.4.0?css" />
+    <style>
+      :root {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-family: 'Inter', sans-serif;
+      }
+
+      .MarkpromptFloatingTrigger {
+        bottom: 2rem;
+        right: 2rem;
+      }
+
+      :where(.MarkpromptContent) {
+        top: 46%;
+        width: 82vw;
+        max-width: 800px;
+        height: calc(100vh - 180px);
+        max-height: 800px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div id="markprompt" />
+    </main>
+    <script type="module">
+      import { markprompt } from 'https://esm.sh/@markprompt/web@0.8.1';
+
+      const el = document.querySelector('#markprompt');
+
+      window.addEventListener('message', (event) => {
+        if (
+          !el ||
+          !el instanceof HTMLElement ||
+          !event.data?.props ||
+          !event.data?.colors
+        ) {
+          return;
+        }
+
+        markprompt(event.data.projectKey, el, event.data.props);
+
+        const root = document.documentElement;
+        for (const key of Object.keys(event.data.colors)) {
+          root.style.setProperty(`--markprompt-${key}`, event.data.colors[key]);
+        }
+        root.style.setProperty(
+          '--markprompt-radius',
+          event.data.dimensions.radius || 8,
+        );
+        root.style.setProperty(
+          '--markprompt-text-size',
+          event.data.size === 'sm' ? '0.875rem' : '1rem',
+        );
+      });
+    </script>
+  </body>
+</html>
