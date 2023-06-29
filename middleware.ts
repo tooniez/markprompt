@@ -2,6 +2,7 @@ import { NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 
 import AppMiddleware from './lib/middleware/app';
 import CompletionsMiddleware from './lib/middleware/completions';
+import EmbedMiddleware from './lib/middleware/embed';
 import SearchMiddleware from './lib/middleware/search';
 import MatchSectionsMiddleware from './lib/middleware/sections';
 import TrainMiddleware from './lib/middleware/train';
@@ -22,6 +23,10 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
 
   if (req.nextUrl.pathname.startsWith('/api/oauth/')) {
     return NextResponse.next();
+  }
+
+  if (req.nextUrl.pathname.startsWith('/embed/')) {
+    return EmbedMiddleware(req);
   }
 
   if (hostname === getAppHost()) {

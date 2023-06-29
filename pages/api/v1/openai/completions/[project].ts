@@ -247,9 +247,9 @@ export default async function handler(req: NextRequest) {
 
   const fullPrompt = stripIndent(
     ((params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE.template)
-      .replace('{{I_DONT_KNOW}}', iDontKnowMessage || constants.I_DONT_KNOW)
-      .replace('{{CONTEXT}}', contextText)
-      .replace('{{PROMPT}}', sanitizedQuery),
+      ?.replace('{{I_DONT_KNOW}}', iDontKnowMessage || constants.I_DONT_KNOW)
+      ?.replace('{{CONTEXT}}', contextText)
+      ?.replace('{{PROMPT}}', sanitizedQuery) || '',
   );
 
   const payload = getPayload(
@@ -340,6 +340,7 @@ export default async function handler(req: NextRequest) {
   const readableStream = new ReadableStream({
     async start(controller) {
       function onParse(event: ParsedEvent | ReconnectInterval) {
+        console.log('onParse');
         if (event.type === 'event') {
           const data = event.data;
           if (data === '[DONE]') {
@@ -379,6 +380,7 @@ export default async function handler(req: NextRequest) {
 
       for await (const chunk of res.body as any) {
         parser.feed(decoder.decode(chunk));
+        console.log('In here 2');
       }
 
       // Estimate the number of tokens used by this request.

@@ -6,6 +6,7 @@ import { diff } from 'deep-object-diff';
 import indentString from 'indent-string';
 import { stringify } from 'json5';
 import { Book } from 'lucide-react';
+import LZString from 'lz-string';
 import Link from 'next/link';
 import { ReactNode, useState } from 'react';
 
@@ -28,7 +29,8 @@ import {
   ThemeDimensionKeys,
   ThemeDimensions,
 } from '@/lib/themes';
-import { propsObjectToJSXPropsString, pruneEmpty } from '@/lib/utils';
+import { compress, propsObjectToJSXPropsString, pruneEmpty } from '@/lib/utils';
+import { getAppOrigin } from '@/lib/utils.edge';
 import { Project, Team } from '@/types/types';
 
 import { getRootTextSize } from './prose';
@@ -156,7 +158,7 @@ ${indentString(stringify(diffOptions, null, 2), 2)}
 );`;
 };
 
-const scriptTagInstallCode = (
+const scriptTagCode = (
   projectKey: string,
   containerId: string,
   markpromptOptions: MarkpromptOptions,
@@ -189,6 +191,32 @@ ${indentString(themeCSS, 2)}
 <!-- Container for the Markpromt trigger button -->
 <div id="${containerId}" />
 ${styleBlock}`;
+};
+
+const embedCode = (
+  projectKey: string,
+  markpromptOptions: MarkpromptOptions,
+  themeCSS: string,
+) => {
+  const props = {
+    projectKey: projectKey,
+    markpromptOptions: getDiffOptions(markpromptOptions),
+    themeCSS,
+  };
+
+  // We use LZString to compress, rather than e.g. pako, as LZString
+  // can run on the edge runtime (does not use Buffer), where we need
+  // it to serve the page at the /embed endpoint.
+  // eslint-disable-next-line import/no-named-as-default-member
+  const path = LZString.compressToEncodedURIComponent(JSON.stringify(props));
+
+  return `<iframe
+  width="100%"
+  height="100%"
+  title="Markprompt"
+  frameborder="0"
+  src="${getAppOrigin()}/embed/${path}">
+</iframe>`;
 };
 
 const docusaurusCode = (
@@ -338,11 +366,14 @@ const GetCode = ({
                 <Tabs.Trigger className="tabs-trigger" value="vanilla">
                   Vanilla JS
                 </Tabs.Trigger>
+                <Tabs.Trigger className="tabs-trigger" value="docusaurus">
+                  Docusaurus
+                </Tabs.Trigger>
                 <Tabs.Trigger className="tabs-trigger" value="scriptTag">
                   Script tag
                 </Tabs.Trigger>
-                <Tabs.Trigger className="tabs-trigger" value="docusaurus">
-                  Docusaurus
+                <Tabs.Trigger className="tabs-trigger" value="embed">
+                  Embed
                 </Tabs.Trigger>
               </Tabs.List>
               <Tabs.Content
@@ -453,34 +484,6 @@ const GetCode = ({
               </Tabs.Content>
               <Tabs.Content
                 className="tabs-content relative w-full max-w-full flex-grow"
-                value="scriptTag"
-              >
-                <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 w-full max-w-full overflow-y-auto py-4">
-                  <h3>Usage</h3>
-                  <p className="text-sm text-neutral-300">
-                    Copy the code below to your HTML pages.
-                  </p>
-                  <TestKeyNote
-                    className="mb-4"
-                    team={team}
-                    project={project}
-                    testMode={testMode}
-                    isOnboarding={isOnboarding}
-                  />
-                  <CodePanel
-                    className="w-full"
-                    language="markup"
-                    code={scriptTagInstallCode(
-                      apiKey,
-                      'markprompt',
-                      markpromptOptions,
-                      themeCSS,
-                    )}
-                  />
-                </div>
-              </Tabs.Content>
-              <Tabs.Content
-                className="tabs-content relative w-full max-w-full flex-grow"
                 value="docusaurus"
               >
                 <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 w-full max-w-full overflow-y-auto py-4">
@@ -538,6 +541,57 @@ const GetCode = ({
                       />
                     </>
                   )}
+                </div>
+              </Tabs.Content>
+              <Tabs.Content
+                className="tabs-content relative w-full max-w-full flex-grow"
+                value="scriptTag"
+              >
+                <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 w-full max-w-full overflow-y-auto py-4">
+                  <h3>Usage</h3>
+                  <p className="text-sm text-neutral-300">
+                    Copy the code below to your HTML pages.
+                  </p>
+                  <TestKeyNote
+                    className="mb-4"
+                    team={team}
+                    project={project}
+                    testMode={testMode}
+                    isOnboarding={isOnboarding}
+                  />
+                  <CodePanel
+                    className="w-full"
+                    language="markup"
+                    code={scriptTagCode(
+                      apiKey,
+                      'markprompt',
+                      markpromptOptions,
+                      themeCSS,
+                    )}
+                  />
+                </div>
+              </Tabs.Content>
+              <Tabs.Content
+                className="tabs-content relative w-full max-w-full flex-grow"
+                value="embed"
+              >
+                <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 w-full max-w-full overflow-y-auto py-4">
+                  <h3>Usage</h3>
+                  <p className="text-sm text-neutral-300">
+                    Copy the code below to your HTML pages.
+                  </p>
+                  <TestKeyNote
+                    className="mb-4"
+                    team={team}
+                    project={project}
+                    testMode={testMode}
+                    isOnboarding={isOnboarding}
+                  />
+                  <CodePanel
+                    className="w-full"
+                    language="markup"
+                    code={embedCode(apiKey, markpromptOptions, themeCSS)}
+                  />
                 </div>
               </Tabs.Content>
             </Tabs.Root>

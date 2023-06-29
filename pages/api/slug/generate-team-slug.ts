@@ -13,7 +13,15 @@ type Data =
 
 const allowedMethods = ['POST'];
 
-const RESERVED_SLUGS = ['settings', 'legal', 'docs', 'api', 'app'];
+const RESERVED_SLUGS = [
+  'settings',
+  'legal',
+  'docs',
+  'api',
+  'app',
+  's',
+  'embed',
+];
 
 export const isTeamSlugAvailable = async (
   supabase: SupabaseClient<Database>,
