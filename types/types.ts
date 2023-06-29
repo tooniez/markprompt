@@ -1,3 +1,9 @@
+import {
+  type OpenAIChatCompletionsModelId,
+  OpenAICompletionsModelId,
+  OpenAIEmbeddingsModelId,
+} from '@markprompt/core';
+
 import { Database } from './supabase';
 
 export type TimeInterval = '1h' | '24h' | '7d' | '30d' | '3m' | '1y';
@@ -37,14 +43,7 @@ export const SUPPORTED_MODELS: {
   completions: OpenAICompletionsModelId[];
   embeddings: OpenAIEmbeddingsModelId[];
 } = {
-  chat_completions: [
-    'gpt-4',
-    'gpt-4-0314',
-    'gpt-4-32k',
-    'gpt-4-32k-0314',
-    'gpt-3.5-turbo',
-    'gpt-3.5-turbo-0301',
-  ],
+  chat_completions: ['gpt-4', 'gpt-3.5-turbo'],
   completions: [
     'text-davinci-003',
     'text-davinci-002',
