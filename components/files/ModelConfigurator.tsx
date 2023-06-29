@@ -4,7 +4,10 @@ import Link from 'next/link';
 import { ChangeEvent, FC, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 
-import { isDefaultCustomConfig, useConfigContext } from '@/lib/context/config';
+import {
+  isDefaultMarkpromptPromptOptions,
+  useConfigContext,
+} from '@/lib/context/config';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';
 import useTeam from '@/lib/hooks/use-team';
 import { canConfigureModel } from '@/lib/stripe/tiers';
@@ -25,17 +28,20 @@ type ModelConfiguratorProps = {
 
 export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
   const { team } = useTeam();
-  const { modelConfig, setModelConfig, resetModelConfigDefaults } =
-    useConfigContext();
+  const {
+    markpromptOptions,
+    setMarkpromptOptions,
+    resetMarkpromptOptionsDefaults,
+  } = useConfigContext();
 
   const _canConfigureModel = team && canConfigureModel(team);
 
-  const _isDefaultConfig = useMemo(() => {
-    return isDefaultCustomConfig(modelConfig);
-  }, [modelConfig]);
+  const _isDefaultMarkpromptPromptOptions = useMemo(() => {
+    return isDefaultMarkpromptPromptOptions(markpromptOptions);
+  }, [markpromptOptions]);
 
   const shouldShowCustomConfigNote =
-    team && !canConfigureModel(team) && !_isDefaultConfig;
+    team && !canConfigureModel(team) && !_isDefaultMarkpromptPromptOptions;
 
   return (
     <div className="flex flex-col gap-2">
@@ -77,12 +83,15 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
       </Row>
       <div className="mt-1 flex w-full flex-col">
         <NoAutoTextArea
-          value={modelConfig.promptTemplate}
+          value={markpromptOptions.prompt?.promptTemplate}
           className="h-[400px] w-full"
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            setModelConfig({
-              ...modelConfig,
-              promptTemplate: event.target.value,
+            setMarkpromptOptions({
+              ...markpromptOptions,
+              prompt: {
+                ...markpromptOptions.prompt,
+                promptTemplate: event.target.value,
+              },
             });
           }}
         />
@@ -107,9 +116,15 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 min={0}
                 max={1}
                 step={0.1}
-                value={modelConfig.temperature}
+                value={markpromptOptions.prompt!.temperature!}
                 setValue={(value) => {
-                  setModelConfig({ ...modelConfig, temperature: value });
+                  setMarkpromptOptions({
+                    ...markpromptOptions,
+                    prompt: {
+                      ...markpromptOptions.prompt,
+                      temperature: value,
+                    },
+                  });
                 }}
               />
               <SliderInput
@@ -118,9 +133,15 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 min={0}
                 max={1}
                 step={0.01}
-                value={modelConfig.topP}
+                value={markpromptOptions.prompt!.topP!}
                 setValue={(value) => {
-                  setModelConfig({ ...modelConfig, topP: value });
+                  setMarkpromptOptions({
+                    ...markpromptOptions,
+                    prompt: {
+                      ...markpromptOptions.prompt,
+                      topP: value,
+                    },
+                  });
                 }}
               />
               <SliderInput
@@ -129,9 +150,15 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 min={0}
                 max={2}
                 step={0.1}
-                value={modelConfig.frequencyPenalty}
+                value={markpromptOptions.prompt!.frequencyPenalty!}
                 setValue={(value) => {
-                  setModelConfig({ ...modelConfig, frequencyPenalty: value });
+                  setMarkpromptOptions({
+                    ...markpromptOptions,
+                    prompt: {
+                      ...markpromptOptions.prompt,
+                      frequencyPenalty: value,
+                    },
+                  });
                 }}
               />
               <SliderInput
@@ -140,9 +167,15 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 min={0}
                 max={2}
                 step={0.1}
-                value={modelConfig.presencePenalty}
+                value={markpromptOptions.prompt!.presencePenalty!}
                 setValue={(value) => {
-                  setModelConfig({ ...modelConfig, presencePenalty: value });
+                  setMarkpromptOptions({
+                    ...markpromptOptions,
+                    prompt: {
+                      ...markpromptOptions.prompt,
+                      presencePenalty: value,
+                    },
+                  });
                 }}
               />
               <SliderInput
@@ -151,9 +184,15 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 min={50}
                 max={1024}
                 step={1}
-                value={modelConfig.maxTokens}
+                value={markpromptOptions.prompt!.maxTokens!}
                 setValue={(value) => {
-                  setModelConfig({ ...modelConfig, maxTokens: value });
+                  setMarkpromptOptions({
+                    ...markpromptOptions,
+                    prompt: {
+                      ...markpromptOptions.prompt,
+                      maxTokens: value,
+                    },
+                  });
                 }}
               />
               <SliderInput
@@ -162,9 +201,15 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 min={1}
                 max={50}
                 step={1}
-                value={modelConfig.sectionsMatchCount}
+                value={markpromptOptions.prompt!.sectionsMatchCount!}
                 setValue={(value) => {
-                  setModelConfig({ ...modelConfig, sectionsMatchCount: value });
+                  setMarkpromptOptions({
+                    ...markpromptOptions,
+                    prompt: {
+                      ...markpromptOptions.prompt,
+                      sectionsMatchCount: value,
+                    },
+                  });
                 }}
               />
               <SliderInput
@@ -173,11 +218,14 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 min={0}
                 max={1}
                 step={0.1}
-                value={modelConfig.sectionsMatchThreshold}
+                value={markpromptOptions.prompt!.sectionsMatchThreshold!}
                 setValue={(value) => {
-                  setModelConfig({
-                    ...modelConfig,
-                    sectionsMatchThreshold: value,
+                  setMarkpromptOptions({
+                    ...markpromptOptions,
+                    prompt: {
+                      ...markpromptOptions.prompt,
+                      sectionsMatchThreshold: value,
+                    },
                   });
                 }}
               />
@@ -186,7 +234,7 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 buttonSize="sm"
                 variant="plain"
                 onClick={() => {
-                  resetModelConfigDefaults();
+                  resetMarkpromptOptionsDefaults();
                   toast.success('Model defaults restored.');
                 }}
               >

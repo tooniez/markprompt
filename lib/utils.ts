@@ -4,6 +4,19 @@ import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
 import { format } from 'date-fns';
 import dayjs from 'dayjs';
+import {
+  filter,
+  isArray,
+  isEmpty,
+  isNull,
+  isObject,
+  isPlainObject,
+  isString,
+  keys,
+  map,
+  mapValues,
+  pickBy,
+} from 'lodash-es';
 import { ChevronsUp, Globe, Upload } from 'lucide-react';
 import { minimatch } from 'minimatch';
 import { customAlphabet } from 'nanoid';
@@ -843,4 +856,32 @@ const APPROX_CHARS_PER_TOKEN = 3.8;
 // to ensure we stay within boundaries.
 export const approximatedTokenCount = (text: string) => {
   return Math.round(text.length / APPROX_CHARS_PER_TOKEN);
+};
+
+export function pruneEmpty(object: any) {
+  if (isString(object)) return _sanitizeString(object);
+  if (isArray(object)) return _sanitizeArray(object);
+  if (isPlainObject(object)) return _sanitizeObject(object);
+  return object;
+}
+
+const _sanitizeString = (string: any): any => {
+  return isEmpty(string) ? null : string;
+};
+
+const _sanitizeArray = (array: any): any => {
+  return filter(map(array, pruneEmpty), _isProvided);
+};
+
+const _sanitizeObject = (object: any): any => {
+  return pickBy(mapValues(object, pruneEmpty), _isProvided);
+};
+
+const _isProvided = (value: any): any => {
+  const typeIsNotSupported =
+    !isNull(value) &&
+    !isString(value) &&
+    !isArray(value) &&
+    !isPlainObject(value);
+  return typeIsNotSupported || !isEmpty(value);
 };

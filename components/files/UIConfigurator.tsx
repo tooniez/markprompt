@@ -40,25 +40,13 @@ type UIConfiguratorProps = {
 export const UIConfigurator: FC<UIConfiguratorProps> = () => {
   const { team } = useTeam();
   const {
+    markpromptOptions,
     theme,
     setTheme,
     isDark,
     setDark,
     setSize,
-    includeBranding,
-    isInstantSearchEnabled,
-    placeholder,
-    iDontKnowMessage,
-    setPlaceholder,
-    referencesHeading,
-    askAILabel,
-    setIDontKnowMessage,
-    setReferencesHeading,
-    loadingHeading,
-    setLoadingHeading,
-    setAskAILabel,
-    setIncludeBranding,
-    setInstantSearchEnabled,
+    setMarkpromptOptions,
   } = useConfigContext();
 
   const colors = useMemo(() => {
@@ -76,8 +64,16 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
         <div className="flex flex-row items-center justify-end gap-2">
           <Switch.Root
             className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 disabled:cursor-not-allowed data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600 disabled:data-[state='checked']:opacity-40"
-            checked={isInstantSearchEnabled}
-            onCheckedChange={(b: boolean) => setInstantSearchEnabled(b)}
+            checked={!!markpromptOptions.search?.enabled}
+            onCheckedChange={(b: boolean) =>
+              setMarkpromptOptions({
+                ...markpromptOptions,
+                search: {
+                  ...markpromptOptions.search,
+                  enabled: b,
+                },
+              })
+            }
           >
             <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
           </Switch.Root>
@@ -97,9 +93,11 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
           )}
           <Switch.Root
             className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 disabled:cursor-not-allowed data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600 disabled:data-[state='checked']:opacity-40"
-            checked={includeBranding || !_canRemoveBranding}
+            checked={markpromptOptions.showBranding || !_canRemoveBranding}
             disabled={!_canRemoveBranding}
-            onCheckedChange={(b: boolean) => setIncludeBranding(b)}
+            onCheckedChange={(b: boolean) =>
+              setMarkpromptOptions({ ...markpromptOptions, showBranding: b })
+            }
           >
             <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
           </Switch.Root>
@@ -244,46 +242,76 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
               <Row className="mt-4" label="Placeholder">
                 <Input
                   inputSize="sm"
-                  value={placeholder}
+                  value={markpromptOptions.prompt?.placeholder}
                   onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                    setPlaceholder(event.target.value);
+                    setMarkpromptOptions({
+                      ...markpromptOptions,
+                      prompt: {
+                        ...markpromptOptions.prompt,
+                        placeholder: event.target.value,
+                      },
+                    });
                   }}
                 />
               </Row>
               <Row label="Don't know message">
                 <Input
                   inputSize="sm"
-                  value={iDontKnowMessage}
+                  value={markpromptOptions.prompt?.iDontKnowMessage}
                   onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                    setIDontKnowMessage(event.target.value);
+                    setMarkpromptOptions({
+                      ...markpromptOptions,
+                      prompt: {
+                        ...markpromptOptions.prompt,
+                        iDontKnowMessage: event.target.value,
+                      },
+                    });
                   }}
                 />
               </Row>
               <Row label="References heading">
                 <Input
                   inputSize="sm"
-                  value={referencesHeading}
+                  value={markpromptOptions.references?.referencesText}
                   onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                    setReferencesHeading(event.target.value);
+                    setMarkpromptOptions({
+                      ...markpromptOptions,
+                      references: {
+                        ...markpromptOptions.references,
+                        referencesText: event.target.value,
+                      },
+                    });
                   }}
                 />
               </Row>
               <Row label="Loading heading">
                 <Input
                   inputSize="sm"
-                  value={loadingHeading}
+                  value={markpromptOptions.references?.loadingText}
                   onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                    setLoadingHeading(event.target.value);
+                    setMarkpromptOptions({
+                      ...markpromptOptions,
+                      references: {
+                        ...markpromptOptions.references,
+                        loadingText: event.target.value,
+                      },
+                    });
                   }}
                 />
               </Row>
-              {isInstantSearchEnabled && (
+              {markpromptOptions.search?.enabled && (
                 <Row label="Ask AI label">
                   <Input
                     inputSize="sm"
-                    value={askAILabel}
+                    value={markpromptOptions.prompt?.cta}
                     onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                      setAskAILabel(event.target.value);
+                      setMarkpromptOptions({
+                        ...markpromptOptions,
+                        prompt: {
+                          ...markpromptOptions.prompt,
+                          cta: event.target.value,
+                        },
+                      });
                     }}
                   />
                 </Row>

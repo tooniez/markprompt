@@ -18,10 +18,6 @@ import React, {
   useState,
 } from 'react';
 
-import {
-  CONFIG_DEFAULT_VALUES,
-  DEFAULT_MODEL_CONFIG,
-} from '@/lib/context/config';
 import { defaultTheme } from '@/lib/themes';
 
 import { Playground } from '../files/Playground';
@@ -276,7 +272,8 @@ export const DocsPlayground = () => {
           },
         )}
       >
-        <Playground
+        {/* TODO */}
+        {/* <Playground
           forceUseProdAPI
           projectKey={
             process.env.NODE_ENV === 'production'
@@ -296,7 +293,7 @@ export const DocsPlayground = () => {
           onCloseClick={() => {
             setPromptOpen(false);
           }}
-        />
+        /> */}
       </div>
     </div>
   );

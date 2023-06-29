@@ -1,14 +1,8 @@
+import { DEFAULT_SUBMIT_PROMPT_OPTIONS } from '@markprompt/core';
+
 export const DEFAULT_PROMPT_TEMPLATE = {
   name: 'Default',
-  template: `You are a very enthusiastic company representative who loves to help people! Given the following sections from the documentation (preceded by a section id), answer the question using only that information, output in Markdown format. If you are unsure and the answer is not explicitly written in the documentation, say "{{I_DONT_KNOW}}".
-
-Context sections:
----
-{{CONTEXT}}
-
-Question: "{{PROMPT}}"
-
-Answer (including related code snippets if available):`,
+  template: DEFAULT_SUBMIT_PROMPT_OPTIONS.promptTemplate,
 };
 
 const BUSINESS_LOGIC_PROMPT_TEMPLATE = {

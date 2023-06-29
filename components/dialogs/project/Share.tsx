@@ -24,15 +24,7 @@ const Share = ({ children }: { children: ReactNode }) => {
   const { promptConfigs, mutate: mutatePromptConfigs } = usePromptConfigs();
   const [isGeneratingKey, setGeneratingKey] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const {
-    theme,
-    placeholder,
-    modelConfig,
-    iDontKnowMessage,
-    referencesHeading,
-    loadingHeading,
-    includeBranding,
-  } = useConfigContext();
+  const { markpromptOptions, theme } = useConfigContext();
   const promptConfig = promptConfigs?.[0];
   const shareKey = promptConfig?.share_key;
 
@@ -50,30 +42,14 @@ const Share = ({ children }: { children: ReactNode }) => {
 
       if (shareKey) {
         await createPromptConfig(project.id, shareKey, {
+          markpromptOptions,
           theme,
-          placeholder,
-          modelConfig,
-          iDontKnowMessage,
-          referencesHeading,
-          loadingHeading,
-          includeBranding,
         });
       }
       await mutatePromptConfigs();
       setGeneratingKey(false);
     },
-    [
-      iDontKnowMessage,
-      includeBranding,
-      loadingHeading,
-      modelConfig,
-      mutatePromptConfigs,
-      placeholder,
-      project,
-      promptConfig,
-      referencesHeading,
-      theme,
-    ],
+    [markpromptOptions, mutatePromptConfigs, project, promptConfig, theme],
   );
 
   useEffect(() => {

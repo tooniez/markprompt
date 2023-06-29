@@ -1,10 +1,6 @@
 import * as Popover from '@radix-ui/react-popover';
 import { FC, ReactNode, useState } from 'react';
 
-import {
-  CONFIG_DEFAULT_VALUES,
-  DEFAULT_MODEL_CONFIG,
-} from '@/lib/context/config';
 import { defaultTheme } from '@/lib/themes';
 import { capitalize, removeFileExtension } from '@/lib/utils';
 
@@ -30,7 +26,8 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
       <Popover.Portal>
         <Popover.Content className="animate-chat-window z-30 mr-4 mb-4 w-[calc(100vw-32px)] sm:w-full">
           <div className="relative mt-4 h-[calc(100vh-240px)] max-h-[560px] w-full overflow-hidden rounded-lg bg-neutral-1000 shadow-2xl sm:w-[400px]">
-            <Playground
+            {/* TODO */}
+            {/* <Playground
               forceUseProdAPI
               inputClassName="pr-8"
               projectKey={
@@ -56,7 +53,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
                 setPromptOpen(false);
                 onOpenChange?.(false);
               }}
-            />
+            /> */}
           </div>
         </Popover.Content>
       </Popover.Portal>

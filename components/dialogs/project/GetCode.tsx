@@ -1,6 +1,10 @@
+import { type MarkpromptOptions } from '@markprompt/react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Switch from '@radix-ui/react-switch';
 import * as Tabs from '@radix-ui/react-tabs';
+import { diff } from 'deep-object-diff';
+import indentString from 'indent-string';
+import { stringify } from 'json5';
 import { Book } from 'lucide-react';
 import Link from 'next/link';
 import { ReactNode, useState } from 'react';
@@ -8,11 +12,24 @@ import { ReactNode, useState } from 'react';
 import Button from '@/components/ui/Button';
 import { CodePanel } from '@/components/ui/Code';
 import { Note } from '@/components/ui/Note';
-import { useConfigContext } from '@/lib/context/config';
+import { MARKPROMPT_JS_PACKAGE_VERSIONS } from '@/lib/constants';
+import {
+  DEFAULT_MARKPROMPT_OPTIONS_GPT4,
+  toSerializableMarkpromptOptions,
+  useConfigContext,
+} from '@/lib/context/config';
 import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
-import { Theme, ThemeColorKeys, ThemeDimensionKeys } from '@/lib/themes';
-import { OpenAIModelId, Project, Team } from '@/types/types';
+import {
+  defaultTheme,
+  Theme,
+  ThemeColorKeys,
+  ThemeColors,
+  ThemeDimensionKeys,
+  ThemeDimensions,
+} from '@/lib/themes';
+import { pruneEmpty } from '@/lib/utils';
+import { Project, Team } from '@/types/types';
 
 import { getProseClassCSS, getRootTextSize } from './prose';
 
@@ -39,264 +56,252 @@ const npmInstallReactCode =
 const reactCode = (
   projectKey: string,
   isTestKey: boolean,
-  includeBranding: boolean,
-  iDontKnowMessage: string,
-  placeholder: string,
-  loadingHeading: string,
-  referencesHeading: string,
-  model: OpenAIModelId,
-  promptTemplate: string,
-  temperature: number,
-  topP: number,
-  frequencyPenalty: number,
-  presencePenalty: number,
-  maxTokens: number,
-  sectionsMatchCount: number,
-  sectionsMatchThreshold: number,
+  markpromptOptions: MarkpromptOptions,
 ) => {
-  return `import '@markprompt/css';
-import './style.css';
+  return '';
+  //   return `import '@markprompt/css';
+  // import './style.css';
 
-import * as Markprompt from '@markprompt/react';
-import { useCallback, useContext, useMemo, type ComponentPropsWithoutRef } from 'react';
+  // import * as Markprompt from '@markprompt/react';
+  // import { useCallback, useContext, useMemo, type ComponentPropsWithoutRef } from 'react';
 
-function Component() {
-  ${
-    isTestKey
-      ? '// Do not share this key publicly.'
-      : '// Use from a whitelisted domain.'
-  }
-  return (
-    <Markprompt.Root
-      projectKey="${projectKey}"
-      iDontKnowMessage="${iDontKnowMessage}"
-      model="${model}"
-      promptTemplate={\`${promptTemplate}\`}
-      temperature={${temperature}}
-      topP={${topP}}
-      frequencyPenalty={${frequencyPenalty}}
-      presencePenalty={${presencePenalty}}
-      maxTokens={${maxTokens}}
-      sectionsMatchCount={${sectionsMatchCount}}
-      sectionsMatchThreshold={${sectionsMatchThreshold}}
-    >
-      <Markprompt.Trigger className="MarkpromptTrigger">
-        <AccessibleIcon.Root label={trigger?.label ?? 'Open Markprompt'}>
-          <ChatIcon className="MarkpromptChatIcon" width="24" height="24" />
-        </AccessibleIcon.Root>
-      </Markprompt.Trigger>
+  // function Component() {
+  //   ${
+  //     isTestKey
+  //       ? '// Do not share this key publicly.'
+  //       : '// Use from a whitelisted domain.'
+  //   }
+  //   return (
+  //     <Markprompt.Root
+  //       projectKey="${projectKey}"
+  //       iDontKnowMessage="${iDontKnowMessage}"
+  //       model="${model}"
+  //       promptTemplate={\`${promptTemplate}\`}
+  //       temperature={${temperature}}
+  //       topP={${topP}}
+  //       frequencyPenalty={${frequencyPenalty}}
+  //       presencePenalty={${presencePenalty}}
+  //       maxTokens={${maxTokens}}
+  //       sectionsMatchCount={${sectionsMatchCount}}
+  //       sectionsMatchThreshold={${sectionsMatchThreshold}}
+  //     >
+  //       <Markprompt.Trigger className="MarkpromptTrigger">
+  //         <AccessibleIcon.Root label={trigger?.label ?? 'Open Markprompt'}>
+  //           <ChatIcon className="MarkpromptChatIcon" width="24" height="24" />
+  //         </AccessibleIcon.Root>
+  //       </Markprompt.Trigger>
 
-      <Markprompt.Portal>
-        <Markprompt.Overlay className="MarkpromptOverlay" />
-        <Markprompt.Content className="MarkpromptContent" ${
-          !includeBranding ? `\n      showBranding={false}` : ''
-        }>
-          <Markprompt.Title hide>
-            Ask me anything about Markprompt
-          </Markprompt.Title>
+  //       <Markprompt.Portal>
+  //         <Markprompt.Overlay className="MarkpromptOverlay" />
+  //         <Markprompt.Content className="MarkpromptContent" ${
+  //           !includeBranding ? `\n      showBranding={false}` : ''
+  //         }>
+  //           <Markprompt.Title hide>
+  //             Ask me anything about Markprompt
+  //           </Markprompt.Title>
 
-          <Markprompt.Description hide>
-            I can answer your questions about Markprompt's client-side
-            libraries, onboarding, API's and more.
-          </Markprompt.Description>
+  //           <Markprompt.Description hide>
+  //             I can answer your questions about Markprompt's client-side
+  //             libraries, onboarding, API's and more.
+  //           </Markprompt.Description>
 
-          <Markprompt.Form className="MarkpromptForm">
-            <Markprompt.Prompt
-              className="MarkpromptPrompt"
-              placeholder="${placeholder}"
-              labelClassName="MarkpromptPromptLabel"
-              label={
-                <AccessibleIcon.Root label="Your prompt">
-                  <SearchIcon className="MarkpromptSearchIcon" />
-                </AccessibleIcon.Root>
-              }
-            />
-          </Markprompt.Form>
+  //           <Markprompt.Form className="MarkpromptForm">
+  //             <Markprompt.Prompt
+  //               className="MarkpromptPrompt"
+  //               placeholder="${placeholder}"
+  //               labelClassName="MarkpromptPromptLabel"
+  //               label={
+  //                 <AccessibleIcon.Root label="Your prompt">
+  //                   <SearchIcon className="MarkpromptSearchIcon" />
+  //                 </AccessibleIcon.Root>
+  //               }
+  //             />
+  //           </Markprompt.Form>
 
-          <Markprompt.AutoScroller className="MarkpromptAutoScroller">
-            <div
-              className="MarkpromptAnswer"
-              aria-describedby="markprompt-progressbar"
-              aria-busy={state === 'preload' || state === 'streaming-answer'}
-              aria-live="polite"
-            >
-              <Caret />
-              <Markprompt.Answer />
-            </div>
-          </Markprompt.AutoScroller>
+  //           <Markprompt.AutoScroller className="MarkpromptAutoScroller">
+  //             <div
+  //               className="MarkpromptAnswer"
+  //               aria-describedby="markprompt-progressbar"
+  //               aria-busy={state === 'preload' || state === 'streaming-answer'}
+  //               aria-live="polite"
+  //             >
+  //               <Caret />
+  //               <Markprompt.Answer />
+  //             </div>
+  //           </Markprompt.AutoScroller>
 
-          <References
-            loadingText="${loadingHeading}"
-            referencesText="${referencesHeading}"
-          />
+  //           <References
+  //             loadingText="${loadingHeading}"
+  //             referencesText="${referencesHeading}"
+  //           />
 
-          <Markprompt.Close className="MarkpromptClose">
-            <AccessibleIcon.Root label="Close Markprompt">
-              <CloseIcon />
-            </AccessibleIcon.Root>
-          </Markprompt.Close>
-        </Markprompt.Content>
-      </Markprompt.Portal>
-    </Markprompt.Root>
-  );
-}
+  //           <Markprompt.Close className="MarkpromptClose">
+  //             <AccessibleIcon.Root label="Close Markprompt">
+  //               <CloseIcon />
+  //             </AccessibleIcon.Root>
+  //           </Markprompt.Close>
+  //         </Markprompt.Content>
+  //       </Markprompt.Portal>
+  //     </Markprompt.Root>
+  //   );
+  // }
 
-const Caret = () => {
-  const { answer } = useContext(Markprompt.Context);
+  // const Caret = () => {
+  //   const { answer } = useContext(Markprompt.Context);
 
-  if (answer) {
-    return null;
-  }
+  //   if (answer) {
+  //     return null;
+  //   }
 
-  return <span className="caret" />;
-};
+  //   return <span className="caret" />;
+  // };
 
-const capitalize = (text: string) => {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-};
+  // const capitalize = (text: string) => {
+  //   return text.charAt(0).toUpperCase() + text.slice(1);
+  // };
 
-const removeFileExtension = (fileName: string) => {
-  const lastDotIndex = fileName.lastIndexOf('.');
-  if (lastDotIndex === -1) {
-    return fileName;
-  }
-  return fileName.substring(0, lastDotIndex);
-};
+  // const removeFileExtension = (fileName: string) => {
+  //   const lastDotIndex = fileName.lastIndexOf('.');
+  //   if (lastDotIndex === -1) {
+  //     return fileName;
+  //   }
+  //   return fileName.substring(0, lastDotIndex);
+  // };
 
-type ReferenceProps = {
-  transformReferenceId?: (referenceId: string) => {
-    href: string;
-    text: string;
-  };
-  referenceId: string;
-  index: number;
-};
+  // type ReferenceProps = {
+  //   transformReferenceId?: (referenceId: string) => {
+  //     href: string;
+  //     text: string;
+  //   };
+  //   referenceId: string;
+  //   index: number;
+  // };
 
-const defaultTransformReferenceId = (referenceId: string) => ({
-  href: removeFileExtension(referenceId),
-  text: capitalize(removeFileExtension(referenceId.split('/').slice(-1)[0])),
-});
+  // const defaultTransformReferenceId = (referenceId: string) => ({
+  //   href: removeFileExtension(referenceId),
+  //   text: capitalize(removeFileExtension(referenceId.split('/').slice(-1)[0])),
+  // });
 
-const Reference = (props: ReferenceProps) => {
-  const {
-    transformReferenceId = defaultTransformReferenceId,
-    index,
-    referenceId,
-  } = props;
+  // const Reference = (props: ReferenceProps) => {
+  //   const {
+  //     transformReferenceId = defaultTransformReferenceId,
+  //     index,
+  //     referenceId,
+  //   } = props;
 
-  const reference = useMemo(
-    () => transformReferenceId(referenceId),
-    [referenceId, transformReferenceId],
-  );
+  //   const reference = useMemo(
+  //     () => transformReferenceId(referenceId),
+  //     [referenceId, transformReferenceId],
+  //   );
 
-  return (
-    <li
-      key={referenceId}
-      className="MarkpromptReference"
-      style={{
-        animationDelay: \`\${100 * index}ms\`,
-      }}
-    >
-      <a href={reference.href}>{reference.text}</a>
-    </li>
-  );
-};
+  //   return (
+  //     <li
+  //       key={referenceId}
+  //       className="MarkpromptReference"
+  //       style={{
+  //         animationDelay: \`\${100 * index}ms\`,
+  //       }}
+  //     >
+  //       <a href={reference.href}>{reference.text}</a>
+  //     </li>
+  //   );
+  // };
 
-type ReferencesProps = {
-  loadingText?: string;
-  referencesText?: string;
-  transformReferenceId?: (referenceId: string) => {
-    href: string;
-    text: string;
-  };
-};
+  // type ReferencesProps = {
+  //   loadingText?: string;
+  //   referencesText?: string;
+  //   transformReferenceId?: (referenceId: string) => {
+  //     href: string;
+  //     text: string;
+  //   };
+  // };
 
-const References = (props: ReferencesProps) => {
-  const {
-    loadingText = 'Fetching relevant pages…',
-    referencesText = 'Answer generated from the following sources:',
-    transformReferenceId,
-  } = props;
-  const { state, references } = useContext(Markprompt.Context);
+  // const References = (props: ReferencesProps) => {
+  //   const {
+  //     loadingText = 'Fetching relevant pages…',
+  //     referencesText = 'Answer generated from the following sources:',
+  //     transformReferenceId,
+  //   } = props;
+  //   const { state, references } = useContext(Markprompt.Context);
 
-  const ReferenceComponent = useCallback(
-    (props: { referenceId: string; index: number }) => (
-      <Reference transformReferenceId={transformReferenceId} {...props} />
-    ),
-    [transformReferenceId],
-  );
+  //   const ReferenceComponent = useCallback(
+  //     (props: { referenceId: string; index: number }) => (
+  //       <Reference transformReferenceId={transformReferenceId} {...props} />
+  //     ),
+  //     [transformReferenceId],
+  //   );
 
-  if (state === 'indeterminate') return null;
+  //   if (state === 'indeterminate') return null;
 
-  let adjustedState: string = state;
-  if (state === 'done' && references.length === 0) {
-    adjustedState = 'indeterminate';
-  }
+  //   let adjustedState: string = state;
+  //   if (state === 'done' && references.length === 0) {
+  //     adjustedState = 'indeterminate';
+  //   }
 
-  return (
-    <div
-      data-loading-state={adjustedState}
-      className="MarkpromptReferences"
-      role="status"
-    >
-      {state === 'preload' && (
-        <>
-          <div
-            className="MarkpromptProgress"
-            id="markprompt-progressbar"
-            role="progressbar"
-            aria-labelledby="markprompt-loading-text"
-          />
-          <p id="markprompt-loading-text">{loadingText}</p>
-        </>
-      )}
+  //   return (
+  //     <div
+  //       data-loading-state={adjustedState}
+  //       className="MarkpromptReferences"
+  //       role="status"
+  //     >
+  //       {state === 'preload' && (
+  //         <>
+  //           <div
+  //             className="MarkpromptProgress"
+  //             id="markprompt-progressbar"
+  //             role="progressbar"
+  //             aria-labelledby="markprompt-loading-text"
+  //           />
+  //           <p id="markprompt-loading-text">{loadingText}</p>
+  //         </>
+  //       )}
 
-      {state !== 'preload' && <p>{referencesText}</p>}
+  //       {state !== 'preload' && <p>{referencesText}</p>}
 
-      <Markprompt.References ReferenceComponent={ReferenceComponent} />
-    </div>
-  );
-};
+  //       <Markprompt.References ReferenceComponent={ReferenceComponent} />
+  //     </div>
+  //   );
+  // };
 
-const ChatIcon = (props: ComponentPropsWithoutRef<'svg'>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    {...props}
-  >
-    <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
-  </svg>
-);
+  // const ChatIcon = (props: ComponentPropsWithoutRef<'svg'>) => (
+  //   <svg
+  //     xmlns="http://www.w3.org/2000/svg"
+  //     viewBox="0 0 24 24"
+  //     fill="none"
+  //     stroke="currentColor"
+  //     {...props}
+  //   >
+  //     <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
+  //   </svg>
+  // );
 
-const CloseIcon = (props: ComponentPropsWithoutRef<'svg'>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    {...props}
-  >
-    <path d="M18 6 6 18M6 6l12 12" />
-  </svg>
-);
+  // const CloseIcon = (props: ComponentPropsWithoutRef<'svg'>) => (
+  //   <svg
+  //     xmlns="http://www.w3.org/2000/svg"
+  //     viewBox="0 0 24 24"
+  //     fill="none"
+  //     stroke="currentColor"
+  //     {...props}
+  //   >
+  //     <path d="M18 6 6 18M6 6l12 12" />
+  //   </svg>
+  // );
 
-const SearchIcon = (props: ComponentPropsWithoutRef<'svg'>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    {...props}
-  >
-    <circle cx="11" cy="11" r="8" />
-    <path d="m21 21-4.35-4.35" />
-  </svg>
-);
+  // const SearchIcon = (props: ComponentPropsWithoutRef<'svg'>) => (
+  //   <svg
+  //     xmlns="http://www.w3.org/2000/svg"
+  //     viewBox="0 0 24 24"
+  //     fill="none"
+  //     stroke="currentColor"
+  //     {...props}
+  //   >
+  //     <circle cx="11" cy="11" r="8" />
+  //     <path d="m21 21-4.35-4.35" />
+  //   </svg>
+  // );
 
-export default Component;
-`.trim();
+  // export default Component;
+  // `.trim();
 };
 
 const reactStylesheet = (theme: Theme) => {
@@ -304,7 +309,7 @@ const reactStylesheet = (theme: Theme) => {
   const darkColorKeys = Object.keys(theme.colors.dark) as ThemeColorKeys[];
   const dimensionKeys = Object.keys(theme.dimensions) as ThemeDimensionKeys[];
   const proseClasses = getProseClassCSS(theme.size || 'sm');
-  const rootRextSize = getRootTextSize(theme.size || 'sm');
+  const rootTextSize = getRootTextSize(theme.size || 'sm');
 
   return `/* style.css */
 
@@ -315,7 +320,7 @@ ${lightColorKeys
 ${dimensionKeys
   .map((key) => `  --markprompt-${key}: ${theme.dimensions[key]};`)
   .join('\n')}
-  --markprompt-text-size: ${rootRextSize};
+  --markprompt-text-size: ${rootTextSize};
   --markprompt-button-icon-size: 1rem;
 }
 
@@ -689,102 +694,152 @@ const vanillaInstallCode = 'npm install @markprompt/web @markprompt/css';
 
 const vanillaCode = (
   projectKey: string,
-  container: string,
-  options: {
-    frequencyPenalty: number;
-    iDontKnowMessage: string;
-    includeBranding: boolean;
-    loadingText: string;
-    maxTokens: number;
-    model: string;
-    placeholder: string;
-    presencePenalty: number;
-    promptTemplate: string;
-    referencesText: string;
-    sectionsMatchCount: number;
-    sectionsMatchThreshold: number;
-    temperature: number;
-    topP: number;
-  },
-) =>
-  `import '@markprompt/css';
-import { markprompt } from '@markprompt/web';
+  containerId: string,
+  markpromptOptions: MarkpromptOptions,
+) => {
+  return '';
+  //   `import '@markprompt/css';
+  // import { markprompt } from '@markprompt/web';
 
-markprompt(
-  ${projectKey},
-  ${container},
-  {
-    iDontKnowMessage: ${options.iDontKnowMessage},
-    model: ${options.model},
-    promptTemplate: ${options.promptTemplate},
-    temperature: ${options.temperature},
-    topP: ${options.topP},
-    frequencyPenalty: ${options.frequencyPenalty},
-    presencePenalty: ${options.presencePenalty},
-    maxTokens: ${options.maxTokens},
-    sectionsMatchCount: ${options.sectionsMatchCount},
-    sectionsMatchThreshold: ${options.sectionsMatchThreshold},
-    prompt: {
-      placeholder: ${options.placeholder}
-    },
-    references: {
-      loadingText: ${options.loadingText},
-      referencesText: ${options.referencesText}
-    }
+  // markprompt(
+  //   ${projectKey},
+  //   ${container},
+  //   {
+  //     iDontKnowMessage: ${options.iDontKnowMessage},
+  //     model: ${options.model},
+  //     promptTemplate: ${options.promptTemplate},
+  //     temperature: ${options.temperature},
+  //     topP: ${options.topP},
+  //     frequencyPenalty: ${options.frequencyPenalty},
+  //     presencePenalty: ${options.presencePenalty},
+  //     maxTokens: ${options.maxTokens},
+  //     sectionsMatchCount: ${options.sectionsMatchCount},
+  //     sectionsMatchThreshold: ${options.sectionsMatchThreshold},
+  //     prompt: {
+  //       placeholder: ${options.placeholder}
+  //     },
+  //     references: {
+  //       loadingText: ${options.loadingText},
+  //       referencesText: ${options.referencesText}
+  //     }
+  //   }
+  // );
+  // `;
+};
+
+// Builds the shortest version of the options to pass to a
+// markprompt-js function/component. It only includes values
+// that are different from the default options.
+const getDiffOptions = (
+  projectKey: string,
+  containerId: string,
+  markpromptOptions: MarkpromptOptions,
+) => {
+  const serializableMarkpromptOptions =
+    toSerializableMarkpromptOptions(markpromptOptions);
+
+  const diffOptions = diff(
+    toSerializableMarkpromptOptions(DEFAULT_MARKPROMPT_OPTIONS_GPT4),
+    serializableMarkpromptOptions,
+  );
+  return pruneEmpty({
+    projectKey: projectKey,
+    container: `#${containerId}`,
+    ...diffOptions,
+  });
+};
+
+const getDiffTheme = (theme: Theme) => {
+  return diff(defaultTheme, theme);
+};
+
+const getThemeCSS = (theme: Partial<Theme>) => {
+  const lightColors = (theme.colors?.light || {}) as Partial<ThemeColors>;
+  const darkColors = (theme.colors?.dark || {}) as Partial<ThemeColors>;
+  const dimensions = (theme.dimensions || {}) as Partial<ThemeDimensions>;
+  const lightColorKeys = Object.keys(lightColors) as ThemeColorKeys[];
+  const darkColorKeys = Object.keys(darkColors) as ThemeColorKeys[];
+  const dimensionKeys = Object.keys(dimensions) as ThemeDimensionKeys[];
+  const rootTextSize = theme.size ? getRootTextSize(theme.size) : undefined;
+
+  let rootCSS = '';
+  const lightColorVars = lightColorKeys.map(
+    (key) => `--markprompt-${key}: ${lightColors[key]};`,
+  );
+  const darkColorVars = darkColorKeys.map(
+    (key) => `--markprompt-${key}: ${darkColors[key]};`,
+  );
+  const dimensionVars = dimensionKeys.map(
+    (key) => `--markprompt-${key}: ${dimensions[key]};`,
+  );
+
+  if (lightColorVars.length > 0) {
+    rootCSS += lightColorVars.join('\n') + '\n';
   }
-);
-`;
+  if (dimensionVars.length > 0) {
+    rootCSS += dimensionVars.join('\n') + '\n';
+  }
+  if (rootTextSize) {
+    rootCSS += `--markprompt-text-size: ${rootTextSize}` + '\n';
+  }
+  rootCSS = rootCSS.trim();
+
+  let fullCSS = '';
+  if (rootCSS.length > 0) {
+    fullCSS = `:root {
+${indentString(rootCSS, 2)}
+}\n\n`;
+  }
+
+  if (darkColorVars.length > 0) {
+    fullCSS += `@media (prefers-color-scheme: dark) {
+  :root {
+${indentString(darkColorVars.join('\n'), 4)}
+  }
+}`;
+  }
+
+  return fullCSS.trim();
+};
 
 const scriptTagInstallCode = (
   projectKey: string,
-  container: string,
-  options: {
-    frequencyPenalty: number;
-    iDontKnowMessage: string;
-    includeBranding: boolean;
-    loadingText: string;
-    maxTokens: number;
-    model: string;
-    placeholder: string;
-    presencePenalty: number;
-    promptTemplate: string;
-    referencesText: string;
-    sectionsMatchCount: number;
-    sectionsMatchThreshold: number;
-    temperature: number;
-    topP: number;
-  },
-) => `<link rel="stylesheet" href="https://unpkg.com/@markprompt/css@0.1.0/markprompt.css" />
-<script>
-  window.markprompt = {
-    projectKey: ${projectKey},
-    container: ${container},
-    options: {
-      iDontKnowMessage: ${options.iDontKnowMessage},
-      model: ${options.model},
-      promptTemplate: ${options.promptTemplate},
-      temperature: ${options.temperature},
-      topP: ${options.topP},
-      frequencyPenalty: ${options.frequencyPenalty},
-      presencePenalty: ${options.presencePenalty},
-      maxTokens: ${options.maxTokens},
-      sectionsMatchCount: ${options.sectionsMatchCount},
-      sectionsMatchThreshold: ${options.sectionsMatchThreshold},
-      prompt: {
-        placeholder: ${options.placeholder}
-      },
-      references: {
-        loadingText: ${options.loadingText},
-        referencesText: ${options.referencesText}
-      }
-    }
+  containerId: string,
+  markpromptOptions: MarkpromptOptions,
+  theme: Theme,
+) => {
+  const diffOptions = getDiffOptions(
+    projectKey,
+    containerId,
+    markpromptOptions,
+  );
+
+  const diffTheme: Partial<Theme> = getDiffTheme(theme);
+  const themeCSS = getThemeCSS(diffTheme);
+  let styleBlock = '';
+  if (themeCSS?.length > 0) {
+    styleBlock = `\n<!-- Style overrides -->
+<style>
+${indentString(themeCSS, 2)}
+</style>\n`;
   }
+
+  console.log('diffTheme', JSON.stringify(diffTheme, null, 2));
+
+  return `<link rel="stylesheet" href="https://unpkg.com/@markprompt/css@${
+    MARKPROMPT_JS_PACKAGE_VERSIONS.css
+  }/markprompt.css" />
+<script>
+  window.markprompt = ${indentString(stringify(diffOptions, null, 2), 4).trim()}
 </script>
-<script async src="https://unpkg.com/@markprompt/web@0.4.1/dist/init.js"></script>
+<script async src="https://unpkg.com/@markprompt/web@${
+    MARKPROMPT_JS_PACKAGE_VERSIONS.web
+  }/dist/init.js"></script>
 
 <!-- Container for the Markpromt trigger button -->
-<div id="markprompt" />
-`;
+<div id="${containerId}" />
+${styleBlock}`;
+};
 
 const getDescription = (
   teamSlug: string,
@@ -796,9 +851,9 @@ const getDescription = (
     return (
       <>
         Showing code with your <strong>test</strong> key, which can be used for
-        non-public sites, for instance on localhost. Do not share code with a
-        test key publicly. For public sites, use a production key from a
-        whitelisted domain.
+        non-public sites, for instance for developing on localhost. Do not share
+        code with a test key publicly. For public sites, use a production key
+        from a whitelisted domain.
       </>
     );
   } else {
@@ -817,7 +872,8 @@ const getDescription = (
         ) : (
           <>project settings</>
         )}
-        . For local development, use a test key.
+        . For local development, use a test key (toggle &ldquo;Test mode&rdquo;
+        above).
       </>
     );
   }
@@ -852,15 +908,7 @@ const GetCode = ({
 }) => {
   const { team } = useTeam();
   const { project } = useProject();
-  const {
-    theme,
-    placeholder,
-    modelConfig,
-    iDontKnowMessage,
-    referencesHeading,
-    loadingHeading,
-    includeBranding,
-  } = useConfigContext();
+  const { markpromptOptions, theme } = useConfigContext();
   const [testMode, setTestMode] = useState(false);
   const [codeDialogOpen, setCodeDialogOpen] = useState(false);
 
@@ -930,7 +978,7 @@ const GetCode = ({
                 value="react"
               >
                 <div className="prose prose-invert absolute inset-x-0 top-4 bottom-0 w-full max-w-full overflow-y-auto py-4">
-                  <Note size="sm" type="info" className="mb-4">
+                  {/* <Note size="sm" type="info" className="mb-4">
                     <p>
                       Check out the starter template for a fully working example
                       in Next.js:
@@ -946,7 +994,7 @@ const GetCode = ({
                       </a>{' '}
                       →
                     </p>
-                  </Note>
+                  </Note> */}
                   <h3>Installation</h3>
                   <CodePanel
                     className="w-full"
@@ -963,24 +1011,7 @@ const GetCode = ({
                   />
                   <CodePanel
                     language="jsx"
-                    code={reactCode(
-                      apiKey,
-                      testMode,
-                      includeBranding,
-                      iDontKnowMessage,
-                      placeholder,
-                      loadingHeading,
-                      referencesHeading,
-                      modelConfig.model,
-                      modelConfig.promptTemplate,
-                      modelConfig.temperature,
-                      modelConfig.topP,
-                      modelConfig.frequencyPenalty,
-                      modelConfig.presencePenalty,
-                      modelConfig.maxTokens,
-                      modelConfig.sectionsMatchCount,
-                      modelConfig.sectionsMatchThreshold,
-                    )}
+                    code={reactCode(apiKey, testMode, markpromptOptions)}
                     noPreWrap
                   />
                   <h3>Stylesheet</h3>
@@ -1028,23 +1059,7 @@ const GetCode = ({
                   <CodePanel
                     className="w-full"
                     language="javascript"
-                    code={vanillaCode(`"${apiKey}"`, '"#markprompt"', {
-                      frequencyPenalty: modelConfig.frequencyPenalty,
-                      iDontKnowMessage: `"${iDontKnowMessage}"`,
-                      includeBranding,
-                      loadingText: `"${loadingHeading}"`,
-                      maxTokens: modelConfig.maxTokens,
-                      model: `"${modelConfig.model}"`,
-                      placeholder: `"${placeholder}"`,
-                      presencePenalty: modelConfig.presencePenalty,
-                      promptTemplate: `\`${modelConfig.promptTemplate}\``,
-                      referencesText: `"${referencesHeading}"`,
-                      sectionsMatchCount: modelConfig.sectionsMatchCount,
-                      sectionsMatchThreshold:
-                        modelConfig.sectionsMatchThreshold,
-                      temperature: modelConfig.temperature,
-                      topP: modelConfig.topP,
-                    })}
+                    code={vanillaCode(apiKey, 'markprompt', markpromptOptions)}
                   />
                 </div>
               </Tabs.Content>
@@ -1067,23 +1082,12 @@ const GetCode = ({
                   <CodePanel
                     className="w-full"
                     language="markup"
-                    code={scriptTagInstallCode(`"${apiKey}"`, '"#markprompt"', {
-                      frequencyPenalty: modelConfig.frequencyPenalty,
-                      iDontKnowMessage: `"${iDontKnowMessage}"`,
-                      includeBranding,
-                      loadingText: `"${loadingHeading}"`,
-                      maxTokens: modelConfig.maxTokens,
-                      model: `"${modelConfig.model}"`,
-                      placeholder: `"${placeholder}"`,
-                      presencePenalty: modelConfig.presencePenalty,
-                      promptTemplate: `\`${modelConfig.promptTemplate}\``,
-                      referencesText: `"${referencesHeading}"`,
-                      sectionsMatchCount: modelConfig.sectionsMatchCount,
-                      sectionsMatchThreshold:
-                        modelConfig.sectionsMatchThreshold,
-                      temperature: modelConfig.temperature,
-                      topP: modelConfig.topP,
-                    })}
+                    code={scriptTagInstallCode(
+                      apiKey,
+                      'markprompt',
+                      markpromptOptions,
+                      theme,
+                    )}
                   />
                 </div>
               </Tabs.Content>

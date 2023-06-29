@@ -28,7 +28,10 @@ import colors from 'tailwindcss/colors';
 import { addSource } from '@/lib/api';
 import { SAMPLE_REPO_URL } from '@/lib/constants';
 import { useAppContext } from '@/lib/context/app';
-import { useConfigContext } from '@/lib/context/config';
+import {
+  toSerializableMarkpromptOptions,
+  useConfigContext,
+} from '@/lib/context/config';
 import { useTrainingContext } from '@/lib/context/training';
 import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import useFiles from '@/lib/hooks/use-files';
@@ -299,18 +302,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     loading: loadingSources,
   } = useSources();
   const { state: trainingState, trainAllSources } = useTrainingContext();
-  const {
-    theme,
-    isDark,
-    includeBranding,
-    isInstantSearchEnabled,
-    modelConfig,
-    placeholder,
-    iDontKnowMessage,
-    referencesHeading,
-    loadingHeading,
-    askAILabel,
-  } = useConfigContext();
+  const { markpromptOptions, theme, isDark } = useConfigContext();
   const { numTokensPerTeamRemainingAllowance, numTokensPerTeamAllowance } =
     useUsage();
   const [overlayDimensions, setOverlayDimensions] = useState({
@@ -491,6 +483,11 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     };
   }, [isShowingOnboardingMessages]);
 
+  const serializableMarkpromptOptions = useMemo(
+    () => toSerializableMarkpromptOptions(markpromptOptions),
+    [markpromptOptions],
+  );
+
   useEffect(() => {
     if (
       !isPlaygroundLoaded ||
@@ -502,22 +499,20 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
 
     const props = {
       projectKey: project.private_dev_api_key,
-      showBranding: includeBranding,
+      showBranding: serializableMarkpromptOptions.showBranding,
       prompt: {
+        ...serializableMarkpromptOptions.prompt,
         completionsUrl: getApiUrl('completions', false),
-        iDontKnowMessage: iDontKnowMessage,
-        placeholder: placeholder,
-        cta: askAILabel,
-        ...modelConfig,
       },
       trigger: { floating: true },
       search: {
+        ...serializableMarkpromptOptions.search,
         searchUrl: getApiUrl('search', false),
-        enabled: isInstantSearchEnabled,
       },
       references: {
-        loadingText: loadingHeading,
-        referencesText: referencesHeading,
+        ...serializableMarkpromptOptions.references,
+        // loadingText: loadingHeading,
+        // referencesText: referencesHeading,
         // transformReferenceId: (path: string) => {
         //   const file = files?.find((f) => f.path === path);
 
@@ -549,18 +544,11 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     );
   }, [
     files,
-    iDontKnowMessage,
-    includeBranding,
-    isInstantSearchEnabled,
     isPlaygroundLoaded,
-    loadingHeading,
-    modelConfig,
-    placeholder,
     project,
-    referencesHeading,
-    askAILabel,
     theme,
     isDark,
+    serializableMarkpromptOptions,
   ]);
 
   return (

@@ -16,7 +16,7 @@ export type ThemeColors = {
   ring: string;
 };
 
-type ThemeDimensions = {
+export type ThemeDimensions = {
   radius: string;
 };
 
