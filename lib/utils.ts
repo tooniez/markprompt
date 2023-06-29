@@ -4,15 +4,14 @@ import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
 import { format } from 'date-fns';
 import dayjs from 'dayjs';
+import { stringify } from 'json5';
 import {
   filter,
   isArray,
   isEmpty,
   isNull,
-  isObject,
   isPlainObject,
   isString,
-  keys,
   map,
   mapValues,
   pickBy,
@@ -884,4 +883,29 @@ const _isProvided = (value: any): any => {
     !isArray(value) &&
     !isPlainObject(value);
   return typeIsNotSupported || !isEmpty(value);
+};
+
+export const propsObjectToJSXPropsString = (props: any): string | undefined => {
+  const propStrings = [];
+
+  if (!isPlainObject(props)) {
+    return undefined;
+  }
+
+  if (isEmpty(props)) {
+    return undefined;
+  }
+
+  for (const key of Object.keys(props)) {
+    const propValue = props[key];
+    let propString;
+    if (isString(propValue)) {
+      propString = `${key}="${propValue}"`;
+    } else {
+      propString = `${key}={${stringify(propValue, null, 2)}}`;
+    }
+    propStrings.push(propString);
+  }
+
+  return propStrings.join('\n');
 };
