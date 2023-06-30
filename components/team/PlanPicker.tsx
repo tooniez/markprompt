@@ -184,17 +184,12 @@ const PricingCard = ({
             try {
               setLoading(true);
               // Cancel any existing subscription
-              const res = await cancelSubscription(team.id);
-              if (res.status === 200) {
-                await mutateTeam();
-              } else {
-                toast.error(res.statusText);
-                return;
-              }
+              await cancelSubscription(team.id);
 
-              // Unless it's a downgrade to Hobby, subscribe for new tier.
-              if (tier.id !== 'hobby') {
+              if (tier.id === 'hobby') {
+                // If it's a downgrade to Hobby, stop here.
                 toast.success('Downgraded to Hobby.');
+                await mutateTeam();
               } else {
                 const priceId =
                   tier.price?.[showAnnual ? 'yearly' : 'monthly']?.priceId;
