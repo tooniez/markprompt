@@ -41,7 +41,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
 ) {
-  console.log('IN HERE!');
   if (!req.method || !allowedMethods.includes(req.method)) {
     res.setHeader('Allow', allowedMethods);
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
@@ -63,7 +62,6 @@ export default async function handler(
     return res.status(400).send(`Error: ${e.message}`);
   }
 
-  console.log('EVENT', JSON.stringify(event, null, 2));
   if (relevantEvents.has(event.type)) {
     try {
       // When adding a new event type here, make sure to add them to the
