@@ -58,6 +58,9 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
             <Markprompt
               display="plain"
               showBranding={false}
+              close={{
+                visible: false,
+              }}
               projectKey={
                 (process.env.NODE_ENV === 'production'
                   ? process.env.NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY
