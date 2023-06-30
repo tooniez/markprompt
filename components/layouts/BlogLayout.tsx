@@ -11,7 +11,6 @@ import { getMotifImageDimensionsFromUrl } from '@/lib/utils';
 import { MarkdocContext } from './DocsLayout';
 import LandingNavbar from './LandingNavbar';
 import {
-  DocsPlayground,
   Fence,
   MarkdocButton,
   ProseContainer,
@@ -203,7 +202,6 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
                     Fence,
                     Heading,
                     Note,
-                    Playground: DocsPlayground,
                     Video,
                   },
                 })}

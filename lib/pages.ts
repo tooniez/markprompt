@@ -12,7 +12,6 @@ import {
   iconTags,
   imageNode,
   noteTag,
-  playgroundTag,
   videoTag,
 } from '@/components/layouts/MarkdocLayout';
 
@@ -30,7 +29,6 @@ export const getMarkdocStaticProps = async (pageId: string) => {
     },
     tags: {
       button: buttonTag,
-      playground: playgroundTag,
       note: noteTag,
       collapsegroup: collapseGroupTag,
       collapse: collapseTag,
