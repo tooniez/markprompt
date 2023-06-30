@@ -20,7 +20,6 @@ import {
   ThemeColorKeys,
   ThemeColors,
 } from '../themes';
-import { objectEquals } from '../utils';
 
 export type State = {
   markpromptOptions: MarkpromptOptions;
@@ -32,7 +31,7 @@ export type State = {
   setDark: (dark: boolean) => void;
   setSize: (size: Theme['size']) => void;
   setMarkpromptOptions: (markpromptOptions: MarkpromptOptions) => void;
-  resetMarkpromptOptionsDefaults: () => void;
+  restoreModelDefaults: () => void;
 };
 
 export const DEFAULT_MARKPROMPT_OPTIONS_GPT4: MarkpromptOptions = {
@@ -53,7 +52,7 @@ const initialState: State = {
   setDark: () => {},
   setSize: () => {},
   setMarkpromptOptions: () => {},
-  resetMarkpromptOptionsDefaults: () => {},
+  restoreModelDefaults: () => {},
 };
 
 export const toSerializableMarkpromptOptions = (
@@ -162,9 +161,25 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
     [theme, updateOrCreateCustomTheme],
   );
 
-  const resetMarkpromptOptionsDefaults = useCallback(() => {
-    setMarkpromptOptions(initialState.markpromptOptions);
-  }, [setMarkpromptOptions]);
+  const restoreModelDefaults = useCallback(() => {
+    // Change only model parameters (not promptTemplate or other labels).
+    setMarkpromptOptions({
+      ...markpromptOptions,
+      prompt: {
+        ...(markpromptOptions?.prompt || {}),
+        temperature: initialState.markpromptOptions.prompt!.temperature,
+        topP: initialState.markpromptOptions.prompt!.topP,
+        frequencyPenalty:
+          initialState.markpromptOptions.prompt!.frequencyPenalty,
+        presencePenalty: initialState.markpromptOptions.prompt!.presencePenalty,
+        maxTokens: initialState.markpromptOptions.prompt!.maxTokens,
+        sectionsMatchCount:
+          initialState.markpromptOptions.prompt!.sectionsMatchCount,
+        sectionsMatchThreshold:
+          initialState.markpromptOptions.prompt!.sectionsMatchThreshold,
+      },
+    });
+  }, [markpromptOptions, setMarkpromptOptions]);
 
   return (
     <ConfigContext.Provider
@@ -180,7 +195,7 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
         setDark,
         setSize,
         setMarkpromptOptions,
-        resetMarkpromptOptionsDefaults,
+        restoreModelDefaults,
       }}
       {...props}
     />

@@ -28,11 +28,8 @@ type ModelConfiguratorProps = {
 
 export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
   const { team } = useTeam();
-  const {
-    markpromptOptions,
-    setMarkpromptOptions,
-    resetMarkpromptOptionsDefaults,
-  } = useConfigContext();
+  const { markpromptOptions, setMarkpromptOptions, restoreModelDefaults } =
+    useConfigContext();
 
   const _canConfigureModel = team && canConfigureModel(team);
 
@@ -234,7 +231,7 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 buttonSize="sm"
                 variant="plain"
                 onClick={() => {
-                  resetMarkpromptOptionsDefaults();
+                  restoreModelDefaults();
                   toast.success('Model defaults restored.');
                 }}
               >
