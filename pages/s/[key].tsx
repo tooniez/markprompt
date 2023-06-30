@@ -45,67 +45,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     .limit(1)
     .maybeSingle();
 
-  // v0
-  // {
-  //   "theme": {
-  //     "name": "Default",
-  //     "size": "sm",
-  //     "colors": {
-  //       "dark": {
-  //         "ring": "#FFFFFF",
-  //         "input": "#FFFFFF",
-  //         "muted": "#171717",
-  //         "border": "#262626",
-  //         "overlay": "#00000040",
-  //         "primary": "#0ea5e9",
-  //         "secondary": "#0E0E0E",
-  //         "background": "#050505",
-  //         "foreground": "#D4D4D4",
-  //         "mutedForeground": "#737373",
-  //         "primaryHighlight": "#EC4899",
-  //         "primaryForeground": "#FFFFFF",
-  //         "secondaryHighlight": "#A855F7",
-  //         "secondaryForeground": "#FFFFFF"
-  //       },
-  //       "light": {
-  //         "ring": "#0EA5E9",
-  //         "input": "#FFFFFF",
-  //         "muted": "#FAFAFA",
-  //         "border": "#E5E5E5",
-  //         "overlay": "#00000010",
-  //         "primary": "#0ea5e9",
-  //         "secondary": "#FAFAFA",
-  //         "background": "#FFFFFF",
-  //         "foreground": "#171717",
-  //         "mutedForeground": "#737373",
-  //         "primaryHighlight": "#EC4899",
-  //         "primaryForeground": "#FFFFFF",
-  //         "secondaryHighlight": "#A855F7",
-  //         "secondaryForeground": "#171717"
-  //       }
-  //     },
-  //     "dimensions": {
-  //       "radius": "8px"
-  //     }
-  //   },
-  //   "modelConfig": {
-  //     "topP": 1,
-  //     "model": "gpt-4",
-  //     "maxTokens": 500,
-  //     "temperature": 0.1,
-  //     "promptTemplate": "You are a very enthusiastic company representative who loves to help people! Given the following sections from the documentation (preceded by a section id), answer the question using only that information, output in Markdown format. If you are unsure and the answer is not explicitly written in the documentation, say \"{{I_DONT_KNOW}}\".\n\nContext sections:\n---\n{{CONTEXT}}\n\nQuestion: \"{{PROMPT}}\"\n\nAnswer (including related code snippets if available):",
-  //     "presencePenalty": 0,
-  //     "frequencyPenalty": 0,
-  //     "sectionsMatchCount": 10,
-  //     "sectionsMatchThreshold": 0.5
-  //   },
-  //   "placeholder": "Ask me anything…",
-  //   "loadingHeading": "Fetching relevant pages…",
-  //   "includeBranding": true,
-  //   "iDontKnowMessage": "Sorry, I am not sure how to answer that.",
-  //   "referencesHeading": "Answer generated from the following pages:"
-  // }
-
   const projectKey = (data?.projects as any)?.public_api_key;
 
   if (error || !data?.config || !projectKey) {
