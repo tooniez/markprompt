@@ -42,8 +42,13 @@ const Share = ({ children }: { children: ReactNode }) => {
 
       if (shareKey) {
         await createPromptConfig(project.id, shareKey, {
-          markpromptOptions,
           theme,
+          placeholder: markpromptOptions.prompt?.placeholder,
+          modelConfig: markpromptOptions.prompt,
+          iDontKnowMessage: markpromptOptions.prompt?.iDontKnowMessage,
+          referencesHeading: markpromptOptions.references?.referencesText,
+          loadingHeading: markpromptOptions.references?.loadingText,
+          includeBranding: markpromptOptions.showBranding,
         });
       }
       await mutatePromptConfigs();

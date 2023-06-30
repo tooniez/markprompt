@@ -1,4 +1,4 @@
-import { type MarkpromptOptions } from '@markprompt/react';
+import { SubmitPromptOptions } from '@markprompt/core';
 
 import { getResponseOrThrow, slugFromName } from '@/lib/utils';
 import {
@@ -52,8 +52,13 @@ export const createPromptConfig = async (
   id: Project['id'],
   shareKey: string,
   config: {
-    markpromptOptions: MarkpromptOptions;
     theme: Theme;
+    placeholder?: string;
+    modelConfig?: SubmitPromptOptions;
+    iDontKnowMessage?: string;
+    referencesHeading?: string;
+    loadingHeading?: string;
+    includeBranding?: boolean;
   },
 ): Promise<PromptConfig> => {
   const res = await fetch(`/api/project/${id}/prompt-configs`, {
