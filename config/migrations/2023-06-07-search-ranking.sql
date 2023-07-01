@@ -46,14 +46,14 @@ create index idx_section_id_fts on mv_fts (section_id);
 create index idx_tokens_fts on mv_fts (tokens)
 create index idx_public_api_key_fts on mv_fts (public_api_key)
 create index idx_private_dev_api_key_fts on mv_fts (private_dev_api_key)
-
 create index idx_file_sections_fts
-on mv_fts
+on file_sections
 using pgroonga ((array[
-    section_content,
-    (file_meta->>'title')::text,
-    (section_meta->'leadHeading'->>'value')::text
-  ]));
+    content,
+    (cf_file_meta->>'title')::text,
+    (meta->'leadHeading'->>'value')::text
+  ]),
+  (cf_project_id::varchar));
 
 -- Make sure security definer is set, cf.
 -- https://stackoverflow.com/questions/67530999/error-must-be-owner-of-materialized-view-postgresql
