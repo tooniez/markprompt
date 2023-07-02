@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import FlexSearch from 'flexsearch';
 import { uniq } from 'lodash-es';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { remark } from 'remark';
@@ -20,6 +21,7 @@ const supabaseAdmin = createClient<Database>(
 type FTSResult = Database['public']['Functions']['fts']['Returns'][number];
 
 type SearchResultFileData = {
+  title: string;
   path: string;
   meta: any;
   source: {
@@ -28,17 +30,26 @@ type SearchResultFileData = {
   };
 };
 
-type SearchResult = SearchResultFileData & {
-  score: number;
-  sections: { content: string; meta?: any }[];
-};
+// type SearchResult = SearchResultFileData & {
+//   score: number;
+//   sections: { content: string; meta?: any }[];
+// };
+
+type SectionResult = FlexSearch.Document<
+  {
+    heading?: string;
+    content: string;
+    file: SearchResultFileData;
+  },
+  ['fileTitle', 'leadHeading', 'content']
+>;
 
 type Data =
   | {
       status?: string;
       error?: string;
     }
-  | { data: SearchResult[]; debug?: any };
+  | { data: SectionResult[]; debug?: any };
 
 const allowedMethods = ['GET'];
 
@@ -167,19 +178,53 @@ export default async function handler(
     track(_data.project_id, 'search', { projectId: _data.project_id });
   }
 
-  const data = _data as FTSResult[];
+  const fileSections = _data as FTSResult[];
   const fileDatas: { [key: string]: SearchResultFileData } = {};
 
   const metadataTs = Date.now();
-  const fileIds = uniq(data.map((d) => d.file_id)).sort();
+  const fileIds = uniq(fileSections.map((d) => d.file_id)).sort();
   const { data: _fileData } = await supabaseAdmin
     .from('files')
     .select('id, path, meta, sources(data, type)')
     .in('id', fileIds);
   const metadataDelta = Date.now() - metadataTs;
 
-  const resultsByFile: { [key: string]: SearchResult } = {};
-  for (const result of data) {
+  // Sort using Flexsearch
+  const index: SectionResult = new FlexSearch.Document({
+    cache: 100,
+    tokenize: 'full',
+    document: {
+      id: 'id',
+      index: [
+        {
+          field: 'fileTitle',
+          tokenize: 'forward',
+          optimize: true,
+          resolution: 9,
+        },
+        {
+          field: 'content',
+          tokenize: 'strict',
+          optimize: true,
+          resolution: 5,
+          filter: (s: string) => s.length > 2,
+          context: {
+            depth: 1,
+            resolution: 3,
+          },
+        },
+      ],
+      tag: 'pageId',
+      store: ['fileTitle', 'leadHeading', 'content'],
+    },
+    context: {
+      resolution: 9,
+      depth: 2,
+      bidirectional: true,
+    },
+  });
+
+  for (const result of fileSections) {
     const fileId = result.file_id;
     const fileDataByFile = _fileData?.find((d) => d.id === fileId);
     if (!fileDataByFile) {
@@ -194,23 +239,56 @@ export default async function handler(
         data: source.data,
       },
     };
-
-    fileDatas[fileId] = fileData;
-
-    resultsByFile[result.file_id] = {
-      ...fileData,
-      // Score is not returned currently
-      score: 0,
-      sections: [
-        ...(resultsByFile[fileId]?.sections || []),
-        {
-          ...(result.meta ? { meta: result.meta } : {}),
-          content: await createKWICSnippet(result.content || '', query),
-        },
-      ],
-    };
+    const content = await createKWICSnippet(result.content || '', query);
+    sectionIndex.add({
+      // id: `${url}_${i}`,
+      // url,
+      // title,
+      // pageId: `page_${pageId}`,
+      path: fileDataByFile.path,
+      content,
+      fileMeta: fileDataByFile.meta,
+      source: {
+        type: source.type,
+        data: source.data,
+      },
+    });
   }
 
+  // const resultsByFile: { [key: string]: SearchResult } = {};
+  // for (const result of data) {
+  //   const fileId = result.file_id;
+  //   const fileDataByFile = _fileData?.find((d) => d.id === fileId);
+  //   if (!fileDataByFile) {
+  //     continue;
+  //   }
+  //   const source = fileDataByFile.sources as any;
+  //   const fileData = {
+  //     path: fileDataByFile.path,
+  //     meta: fileDataByFile.meta,
+  //     source: {
+  //       type: source.type,
+  //       data: source.data,
+  //     },
+  //   };
+
+  //   fileDatas[fileId] = fileData;
+
+  //   resultsByFile[result.file_id] = {
+  //     ...fileData,
+  //     // Score is not returned currently
+  //     score: 0,
+  //     sections: [
+  //       ...(resultsByFile[fileId]?.sections || []),
+  //       {
+  //         ...(result.meta ? { meta: result.meta } : {}),
+  //         content: await createKWICSnippet(result.content || '', query),
+  //       },
+  //     ],
+  //   };
+  // }
+
+  let resultsByFile = {};
   return res.status(200).json({
     debug: {
       middleware: safeParseJSON(req.query.mts as string, []),

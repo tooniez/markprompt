@@ -17,7 +17,8 @@
     "incremental": true,
     "allowSyntheticDefaultImports": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "flexsearch": ["./node_modules/@types/flexsearch"]
     },
     "plugins": [
       {
