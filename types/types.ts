@@ -191,3 +191,17 @@ export type SerializedDateRange = {
 };
 
 export type SystemStatus = 'operational' | 'downtime' | 'degraded';
+
+export type FileSectionHeading = { value: string | undefined; depth: number };
+
+export type FileSectionMeta = { leadHeading?: FileSectionHeading };
+
+export type FileSectionData = {
+  content: string;
+} & FileSectionMeta;
+
+export type FileSectionsData = {
+  sections: FileSectionData[];
+  meta: { title: string } & any;
+  leadFileHeading: string | undefined;
+};
