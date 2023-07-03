@@ -84,8 +84,6 @@ const createKWICSnippet = async (
     .replace(/\s+/g, ' ')
     .replace(/\\n/g, ' ');
 
-  console.log('plainText', JSON.stringify(plainText, null, 2));
-
   const index = plainText.indexOf(searchTerm);
 
   if (index === -1) {
