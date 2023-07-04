@@ -107,8 +107,9 @@ create table public.file_sections (
   meta          jsonb,
   embedding     vector(1536),
   -- Computed fields
+  fts           tsvector generated always as (to_tsvector(content)) stored,
   cf_file_meta  jsonb,
-  cf_project_id uuid references public.projects on delete cascade
+  cf_project_id uuid references public.projects on delete cascade,
 );
 
 -- Access tokens
@@ -207,7 +208,6 @@ end;
 $$;
 
 -- FTS
-
 
 -- Helper
 create or replace function create_idx_file_sections_fts()
