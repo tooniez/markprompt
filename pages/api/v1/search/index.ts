@@ -41,7 +41,7 @@ type FileSectionContentIndex = FlexSearch.Document<
   ['meta', 'content', 'fileId']
 >;
 
-type SearchResultSectionData = { content: string; meta?: any };
+type SearchResultSectionData = { content?: string; meta?: any };
 
 // Legacy
 type SearchResultFileData = {
@@ -103,7 +103,7 @@ const createKWICSnippet = async (
     .replace(/\s+/g, ' ')
     .replace(/\\n/g, ' ');
 
-  const index = plainText.indexOf(searchTerm);
+  const index = plainText.toLowerCase().indexOf(searchTerm.toLowerCase());
 
   if (index === -1) {
     return plainText.slice(0, maxLength);
@@ -366,16 +366,38 @@ export default async function handler(
 
   // For backwards compatibility
   if ((req.query.format as string) === 'flat') {
-    // const _responseData: SearchResultSectionDataWithFileInfo[] = [];
-    // for (const result of searchResults) {
-    //   const { file, content, meta } = result.doc;
-    //   _responseData.push({
-    //     file,
-    //     content: await createKWICSnippet(content || '', query),
-    //     meta,
-    //   });
-    // }
-    // responseData = _responseData;
+    const _responseData: SearchResultSectionDataWithFileInfo[] = [];
+
+    // Matching files with title
+    for (const result of fileTitleSearchResults) {
+      const fileId = result.doc.id;
+      const fileData = fileAugmentationDataByFileId[fileId];
+      _responseData.push({
+        file: {
+          meta: fileData.meta,
+          path: fileData.path,
+          source: fileData.sources as Source,
+          title: (fileData.meta as any)?.title,
+        },
+      });
+    }
+
+    // Matching sections with content
+    for (const result of fileSectionContentSearchResults) {
+      const fileId = result.doc.fileId;
+      const fileData = fileAugmentationDataByFileId[fileId];
+      _responseData.push({
+        file: {
+          meta: fileData.meta,
+          path: fileData.path,
+          source: fileData.sources as Source,
+          title: (fileData.meta as any)?.title,
+        },
+        ...(result.doc.meta ? { meta: result.doc.meta } : {}),
+        content: await createKWICSnippet(result.doc.content || '', query),
+      });
+    }
+    responseData = _responseData;
   } else {
     // This part is for legacy and added for backwards compatibility. The
     // issue with returning sections grouped by file id is that it's not
@@ -436,6 +458,6 @@ export default async function handler(
       metadata: metadataDelta,
       rerank: rerankDelta,
     },
-    data: responseData,
+    data: responseData.slice(0, limit),
   });
 }
