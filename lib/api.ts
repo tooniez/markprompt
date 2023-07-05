@@ -1,5 +1,4 @@
 import { getResponseOrThrow, slugFromName } from '@/lib/utils';
-import { Database } from '@/types/supabase';
 import {
   DbFile,
   DbUser,

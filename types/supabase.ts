@@ -3,7 +3,7 @@ export type Json =
   | number
   | boolean
   | null
-  | { [key: string]: Json }
+  | { [key: string]: Json | undefined }
   | Json[]
 
 export interface Database {
@@ -479,7 +479,6 @@ export interface Database {
           created_by: string
           id: string
           inserted_at: string
-          is_enterprise_plan: boolean | null
           is_personal: boolean | null
           name: string | null
           plan_details: Json | null
@@ -492,7 +491,6 @@ export interface Database {
           created_by: string
           id?: string
           inserted_at?: string
-          is_enterprise_plan?: boolean | null
           is_personal?: boolean | null
           name?: string | null
           plan_details?: Json | null
@@ -505,7 +503,6 @@ export interface Database {
           created_by?: string
           id?: string
           inserted_at?: string
-          is_enterprise_plan?: boolean | null
           is_personal?: boolean | null
           name?: string | null
           plan_details?: Json | null
@@ -703,7 +700,6 @@ export interface Database {
           file_id: number | null
           file_meta: Json | null
           file_path: string | null
-          is_enterprise_plan: boolean | null
           private_dev_api_key: string | null
           project_id: string | null
           public_api_key: string | null
@@ -883,7 +879,6 @@ export interface Database {
       }
       v_team_project_info: {
         Row: {
-          is_enterprise_plan: boolean | null
           plan_details: Json | null
           project_id: string | null
           stripe_price_id: string | null
@@ -893,7 +888,6 @@ export interface Database {
       }
       v_team_project_usage_info: {
         Row: {
-          is_enterprise_plan: boolean | null
           plan_details: Json | null
           project_id: string | null
           stripe_price_id: string | null
@@ -904,6 +898,14 @@ export interface Database {
       }
     }
     Functions: {
+      create_fts_index: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      create_idx_file_sections_fts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       fts: {
         Args: {
           search_term: string
@@ -916,6 +918,30 @@ export interface Database {
           meta: Json
           file_id: number
           file_meta: Json
+        }[]
+      }
+      fts_file_section_content: {
+        Args: {
+          search_term: string
+          match_count: number
+          project_id: string
+        }
+        Returns: {
+          id: number
+          content: string
+          meta: Json
+          file_id: number
+          file_meta: Json
+        }[]
+      }
+      fts_file_title: {
+        Args: {
+          search_term: string
+          match_count: number
+          project_id: string
+        }
+        Returns: {
+          id: number
         }[]
       }
       ivfflathandler: {

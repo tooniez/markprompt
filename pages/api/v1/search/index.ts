@@ -1,13 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
+import FlexSearch from 'flexsearch';
 import { uniq } from 'lodash-es';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { remark } from 'remark';
+import remarkGfm from 'remark-gfm';
 import strip from 'strip-markdown';
 
 import { track } from '@/lib/posthog';
 import { safeParseInt, safeParseJSON } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
-import { SourceType } from '@/types/types';
+import { FileSectionMeta } from '@/types/types';
 
 const MAX_SEARCH_RESULTS = 20;
 
@@ -17,20 +19,50 @@ const supabaseAdmin = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY || '',
 );
 
-type FTSResult = Database['public']['Functions']['fts']['Returns'][number];
+type FTSFileSectionContentResult =
+  Database['public']['Functions']['fts_file_section_content']['Returns'][number];
 
-type SearchResultFileData = {
-  path: string;
-  meta: any;
-  source: {
-    type: SourceType;
-    data?: any;
+type FTSFileTitleResult =
+  Database['public']['Functions']['fts_file_title']['Returns'][number];
+
+type Index = FlexSearch.Document<
+  { id: string } & SearchResult,
+  ['file', 'meta', 'content', 'matchType']
+>;
+
+// TODO: These types should come from @markprompt/core
+
+type SearchResult = {
+  matchType: 'title' | 'leadHeading' | 'content';
+  file: SearchResultFileData;
+} & SearchResultSection;
+
+type SearchResultSection = {
+  content?: string;
+  meta?: {
+    leadHeading?: {
+      id?: string;
+      depth: number;
+      value: string;
+    };
   };
 };
 
-type SearchResult = SearchResultFileData & {
-  score: number;
-  sections: { content: string; meta?: any }[];
+type SearchResultFileData = {
+  title?: string;
+  path: string;
+  meta: any;
+  source: Source;
+};
+
+type SourceType = 'github' | 'motif' | 'website' | 'file-upload' | 'api-upload';
+
+type Source = {
+  type: SourceType;
+  data: {
+    url?: string;
+    domain?: string;
+  };
 };
 
 type Data =
@@ -38,7 +70,10 @@ type Data =
       status?: string;
       error?: string;
     }
-  | { data: SearchResult[]; debug?: any };
+  | {
+      data: SearchResult[];
+      debug?: any;
+    };
 
 const allowedMethods = ['GET'];
 
@@ -51,17 +86,12 @@ const createKWICSnippet = async (
   // the keyword. This creates a snippet suitable for displaying in
   // search results.
   const plainText = String(
-    await remark()
-      .use(strip, {
-        remove: ['heading', 'inlineCode'],
-        keep: ['text'],
-      })
-      .process(content.trim()),
+    await remark().use(remarkGfm).use(strip).process(content.trim()),
   )
     .replace(/\s+/g, ' ')
     .replace(/\\n/g, ' ');
 
-  const index = plainText.indexOf(searchTerm);
+  const index = plainText.toLowerCase().indexOf(searchTerm.toLowerCase());
 
   if (index === -1) {
     return plainText.slice(0, maxLength);
@@ -78,6 +108,15 @@ const createKWICSnippet = async (
   }
 
   return words.join(' ');
+};
+
+const processTitle = async (title: string | undefined) => {
+  // In some situations, the title can be an HTML/JSX tag, for instance
+  // an image. If it's an image/figure, we extract the title/alt.
+  if (typeof title === 'undefined') {
+    return title;
+  }
+  return String(await remark().use(remarkGfm).use(strip).process(title)).trim();
 };
 
 export default async function handler(
@@ -130,6 +169,8 @@ export default async function handler(
   const query = req.query.query as string;
   const projectId = req.query.projectId as string;
 
+  track(projectId, 'search', { projectId });
+
   const limit = Math.min(
     MAX_SEARCH_RESULTS,
     safeParseInt(req.query.limit as string, 10),
@@ -141,82 +182,213 @@ export default async function handler(
     });
   }
 
-  const ftsTs = Date.now();
+  // Retrieve files matching on title
+
+  const ftsFileTitlesTs = Date.now();
 
   const {
-    data: _data,
-    error,
+    data: _fileTitleDBMatches,
   }: {
-    data: FTSResult[] | null | any;
+    data: FTSFileTitleResult[] | null;
     error: { message: string; code: string } | null;
-  } = await supabaseAdmin.rpc('fts', {
+  } = await supabaseAdmin.rpc('fts_file_title', {
     search_term: query,
-    match_count: limit,
+    match_count: 20,
     project_id: projectId,
   });
 
-  const ftsDelta = Date.now() - ftsTs;
+  const fileTitleDBMatchesIds = (_fileTitleDBMatches || []).map(
+    (f: FTSFileTitleResult) => f.id,
+  );
 
-  if (error || !_data) {
-    return res
-      .status(400)
-      .json({ error: error?.message || 'Error retrieving sections' });
-  }
+  const ftsFileTitleDelta = Date.now() - ftsFileTitlesTs;
 
-  if (_data.project_id) {
-    track(_data.project_id, 'search', { projectId: _data.project_id });
-  }
+  // Retrieve file sections matching on content
 
-  const data = _data as FTSResult[];
-  const fileDatas: { [key: string]: SearchResultFileData } = {};
+  const ftsFileSectionContentTs = Date.now();
+
+  const {
+    data: _fileSectionContentDBMatches,
+  }: {
+    data: FTSFileSectionContentResult[] | null;
+  } = await supabaseAdmin.rpc('fts_file_section_content', {
+    search_term: query,
+    match_count: 50,
+    project_id: projectId,
+  });
+
+  const ftsFileSectionContentDelta = Date.now() - ftsFileSectionContentTs;
+
+  const fileSectionContentDBMatchesIds = (
+    _fileSectionContentDBMatches || []
+  ).map((f) => f.file_id);
 
   const metadataTs = Date.now();
-  const fileIds = uniq(data.map((d) => d.file_id)).sort();
-  const { data: _fileData } = await supabaseAdmin
+
+  const matchingFileIdsFromTitleAndContent = uniq([
+    ...fileTitleDBMatchesIds,
+    ...fileSectionContentDBMatchesIds,
+  ]).sort();
+
+  // Agment files and file sections with sources and meta
+
+  const { data: _fileAugmentationData } = await supabaseAdmin
     .from('files')
     .select('id, path, meta, sources(data, type)')
-    .in('id', fileIds);
+    .in('id', matchingFileIdsFromTitleAndContent);
+
+  const fileAugmentationData = await Promise.all(
+    (_fileAugmentationData || []).map(async (d) => {
+      return {
+        ...d,
+        processedTitle: await processTitle((d.meta as any)?.title),
+      };
+    }),
+  );
+
   const metadataDelta = Date.now() - metadataTs;
 
-  const resultsByFile: { [key: string]: SearchResult } = {};
-  for (const result of data) {
-    const fileId = result.file_id;
-    const fileDataByFile = _fileData?.find((d) => d.id === fileId);
-    if (!fileDataByFile) {
-      continue;
-    }
-    const source = fileDataByFile.sources as any;
-    const fileData = {
-      path: fileDataByFile.path,
-      meta: fileDataByFile.meta,
-      source: {
-        type: source.type,
-        data: source.data,
+  if (!fileAugmentationData) {
+    return res.status(200).json({
+      debug: {
+        middleware: safeParseJSON(req.query.mts as string, []),
+        fts: ftsFileSectionContentDelta,
+        metadata: metadataDelta,
       },
-    };
+      data: [],
+    });
+  }
 
-    fileDatas[fileId] = fileData;
+  // Rank files by title match
 
-    resultsByFile[result.file_id] = {
-      ...fileData,
-      // Score is not returned currently
-      score: 0,
-      sections: [
-        ...(resultsByFile[fileId]?.sections || []),
+  const rerankTs = Date.now();
+
+  const index: Index = new FlexSearch.Document({
+    cache: 100,
+    tokenize: 'full',
+    document: {
+      id: 'id',
+      index: [
         {
-          ...(result.meta ? { meta: result.meta } : {}),
-          content: await createKWICSnippet(result.content || '', query),
+          field: 'file:meta:title',
+          tokenize: 'forward',
+          optimize: true,
+          resolution: 9,
+        },
+        {
+          field: 'meta:leadHeading:value',
+          tokenize: 'forward',
+          optimize: true,
+          resolution: 8,
+        },
+        {
+          field: 'content',
+          tokenize: 'strict',
+          optimize: true,
+          resolution: 7,
+          filter: (s: string) => s.length > 2,
         },
       ],
-    };
+      store: ['file', 'meta', 'content', 'matchType'],
+    },
+    context: {
+      resolution: 9,
+      depth: 2,
+      bidirectional: true,
+    },
+  });
+
+  const fileTitles: string[] = [];
+
+  for (const match of _fileTitleDBMatches || []) {
+    const fileData = fileAugmentationData.find((f) => f.id === match.id);
+    if (fileData) {
+      if (fileData.processedTitle) {
+        fileTitles.push(fileData.processedTitle);
+      }
+      index.add({
+        id: `${match.id}`,
+        matchType: 'title',
+        file: {
+          title: fileData.processedTitle,
+          path: fileData.path,
+          meta: fileData.meta,
+          source: fileData.sources as Source,
+        },
+      });
+    }
   }
+
+  for (const match of _fileSectionContentDBMatches || []) {
+    const fileData = fileAugmentationData.find((f) => f.id === match.file_id);
+    if (!fileData) {
+      continue;
+    }
+    // Ignore sections which are duplicates of files with title matches. We
+    // consider it a duplicate if it has a heading of depth 1 equal to a
+    // file title.
+    const leadHeading = (match.meta as FileSectionMeta)?.leadHeading;
+    if (
+      leadHeading?.depth === 1 &&
+      leadHeading.value &&
+      fileTitles.includes(leadHeading.value)
+    ) {
+      continue;
+    }
+
+    const matchType = leadHeading?.value
+      ?.toLowerCase()
+      .includes(query.toLowerCase())
+      ? 'leadHeading'
+      : 'content';
+
+    index.add({
+      id: `${match.id}`,
+      matchType,
+      file: {
+        title: fileData.processedTitle,
+        path: fileData.path,
+        meta: fileData.meta,
+        source: fileData.sources as Source,
+      },
+      content: match.content,
+      meta: match.meta as any,
+    });
+  }
+
+  // Return at most `MAX_FILE_TITLE_MATCHES` file title matches
+  const rankedResults = (
+    index.search<true>(query, limit, {
+      enrich: true,
+      suggest: true,
+    })[0]?.result || []
+  ).map((r) => r.doc);
+
+  const rerankDelta = Date.now() - rerankTs;
+
+  const includeSectionContent = req.query.includeSectionContent === 'true';
+
+  const results = await Promise.all(
+    rankedResults.map(async (r) => {
+      const { content, ...rest } = r;
+      return {
+        ...rest,
+        ...(content && !!includeSectionContent ? { content } : {}),
+        ...(content
+          ? { snippet: await createKWICSnippet(content, query) }
+          : {}),
+      };
+    }),
+  );
 
   return res.status(200).json({
     debug: {
       middleware: safeParseJSON(req.query.mts as string, []),
-      fts: ftsDelta,
+      ftsFileTitle: ftsFileTitleDelta,
+      ftsFileSectionContent: ftsFileSectionContentDelta,
       metadata: metadataDelta,
+      rerank: rerankDelta,
     },
-    data: Object.values(resultsByFile),
+    data: results,
   });
 }

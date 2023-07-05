@@ -107,8 +107,9 @@ create table public.file_sections (
   meta          jsonb,
   embedding     vector(1536),
   -- Computed fields
+  fts           tsvector generated always as (to_tsvector(content)) stored,
   cf_file_meta  jsonb,
-  cf_project_id uuid references public.projects
+  cf_project_id uuid references public.projects on delete cascade,
 );
 
 -- Access tokens
@@ -208,7 +209,97 @@ $$;
 
 -- FTS
 
+-- Helper
+create or replace function create_idx_file_sections_fts()
+returns void
+security definer
+as $$
+begin
+  create index concurrently idx_file_sections_fts
+  on file_sections
+  using pgroonga ((array[
+      content,
+      (cf_file_meta->>'title')::text,
+      (meta->'leadHeading'->>'value')::text
+    ]),
+    (cf_project_id::varchar)
+  );
+end;
+$$ language plpgsql;
+
+create or replace function create_idx_pgroonga_file_sections_fts()
+returns void
+security definer
+as $$
+begin
+  create index idx_pgroonga_file_sections_fts
+  on file_sections
+  using pgroonga (content);
+end;
+$$ language plpgsql;
+
+---
+
 create or replace function fts(
+  search_term text,
+  match_count int,
+  project_id text
+)
+returns table (
+  id bigint,
+  content text,
+  meta jsonb,
+  file_id bigint,
+  file_meta jsonb
+)
+language plpgsql
+as $$
+begin
+  return query
+  select
+    fs.id,
+    fs.content,
+    fs.meta,
+    fs.file_id as file_id,
+    fs.cf_file_meta as file_meta
+  from file_sections fs
+  where
+    (
+      array[
+        fs.content,
+        (fs.cf_file_meta->>'title')::text,
+        (fs.meta->'leadHeading'->>'value')::text
+      ] &@ (fts.search_term, array[1, 1000, 50], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
+    )
+    and fs.cf_project_id::varchar = fts.project_id
+  limit fts.match_count;
+end;
+$$;
+
+-- We only return the file id, as we need to later augment it the results
+-- with source info. At that step, we also add the file meta.
+create or replace function fts_file_title(
+  search_term text,
+  match_count int,
+  project_id uuid
+)
+returns table (
+  id bigint
+)
+language plpgsql
+as $$
+begin
+  return query
+  select f.id
+  from files f
+  where
+    f.project_id = fts_file_title.project_id
+    and f.meta->>'title' &@ fts_file_title.search_term
+  limit fts_file_title.match_count;
+end;
+$$;
+
+create or replace function fts_file_section_content(
   search_term text,
   match_count int,
   project_id uuid
@@ -217,43 +308,8 @@ returns table (
   id bigint,
   content text,
   meta jsonb,
-  file_id bigint,
-  file_meta jsonb
-)
-language plpgsql
-as $$
-begin
-  return query
-  select
-    fs.id,
-    fs.content,
-    fs.meta,
-    fs.file_id as file_id,
-    fs.cf_file_meta as file_meta
-  from file_sections fs
-  where
-    fs.cf_project_id = fts.project_id
-    and (
-      array[
-        (fs.cf_file_meta->>'title')::text,
-        (fs.meta->'leadHeading'->>'value')::text,
-        fs.content
-      ] &@ (fts.search_term, array[100, 10, 1], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
-    )
-  limit match_count;
-end;
-$$;
-
-create or replace function fts_metadata(
   file_id bigint
 )
-returns table (
-  id bigint,
-  content text,
-  meta jsonb,
-  file_id bigint,
-  file_meta jsonb
-)
 language plpgsql
 as $$
 begin
@@ -262,19 +318,12 @@ begin
     fs.id,
     fs.content,
     fs.meta,
-    fs.file_id as file_id,
-    fs.cf_file_meta as file_meta
+    fs.file_id as file_id
   from file_sections fs
   where
-    fs.cf_project_id = fts.project_id
-    and (
-      array[
-        (fs.cf_file_meta->>'title')::text,
-        (fs.meta->'leadHeading'->>'value')::text,
-        fs.content
-      ] &@ (fts.search_term, array[100, 10, 1], 'idx_file_sections_fts')::pgroonga_full_text_search_condition
-    )
-  limit match_count;
+    fs.cf_project_id = fts_file_section_content.project_id
+    and fs.content ilike '%' || fts_file_section_content.search_term || '%'
+  limit fts_file_section_content.match_count;
 end;
 $$;
 
@@ -462,13 +511,9 @@ create index idx_tokens_project_id on tokens(project_id);
 create index idx_domain_project_id on domains(project_id);
 create index idx_file_sections_cf_project_id on file_sections (cf_project_id);
 create index idx_query_stats_project_id_created_at_processed on query_stats(project_id, created_at, processed);
-create index idx_file_sections_fts
-on file_sections
-using pgroonga ((array[
-    content,
-    (cf_file_meta->>'title')::text,
-    (meta->'leadHeading'->>'value')::text
-  ]));
+create index idx_pgroonga_file_sections_content on file_sections using pgroonga (content);
+create index idx_pgroonga_files_meta on files using pgroonga (meta);
+create index idx_pgroonga_files_meta_title on files using pgroonga ((meta->>'title'));
 
 -- RLS
 

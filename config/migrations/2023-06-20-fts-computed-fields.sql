@@ -12,7 +12,7 @@ drop index ix_file_sections_content;
 -- Add a computed field with parent file meta for FTS
 alter table file_sections
 add column cf_file_meta jsonb,
-add column cf_project_id uuid references public.projects;
+add column cf_project_id uuid references public.projects on delete cascade;
 
 -- Indexes
 

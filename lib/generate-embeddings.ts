@@ -28,6 +28,8 @@ import {
   API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
   DbFile,
   FileData,
+  FileSectionData,
+  FileSectionsData,
   OpenAIModelIdWithType,
   Project,
   Source,
@@ -40,17 +42,6 @@ import { MarkpromptConfig } from './schema';
 import { tokensToApproxParagraphs } from './stripe/tiers';
 import { getTokenAllowanceInfo } from './supabase';
 import { recordProjectTokenCount } from './tinybird';
-
-type FileSectionData = {
-  content: string;
-  leadHeading?: { value: string | undefined; depth: number };
-};
-
-type FileSectionsData = {
-  sections: FileSectionData[];
-  meta: { title: string } & any;
-  leadFileHeading: string | undefined;
-};
 
 const defaultFileSectionsData: FileSectionsData = {
   sections: [],
