@@ -3,6 +3,7 @@
 create index idx_pgroonga_file_sections_content on file_sections using pgroonga (content);
 -- Pgroonga index on files meta
 create index idx_pgroonga_files_meta on files using pgroonga (meta);
+create index idx_pgroonga_files_meta_title on files using pgroonga ((meta->>'title'));
 
 create or replace function fts_file_section_content(
   search_term text,
@@ -48,7 +49,7 @@ begin
   from files f
   where
     f.project_id = fts_file_title.project_id
-    and f.meta &` concat('(paths @ "title") && query("string", "', fts_file_title.search_term, '")')
+    and f.meta->>'title' &@ fts_file_title.search_term
   limit fts_file_title.match_count;
 end;
 $$;
