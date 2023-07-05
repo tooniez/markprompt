@@ -362,7 +362,9 @@ export default async function handler(
       enrich: true,
       suggest: true,
     })[0]?.result || []
-  ).map((r) => r.doc);
+  )
+    .slice(0, limit)
+    .map((r) => r.doc);
 
   const rerankDelta = Date.now() - rerankTs;
 
