@@ -849,7 +849,9 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                   <iframe
                     ref={playgroundRef}
                     src="/static/html/chatbot-playground.html"
-                    className="absolute inset-0 h-full w-full"
+                    className="absolute inset-0 h-full w-full bg-transparent"
+                    allowTransparency={true}
+                    frameBorder={0}
                     onLoad={() => {
                       setTimeout(() => {
                         setPlaygroundLoaded(true);
