@@ -276,24 +276,24 @@ export default async function handler(
           resolution: 9,
         },
         {
+          field: 'content',
+          tokenize: 'strict',
+          optimize: true,
+          resolution: 6,
+          filter: (s: string) => s.length > 2,
+        },
+        {
           field: 'meta:leadHeading:value',
           tokenize: 'forward',
           optimize: true,
           resolution: 8,
-        },
-        {
-          field: 'content',
-          tokenize: 'strict',
-          optimize: true,
-          resolution: 7,
-          filter: (s: string) => s.length > 2,
         },
       ],
       store: ['file', 'meta', 'content', 'matchType'],
     },
     context: {
       resolution: 9,
-      depth: 2,
+      depth: 3,
       bidirectional: true,
     },
   });
