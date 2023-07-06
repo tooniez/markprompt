@@ -48,6 +48,7 @@ import {
   getNameFromUrlOrPath,
   isHrefFromBaseUrl,
   pluralize,
+  removeTrailingSlashQueryParamsAndHash,
   shouldIncludeFileWithPath,
   toNormalizedOrigin,
   toNormalizedUrl,
@@ -432,7 +433,9 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             } else {
               // Otherwise, we discover links starting with the root page
               let processedLinks: string[] = [];
-              let linksToProcess = [data.url];
+              let linksToProcess = [
+                removeTrailingSlashQueryParamsAndHash(data.url),
+              ];
 
               while (linksToProcess.length > 0) {
                 try {
@@ -449,7 +452,9 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                       )
                         .filter((href) => isHrefFromBaseUrl(baseUrl, href))
                         .map((href) => {
-                          return completeHrefWithBaseUrl(baseUrl, href);
+                          return removeTrailingSlashQueryParamsAndHash(
+                            completeHrefWithBaseUrl(baseUrl, href),
+                          );
                         })
                         .filter(isPresent);
                   processedLinks = [...processedLinks, ...linksToProcess];

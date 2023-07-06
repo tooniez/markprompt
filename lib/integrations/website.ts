@@ -3,7 +3,7 @@ import { isPresent } from 'ts-is-present';
 
 import { RobotsTxtInfo } from '@/types/types';
 
-import { removeQueryParameters } from '../utils';
+import { removeTrailingSlashQueryParamsAndHash } from '../utils';
 
 export const fetchRobotsTxtInfo = async (
   baseUrl: string,
@@ -73,7 +73,7 @@ export const fetchSitemapUrls = async (
 
   const addPageUrl = (url: string) => {
     try {
-      const normalizedUrl = removeQueryParameters(url);
+      const normalizedUrl = removeTrailingSlashQueryParamsAndHash(url);
       if (!pageUrls.includes(normalizedUrl)) {
         pageUrls.push(normalizedUrl);
       }

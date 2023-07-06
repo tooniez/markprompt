@@ -662,10 +662,11 @@ export const toNormalizedUrl = (url: string, useInsecureSchema?: boolean) => {
   }
 };
 
-export const removeQueryParameters = (url: string) => {
+export const removeTrailingSlashQueryParamsAndHash = (url: string) => {
   const urlObj = new URL(url);
   urlObj.search = '';
-  return urlObj.toString();
+  urlObj.hash = '';
+  return urlObj.toString().replace(/\/+$/, '');
 };
 
 export const getUrlHostname = (url: string) => {
