@@ -14,7 +14,6 @@ import React, { FC } from 'react';
 import { MarkdocContext } from './DocsLayout';
 import LandingNavbar from './LandingNavbar';
 import {
-  DocsPlayground,
   Fence,
   MarkdocButton,
   ProseContainer,
@@ -58,7 +57,6 @@ const ResourcesProseContainer = ({
           Fence,
           Heading,
           Note,
-          Playground: DocsPlayground,
           Video,
           IconCombine: () => (
             <Combine className="mt-8 block h-5 w-5 text-fuchsia-500" />

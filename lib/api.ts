@@ -1,3 +1,5 @@
+import { SubmitPromptOptions } from '@markprompt/core';
+
 import { getResponseOrThrow, slugFromName } from '@/lib/utils';
 import {
   DbFile,
@@ -11,6 +13,8 @@ import {
   Team,
   Token,
 } from '@/types/types';
+
+import { Theme } from './themes';
 
 export const updateUser = async (values: Partial<DbUser>): Promise<DbUser> => {
   const res = await fetch('/api/user', {
@@ -47,7 +51,15 @@ export const updateProject = async (
 export const createPromptConfig = async (
   id: Project['id'],
   shareKey: string,
-  config: any,
+  config: {
+    theme: Theme;
+    placeholder?: string;
+    modelConfig?: SubmitPromptOptions;
+    iDontKnowMessage?: string;
+    referencesHeading?: string;
+    loadingHeading?: string;
+    includeBranding?: boolean;
+  },
 ): Promise<PromptConfig> => {
   const res = await fetch(`/api/project/${id}/prompt-configs`, {
     method: 'POST',

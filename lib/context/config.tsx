@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import {
+  type MarkpromptOptions,
+  DEFAULT_MARKPROMPT_OPTIONS,
+} from '@markprompt/react';
+import {
   createContext,
   FC,
   PropsWithChildren,
@@ -7,11 +11,8 @@ import {
   useContext,
 } from 'react';
 
-import { ModelConfig } from '@/types/types';
-
 import useProject from '../hooks/use-project';
 import { useLocalStorage } from '../hooks/utils/use-localstorage';
-import { DEFAULT_PROMPT_TEMPLATE } from '../prompt';
 import {
   defaultTheme,
   findMatchingTheme,
@@ -19,87 +20,77 @@ import {
   ThemeColorKeys,
   ThemeColors,
 } from '../themes';
-import { objectEquals } from '../utils';
 
 export type State = {
+  markpromptOptions: MarkpromptOptions;
   theme: Theme;
   colors: ThemeColors;
   isDark: boolean;
-  placeholder: string;
-  iDontKnowMessage: string;
-  referencesHeading: string;
-  loadingHeading: string;
-  includeBranding: boolean;
-  isInstantSearchEnabled: boolean;
-  modelConfig: ModelConfig;
   setColor: (colorKey: ThemeColorKeys, value: string) => void;
   setTheme: (theme: Theme) => void;
   setDark: (dark: boolean) => void;
   setSize: (size: Theme['size']) => void;
-  setPlaceholder: (placeholder: string) => void;
-  setIDontKnowMessage: (iDontKnowMessage: string) => void;
-  setReferencesHeading: (referencesHeading: string) => void;
-  setLoadingHeading: (loadingHeading: string) => void;
-  setIncludeBranding: (includeBranding: boolean) => void;
-  setInstantSearchEnabled: (isInstantSearchEnabled: boolean) => void;
-  setModelConfig: (modelConfig: ModelConfig) => void;
-  resetModelConfigDefaults: () => void;
+  setMarkpromptOptions: (markpromptOptions: MarkpromptOptions) => void;
+  restoreModelDefaults: () => void;
 };
 
-export const DEFAULT_MODEL_CONFIG: ModelConfig = {
-  model: 'gpt-4',
-  temperature: 0.1,
-  topP: 1,
-  frequencyPenalty: 0,
-  presencePenalty: 0,
-  maxTokens: 500,
-  promptTemplate: DEFAULT_PROMPT_TEMPLATE.template,
-  sectionsMatchCount: 10,
-  sectionsMatchThreshold: 0.5,
+export const DEFAULT_MARKPROMPT_OPTIONS_GPT4: MarkpromptOptions = {
+  ...DEFAULT_MARKPROMPT_OPTIONS,
+  prompt: {
+    ...DEFAULT_MARKPROMPT_OPTIONS.prompt,
+    model: 'gpt-4',
+  },
 };
 
 const initialState: State = {
+  markpromptOptions: DEFAULT_MARKPROMPT_OPTIONS_GPT4,
   theme: defaultTheme,
   colors: defaultTheme.colors.light,
   isDark: false,
-  placeholder: '',
-  iDontKnowMessage: '',
-  referencesHeading: '',
-  loadingHeading: '',
-  includeBranding: true,
-  isInstantSearchEnabled: false,
-  modelConfig: DEFAULT_MODEL_CONFIG,
   setColor: () => {},
   setTheme: () => {},
   setDark: () => {},
   setSize: () => {},
-  setPlaceholder: () => {},
-  setIDontKnowMessage: () => {},
-  setReferencesHeading: () => {},
-  setLoadingHeading: () => {},
-  setIncludeBranding: () => {},
-  setInstantSearchEnabled: () => {},
-  setModelConfig: () => {},
-  resetModelConfigDefaults: () => {},
+  setMarkpromptOptions: () => {},
+  restoreModelDefaults: () => {},
 };
 
-export const isDefaultCustomConfig = (config: ModelConfig) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { model: configModel, ...rest } = config;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { model: defaultModel, ...defaultRest } = initialState.modelConfig || {
-    model: undefined,
+export const toSerializableMarkpromptOptions = (
+  markpromptOptions: MarkpromptOptions,
+) => {
+  const { search, references, ...rest } = markpromptOptions;
+  return {
+    ...rest,
+    search: {
+      ...search,
+      getResultHref: undefined,
+    },
+    references: {
+      ...references,
+      transformReferenceId: undefined,
+    },
   };
-  return objectEquals(rest, defaultRest);
 };
 
-export const CONFIG_DEFAULT_VALUES = {
-  placeholder: 'Ask me anything…',
-  iDontKnowMessage: 'Sorry, I am not sure how to answer that.',
-  referencesHeading: 'Answer generated from the following pages:',
-  loadingHeading: 'Fetching relevant pages…',
-  includeBranding: true,
-  isInstantSearchEnabled: false,
+export const isDefaultMarkpromptPromptOptions = (
+  markpromptOptions: MarkpromptOptions,
+) => {
+  // Checks whether the model config part of markpromptOptions equals
+  // the default values. This is to show the upgrade note in case of
+  // a change.
+  for (const key of Object.keys(DEFAULT_MARKPROMPT_OPTIONS_GPT4.prompt!)) {
+    if (
+      (markpromptOptions.prompt as any)?.[key] !==
+      (DEFAULT_MARKPROMPT_OPTIONS_GPT4.prompt as any)[key]
+    ) {
+      return false;
+    }
+  }
+  return true;
+  // return objectEquals(markpromptOptions, DEFAULT_MARKPROMPT_OPTIONS_GPT4);
+};
+
+export const UI_CONFIG_DEFAULT_VALUES = {
   isDark: false,
 };
 
@@ -113,45 +104,14 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
 
   const [isDark, setDark] = useLocalStorage<boolean>(
     !project?.id ? null : `${project?.id}:config:model-dark`,
-    CONFIG_DEFAULT_VALUES.isDark,
+    UI_CONFIG_DEFAULT_VALUES.isDark,
   );
 
-  const [placeholder, setPlaceholder] = useLocalStorage<string>(
-    !project?.id ? null : `${project?.id}:config:placeholder`,
-    CONFIG_DEFAULT_VALUES.placeholder,
-  );
-
-  const [iDontKnowMessage, setIDontKnowMessage] = useLocalStorage<string>(
-    !project?.id ? null : `${project?.id}:config:i-dont-know-message`,
-    CONFIG_DEFAULT_VALUES.iDontKnowMessage,
-  );
-
-  const [referencesHeading, setReferencesHeading] = useLocalStorage<string>(
-    !project?.id ? null : `${project?.id}:config:references-heading`,
-    CONFIG_DEFAULT_VALUES.referencesHeading,
-  );
-
-  const [loadingHeading, setLoadingHeading] = useLocalStorage<string>(
-    !project?.id ? null : `${project?.id}:config:loading-heading`,
-    CONFIG_DEFAULT_VALUES.loadingHeading,
-  );
-
-  const [includeBranding, setIncludeBranding] = useLocalStorage<boolean>(
-    !project?.id ? null : `${project?.id}:config:include-branding`,
-    CONFIG_DEFAULT_VALUES.includeBranding,
-  );
-
-  const [isInstantSearchEnabled, setInstantSearchEnabled] =
-    useLocalStorage<boolean>(
-      !project?.id ? null : `${project?.id}:config:instant-search-enabled`,
-      CONFIG_DEFAULT_VALUES.isInstantSearchEnabled,
-    );
-
-  const [modelConfig, setModelConfig] = useLocalStorage<
-    ModelConfig | undefined
+  const [markpromptOptions, setMarkpromptOptions] = useLocalStorage<
+    MarkpromptOptions | undefined
   >(
-    !project?.id ? null : `${project?.id}:config:model-config`,
-    initialState.modelConfig,
+    !project?.id ? null : `${project?.id}:config:markprompt-options`,
+    initialState.markpromptOptions,
   );
 
   const updateOrCreateCustomTheme = useCallback(
@@ -201,27 +161,32 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
     [theme, updateOrCreateCustomTheme],
   );
 
-  const resetModelConfigDefaults = useCallback(() => {
-    if (!initialState.modelConfig) {
-      return;
-    }
-    setModelConfig(initialState.modelConfig);
-  }, [setModelConfig]);
+  const restoreModelDefaults = useCallback(() => {
+    // Change only model parameters (not promptTemplate or other labels).
+    setMarkpromptOptions({
+      ...markpromptOptions,
+      prompt: {
+        ...(markpromptOptions?.prompt || {}),
+        temperature: initialState.markpromptOptions.prompt!.temperature,
+        topP: initialState.markpromptOptions.prompt!.topP,
+        frequencyPenalty:
+          initialState.markpromptOptions.prompt!.frequencyPenalty,
+        presencePenalty: initialState.markpromptOptions.prompt!.presencePenalty,
+        maxTokens: initialState.markpromptOptions.prompt!.maxTokens,
+        sectionsMatchCount:
+          initialState.markpromptOptions.prompt!.sectionsMatchCount,
+        sectionsMatchThreshold:
+          initialState.markpromptOptions.prompt!.sectionsMatchThreshold,
+      },
+    });
+  }, [markpromptOptions, setMarkpromptOptions]);
 
   return (
     <ConfigContext.Provider
       value={{
+        markpromptOptions: markpromptOptions || initialState.markpromptOptions,
         theme: theme || defaultTheme,
-        isDark: isDark || CONFIG_DEFAULT_VALUES.isDark,
-        placeholder: placeholder || CONFIG_DEFAULT_VALUES.placeholder,
-        iDontKnowMessage:
-          iDontKnowMessage || CONFIG_DEFAULT_VALUES.iDontKnowMessage,
-        referencesHeading:
-          referencesHeading || CONFIG_DEFAULT_VALUES.referencesHeading,
-        loadingHeading: loadingHeading || CONFIG_DEFAULT_VALUES.loadingHeading,
-        includeBranding: !!includeBranding,
-        isInstantSearchEnabled: !!isInstantSearchEnabled,
-        modelConfig: modelConfig || initialState.modelConfig,
+        isDark: isDark || UI_CONFIG_DEFAULT_VALUES.isDark,
         colors: isDark
           ? (theme || defaultTheme).colors.dark
           : (theme || defaultTheme).colors.light,
@@ -229,14 +194,8 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
         setColor,
         setDark,
         setSize,
-        setPlaceholder,
-        setIDontKnowMessage,
-        setReferencesHeading,
-        setLoadingHeading,
-        setIncludeBranding,
-        setInstantSearchEnabled,
-        setModelConfig,
-        resetModelConfigDefaults,
+        setMarkpromptOptions,
+        restoreModelDefaults,
       }}
       {...props}
     />

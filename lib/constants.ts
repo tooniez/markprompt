@@ -14,3 +14,10 @@ export const DEFAULT_MARKPROMPT_CONFIG = `{
   "exclude": [],
   "processorOptions": {}
 }`;
+
+export const MARKPROMPT_JS_PACKAGE_VERSIONS = {
+  css: '0.6.1',
+  web: '0.10.0',
+  react: '0.12.0',
+  'docusaurus-theme-search': '0.5.12',
+};

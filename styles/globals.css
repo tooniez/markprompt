@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import 'prism.css';
+@import 'markprompt.css';
 
 @layer base {
   :root {

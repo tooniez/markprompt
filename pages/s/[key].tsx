@@ -1,21 +1,21 @@
+import { SubmitPromptOptions } from '@markprompt/core';
 import { createClient } from '@supabase/supabase-js';
 import cn from 'classnames';
 import { Moon } from 'lucide-react';
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
 import { FC } from 'react';
 
-import { Playground } from '@/components/files/Playground';
+import { LegacyPlayground } from '@/components/files/LegacyPlayground';
 import { SharedHead } from '@/components/pages/SharedHead';
 import { useLocalStorage } from '@/lib/hooks/utils/use-localstorage';
 import { Theme } from '@/lib/themes';
 import { getNameFromPath, removeFileExtension } from '@/lib/utils';
 import { Database } from '@/types/supabase';
-import { ModelConfig } from '@/types/types';
 
 type PromptConfig = {
   theme: Theme;
   placeholder: string;
-  modelConfig: ModelConfig;
+  modelConfig: SubmitPromptOptions;
   iDontKnowMessage: string;
   referencesHeading: string;
   loadingHeading: string;
@@ -108,7 +108,7 @@ const SharePage: FC<InferGetStaticPropsType<typeof getStaticProps>> & {
         </div>
         <div className="relative flex h-full w-full items-center justify-center">
           <div className="h-[calc(100vh-120px)] max-h-[900px] w-[80%] max-w-[700px]">
-            <Playground
+            <LegacyPlayground
               projectKey={projectKey}
               iDontKnowMessage={promptConfig.iDontKnowMessage}
               theme={promptConfig.theme}

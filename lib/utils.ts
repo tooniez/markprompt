@@ -429,11 +429,7 @@ export const isSKTestKey = (key: string | null) => {
 export const stringToLLMInfo = (param?: string): LLMInfo => {
   switch (param) {
     case 'gpt-4':
-    case 'gpt-4-0314':
-    case 'gpt-4-32k':
-    case 'gpt-4-32k-0314':
     case 'gpt-3.5-turbo':
-    case 'gpt-3.5-turbo-0301':
       return {
         vendor: 'openai',
         model: { type: 'chat_completions', value: param },

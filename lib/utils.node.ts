@@ -1,5 +1,5 @@
-// Node-dependent utilities. Cannot run on edge runtimes.
-import fs, { promises as promisesFs } from 'fs';
+// Node-dependent utilities. Cannot run on edge runtimes or in the browser.
+import fs from 'fs';
 import type { Readable } from 'node:stream';
 
 import grayMatter from 'gray-matter';

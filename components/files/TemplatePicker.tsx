@@ -15,13 +15,13 @@ type TemplatePickerProps = {
 };
 
 export const TemplatePicker: FC<TemplatePickerProps> = () => {
-  const { modelConfig, setModelConfig } = useConfigContext();
+  const { markpromptOptions, setMarkpromptOptions } = useConfigContext();
 
   const selectedTemplateName = useMemo(() => {
     return predefinedPromptTemplates.find((t) => {
-      return t.template === modelConfig.promptTemplate;
+      return t.template === markpromptOptions.prompt?.promptTemplate;
     })?.name;
-  }, [modelConfig.promptTemplate]);
+  }, [markpromptOptions?.prompt?.promptTemplate]);
 
   return (
     <Select.Root
@@ -30,7 +30,13 @@ export const TemplatePicker: FC<TemplatePickerProps> = () => {
         const promptTemplate =
           predefinedPromptTemplates.find((t) => t.name === value)?.template ||
           DEFAULT_PROMPT_TEMPLATE.template;
-        setModelConfig({ ...modelConfig, promptTemplate });
+        setMarkpromptOptions({
+          ...markpromptOptions,
+          prompt: {
+            ...markpromptOptions.prompt,
+            promptTemplate,
+          },
+        });
       }}
     >
       <Select.Trigger

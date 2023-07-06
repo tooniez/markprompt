@@ -4,7 +4,6 @@ import React, { FC, createContext } from 'react';
 
 import LandingNavbar from './LandingNavbar';
 import {
-  DocsPlayground,
   Fence,
   MarkdocButton,
   ProseContainer,
@@ -80,7 +79,6 @@ export const DocsLayout: FC<DocsLayoutProps> = ({ content, toc }: any) => {
                     Fence,
                     Heading,
                     Note,
-                    Playground: DocsPlayground,
                     Video,
                   },
                 })}

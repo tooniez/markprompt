@@ -18,13 +18,6 @@ import React, {
   useState,
 } from 'react';
 
-import {
-  CONFIG_DEFAULT_VALUES,
-  DEFAULT_MODEL_CONFIG,
-} from '@/lib/context/config';
-import { defaultTheme } from '@/lib/themes';
-
-import { Playground } from '../files/Playground';
 import Button from '../ui/Button';
 import { CodePanel } from '../ui/Code';
 
@@ -214,10 +207,6 @@ export const collapseTag = {
   },
 };
 
-export const playgroundTag = {
-  render: 'Playground',
-};
-
 export const iconTags = {
   iconCombine: { render: 'IconCombine' },
   iconMessagesSquare: { render: 'IconMessagesSquare' },
@@ -244,60 +233,6 @@ export const Fence = (props: MarkdocCodeFenceProps) => {
   return (
     <div className="my-6">
       <CodePanel code={code} language={language} />
-    </div>
-  );
-};
-
-export const DocsPlayground = () => {
-  const [promptOpen, setPromptOpen] = useState(false);
-
-  return (
-    <div className="relative mt-8 mb-12 flex h-[500px] w-full items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-600">
-      <button
-        onClick={() => setPromptOpen(true)}
-        className="cursor-pointer rounded-lg bg-black/50 px-3 py-2 text-sm font-medium text-white transition hover:bg-black/60"
-      >
-        Open chat
-      </button>
-      {promptOpen && (
-        <div
-          className="absolute inset-0 z-0"
-          onClick={() => {
-            setPromptOpen(false);
-          }}
-        />
-      )}
-      <div
-        className={cn(
-          'absolute inset-16 overflow-hidden rounded-xl border-dashed bg-neutral-1000 opacity-0',
-          {
-            'animate-prompt-window': promptOpen,
-            'pointer-events-none': !promptOpen,
-          },
-        )}
-      >
-        <Playground
-          forceUseProdAPI
-          projectKey={
-            process.env.NODE_ENV === 'production'
-              ? process.env.NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY
-              : process.env.NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY_TEST
-          }
-          isDark={true}
-          theme={{ ...defaultTheme, dimensions: { radius: '8px' } }}
-          placeholder={CONFIG_DEFAULT_VALUES.placeholder}
-          iDontKnowMessage={CONFIG_DEFAULT_VALUES.iDontKnowMessage}
-          referencesHeading={CONFIG_DEFAULT_VALUES.referencesHeading}
-          loadingHeading={CONFIG_DEFAULT_VALUES.loadingHeading}
-          modelConfig={DEFAULT_MODEL_CONFIG}
-          getReferenceInfo={(id) => {
-            return { name: id, href: undefined };
-          }}
-          onCloseClick={() => {
-            setPromptOpen(false);
-          }}
-        />
-      </div>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import { SubmitPromptOptions } from '@markprompt/core';
 import cn from 'classnames';
 import { X, Search } from 'lucide-react';
 import {
@@ -18,8 +19,8 @@ import remarkGfm from 'remark-gfm';
 import { I_DONT_KNOW, STREAM_SEPARATOR } from '@/lib/constants';
 import { Theme } from '@/lib/themes';
 import { timeout } from '@/lib/utils';
-import { getAppOrigin } from '@/lib/utils.edge';
-import { ModelConfig, ReferenceInfo } from '@/types/types';
+import { getApiUrl } from '@/lib/utils.edge';
+import { ReferenceInfo } from '@/types/types';
 
 type CaretProps = {
   color?: string;
@@ -93,7 +94,7 @@ type PlaygroundProps = {
   demoReferenceIds?: string[];
   noAnimation?: boolean;
   iDontKnowMessage?: string;
-  modelConfig?: ModelConfig;
+  modelConfig?: SubmitPromptOptions;
   placeholder?: string;
   referencesHeading?: string;
   loadingHeading?: string;
@@ -109,7 +110,7 @@ type PlaygroundProps = {
 // - In demo mode for the landing page - it's not referring to any project
 // - In the dashboard, to try out a model. It's using the current active project
 // - In the docs, where it's referring to an external docs project on Markprompt
-export const Playground = forwardRef(
+export const LegacyPlayground = forwardRef(
   (
     {
       projectKey,
@@ -225,22 +226,19 @@ export const Playground = forwardRef(
         setLoading(true);
 
         try {
-          const res = await fetch(
-            `${getAppOrigin('api', !!forceUseProdAPI)}/v1/completions`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                prompt,
-                iDontKnowMessage: _iDontKnowMessage,
-                ...modelConfig,
-                projectKey,
-                includeDebugInfo: true,
-              }),
+          const res = await fetch(getApiUrl('completions', !!forceUseProdAPI), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
             },
-          );
+            body: JSON.stringify({
+              prompt,
+              iDontKnowMessage: _iDontKnowMessage,
+              ...modelConfig,
+              projectKey,
+              includeDebugInfo: true,
+            }),
+          });
 
           if (!res.ok || !res.body) {
             const text = await res.text();
@@ -659,4 +657,4 @@ export const Playground = forwardRef(
   },
 );
 
-Playground.displayName = 'Playground';
+LegacyPlayground.displayName = 'Playground';

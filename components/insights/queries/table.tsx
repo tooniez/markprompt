@@ -193,12 +193,11 @@ export function QueriesDataTable<TData, TValue>({
               <Button
                 buttonSize="sm"
                 variant="glow"
-                light
                 onClick={() => {
                   emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
                 }}
               >
-                Upgrade to Pro
+                Upgrade
               </Button>
             </div>
             <div className="pointer-events-none absolute inset-0 z-0 flex flex-col overflow-hidden border-neutral-900 bg-neutral-1100/10 backdrop-blur-md">

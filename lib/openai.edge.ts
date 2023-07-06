@@ -1,9 +1,8 @@
 // IMPORTANT: this code needs to be able to run on the Vercel edge runtime.
 // Make sure no Node.js APIs are called/imported transitively.
 
+import { OpenAIEmbeddingsModelId } from '@markprompt/core';
 import { CreateEmbeddingResponse, CreateModerationResponse } from 'openai';
-
-import { OpenAIEmbeddingsModelId } from '@/types/types';
 
 export interface OpenAIStreamPayload {
   model: string;

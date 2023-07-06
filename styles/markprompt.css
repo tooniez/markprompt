@@ -1,0 +1,207 @@
+.MarkpromptForm {
+  @apply pr-8;
+}
+
+.MarkpromptPrompt {
+  @apply border-0 bg-transparent py-3 px-0 text-sm outline-none ring-0 placeholder:text-neutral-500 !important;
+}
+
+.MarkpromptBackButton {
+  @apply py-1.5 px-3 text-sky-500;
+}
+
+.MarkpromptBackButton span:last-child {
+  @apply font-normal;
+}
+
+.MarkpromptReferences {
+  padding-top: 0.5rem !important;
+}
+
+.MarkpromptReferences p {
+  @apply font-medium text-neutral-400;
+}
+
+.MarkpromptReferences ul {
+  padding: 0.25rem 2rem 0.5rem;
+  margin-top: 0.25rem;
+  list-style-type: none;
+  margin-bottom: 0;
+  overflow-x: scroll;
+}
+
+.MarkpromptAnswer ol {
+  list-style-type: decimal;
+  margin-top: 1.1428571em;
+  margin-bottom: 1.1428571em;
+  padding-left: 1.5714286em;
+}
+
+.MarkpromptSearchResultTitle,
+.MarkpromptSearchResultTag {
+  @apply text-white;
+}
+
+.MarkpromptSearchAnswerButton {
+  @apply px-3 py-2;
+  background-color: var(--markprompt-muted);
+  color: var(--markprompt-foreground);
+  font-size: var(--markprompt-text-size);
+}
+
+.MarkpromptSearchAnswerButton:hover,
+.MarkpromptSearchAnswerButton:focus {
+  background-color: var(--markprompt-primary);
+  color: var(--markprompt-primaryForeground);
+}
+
+.MarkpromptSearchAnswerButton:hover .MarkpromptSearchIcon,
+.MarkpromptSearchAnswerButton:focus .MarkpromptSearchIcon {
+  color: var(--markprompt-primaryForeground);
+}
+
+.MarkpromptSearchAnswerButton :last-child {
+  margin-left: auto;
+}
+
+/* Remove 2px padding that some browsers add to input */
+:where(.MarkpromptPrompt[type='search' i]) {
+  padding: 1rem 3rem 1rem 0;
+}
+
+/* Remove the 'x' clear button from the search :where(.MarkpromptPrompt field */
+.MarkpromptPrompt[type='search']::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.MarkpromptPrompt[type='search']::-ms-reveal {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.MarkpromptPrompt[type='search']::-webkit-search-decoration,
+.MarkpromptPrompt[type='search']::-webkit-search-cancel-button,
+.MarkpromptPrompt[type='search']::-webkit-search-results-button,
+.MarkpromptPrompt[type='search']::-webkit-search-results-decoration {
+  display: none;
+}
+
+.MarkpromptAnswer ol {
+  list-style-type: decimal;
+  margin-top: 1.1428571em;
+  margin-bottom: 1.1428571em;
+  padding-left: 1.5714286em;
+}
+
+.MarkpromptAnswer ol[type='A'] {
+  list-style-type: upper-alpha;
+}
+
+.MarkpromptAnswer ol[type='a'] {
+  list-style-type: lower-alpha;
+}
+
+.MarkpromptAnswer ol[type='A' s] {
+  list-style-type: upper-alpha;
+}
+
+.MarkpromptAnswer ol[type='a' s] {
+  list-style-type: lower-alpha;
+}
+
+.MarkpromptAnswer ol[type='I'] {
+  list-style-type: upper-roman;
+}
+
+.MarkpromptAnswer ol[type='i'] {
+  list-style-type: lower-roman;
+}
+
+.MarkpromptAnswer ol[type='I' s] {
+  list-style-type: upper-roman;
+}
+
+.MarkpromptAnswer ol[type='i' s] {
+  list-style-type: lower-roman;
+}
+
+.MarkpromptAnswer ol[type='1'] {
+  list-style-type: decimal;
+}
+
+.MarkpromptAnswer ul {
+  list-style-type: disc;
+  margin-top: 1.1428571em;
+  margin-bottom: 1.1428571em;
+  padding-left: 1.5714286em;
+}
+
+.MarkpromptAnswer ol > li::marker {
+  font-weight: 400;
+  color: var(--markprompt-foreground);
+}
+
+.MarkpromptAnswer ul > li::marker {
+  color: var(--markprompt-mutedForeground);
+}
+
+.MarkpromptAnswer hr {
+  border-color: var(--markprompt-border);
+  border-top-width: 1;
+  margin-top: 2.8571429em;
+  margin-bottom: 2.8571429em;
+}
+
+.MarkpromptAnswer blockquote {
+  font-weight: 500;
+  font-style: italic;
+  color: var(--markprompt-foreground);
+  border-left-width: 0.25rem;
+  border-left-color: var(--markprompt-border);
+  quotes: '\201C''\201D''\2018''\2019';
+  margin-top: 1.3333333em;
+  margin-bottom: 1.3333333em;
+  padding-left: 1.1111111em;
+}
+
+.MarkpromptAnswer blockquote p:first-of-type::before {
+  content: open-quote;
+}
+
+.MarkpromptAnswer blockquote p:last-of-type::after {
+  content: close-quote;
+}
+
+.MarkpromptAnswer a {
+  color: var(--markprompt-primary);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.MarkpromptReference a {
+  display: inline-block;
+  text-decoration: none;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--markprompt-border);
+  border-radius: 0.375rem;
+  color: var(--markprompt-primary);
+  font-weight: 500;
+  transition-property: opacity;
+  transition-duration: 200ms;
+  white-space: nowrap;
+}
+
+.MarkpromptAnswer pre {
+  @apply my-2 overflow-x-auto px-3 py-2 text-xs;
+  color: var(--markprompt-foreground);
+  background-color: var(--markprompt-muted);
+  border: 1px solid var(--markprompt-border);
+}
+
+.MarkpromptAnswer code {
+  @apply text-xs font-medium;
+  color: var(--markprompt-foreground);
+}

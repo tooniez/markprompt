@@ -1,9 +1,10 @@
+import { OpenAIModelId } from '@markprompt/core';
 import * as Select from '@radix-ui/react-select';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { FC } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
-import { OpenAIModelId, SUPPORTED_MODELS } from '@/types/types';
+import { SUPPORTED_MODELS } from '@/types/types';
 
 import { SelectItem } from '../ui/Select';
 
@@ -12,13 +13,19 @@ type ModelPickerProps = {
 };
 
 export const ModelPicker: FC<ModelPickerProps> = () => {
-  const { modelConfig, setModelConfig } = useConfigContext();
+  const { markpromptOptions, setMarkpromptOptions } = useConfigContext();
 
   return (
     <Select.Root
-      value={modelConfig.model}
+      value={markpromptOptions.prompt?.model}
       onValueChange={(value) => {
-        setModelConfig({ ...modelConfig, model: value as OpenAIModelId });
+        setMarkpromptOptions({
+          ...markpromptOptions,
+          prompt: {
+            ...markpromptOptions.prompt,
+            model: value as OpenAIModelId,
+          },
+        });
       }}
     >
       <Select.Trigger

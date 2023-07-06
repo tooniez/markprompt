@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot Playground</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="https://esm.sh/@markprompt/css@0.6.1?css" />
+    <style>
+      * {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-family: 'Inter', sans-serif;
+      }
+
+      main {
+        display: grid;
+        place-items: center;
+        text-align: center;
+        position: relative;
+      }
+
+      .MarkpromptCustomTrigger {
+        all: unset;
+        position: fixed;
+        bottom: 2rem;
+        right: 4rem;
+        cursor: pointer;
+        border-radius: 9999px;
+        background-color: var(--markprompt-primary);
+        color: var(--markprompt-primaryForeground);
+        outline: 2px solid transparent;
+        outline-offset: 2px;
+        border-width: 0px;
+        border-color: transparent;
+        display: block;
+        padding: 0.75rem;
+        margin: 0;
+        transition: all 0.2s ease-out, color 0.2s ease-out;
+        width: 20px;
+        height: 20px;
+      }
+
+      .MarkpromptCustomTrigger:hover {
+        opacity: 0.9;
+      }
+
+      .MarkpromptContentDialog {
+        box-shadow: none;
+        width: calc(100vw - 8rem);
+        max-width: 800px;
+        max-height: unset;
+        height: calc(100vh - 150px);
+        margin-top: -20px;
+      }
+
+      .MarkpromptOverlay {
+        background-color: transparent;
+      }
+
+      .MarkpromptSearchResultTitle {
+        padding-bottom: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <button
+        id="markprompt-trigger"
+        aria-label="Open Markprompt"
+        class="MarkpromptCustomTrigger"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
+        </svg>
+      </button>
+      <div id="markprompt" />
+    </main>
+    <script type="module">
+      import {
+        markprompt,
+        openMarkprompt,
+      } from 'https://esm.sh/@markprompt/web@0.10.0';
+
+      const el = document.querySelector('#markprompt');
+
+      window.addEventListener('message', (event) => {
+        if (
+          !el ||
+          !el instanceof HTMLElement ||
+          !event.data?.props ||
+          !event.data?.colors
+        ) {
+          return;
+        }
+
+        markprompt(event.data.projectKey, el, {
+          ...event.data.props,
+          trigger: {
+            ...event.data.props?.trigger,
+            customElement: true,
+          },
+        });
+
+        const root = document.documentElement;
+        for (const key of Object.keys(event.data.colors)) {
+          root.style.setProperty(`--markprompt-${key}`, event.data.colors[key]);
+        }
+        root.style.setProperty(
+          '--markprompt-radius',
+          event.data.dimensions.radius || 8,
+        );
+        root.style.setProperty(
+          '--markprompt-text-size',
+          event.data.size === 'sm' ? '0.875rem' : '1rem',
+        );
+
+        const trigger = document.querySelector('#markprompt-trigger');
+
+        if (trigger) {
+          trigger.addEventListener('click', () => {
+            openMarkprompt();
+          });
+        }
+
+        openMarkprompt();
+      });
+    </script>
+  </body>
+</html>

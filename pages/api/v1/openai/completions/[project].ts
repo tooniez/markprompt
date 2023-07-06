@@ -247,9 +247,9 @@ export default async function handler(req: NextRequest) {
 
   const fullPrompt = stripIndent(
     ((params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE.template)
-      .replace('{{I_DONT_KNOW}}', iDontKnowMessage || constants.I_DONT_KNOW)
-      .replace('{{CONTEXT}}', contextText)
-      .replace('{{PROMPT}}', sanitizedQuery),
+      ?.replace('{{I_DONT_KNOW}}', iDontKnowMessage || constants.I_DONT_KNOW)
+      ?.replace('{{CONTEXT}}', contextText)
+      ?.replace('{{PROMPT}}', sanitizedQuery) || '',
   );
 
   const payload = getPayload(
