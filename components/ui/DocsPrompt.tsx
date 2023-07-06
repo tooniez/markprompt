@@ -75,7 +75,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
                 cta: 'Ask AI',
               }}
               search={{
-                enabled: true,
+                enabled: false,
                 searchUrl: getApiUrl('search', false),
               }}
             />
