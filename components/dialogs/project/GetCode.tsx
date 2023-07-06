@@ -29,7 +29,7 @@ import {
   ThemeDimensionKeys,
   ThemeDimensions,
 } from '@/lib/themes';
-import { compress, propsObjectToJSXPropsString, pruneEmpty } from '@/lib/utils';
+import { pruneEmpty, propsObjectToJSXPropsString } from '@/lib/utils.browser';
 import { getAppOrigin } from '@/lib/utils.edge';
 import { Project, Team } from '@/types/types';
 
@@ -188,7 +188,7 @@ ${indentString(themeCSS, 2)}
     MARKPROMPT_JS_PACKAGE_VERSIONS.web
   }/dist/init.js"></script>
 
-<!-- Container for the Markpromt trigger button -->
+<!-- Container for the Markprompt trigger button -->
 <div id="${containerId}" />
 ${styleBlock}`;
 };

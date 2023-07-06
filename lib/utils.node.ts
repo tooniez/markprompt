@@ -1,10 +1,10 @@
-// Node-dependent utilities. Cannot run on edge runtimes.
+// Node-dependent utilities. Cannot run on edge runtimes or in the browser.
 import fs from 'fs';
 import type { Readable } from 'node:stream';
 
 import grayMatter from 'gray-matter';
 import yaml from 'js-yaml';
-import { debounce, each, isObject } from 'lodash-es';
+import { debounce } from 'lodash-es';
 import { useEffect, useRef, useState } from 'react';
 import unzip from 'unzipper';
 
