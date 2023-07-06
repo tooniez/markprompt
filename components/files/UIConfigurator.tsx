@@ -60,7 +60,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
       <Row label="Theme">
         <ThemePicker />
       </Row>
-      {/* <Row label="Instant search">
+      <Row label="Instant search">
         <div className="flex flex-row items-center justify-end gap-2">
           <Switch.Root
             className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 disabled:cursor-not-allowed data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600 disabled:data-[state='checked']:opacity-40"
@@ -78,7 +78,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
             <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
           </Switch.Root>
         </div>
-      </Row> */}
+      </Row>
       <Row label="Include branding">
         <div className="flex flex-row items-center justify-end gap-2">
           {!_canRemoveBranding && (
