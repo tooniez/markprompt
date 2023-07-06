@@ -25,7 +25,7 @@
         all: unset;
         position: fixed;
         bottom: 2rem;
-        right: 2rem;
+        right: 4rem;
         cursor: pointer;
         border-radius: 9999px;
         background-color: var(--markprompt-primary);
@@ -38,20 +38,25 @@
         padding: 0.75rem;
         margin: 0;
         transition: all 0.2s ease-out, color 0.2s ease-out;
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
       }
 
       .MarkpromptCustomTrigger:hover {
         opacity: 0.9;
       }
 
-      :where(.MarkpromptContent) {
-        top: 46%;
-        width: 82vw;
+      .MarkpromptContentDialog {
+        box-shadow: none;
+        width: calc(100vw - 8rem);
         max-width: 800px;
-        height: calc(100vh - 180px);
-        max-height: 800px;
+        max-height: unset;
+        height: calc(100vh - 150px);
+        margin-top: -20px;
+      }
+
+      .MarkpromptOverlay {
+        background-color: transparent;
       }
 
       .MarkpromptSearchResultTitle {
@@ -71,7 +76,7 @@
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          stroke-width="1.8"
+          stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
         >
