@@ -47,6 +47,14 @@ export default async function handler(
 
     if (error) {
       console.error('Error GET:', error.message);
+      if (error.message?.includes('JWSInvalidSignature')) {
+        // This error occurs when regenerating the JWT tokens in the
+        // Supabase dashboard. In this case, logged in users will
+        // have a valid session, but the associated token will
+        // not be valid for making requests to Supabase, so we need
+        // to log them out first.
+        return res.status(403).json({ error: 'Forbidden' });
+      }
       return res.status(400).json({ error: error.message });
     }
 
