@@ -539,7 +539,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     const colors = isDark ? theme.colors.dark : theme.colors.light;
     theme.size;
     playgroundRef.current.contentWindow.postMessage(
-      { props, colors, size: theme.size, dimensions: theme.dimensions },
+      { props, colors, size: theme.size, dimensions: theme.dimensions, isDark },
       '*',
     );
   }, [
@@ -823,15 +823,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
           })}
         >
           {project && (
-            <div
-              className={cn(
-                'grid-background h-full border-l border-r border-neutral-900',
-                {
-                  'grid-background-dark bg-neutral-900': isDark,
-                  'grid-background-light bg-neutral-100': !isDark,
-                },
-              )}
-            >
+            <div className={cn('h-full border-l border-r border-neutral-900')}>
               <div className="relative flex h-full flex-col gap-4">
                 <div
                   className="pointer-events-none absolute inset-0 z-0"

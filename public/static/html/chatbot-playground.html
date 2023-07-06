@@ -21,6 +21,27 @@
         position: relative;
       }
 
+      body {
+        background-size: 36px 36px;
+        background-color: #f5f5f5;
+        background-image: linear-gradient(
+            to right,
+            #e5e5e555 1px,
+            transparent 1px
+          ),
+          linear-gradient(to bottom, #e5e5e555 1px, transparent 1px);
+      }
+
+      [data-theme='dark'] body {
+        background-color: #171717;
+        background-image: linear-gradient(
+            to right,
+            #ffffff05 1px,
+            transparent 1px
+          ),
+          linear-gradient(to bottom, #ffffff05 1px, transparent 1px);
+      }
+
       .MarkpromptCustomTrigger {
         all: unset;
         position: fixed;
@@ -102,6 +123,11 @@
         ) {
           return;
         }
+
+        document.documentElement.setAttribute(
+          'data-theme',
+          event.data?.isDark ? 'dark' : 'light',
+        );
 
         markprompt(event.data.projectKey, el, {
           ...event.data.props,
