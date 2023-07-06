@@ -280,7 +280,6 @@ export default async function handler(
           tokenize: 'strict',
           optimize: true,
           resolution: 6,
-          filter: (s: string) => s.length > 2,
         },
         {
           field: 'meta:leadHeading:value',
