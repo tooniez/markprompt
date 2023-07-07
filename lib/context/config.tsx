@@ -62,7 +62,7 @@ return { href, text }`,
   },
   search: {
     ...DEFAULT_MARKPROMPT_OPTIONS.search,
-    getResultHref: `const lastDotIndex = path.lastIndexOf('.');
+    getHref: `const lastDotIndex = path.lastIndexOf('.');
 let cleanPath = path;
 if (lastDotIndex >= 0) {
   cleanPath = path.substring(0, lastDotIndex);

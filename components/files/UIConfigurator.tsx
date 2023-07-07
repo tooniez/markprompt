@@ -326,7 +326,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
       </Accordion.Root>
       <Accordion.Root className="mt-2 w-full" type="single" collapsible>
         <Accordion.Item value="options">
-          <AccordionTrigger>Link mapping</AccordionTrigger>
+          <AccordionTrigger>Link mappings</AccordionTrigger>
           <AccordionContent className="pt-4">
             <div className="flex flex-col gap-2">
               <div className="mt-1 flex w-full flex-col">

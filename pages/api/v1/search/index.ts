@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import FlexSearch from 'flexsearch';
+import Slugger from 'github-slugger';
 import { uniq } from 'lodash-es';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { remark } from 'remark';
@@ -44,6 +45,7 @@ type SearchResultSection = {
       id?: string;
       depth: number;
       value: string;
+      slug: string;
     };
   };
 };
@@ -239,8 +241,14 @@ export default async function handler(
 
   const fileAugmentationData = await Promise.all(
     (_fileAugmentationData || []).map(async (d) => {
+      const { sources, ...rest } = d;
+      const source = sources as Source;
       return {
-        ...d,
+        ...rest,
+        source: {
+          ...(source.data ? { data: source.data } : {}),
+          type: source.type,
+        } as Source,
         processedTitle: await processTitle((d.meta as any)?.title),
       };
     }),
@@ -312,7 +320,7 @@ export default async function handler(
           title: fileData.processedTitle,
           path: fileData.path,
           meta: fileData.meta,
-          source: fileData.sources as Source,
+          source: fileData.source,
         },
       });
     }
@@ -341,6 +349,14 @@ export default async function handler(
       ? 'leadHeading'
       : 'content';
 
+    // Do not reuse a Slugger instance, as it will
+    // append `-1`, `-2`, ... to links if it encounters the
+    // same link twice.
+    const slugger = new Slugger();
+    const slug = leadHeading?.value
+      ? slugger.slug(leadHeading?.value)
+      : undefined;
+
     index.add({
       id: `${match.id}`,
       matchType,
@@ -348,10 +364,16 @@ export default async function handler(
         title: fileData.processedTitle,
         path: fileData.path,
         meta: fileData.meta,
-        source: fileData.sources as Source,
+        source: fileData.source,
       },
       content: match.content,
-      meta: match.meta as any,
+      meta: {
+        ...(match.meta as any),
+        leadHeading: {
+          ...leadHeading,
+          slug,
+        },
+      },
     });
   }
 

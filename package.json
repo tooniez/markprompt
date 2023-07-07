@@ -85,6 +85,7 @@
     "flexsearch": "^0.7.31",
     "formik": "^2.2.9",
     "framer-motion": "^10.12.7",
+    "github-slugger": "^2.0.0",
     "gpt3-tokenizer": "^1.1.5",
     "gray-matter": "^4.0.3",
     "indent-string": "^5.0.0",

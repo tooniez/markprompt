@@ -415,5 +415,9 @@ export default async function handler(req: NextRequest) {
     },
   });
 
-  return new Response(readableStream);
+  console.log('In here');
+  return new Response(readableStream, {
+    statusText: 'Hello',
+    headers: { a: 'b' },
+  });
 }

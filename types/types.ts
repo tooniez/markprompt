@@ -179,7 +179,7 @@ export type SerializableMarkpromptOptions = Omit<
   references?: Omit<MarkpromptOptions['references'], 'transformReferenceId'> & {
     transformReferenceId?: string;
   };
-  search?: Omit<MarkpromptOptions['search'], 'getResultHref'> & {
-    getResultHref?: string;
+  search?: Omit<MarkpromptOptions['search'], 'getHref'> & {
+    getHref?: string;
   };
 };
