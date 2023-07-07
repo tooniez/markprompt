@@ -1,3 +1,4 @@
+import { Source } from '@markprompt/core';
 import { createClient } from '@supabase/supabase-js';
 import { stripIndent } from 'common-tags';
 import {
@@ -188,6 +189,16 @@ export default async function handler(req: NextRequest) {
       'completions',
       supabaseAdmin,
     );
+    console.log(
+      'sectionsResponse',
+      JSON.stringify(
+        sectionsResponse.fileSections?.map((s) => {
+          return JSON.stringify(s, null, 2);
+        }),
+        null,
+        2,
+      ),
+    );
     fileSections = sectionsResponse.fileSections;
     promptEmbedding = sectionsResponse.promptEmbedding;
   } catch (e) {
@@ -218,6 +229,7 @@ export default async function handler(req: NextRequest) {
   const referencesMap: {
     [key: string]: PromptReference;
   } = {};
+
   for (const section of fileSections) {
     numTokens += section.token_count;
 
@@ -230,6 +242,7 @@ export default async function handler(req: NextRequest) {
     )}\n---\n`;
 
     const reference = {
+      file: {},
       path: section.path,
       source: {
         type: section.source_type,
@@ -242,8 +255,9 @@ export default async function handler(req: NextRequest) {
     }
   }
 
-  const referencesWithSources = Object.values(referencesMap);
-  const referencePaths = referencesWithSources.map((r) => r.path);
+  // const referencesWithSources = Object.values(referencesMap);
+  const references: PromptReference[] = [];
+  const referencePaths = references.map((r) => r.file.path);
 
   const fullPrompt = stripIndent(
     ((params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE.template)
@@ -316,7 +330,7 @@ export default async function handler(req: NextRequest) {
       return new Response(
         JSON.stringify({
           text,
-          references: referencePaths,
+          references,
           referencesWithSources,
           debugInfo,
         }),
@@ -348,7 +362,9 @@ export default async function handler(req: NextRequest) {
 
           try {
             if (!didSendHeader) {
-              // Done sending chunks, send references
+              // Done sending chunks, send references. This will be
+              // deprecated, in favor of passing the full reference
+              // info in the response header.
               const queue = encoder.encode(
                 `${JSON.stringify(referencePaths || [])}${
                   constants.STREAM_SEPARATOR
@@ -415,9 +431,7 @@ export default async function handler(req: NextRequest) {
     },
   });
 
-  console.log('In here');
   return new Response(readableStream, {
-    statusText: 'Hello',
-    headers: { a: 'b' },
+    headers: { references: JSON.stringify(references) },
   });
 }

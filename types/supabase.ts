@@ -931,7 +931,6 @@ export interface Database {
           content: string
           meta: Json
           file_id: number
-          file_meta: Json
         }[]
       }
       fts_file_title: {
@@ -959,10 +958,12 @@ export interface Database {
           min_content_length: number
         }
         Returns: {
-          path: string
-          content: string
-          token_count: number
-          similarity: number
+          files_path: string
+          files_meta: Json
+          file_sections_content: string
+          file_sections_meta: Json
+          file_sections_token_count: number
+          file_sections_similarity: number
           source_type: Database["public"]["Enums"]["source_type"]
           source_data: Json
         }[]

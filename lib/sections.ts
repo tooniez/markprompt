@@ -6,24 +6,14 @@ import { CreateEmbeddingResponse } from 'openai';
 import { Database } from '@/types/supabase';
 import {
   ApiError,
+  FileSectionMatchResults,
   Project,
-  PromptReference,
-  SourceDataType,
-  SourceType,
+  FileSectionReference,
 } from '@/types/types';
 
 import { createEmbedding, createModeration } from './openai.edge';
 import { recordProjectTokenCount } from './tinybird';
 import { stringToLLMInfo } from './utils';
-
-export type FileSection = {
-  path: string;
-  content: string;
-  similarity: number;
-  token_count: number;
-  source_type: SourceType;
-  source_data: SourceDataType | null;
-};
 
 export const storePrompt = async (
   supabase: SupabaseClient<Database>,
@@ -32,7 +22,7 @@ export const storePrompt = async (
   response: string | null,
   embedding: any,
   noResponse: boolean,
-  references: PromptReference[],
+  references: FileSectionReference[],
 ) => {
   return supabase.from('query_stats').insert([
     {
@@ -55,7 +45,10 @@ export const getMatchingSections = async (
   byoOpenAIKey: string | undefined,
   source: 'completions' | 'sections',
   supabaseAdmin: SupabaseClient<Database>,
-): Promise<{ fileSections: FileSection[]; promptEmbedding: number[] }> => {
+): Promise<{
+  fileSections: FileSectionMatchResults;
+  promptEmbedding: number[];
+}> => {
   // Moderate the content
   const moderationResponse = await createModeration(
     sanitizedQuery,
@@ -119,16 +112,7 @@ export const getMatchingSections = async (
     data: fileSections,
   }: {
     error: { message: string } | null;
-    data:
-      | {
-          path: string;
-          content: string;
-          token_count: number;
-          similarity: number;
-          source_type: SourceType;
-          source_data: any;
-        }[]
-      | null;
+    data: FileSectionMatchResults | null;
   } = await supabaseAdmin.rpc('match_file_sections', {
     project_id: projectId,
     // Somehow Supabase expects a string for the embeddings

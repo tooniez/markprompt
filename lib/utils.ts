@@ -21,6 +21,7 @@ import { GitHubIcon } from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
 import {
   DateCountHistogramEntry,
+  FileSectionHeading,
   FileType,
   GitHubSourceDataType,
   HistogramStat,
@@ -847,4 +848,27 @@ const APPROX_CHARS_PER_TOKEN = 3.8;
 // to ensure we stay within boundaries.
 export const approximatedTokenCount = (text: string) => {
   return Math.round(text.length / APPROX_CHARS_PER_TOKEN);
+};
+
+// Given a file, return its title either from the meta, or from
+// the file path.
+export const inferFileTitle = (meta: any | undefined, path: string) => {
+  if (meta?.title) {
+    return meta.title;
+  }
+  return removeFileExtension(path.split('/').slice(-1)[0]);
+};
+
+export const augmentLeadHeadingWithSlug = (
+  leadHeading: FileSectionHeading | undefined,
+) => {
+  if (!leadHeading?.value) {
+    return undefined;
+  }
+  const slug = leadHeading.value ? slugify(leadHeading.value) : undefined;
+
+  return {
+    ...leadHeading,
+    slug,
+  };
 };

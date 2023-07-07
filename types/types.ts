@@ -7,6 +7,8 @@ import { MarkpromptOptions } from '@markprompt/react';
 
 import { Database } from './supabase';
 
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
 export type TimeInterval = '1h' | '24h' | '7d' | '30d' | '3m' | '1y';
 export type TimePeriod = 'hour' | 'day' | 'weekofyear' | 'month' | 'year';
 export type HistogramStat = { start: number; end: number; value: number };
@@ -76,15 +78,18 @@ export type Domain = Database['public']['Tables']['domains']['Row'];
 export type Membership = Database['public']['Tables']['memberships']['Row'];
 export type MembershipType =
   Database['public']['Tables']['memberships']['Row']['type'];
-export type Source = Database['public']['Tables']['sources']['Row'];
+export type DbSource = Database['public']['Tables']['sources']['Row'];
 export type DbFile = Database['public']['Tables']['files']['Row'];
 export type FileSections = Database['public']['Tables']['file_sections']['Row'];
+export type FileSectionMatchResults =
+  Database['public']['Functions']['match_file_sections']['Returns'];
 export type OAuthToken =
   Database['public']['Tables']['user_access_tokens']['Row'];
 export type PromptConfig =
   Database['public']['Tables']['prompt_configs']['Row'];
 export type QueryStat = Database['public']['Tables']['query_stats']['Row'];
 
+export type Source = PartialBy<Pick<DbSource, 'type' | 'data'>, 'data'>;
 export type FileData = { path: string; name: string; content: string };
 export type PathContentData = Pick<FileData, 'path' | 'content'>;
 export type Checksum = Pick<DbFile, 'path' | 'checksum'>;
@@ -104,9 +109,28 @@ export type PromptQueryHistogram = {
   count: number | null;
 };
 
-export type PromptReference = {
+// A prompt reference consists of a section reference (typically the
+// section heading) and the parent file info.
+export type FileSectionReference = {
+  file: FileSectionReferenceFileData;
+} & FileSectionReferenceSectionData;
+
+export type FileSectionReferenceSectionData = {
+  meta?: {
+    leadHeading?: {
+      id?: string;
+      depth?: number;
+      value?: string;
+      slug?: string;
+    };
+  };
+};
+
+export type FileSectionReferenceFileData = {
+  title?: string;
   path: string;
-  source: Pick<Source, 'type' | 'data'>;
+  meta?: any;
+  source: Source;
 };
 
 export type FileType = 'mdx' | 'mdoc' | 'md' | 'rst' | 'html' | 'txt';

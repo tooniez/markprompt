@@ -1,15 +1,23 @@
+import { Source } from '@markprompt/core';
 import { createClient } from '@supabase/supabase-js';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 import { getRequesterIp } from '@/lib/middleware/common';
 import { track } from '@/lib/posthog';
 import { checkSectionsRateLimits } from '@/lib/rate-limits';
-import { FileSection, getMatchingSections } from '@/lib/sections';
+import { getMatchingSections } from '@/lib/sections';
 import { canAccessSectionsAPI } from '@/lib/stripe/tiers';
 import { getBYOOpenAIKey, getTeamTierInfo } from '@/lib/supabase';
+import { augmentLeadHeadingWithSlug, inferFileTitle } from '@/lib/utils';
 import { isRequestFromMarkprompt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
-import { ApiError, Project } from '@/types/types';
+import {
+  ApiError,
+  FileSectionMatchResults,
+  FileSectionMeta,
+  FileSectionReference,
+  Project,
+} from '@/types/types';
 
 // Admin access to Supabase, bypassing RLS.
 const supabaseAdmin = createClient<Database>(
@@ -17,12 +25,29 @@ const supabaseAdmin = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY || '',
 );
 
+type LegacySectionData = {
+  path: string;
+  content: string;
+  similarity: number;
+  source_type: Source['type'];
+  source_data: Source['data'] | undefined;
+};
+
+type FileSectionContentInfo = {
+  content: string;
+  similarity: number;
+};
+
 type Data =
   | {
       status?: string;
       error?: string;
     }
-  | { data: Omit<FileSection, 'token_count'>[] };
+  | {
+      data: (FileSectionReference &
+        FileSectionContentInfo &
+        LegacySectionData)[];
+    };
 
 const allowedMethods = ['GET'];
 
@@ -82,7 +107,7 @@ export default async function handler(
 
   const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
 
-  let fileSections: FileSection[] = [];
+  let fileSections: FileSectionMatchResults = [];
   try {
     const sectionsResponse = await getMatchingSections(
       sanitizedQuery,
@@ -111,12 +136,31 @@ export default async function handler(
 
   return res.status(200).json({
     data: fileSections.map((section) => {
+      const sectionMeta = section.file_sections_meta as
+        | FileSectionMeta
+        | undefined;
+      const leadHeading = sectionMeta?.leadHeading;
       return {
-        path: section.path,
-        content: section.content,
-        similarity: section.similarity,
+        file: {
+          title: inferFileTitle(section.files_meta as any, section.files_path),
+          meta: section.files_meta,
+          path: section.files_path,
+          source: {
+            type: section.source_type,
+            ...(section.source_data
+              ? { data: section.source_data as any }
+              : {}),
+          },
+        },
+        meta: {
+          leadHeading: augmentLeadHeadingWithSlug(leadHeading),
+        },
+        content: section.file_sections_content,
+        similarity: section.file_sections_similarity,
+        // We keep the following fields for backwards compatibility
+        path: section.files_path,
         source_type: section.source_type,
-        source_data: section.source_data,
+        source_data: section.source_data as any,
       };
     }),
   });

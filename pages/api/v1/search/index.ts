@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 import FlexSearch from 'flexsearch';
-import Slugger from 'github-slugger';
 import { uniq } from 'lodash-es';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { remark } from 'remark';
@@ -8,9 +7,14 @@ import remarkGfm from 'remark-gfm';
 import strip from 'strip-markdown';
 
 import { track } from '@/lib/posthog';
+import { augmentLeadHeadingWithSlug } from '@/lib/utils';
 import { safeParseInt, safeParseJSON } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
-import { FileSectionMeta } from '@/types/types';
+import {
+  FileSectionMeta,
+  FileSectionReferenceFileData,
+  FileSectionReferenceSectionData,
+} from '@/types/types';
 
 const MAX_SEARCH_RESULTS = 20;
 
@@ -35,26 +39,12 @@ type Index = FlexSearch.Document<
 
 type SearchResult = {
   matchType: 'title' | 'leadHeading' | 'content';
-  file: SearchResultFileData;
+  file: FileSectionReferenceFileData;
 } & SearchResultSection;
 
 type SearchResultSection = {
   content?: string;
-  meta?: {
-    leadHeading?: {
-      id?: string;
-      depth: number;
-      value: string;
-      slug: string;
-    };
-  };
-};
-
-type SearchResultFileData = {
-  title?: string;
-  path: string;
-  meta: any;
-  source: Source;
+  meta?: FileSectionReferenceSectionData['meta'];
 };
 
 type SourceType = 'github' | 'motif' | 'website' | 'file-upload' | 'api-upload';
@@ -334,7 +324,8 @@ export default async function handler(
     // Ignore sections which are duplicates of files with title matches. We
     // consider it a duplicate if it has a heading of depth 1 equal to a
     // file title.
-    const leadHeading = (match.meta as FileSectionMeta)?.leadHeading;
+    const sectionMeta = match.meta as FileSectionMeta | undefined;
+    const leadHeading = sectionMeta?.leadHeading;
     if (
       leadHeading?.depth === 1 &&
       leadHeading.value &&
@@ -349,14 +340,6 @@ export default async function handler(
       ? 'leadHeading'
       : 'content';
 
-    // Do not reuse a Slugger instance, as it will
-    // append `-1`, `-2`, ... to links if it encounters the
-    // same link twice.
-    const slugger = new Slugger();
-    const slug = leadHeading?.value
-      ? slugger.slug(leadHeading?.value)
-      : undefined;
-
     index.add({
       id: `${match.id}`,
       matchType,
@@ -368,11 +351,8 @@ export default async function handler(
       },
       content: match.content,
       meta: {
-        ...(match.meta as any),
-        leadHeading: {
-          ...leadHeading,
-          slug,
-        },
+        ...sectionMeta,
+        leadHeading: augmentLeadHeadingWithSlug(leadHeading),
       },
     });
   }
