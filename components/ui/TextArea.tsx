@@ -6,6 +6,7 @@ type TextAreaProps = {
   variant?: 'plain' | 'glow';
   children?: ReactNode;
   className?: string;
+  noStyle?: boolean;
 } & any;
 
 export const NoAutoTextArea = (props: any) => {
@@ -24,6 +25,7 @@ const TextArea: FC<TextAreaProps> = ({
   textAreaSize: s,
   variant,
   className,
+  noStyle,
   ...props
 }) => {
   const textAreaSize = s ?? 'base';
@@ -31,7 +33,8 @@ const TextArea: FC<TextAreaProps> = ({
     <textarea
       {...props}
       value={props.value || undefined}
-      className={cn(className, 'input-base input-base-border input-focus', {
+      className={cn(className, {
+        'input-base input-base-border input-focus': !noStyle,
         'px-2 py-2 text-sm': textAreaSize === 'base',
         'px-2 py-1.5 text-sm': textAreaSize === 'sm',
         'input-glow-color': variant === 'glow',

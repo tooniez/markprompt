@@ -3,6 +3,7 @@ import {
   OpenAICompletionsModelId,
   OpenAIEmbeddingsModelId,
 } from '@markprompt/core';
+import { MarkpromptOptions } from '@markprompt/react';
 
 import { Database } from './supabase';
 
@@ -165,4 +166,20 @@ export type FileSectionsData = {
   sections: FileSectionData[];
   meta: { title: string } & any;
   leadFileHeading: string | undefined;
+};
+
+// This is the same as MarkpromptOptions, except that functions are replaced
+// by strings. This is mainly a helper for the UI configuration, so that we
+// can display text fields to enter the function declarations and generate
+// the code snippets accordingly.
+export type SerializableMarkpromptOptions = Omit<
+  MarkpromptOptions,
+  'references' | 'search'
+> & {
+  references?: Omit<MarkpromptOptions['references'], 'transformReferenceId'> & {
+    transformReferenceId?: string;
+  };
+  search?: Omit<MarkpromptOptions['search'], 'getResultHref'> & {
+    getResultHref?: string;
+  };
 };

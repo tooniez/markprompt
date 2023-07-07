@@ -11,6 +11,8 @@ import {
   useContext,
 } from 'react';
 
+import { SerializableMarkpromptOptions } from '@/types/types';
+
 import useProject from '../hooks/use-project';
 import { useLocalStorage } from '../hooks/utils/use-localstorage';
 import {
@@ -22,7 +24,7 @@ import {
 } from '../themes';
 
 export type State = {
-  markpromptOptions: MarkpromptOptions;
+  markpromptOptions: SerializableMarkpromptOptions;
   theme: Theme;
   colors: ThemeColors;
   isDark: boolean;
@@ -30,15 +32,52 @@ export type State = {
   setTheme: (theme: Theme) => void;
   setDark: (dark: boolean) => void;
   setSize: (size: Theme['size']) => void;
-  setMarkpromptOptions: (markpromptOptions: MarkpromptOptions) => void;
+  setMarkpromptOptions: (
+    markpromptOptions: SerializableMarkpromptOptions,
+  ) => void;
   restoreModelDefaults: () => void;
 };
 
-export const DEFAULT_MARKPROMPT_OPTIONS_GPT4: MarkpromptOptions = {
+export const DEFAULT_MARKPROMPT_OPTIONS_GPT4: SerializableMarkpromptOptions = {
   ...DEFAULT_MARKPROMPT_OPTIONS,
   prompt: {
     ...DEFAULT_MARKPROMPT_OPTIONS.prompt,
     model: 'gpt-4',
+  },
+  references: {
+    ...DEFAULT_MARKPROMPT_OPTIONS.references,
+    transformReferenceId: `let href = referenceId;
+
+// Remove file extension
+const lastDotIndex = referenceId.lastIndexOf('.');
+if (lastDotIndex >= 0) {
+  href = referenceId.substring(0, lastDotIndex);
+}
+
+// For label, capitalize last path component
+const lastPathComponent = href.split('/').slice(-1)[0]
+const text = lastPathComponent.charAt(0).toUpperCase() + text.slice(1);
+
+return { href, text }`,
+  },
+  search: {
+    ...DEFAULT_MARKPROMPT_OPTIONS.search,
+    getResultHref: `const lastDotIndex = path.lastIndexOf('.');
+let cleanPath = path;
+if (lastDotIndex >= 0) {
+  cleanPath = path.substring(0, lastDotIndex);
+}
+if (cleanPath.endsWith('/index')) {
+  cleanPath = cleanPath.replace(/\\/index/gi, '');
+}
+
+if (sectionHeading?.id) {
+  return \`\${cleanPath}#\${sectionHeading.id}\`;
+} else if (sectionHeading?.value) {
+  const slugger = new Slugger();
+  return \`\${cleanPath}#\${slugger.slug(sectionHeading.value)}\`;
+}
+return cleanPath;`,
   },
 };
 
@@ -55,25 +94,8 @@ const initialState: State = {
   restoreModelDefaults: () => {},
 };
 
-export const toSerializableMarkpromptOptions = (
-  markpromptOptions: MarkpromptOptions,
-) => {
-  const { search, references, ...rest } = markpromptOptions;
-  return {
-    ...rest,
-    search: {
-      ...search,
-      getResultHref: undefined,
-    },
-    references: {
-      ...references,
-      transformReferenceId: undefined,
-    },
-  };
-};
-
 export const isDefaultMarkpromptPromptOptions = (
-  markpromptOptions: MarkpromptOptions,
+  markpromptOptions: SerializableMarkpromptOptions,
 ) => {
   // Checks whether the model config part of markpromptOptions equals
   // the default values. This is to show the upgrade note in case of
@@ -108,7 +130,7 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
   );
 
   const [markpromptOptions, setMarkpromptOptions] = useLocalStorage<
-    MarkpromptOptions | undefined
+    SerializableMarkpromptOptions | undefined
   >(
     !project?.id ? null : `${project?.id}:config:markprompt-options`,
     initialState.markpromptOptions,

@@ -28,10 +28,7 @@ import colors from 'tailwindcss/colors';
 import { addSource } from '@/lib/api';
 import { SAMPLE_REPO_URL } from '@/lib/constants';
 import { useAppContext } from '@/lib/context/app';
-import {
-  toSerializableMarkpromptOptions,
-  useConfigContext,
-} from '@/lib/context/config';
+import { useConfigContext } from '@/lib/context/config';
 import { useTrainingContext } from '@/lib/context/training';
 import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import useFiles from '@/lib/hooks/use-files';
@@ -44,11 +41,8 @@ import {
   getAccessoryLabelForSource,
   getIconForSource,
   getLabelForSource,
-  getNameFromPath,
-  removeFileExtension,
-  showConfetti,
 } from '@/lib/utils';
-import { getApiUrl, getAppOrigin } from '@/lib/utils.edge';
+import { getApiUrl } from '@/lib/utils.edge';
 import { Source, SourceType } from '@/types/types';
 
 import StatusMessage from './StatusMessage';
@@ -483,11 +477,6 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     };
   }, [isShowingOnboardingMessages]);
 
-  const serializableMarkpromptOptions = useMemo(
-    () => toSerializableMarkpromptOptions(markpromptOptions),
-    [markpromptOptions],
-  );
-
   useEffect(() => {
     if (
       !isPlaygroundLoaded ||
@@ -499,18 +488,18 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
 
     const props = {
       projectKey: project.private_dev_api_key,
-      showBranding: serializableMarkpromptOptions.showBranding,
+      showBranding: markpromptOptions.showBranding,
       prompt: {
-        ...serializableMarkpromptOptions.prompt,
+        ...markpromptOptions.prompt,
         completionsUrl: getApiUrl('completions', false),
       },
       trigger: { floating: true },
       search: {
-        ...serializableMarkpromptOptions.search,
+        ...markpromptOptions.search,
         searchUrl: getApiUrl('search', false),
       },
       references: {
-        ...serializableMarkpromptOptions.references,
+        ...markpromptOptions.references,
         // loadingText: loadingHeading,
         // referencesText: referencesHeading,
         // transformReferenceId: (path: string) => {
@@ -542,14 +531,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       { props, colors, size: theme.size, dimensions: theme.dimensions, isDark },
       '*',
     );
-  }, [
-    files,
-    isPlaygroundLoaded,
-    project,
-    theme,
-    isDark,
-    serializableMarkpromptOptions,
-  ]);
+  }, [files, isPlaygroundLoaded, project, theme, isDark, markpromptOptions]);
 
   return (
     <div className="absolute inset-0 grid grid-cols-1 sm:grid-cols-4">
