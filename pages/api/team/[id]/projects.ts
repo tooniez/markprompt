@@ -6,7 +6,7 @@ import {
   generatePKKey,
   generateRandomSlug,
   generateSKTestKey,
-  slugFromName,
+  slugFromNameOrRandom,
 } from '@/lib/utils';
 import { Database } from '@/types/supabase';
 import { Project, Team } from '@/types/types';
@@ -18,10 +18,9 @@ const getAvailableProjectSlug = async (
   teamId: Team['id'],
   name: Project['name'],
 ) => {
-  // If no name is provided, generate a random slug.
-  let baseSlug: string;
+  let baseSlug: string | undefined = undefined;
   if (name && name.length > 0) {
-    baseSlug = slugFromName(name);
+    baseSlug = slugFromNameOrRandom(name);
   } else {
     baseSlug = generateRandomSlug();
   }

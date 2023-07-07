@@ -33,6 +33,7 @@ import {
   WebsiteSourceDataType,
 } from '@/types/types';
 
+import { MIN_SLUG_LENGTH } from './constants';
 import { removeSchema } from './utils.edge';
 
 const lookup = [
@@ -159,8 +160,14 @@ export const slugFromEmail = (email: string) => {
   return slugify(email.split('@')[0]);
 };
 
-export const slugFromName = (name: string) => {
-  return slugify(name);
+// Non-Latin characters produce empty slugs, so generate a random
+// slug instead.
+export const slugFromNameOrRandom = (name: string) => {
+  const slug = slugify(name);
+  if (!slug || slug.length < MIN_SLUG_LENGTH) {
+    return generateRandomSlug();
+  }
+  return slug;
 };
 
 export const copyToClipboard = (text: string): void => {

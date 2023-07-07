@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { SupabaseClient } from '@supabase/auth-helpers-react';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { MIN_SLUG_LENGTH } from '@/lib/constants';
 import { Database } from '@/types/supabase';
 import { Team } from '@/types/types';
 
@@ -19,6 +20,10 @@ export const isProjectSlugAvailable = async (
   teamId: Team['id'],
   slug: string,
 ) => {
+  if (!slug || slug.trim().length < MIN_SLUG_LENGTH) {
+    return false;
+  }
+
   const { count } = await supabase
     .from('projects')
     .select('slug', { count: 'exact' })

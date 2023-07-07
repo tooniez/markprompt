@@ -1,6 +1,10 @@
 import { SubmitPromptOptions } from '@markprompt/core';
 
-import { getResponseOrThrow, slugFromName } from '@/lib/utils';
+import {
+  generateRandomSlug,
+  getResponseOrThrow,
+  slugFromNameOrRandom,
+} from '@/lib/utils';
 import {
   DbFile,
   DbUser,
@@ -14,6 +18,7 @@ import {
   Token,
 } from '@/types/types';
 
+import { MIN_SLUG_LENGTH } from './constants';
 import { Theme } from './themes';
 
 export const updateUser = async (values: Partial<DbUser>): Promise<DbUser> => {
@@ -139,7 +144,7 @@ export const initUserData = async (): Promise<{
 };
 
 export const createTeam = async (name: string) => {
-  const candidateSlug = slugFromName(name);
+  const candidateSlug = slugFromNameOrRandom(name);
   const res = await fetch('/api/teams', {
     method: 'POST',
     body: JSON.stringify({ name, candidateSlug }),

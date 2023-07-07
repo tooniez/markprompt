@@ -6,6 +6,7 @@ export const CONTEXT_TOKENS_CUTOFF = 4000;
 export const CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO = 2048;
 export const SAMPLE_REPO_URL =
   'https://github.com/motifland/markprompt-sample-docs';
+export const MIN_SLUG_LENGTH = 3;
 
 export const DEFAULT_MARKPROMPT_CONFIG = `{
   "include": [

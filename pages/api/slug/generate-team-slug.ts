@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { SupabaseClient } from '@supabase/auth-helpers-react';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { MIN_SLUG_LENGTH } from '@/lib/constants';
 import { Database } from '@/types/supabase';
 
 type Data =
@@ -13,7 +14,7 @@ type Data =
 
 const allowedMethods = ['POST'];
 
-const RESERVED_SLUGS = [
+const RESERVED_TEAM_SLUGS = [
   'settings',
   'legal',
   'docs',
@@ -27,7 +28,11 @@ export const isTeamSlugAvailable = async (
   supabase: SupabaseClient<Database>,
   slug: string,
 ) => {
-  if (RESERVED_SLUGS.includes(slug)) {
+  if (
+    !slug ||
+    slug.trim().length < MIN_SLUG_LENGTH ||
+    RESERVED_TEAM_SLUGS.includes(slug)
+  ) {
     return false;
   }
   const { count } = await supabase
