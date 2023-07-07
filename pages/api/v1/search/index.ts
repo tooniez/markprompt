@@ -7,12 +7,15 @@ import remarkGfm from 'remark-gfm';
 import strip from 'strip-markdown';
 
 import { track } from '@/lib/posthog';
-import { augmentLeadHeadingWithSlug } from '@/lib/utils';
+import {
+  buildFileReferenceFromMatchResult,
+  buildSectionReferenceFromMatchResult,
+} from '@/lib/utils';
 import { safeParseInt, safeParseJSON } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
+  FileReferenceFileData,
   FileSectionMeta,
-  FileSectionReferenceFileData,
   FileSectionReferenceSectionData,
 } from '@/types/types';
 
@@ -39,7 +42,7 @@ type Index = FlexSearch.Document<
 
 type SearchResult = {
   matchType: 'title' | 'leadHeading' | 'content';
-  file: FileSectionReferenceFileData;
+  file: FileReferenceFileData;
 } & SearchResultSection;
 
 type SearchResultSection = {
@@ -100,15 +103,6 @@ const createKWICSnippet = async (
   }
 
   return words.join(' ');
-};
-
-const processTitle = async (title: string | undefined) => {
-  // In some situations, the title can be an HTML/JSX tag, for instance
-  // an image. If it's an image/figure, we extract the title/alt.
-  if (typeof title === 'undefined') {
-    return title;
-  }
-  return String(await remark().use(remarkGfm).use(strip).process(title)).trim();
 };
 
 export default async function handler(
@@ -239,7 +233,6 @@ export default async function handler(
           ...(source.data ? { data: source.data } : {}),
           type: source.type,
         } as Source,
-        processedTitle: await processTitle((d.meta as any)?.title),
       };
     }),
   );
@@ -300,18 +293,21 @@ export default async function handler(
   for (const match of _fileTitleDBMatches || []) {
     const fileData = fileAugmentationData.find((f) => f.id === match.id);
     if (fileData) {
-      if (fileData.processedTitle) {
-        fileTitles.push(fileData.processedTitle);
+      const fileReference = await buildFileReferenceFromMatchResult(
+        fileData.path,
+        fileData.meta,
+        fileData.source.type,
+        fileData.source.data,
+      );
+
+      if (fileReference.title) {
+        fileTitles.push(fileReference.title);
       }
+
       index.add({
         id: `${match.id}`,
         matchType: 'title',
-        file: {
-          title: fileData.processedTitle,
-          path: fileData.path,
-          meta: fileData.meta,
-          source: fileData.source,
-        },
+        file: fileReference,
       });
     }
   }
@@ -340,20 +336,19 @@ export default async function handler(
       ? 'leadHeading'
       : 'content';
 
+    const sectionReference = await buildSectionReferenceFromMatchResult(
+      fileData.path,
+      fileData.meta,
+      fileData.source.type,
+      fileData.source.data,
+      sectionMeta,
+    );
+
     index.add({
       id: `${match.id}`,
       matchType,
-      file: {
-        title: fileData.processedTitle,
-        path: fileData.path,
-        meta: fileData.meta,
-        source: fileData.source,
-      },
+      ...sectionReference,
       content: match.content,
-      meta: {
-        ...sectionMeta,
-        leadHeading: augmentLeadHeadingWithSlug(leadHeading),
-      },
     });
   }
 

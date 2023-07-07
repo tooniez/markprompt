@@ -8,12 +8,12 @@ import { checkSectionsRateLimits } from '@/lib/rate-limits';
 import { getMatchingSections } from '@/lib/sections';
 import { canAccessSectionsAPI } from '@/lib/stripe/tiers';
 import { getBYOOpenAIKey, getTeamTierInfo } from '@/lib/supabase';
-import { augmentLeadHeadingWithSlug, inferFileTitle } from '@/lib/utils';
+import { buildSectionReferenceFromMatchResult } from '@/lib/utils';
 import { isRequestFromMarkprompt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
   ApiError,
-  FileSectionMatchResults,
+  FileSectionMatchResult,
   FileSectionMeta,
   FileSectionReference,
   Project,
@@ -107,7 +107,7 @@ export default async function handler(
 
   const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
 
-  let fileSections: FileSectionMatchResults = [];
+  let fileSections: FileSectionMatchResult[] = [];
   try {
     const sectionsResponse = await getMatchingSections(
       sanitizedQuery,
@@ -134,27 +134,18 @@ export default async function handler(
 
   track(projectId, 'get sections', { projectId });
 
-  return res.status(200).json({
-    data: fileSections.map((section) => {
-      const sectionMeta = section.file_sections_meta as
-        | FileSectionMeta
-        | undefined;
-      const leadHeading = sectionMeta?.leadHeading;
+  const data = await Promise.all(
+    fileSections.map(async (section) => {
+      const sectionMeta = section.file_sections_meta as FileSectionMeta;
+      const sectionReference = await buildSectionReferenceFromMatchResult(
+        section.files_path,
+        section.files_meta,
+        section.source_type,
+        section.source_data,
+        sectionMeta,
+      );
       return {
-        file: {
-          title: inferFileTitle(section.files_meta as any, section.files_path),
-          meta: section.files_meta,
-          path: section.files_path,
-          source: {
-            type: section.source_type,
-            ...(section.source_data
-              ? { data: section.source_data as any }
-              : {}),
-          },
-        },
-        meta: {
-          leadHeading: augmentLeadHeadingWithSlug(leadHeading),
-        },
+        ...sectionReference,
         content: section.file_sections_content,
         similarity: section.file_sections_similarity,
         // We keep the following fields for backwards compatibility
@@ -163,5 +154,8 @@ export default async function handler(
         source_data: section.source_data as any,
       };
     }),
+  );
+  return res.status(200).json({
+    data,
   });
 }

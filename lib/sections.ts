@@ -6,7 +6,7 @@ import { CreateEmbeddingResponse } from 'openai';
 import { Database } from '@/types/supabase';
 import {
   ApiError,
-  FileSectionMatchResults,
+  FileSectionMatchResult,
   Project,
   FileSectionReference,
 } from '@/types/types';
@@ -46,7 +46,7 @@ export const getMatchingSections = async (
   source: 'completions' | 'sections',
   supabaseAdmin: SupabaseClient<Database>,
 ): Promise<{
-  fileSections: FileSectionMatchResults;
+  fileSections: FileSectionMatchResult[];
   promptEmbedding: number[];
 }> => {
   // Moderate the content
@@ -112,7 +112,7 @@ export const getMatchingSections = async (
     data: fileSections,
   }: {
     error: { message: string } | null;
-    data: FileSectionMatchResults | null;
+    data: FileSectionMatchResult[] | null;
   } = await supabaseAdmin.rpc('match_file_sections', {
     project_id: projectId,
     // Somehow Supabase expects a string for the embeddings

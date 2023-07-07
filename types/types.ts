@@ -81,8 +81,8 @@ export type MembershipType =
 export type DbSource = Database['public']['Tables']['sources']['Row'];
 export type DbFile = Database['public']['Tables']['files']['Row'];
 export type FileSections = Database['public']['Tables']['file_sections']['Row'];
-export type FileSectionMatchResults =
-  Database['public']['Functions']['match_file_sections']['Returns'];
+export type FileSectionMatchResult =
+  Database['public']['Functions']['match_file_sections']['Returns'][number];
 export type OAuthToken =
   Database['public']['Tables']['user_access_tokens']['Row'];
 export type PromptConfig =
@@ -112,7 +112,7 @@ export type PromptQueryHistogram = {
 // A prompt reference consists of a section reference (typically the
 // section heading) and the parent file info.
 export type FileSectionReference = {
-  file: FileSectionReferenceFileData;
+  file: FileReferenceFileData;
 } & FileSectionReferenceSectionData;
 
 export type FileSectionReferenceSectionData = {
@@ -126,7 +126,7 @@ export type FileSectionReferenceSectionData = {
   };
 };
 
-export type FileSectionReferenceFileData = {
+export type FileReferenceFileData = {
   title?: string;
   path: string;
   meta?: any;
