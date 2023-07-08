@@ -3,15 +3,15 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getSource } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
-import { Project, Source, SourceType } from '@/types/types';
+import { Project, DbSource, SourceType } from '@/types/types';
 
 type Data =
   | {
       status?: string;
       error?: string;
     }
-  | Source[]
-  | Source;
+  | DbSource[]
+  | DbSource;
 
 const allowedMethods = ['POST', 'GET', 'DELETE'];
 

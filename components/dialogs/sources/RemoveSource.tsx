@@ -7,11 +7,11 @@ import useFiles from '@/lib/hooks/use-files';
 import useSources from '@/lib/hooks/use-sources';
 import useUsage from '@/lib/hooks/use-usage';
 import { getLabelForSource } from '@/lib/utils';
-import { Project, Source } from '@/types/types';
+import { Project, DbSource } from '@/types/types';
 
 type RemoveSourceDialogProps = {
   projectId: Project['id'];
-  source: Source;
+  source: DbSource;
   onComplete: () => void;
 };
 

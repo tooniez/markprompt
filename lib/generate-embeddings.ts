@@ -19,7 +19,7 @@ import { createEmbedding } from '@/lib/openai.edge';
 import {
   createChecksum,
   getFileType,
-  removeFileExtension,
+  inferFileTitle,
   splitIntoSubstringsOfMaxLength,
 } from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.node';
@@ -27,12 +27,12 @@ import { Database } from '@/types/supabase';
 import {
   API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
   DbFile,
+  DbSource,
   FileData,
   FileSectionData,
   FileSectionsData,
   OpenAIModelIdWithType,
   Project,
-  Source,
   geLLMInfoFromModel,
 } from '@/types/types';
 
@@ -85,10 +85,6 @@ const splitTreeBy = <T extends Content>(
   );
 };
 
-const inferTitleFromPath = (path: string) => {
-  return removeFileExtension(path.split('/').slice(-1)[0]);
-};
-
 const getProcessor = (withMdx: boolean, markpromptConfig: MarkpromptConfig) => {
   let chain = unified();
 
@@ -124,7 +120,7 @@ const augmentMetaWithTitle = (
   }
 
   if (filePath) {
-    return { ...meta, title: inferTitleFromPath(filePath) };
+    return { ...meta, title: inferFileTitle(meta, filePath) };
   }
 
   return { ...meta, title: defaultFileSectionsData.meta.title };
@@ -394,7 +390,7 @@ const processFileData = (
 
 const getFileAtPath = async (
   supabase: SupabaseClient<Database>,
-  sourceId: Source['id'],
+  sourceId: DbSource['id'],
   path: string,
 ): Promise<DbFile['id'] | undefined> => {
   const { data, error } = await supabase
@@ -416,7 +412,7 @@ const createFile = async (
   // value to prevent NULL values, because if a row has a NULL value,
   // somehow it won't be returned in the inner joined filter query.
   _projectId: Project['id'],
-  sourceId: Source['id'],
+  sourceId: DbSource['id'],
   path: string,
   meta: any,
   checksum: string,
@@ -453,7 +449,7 @@ export type EmbeddingsError = {
 export const generateFileEmbeddings = async (
   supabaseAdmin: SupabaseClient,
   projectId: Project['id'],
-  sourceId: Source['id'],
+  sourceId: DbSource['id'],
   file: FileData,
   byoOpenAIKey: string | undefined,
   markpromptConfig: MarkpromptConfig,

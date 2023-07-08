@@ -1,6 +1,8 @@
 import * as Accordion from '@radix-ui/react-accordion';
 import * as Switch from '@radix-ui/react-switch';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
+import { Info } from 'lucide-react';
+import Link from 'next/link';
 import { ChangeEvent, FC, useMemo } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
@@ -8,6 +10,7 @@ import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';
 import useTeam from '@/lib/hooks/use-team';
 import { canRemoveBranding } from '@/lib/stripe/tiers';
 import { Theme, ThemeColorKeys, ThemeColors } from '@/lib/themes';
+import { SerializableMarkpromptOptions } from '@/types/types';
 
 import { Row } from './PlaygroundDashboard';
 import { ThemePicker } from './ThemePicker';
@@ -16,6 +19,7 @@ import { ButtonOrLinkWrapper } from '../ui/Button';
 import ColorPickerInput from '../ui/ColorPickerInput';
 import Input from '../ui/Input';
 import { Tag } from '../ui/Tag';
+import { NoAutoTextArea } from '../ui/TextArea';
 
 type ThemeColorPickerProps = {
   colors: ThemeColors;
@@ -64,7 +68,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
         <div className="flex flex-row items-center justify-end gap-2">
           <Switch.Root
             className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 disabled:cursor-not-allowed data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600 disabled:data-[state='checked']:opacity-40"
-            checked={!!markpromptOptions.search?.enabled}
+            checked={!!(markpromptOptions.search as any)?.enabled}
             onCheckedChange={(b: boolean) =>
               setMarkpromptOptions({
                 ...markpromptOptions,
@@ -72,7 +76,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                   ...markpromptOptions.search,
                   enabled: b,
                 },
-              })
+              } as SerializableMarkpromptOptions)
             }
           >
             <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
@@ -105,7 +109,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
       </Row>
       <Accordion.Root className="mt-2 w-full" type="single" collapsible>
         <Accordion.Item value="options">
-          <AccordionTrigger>Advanced configuration</AccordionTrigger>
+          <AccordionTrigger>UI options</AccordionTrigger>
           <AccordionContent className="pt-4">
             <div className="flex flex-col gap-2">
               <Row label="Size">
@@ -272,7 +276,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
               <Row label="References heading">
                 <Input
                   inputSize="sm"
-                  value={markpromptOptions.references?.referencesText}
+                  value={(markpromptOptions.references as any)?.referencesText}
                   onChange={(event: ChangeEvent<HTMLInputElement>) => {
                     setMarkpromptOptions({
                       ...markpromptOptions,
@@ -280,14 +284,14 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                         ...markpromptOptions.references,
                         referencesText: event.target.value,
                       },
-                    });
+                    } as SerializableMarkpromptOptions);
                   }}
                 />
               </Row>
               <Row label="Loading heading">
                 <Input
                   inputSize="sm"
-                  value={markpromptOptions.references?.loadingText}
+                  value={(markpromptOptions.references as any)?.loadingText}
                   onChange={(event: ChangeEvent<HTMLInputElement>) => {
                     setMarkpromptOptions({
                       ...markpromptOptions,
@@ -295,11 +299,11 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                         ...markpromptOptions.references,
                         loadingText: event.target.value,
                       },
-                    });
+                    } as SerializableMarkpromptOptions);
                   }}
                 />
               </Row>
-              {markpromptOptions.search?.enabled && (
+              {(markpromptOptions.search as any)?.enabled && (
                 <Row label="Ask AI label">
                   <Input
                     inputSize="sm"
@@ -316,6 +320,45 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                   />
                 </Row>
               )}
+            </div>
+          </AccordionContent>
+        </Accordion.Item>
+      </Accordion.Root>
+      <Accordion.Root className="mt-2 w-full" type="single" collapsible>
+        <Accordion.Item value="options">
+          <AccordionTrigger>Link mappings</AccordionTrigger>
+          <AccordionContent className="pt-4">
+            <div className="flex flex-col gap-2">
+              <div className="mt-1 flex w-full flex-col">
+                <div className="input-base input-base-border input-focus py-4 pl-4 font-mono">
+                  <NoAutoTextArea
+                    value={markpromptOptions.prompt?.promptTemplate}
+                    className="input-base-noborder h-[200px] w-full border-0 bg-transparent text-xs"
+                    noStyle
+                    textAreaSize="sm"
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                      setMarkpromptOptions({
+                        ...markpromptOptions,
+                        prompt: {
+                          ...markpromptOptions.prompt,
+                          promptTemplate: event.target.value,
+                        },
+                      });
+                    }}
+                  />
+                </div>
+                <Link
+                  href="/docs#templates"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="button-ring mt-4 mb-4 flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
+                >
+                  <Info className="h-4 w-4 text-neutral-300" />
+                  <span className="subtle-underline">
+                    Learn more about templates
+                  </span>
+                </Link>
+              </div>
             </div>
           </AccordionContent>
         </Accordion.Item>

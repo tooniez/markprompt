@@ -12,7 +12,7 @@ import { Database } from '@/types/supabase';
 import {
   API_ERROR_ID_CONTENT_TOKEN_QUOTA_EXCEEDED,
   FileData,
-  Source,
+  DbSource,
 } from '@/types/types';
 
 type Data = {
@@ -50,7 +50,7 @@ export default async function handler(
   }
 
   const file = req.body.file as FileData;
-  const sourceId = req.body.sourceId as Source['id'];
+  const sourceId = req.body.sourceId as DbSource['id'];
   const projectId = await getProjectIdFromSource(supabaseAdmin, sourceId);
 
   if (!projectId) {

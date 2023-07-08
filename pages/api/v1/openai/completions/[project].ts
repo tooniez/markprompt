@@ -12,11 +12,12 @@ import { I_DONT_KNOW, MAX_PROMPT_LENGTH } from '@/lib/constants';
 import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
-import { FileSection, getMatchingSections, storePrompt } from '@/lib/sections';
+import { getMatchingSections, storePrompt } from '@/lib/sections';
 import { canUseCustomModelConfig } from '@/lib/stripe/tiers';
 import { getProjectConfigData, getTeamTierInfo } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import {
+  buildSectionReferenceFromMatchResult,
   getCompletionsResponseText,
   getCompletionsUrl,
   stringToLLMInfo,
@@ -25,9 +26,11 @@ import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
   ApiError,
+  FileSectionMatchResult,
+  FileSectionMeta,
+  FileSectionReference,
   OpenAIModelIdWithType,
   Project,
-  PromptReference,
 } from '@/types/types';
 
 export const config = {
@@ -175,7 +178,9 @@ export default async function handler(req: NextRequest) {
 
   const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
 
-  let fileSections: FileSection[] = [];
+  const sectionsTs = Date.now();
+
+  let fileSections: FileSectionMatchResult[] = [];
   let promptEmbedding: number[] | undefined = undefined;
   try {
     const sectionsResponse = await getMatchingSections(
@@ -198,6 +203,8 @@ export default async function handler(req: NextRequest) {
     }
   }
 
+  const sectionsDelta = Date.now() - sectionsTs;
+
   track(projectId, 'generate completions', { projectId });
 
   // const { completionsTokensCount } = await getTokenCountsForProject(projectId);
@@ -215,35 +222,30 @@ export default async function handler(req: NextRequest) {
 
   let numTokens = 0;
   let contextText = '';
-  const referencesMap: {
-    [key: string]: PromptReference;
-  } = {};
+  const references: FileSectionReference[] = [];
+
   for (const section of fileSections) {
-    numTokens += section.token_count;
+    numTokens += section.file_sections_token_count;
 
     if (numTokens >= constants.CONTEXT_TOKENS_CUTOFF) {
       break;
     }
 
-    contextText += `Section id: ${section.path}\n\n${_prepareSectionText(
-      section.content,
+    contextText += `Section id: ${section.files_path}\n\n${_prepareSectionText(
+      section.file_sections_content,
     )}\n---\n`;
 
-    const reference = {
-      path: section.path,
-      source: {
-        type: section.source_type,
-        data: section.source_data,
-      },
-    };
-    const key = JSON.stringify(reference);
-    if (!referencesMap[key]) {
-      referencesMap[key] = reference;
-    }
+    const reference = await buildSectionReferenceFromMatchResult(
+      section.files_path,
+      section.files_meta,
+      section.source_type,
+      section.source_data,
+      section.file_sections_meta as FileSectionMeta,
+    );
+    references.push(reference);
   }
 
-  const referencesWithSources = Object.values(referencesMap);
-  const referencePaths = referencesWithSources.map((r) => r.path);
+  const referencePaths = references.map((r) => r.file.path);
 
   const fullPrompt = stripIndent(
     ((params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE.template)
@@ -275,7 +277,12 @@ export default async function handler(req: NextRequest) {
     body: JSON.stringify(payload),
   });
 
-  const debugInfo = params.includeDebugInfo ? { fullPrompt } : {};
+  const debugInfo = {
+    fullPrompt,
+    ts: {
+      sections: sectionsDelta,
+    },
+  };
 
   if (!stream) {
     if (!res.ok) {
@@ -287,7 +294,7 @@ export default async function handler(req: NextRequest) {
         null,
         promptEmbedding,
         true,
-        referencesWithSources,
+        references,
       );
       return new Response(
         `Unable to retrieve completions response: ${message}`,
@@ -311,13 +318,12 @@ export default async function handler(req: NextRequest) {
         text,
         promptEmbedding,
         isIDontKnowResponse(text, iDontKnowMessage),
-        referencesWithSources,
+        references,
       );
       return new Response(
         JSON.stringify({
           text,
-          references: referencePaths,
-          referencesWithSources,
+          references,
           debugInfo,
         }),
         {
@@ -348,7 +354,9 @@ export default async function handler(req: NextRequest) {
 
           try {
             if (!didSendHeader) {
-              // Done sending chunks, send references
+              // Done sending chunks, send references. This will be
+              // deprecated, in favor of passing the full reference
+              // info in the response header.
               const queue = encoder.encode(
                 `${JSON.stringify(referencePaths || [])}${
                   constants.STREAM_SEPARATOR
@@ -406,7 +414,7 @@ export default async function handler(req: NextRequest) {
         responseText,
         promptEmbedding,
         isIDontKnowResponse(responseText, iDontKnowMessage),
-        referencesWithSources,
+        references,
       );
 
       // We're done, wind down
@@ -415,5 +423,19 @@ export default async function handler(req: NextRequest) {
     },
   });
 
-  return new Response(readableStream);
+  // Headers cannot include non-UTF-8 characters, so make sure any strings
+  // we pass in the headers are properly encoded before sending.
+  const headerEncoder = new TextEncoder();
+  const encodedReferences = headerEncoder
+    .encode(JSON.stringify({ references }))
+    .toString();
+  const encodedDebugInfo = headerEncoder
+    .encode(JSON.stringify(debugInfo))
+    .toString();
+
+  const headers = new Headers();
+  headers.append('x-markprompt-data', encodedReferences);
+  headers.append('x-markprompt-debug-info', encodedDebugInfo);
+
+  return new Response(readableStream, { headers });
 }

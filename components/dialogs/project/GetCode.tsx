@@ -1,4 +1,3 @@
-import { type MarkpromptOptions } from '@markprompt/react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Switch from '@radix-ui/react-switch';
 import * as Tabs from '@radix-ui/react-tabs';
@@ -16,7 +15,6 @@ import { Note } from '@/components/ui/Note';
 import { MARKPROMPT_JS_PACKAGE_VERSIONS } from '@/lib/constants';
 import {
   DEFAULT_MARKPROMPT_OPTIONS_GPT4,
-  toSerializableMarkpromptOptions,
   useConfigContext,
 } from '@/lib/context/config';
 import useProject from '@/lib/hooks/use-project';
@@ -31,7 +29,7 @@ import {
 } from '@/lib/themes';
 import { pruneEmpty, propsObjectToJSXPropsString } from '@/lib/utils.browser';
 import { getAppOrigin } from '@/lib/utils.edge';
-import { Project, Team } from '@/types/types';
+import { Project, SerializableMarkpromptOptions, Team } from '@/types/types';
 
 import { getRootTextSize } from './prose';
 
@@ -55,14 +53,8 @@ export const KeyNote = ({
 // Builds the shortest version of the options to pass to a
 // markprompt-js function/component. It only includes values
 // that are different from the default options.
-const getDiffOptions = (markpromptOptions: MarkpromptOptions) => {
-  const serializableMarkpromptOptions =
-    toSerializableMarkpromptOptions(markpromptOptions);
-
-  const diffOptions = diff(
-    toSerializableMarkpromptOptions(DEFAULT_MARKPROMPT_OPTIONS_GPT4),
-    serializableMarkpromptOptions,
-  );
+const getDiffOptions = (markpromptOptions: SerializableMarkpromptOptions) => {
+  const diffOptions = diff(DEFAULT_MARKPROMPT_OPTIONS_GPT4, markpromptOptions);
   return pruneEmpty(diffOptions);
 };
 
@@ -122,7 +114,7 @@ ${indentString(darkColorVars.join('\n'), 4)}
 const reactCode = (
   projectKey: string,
   isTestKey: boolean,
-  markpromptOptions: MarkpromptOptions,
+  markpromptOptions: SerializableMarkpromptOptions,
 ) => {
   const diffOptions = getDiffOptions(markpromptOptions);
 
@@ -145,7 +137,7 @@ export function Component() {
 const vanillaCode = (
   projectKey: string,
   containerId: string,
-  markpromptOptions: MarkpromptOptions,
+  markpromptOptions: SerializableMarkpromptOptions,
 ) => {
   const diffOptions = getDiffOptions(markpromptOptions);
   return `import '@markprompt/css';
@@ -161,7 +153,7 @@ ${indentString(stringify(diffOptions, null, 2), 2)}
 const scriptTagCode = (
   projectKey: string,
   containerId: string,
-  markpromptOptions: MarkpromptOptions,
+  markpromptOptions: SerializableMarkpromptOptions,
   themeCSS: string,
 ) => {
   const diffOptions = {
@@ -195,7 +187,7 @@ ${styleBlock}`;
 
 const embedCode = (
   projectKey: string,
-  markpromptOptions: MarkpromptOptions,
+  markpromptOptions: SerializableMarkpromptOptions,
   themeCSS: string,
 ) => {
   const props = {
@@ -221,7 +213,7 @@ const embedCode = (
 
 const docusaurusCode = (
   projectKey: string,
-  markpromptOptions: MarkpromptOptions,
+  markpromptOptions: SerializableMarkpromptOptions,
 ) => {
   const diffOptions = {
     projectKey: projectKey,

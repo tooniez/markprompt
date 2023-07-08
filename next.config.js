@@ -11,6 +11,10 @@ const corsHeaders = [
     value:
       'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
   },
+  {
+    key: 'Access-Control-Expose-Headers',
+    value: 'x-markprompt-data, x-markprompt-debug-info',
+  },
 ];
 
 /** @type {import('next').NextConfig} */

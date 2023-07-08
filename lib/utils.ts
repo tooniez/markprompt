@@ -8,6 +8,9 @@ import { ChevronsUp, Globe, Upload } from 'lucide-react';
 import { minimatch } from 'minimatch';
 import { customAlphabet } from 'nanoid';
 import pako from 'pako';
+import { remark } from 'remark';
+import remarkGfm from 'remark-gfm';
+import strip from 'strip-markdown';
 import tailwindColors from 'tailwindcss/colors';
 import type { Config } from 'unique-names-generator';
 import {
@@ -21,6 +24,10 @@ import { GitHubIcon } from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
 import {
   DateCountHistogramEntry,
+  FileReferenceFileData,
+  FileSectionHeading,
+  FileSectionMeta,
+  FileSectionReference,
   FileType,
   GitHubSourceDataType,
   HistogramStat,
@@ -847,4 +854,78 @@ const APPROX_CHARS_PER_TOKEN = 3.8;
 // to ensure we stay within boundaries.
 export const approximatedTokenCount = (text: string) => {
   return Math.round(text.length / APPROX_CHARS_PER_TOKEN);
+};
+
+const processTitle = async (title: string | undefined) => {
+  // In some situations, the title can be an HTML/JSX tag, for instance
+  // an image. If it's an image/figure, we extract the title/alt.
+  if (typeof title === 'undefined') {
+    return title;
+  }
+  return String(await remark().use(remarkGfm).use(strip).process(title)).trim();
+};
+
+// Given a file, return its title either from the meta, or from
+// the file path.
+export const inferFileTitle = async (meta: any | undefined, path: string) => {
+  if (meta?.title) {
+    return processTitle(meta.title);
+  }
+  return removeFileExtension(path.split('/').slice(-1)[0]);
+};
+
+export const augmentLeadHeadingWithSlug = (
+  leadHeading: FileSectionHeading | undefined,
+) => {
+  if (!leadHeading?.value) {
+    return undefined;
+  }
+  const slug = leadHeading.value ? slugify(leadHeading.value) : undefined;
+
+  return {
+    ...leadHeading,
+    slug,
+  };
+};
+
+export const buildFileReferenceFromMatchResult = async (
+  filePath: string,
+  fileMeta: any | undefined,
+  sourceType: Source['type'],
+  sourceData: Source['data'] | null,
+): Promise<FileReferenceFileData> => {
+  return {
+    title: await inferFileTitle(fileMeta, filePath),
+    path: filePath,
+    meta: fileMeta,
+    source: {
+      type: sourceType,
+      ...(sourceData ? { data: sourceData as any } : {}),
+    },
+  };
+};
+
+export const buildSectionReferenceFromMatchResult = async (
+  filePath: string,
+  fileMeta: any | undefined,
+  sourceType: Source['type'],
+  sourceData: Source['data'] | null,
+  sectionMeta: FileSectionMeta | undefined | null,
+): Promise<FileSectionReference> => {
+  return {
+    file: await buildFileReferenceFromMatchResult(
+      filePath,
+      fileMeta,
+      sourceType,
+      sourceData,
+    ),
+    ...(sectionMeta
+      ? {
+          meta: {
+            ...sectionMeta,
+            leadHeading: augmentLeadHeadingWithSlug(sectionMeta?.leadHeading),
+          },
+        }
+      : {}),
+  };
 };

@@ -7,9 +7,17 @@ import remarkGfm from 'remark-gfm';
 import strip from 'strip-markdown';
 
 import { track } from '@/lib/posthog';
+import {
+  buildFileReferenceFromMatchResult,
+  buildSectionReferenceFromMatchResult,
+} from '@/lib/utils';
 import { safeParseInt, safeParseJSON } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
-import { FileSectionMeta } from '@/types/types';
+import {
+  FileReferenceFileData,
+  FileSectionMeta,
+  FileSectionReferenceSectionData,
+} from '@/types/types';
 
 const MAX_SEARCH_RESULTS = 20;
 
@@ -34,25 +42,12 @@ type Index = FlexSearch.Document<
 
 type SearchResult = {
   matchType: 'title' | 'leadHeading' | 'content';
-  file: SearchResultFileData;
+  file: FileReferenceFileData;
 } & SearchResultSection;
 
 type SearchResultSection = {
   content?: string;
-  meta?: {
-    leadHeading?: {
-      id?: string;
-      depth: number;
-      value: string;
-    };
-  };
-};
-
-type SearchResultFileData = {
-  title?: string;
-  path: string;
-  meta: any;
-  source: Source;
+  meta?: FileSectionReferenceSectionData['meta'];
 };
 
 type SourceType = 'github' | 'motif' | 'website' | 'file-upload' | 'api-upload';
@@ -108,15 +103,6 @@ const createKWICSnippet = async (
   }
 
   return words.join(' ');
-};
-
-const processTitle = async (title: string | undefined) => {
-  // In some situations, the title can be an HTML/JSX tag, for instance
-  // an image. If it's an image/figure, we extract the title/alt.
-  if (typeof title === 'undefined') {
-    return title;
-  }
-  return String(await remark().use(remarkGfm).use(strip).process(title)).trim();
 };
 
 export default async function handler(
@@ -239,9 +225,14 @@ export default async function handler(
 
   const fileAugmentationData = await Promise.all(
     (_fileAugmentationData || []).map(async (d) => {
+      const { sources, ...rest } = d;
+      const source = sources as Source;
       return {
-        ...d,
-        processedTitle: await processTitle((d.meta as any)?.title),
+        ...rest,
+        source: {
+          ...(source.data ? { data: source.data } : {}),
+          type: source.type,
+        } as Source,
       };
     }),
   );
@@ -302,18 +293,21 @@ export default async function handler(
   for (const match of _fileTitleDBMatches || []) {
     const fileData = fileAugmentationData.find((f) => f.id === match.id);
     if (fileData) {
-      if (fileData.processedTitle) {
-        fileTitles.push(fileData.processedTitle);
+      const fileReference = await buildFileReferenceFromMatchResult(
+        fileData.path,
+        fileData.meta,
+        fileData.source.type,
+        fileData.source.data,
+      );
+
+      if (fileReference.title) {
+        fileTitles.push(fileReference.title);
       }
+
       index.add({
         id: `${match.id}`,
         matchType: 'title',
-        file: {
-          title: fileData.processedTitle,
-          path: fileData.path,
-          meta: fileData.meta,
-          source: fileData.sources as Source,
-        },
+        file: fileReference,
       });
     }
   }
@@ -326,7 +320,8 @@ export default async function handler(
     // Ignore sections which are duplicates of files with title matches. We
     // consider it a duplicate if it has a heading of depth 1 equal to a
     // file title.
-    const leadHeading = (match.meta as FileSectionMeta)?.leadHeading;
+    const sectionMeta = match.meta as FileSectionMeta | undefined;
+    const leadHeading = sectionMeta?.leadHeading;
     if (
       leadHeading?.depth === 1 &&
       leadHeading.value &&
@@ -341,17 +336,19 @@ export default async function handler(
       ? 'leadHeading'
       : 'content';
 
+    const sectionReference = await buildSectionReferenceFromMatchResult(
+      fileData.path,
+      fileData.meta,
+      fileData.source.type,
+      fileData.source.data,
+      sectionMeta,
+    );
+
     index.add({
       id: `${match.id}`,
       matchType,
-      file: {
-        title: fileData.processedTitle,
-        path: fileData.path,
-        meta: fileData.meta,
-        source: fileData.sources as Source,
-      },
+      ...sectionReference,
       content: match.content,
-      meta: match.meta as any,
     });
   }
 

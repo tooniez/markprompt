@@ -3,8 +3,11 @@ import {
   OpenAICompletionsModelId,
   OpenAIEmbeddingsModelId,
 } from '@markprompt/core';
+import { MarkpromptOptions } from '@markprompt/react';
 
 import { Database } from './supabase';
+
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type TimeInterval = '1h' | '24h' | '7d' | '30d' | '3m' | '1y';
 export type TimePeriod = 'hour' | 'day' | 'weekofyear' | 'month' | 'year';
@@ -75,15 +78,18 @@ export type Domain = Database['public']['Tables']['domains']['Row'];
 export type Membership = Database['public']['Tables']['memberships']['Row'];
 export type MembershipType =
   Database['public']['Tables']['memberships']['Row']['type'];
-export type Source = Database['public']['Tables']['sources']['Row'];
+export type DbSource = Database['public']['Tables']['sources']['Row'];
 export type DbFile = Database['public']['Tables']['files']['Row'];
 export type FileSections = Database['public']['Tables']['file_sections']['Row'];
+export type FileSectionMatchResult =
+  Database['public']['Functions']['match_file_sections']['Returns'][number];
 export type OAuthToken =
   Database['public']['Tables']['user_access_tokens']['Row'];
 export type PromptConfig =
   Database['public']['Tables']['prompt_configs']['Row'];
 export type QueryStat = Database['public']['Tables']['query_stats']['Row'];
 
+export type Source = PartialBy<Pick<DbSource, 'type' | 'data'>, 'data'>;
 export type FileData = { path: string; name: string; content: string };
 export type PathContentData = Pick<FileData, 'path' | 'content'>;
 export type Checksum = Pick<DbFile, 'path' | 'checksum'>;
@@ -103,9 +109,29 @@ export type PromptQueryHistogram = {
   count: number | null;
 };
 
-export type PromptReference = {
+// This should be imported from @markprompt/core once it's published.
+// A prompt reference consists of a section reference (typically the
+// section heading) and the parent file info.
+export type FileSectionReference = {
+  file: FileReferenceFileData;
+} & FileSectionReferenceSectionData;
+
+export type FileSectionReferenceSectionData = {
+  meta?: {
+    leadHeading?: {
+      id?: string;
+      depth?: number;
+      value?: string;
+      slug?: string;
+    };
+  };
+};
+
+export type FileReferenceFileData = {
+  title?: string;
   path: string;
-  source: Pick<Source, 'type' | 'data'>;
+  meta?: any;
+  source: Source;
 };
 
 export type FileType = 'mdx' | 'mdoc' | 'md' | 'rst' | 'html' | 'txt';
@@ -165,4 +191,20 @@ export type FileSectionsData = {
   sections: FileSectionData[];
   meta: { title: string } & any;
   leadFileHeading: string | undefined;
+};
+
+// This is the same as MarkpromptOptions, except that functions are replaced
+// by strings. This is mainly a helper for the UI configuration, so that we
+// can display text fields to enter the function declarations and generate
+// the code snippets accordingly.
+export type SerializableMarkpromptOptions = Omit<
+  MarkpromptOptions,
+  'references' | 'search'
+> & {
+  references?: MarkpromptOptions['references'] & {
+    serializedTransformReferenceId?: string;
+  };
+  search?: MarkpromptOptions['search'] & {
+    serializedGetHref?: string;
+  };
 };

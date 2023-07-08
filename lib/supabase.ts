@@ -8,7 +8,7 @@ import {
   MotifSourceDataType,
   OAuthProvider,
   Project,
-  Source,
+  DbSource,
   SourceType,
   Team,
   WebsiteSourceDataType,
@@ -122,7 +122,7 @@ export const deleteUserAccessToken = async (
 
 export const getProjectIdFromSource = async (
   supabaseAdmin: SupabaseClient<Database>,
-  sourceId: Source['id'],
+  sourceId: DbSource['id'],
 ): Promise<Project['id'] | undefined> => {
   const { data } = await supabaseAdmin
     .from('sources')
@@ -138,7 +138,7 @@ export const getOrCreateSource = async (
   projectId: Project['id'],
   type: SourceType,
   data: any | undefined,
-): Promise<Source['id']> => {
+): Promise<DbSource['id']> => {
   const source = await getSource(supabase, projectId, type, data);
 
   if (source?.id) {
@@ -160,7 +160,7 @@ export const getSource = async (
   projectId: Project['id'],
   sourceType: SourceType,
   data: any,
-): Promise<Source | undefined> => {
+): Promise<DbSource | undefined> => {
   const { data: sources, error } = await supabase
     .from('sources')
     .select('*')
@@ -198,7 +198,7 @@ export const getSource = async (
 
 export const getChecksums = async (
   supabase: SupabaseClient<Database>,
-  sourceId: Source['id'],
+  sourceId: DbSource['id'],
 ) => {
   const { data } = await supabase
     .from('files')
