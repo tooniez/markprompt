@@ -245,7 +245,6 @@ export default async function handler(req: NextRequest) {
     references.push(reference);
   }
 
-  // const referencesWithSources = Object.values(referencesMap);
   const referencePaths = references.map((r) => r.file.path);
 
   const fullPrompt = stripIndent(
