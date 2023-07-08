@@ -36,8 +36,15 @@ export default async function handler(
     .maybeSingle();
 
   if (error || !data || !data.stripe_customer_id) {
+    console.error(
+      `[SUBSCRIPTIONS] Customer with team id ${req.body.teamId} not found`,
+    );
     return res.status(400).json({ error: 'Customer not found.' });
   }
+
+  const stripeCustomerIdTruncated = (
+    data.stripe_customer_id as string
+  ).substring(0, 6);
 
   const subscription = await stripe.subscriptions.list({
     customer: data.stripe_customer_id,
@@ -46,13 +53,28 @@ export default async function handler(
 
   const subscriptionId = subscription.data[0].id;
   if (!subscriptionId) {
+    console.error(
+      `[SUBSCRIPTIONS] Subscription with team id ${req.body.teamId} and Stripe customer id ${stripeCustomerIdTruncated} not found`,
+    );
     return res.status(400).json({ error: 'No subscription found.' });
   }
 
   const deleted = await stripe.subscriptions.del(subscriptionId);
   if (!deleted?.id) {
+    console.error(
+      `[SUBSCRIPTIONS] Unable to delete subscription ${subscriptionId.substring(
+        0,
+        6,
+      )} with team id ${
+        req.body.teamId
+      } and Stripe customer id ${stripeCustomerIdTruncated}.`,
+    );
     return res.status(400).json({ error: 'Unable to cancel subscription.' });
   }
+
+  console.info(
+    `Subscription canceled. Team id: ${req.body.teamId}, customer id: ${stripeCustomerIdTruncated}`,
+  );
 
   // If there was a subscription, we can safely assume it was cancelled,
   // no need to wait for the webhook to trigger.
