@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 
-import { Source } from '@/types/types';
+import { DbSource } from '@/types/types';
 
 import useProject from './use-project';
 import { fetcher } from '../utils';
@@ -13,10 +13,10 @@ export default function useSources() {
     error,
   } = useSWR(
     project?.id ? `/api/project/${project.id}/sources` : null,
-    fetcher<Source[]>,
+    fetcher<DbSource[]>,
   );
 
   const loading = !sources && !error;
 
-  return { sources: (sources || []) as Source[], loading, mutate };
+  return { sources: (sources || []) as DbSource[], loading, mutate };
 }

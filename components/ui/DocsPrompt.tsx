@@ -71,17 +71,17 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
               prompt={{
                 completionsUrl: getApiUrl('completions', false),
                 model: 'gpt-4',
-                placeholder: 'Search or ask',
-                cta: 'Ask AI',
+                placeholder: 'Ask Docs AI',
+                cta: 'Ask Docs AI',
               }}
-              search={{
-                enabled: true,
-                searchUrl: getApiUrl('search', false),
-                getHref: (path, sectionHeading, source) => {
-                  console.log('path', path, sectionHeading, source);
-                  return '';
-                },
-              }}
+              // search={{
+              //   enabled: true,
+              //   searchUrl: getApiUrl('search', false),
+              //   getHref: (path, sectionHeading, source) => {
+              //     console.log('path', path, sectionHeading, source);
+              //     return '';
+              //   },
+              // }}
             />
           </div>
         </Popover.Content>

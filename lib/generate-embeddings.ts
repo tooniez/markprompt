@@ -20,7 +20,6 @@ import {
   createChecksum,
   getFileType,
   inferFileTitle,
-  removeFileExtension,
   splitIntoSubstringsOfMaxLength,
 } from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.node';
@@ -34,7 +33,6 @@ import {
   FileSectionsData,
   OpenAIModelIdWithType,
   Project,
-  Source,
   geLLMInfoFromModel,
 } from '@/types/types';
 

@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import {
-  type MarkpromptOptions,
-  DEFAULT_MARKPROMPT_OPTIONS,
-} from '@markprompt/react';
+import { DEFAULT_MARKPROMPT_OPTIONS } from '@markprompt/react';
 import {
   createContext,
   FC,
@@ -46,7 +43,7 @@ export const DEFAULT_MARKPROMPT_OPTIONS_GPT4: SerializableMarkpromptOptions = {
   },
   references: {
     ...DEFAULT_MARKPROMPT_OPTIONS.references,
-    transformReferenceId: `let href = referenceId;
+    serializedTransformReferenceId: `let href = referenceId;
 
 // Remove file extension
 const lastDotIndex = referenceId.lastIndexOf('.');
@@ -62,7 +59,7 @@ return { href, text }`,
   },
   search: {
     ...DEFAULT_MARKPROMPT_OPTIONS.search,
-    getHref: `const lastDotIndex = path.lastIndexOf('.');
+    serializedGetHref: `const lastDotIndex = path.lastIndexOf('.');
 let cleanPath = path;
 if (lastDotIndex >= 0) {
   cleanPath = path.substring(0, lastDotIndex);

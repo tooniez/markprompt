@@ -48,7 +48,7 @@ import {
   isUrl,
   pluralize,
 } from '@/lib/utils';
-import { Source } from '@/types/types';
+import { DbSource } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
@@ -98,7 +98,7 @@ const getBasePath = (pathWithFile: string) => {
 };
 
 type SourceItemProps = {
-  source: Source;
+  source: DbSource;
   onRemoveSelected: () => void;
 };
 
@@ -138,15 +138,15 @@ const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
   );
 };
 
-const hasNonFileSources = (sources: Source[]) => {
+const hasNonFileSources = (sources: DbSource[]) => {
   return sources.some(
     (s) => s.type !== 'api-upload' && s.type !== 'file-upload',
   );
 };
 
 const getNameForPath = (
-  sources: Source[],
-  sourceId: Source['id'],
+  sources: DbSource[],
+  sourceId: DbSource['id'],
   path: string,
 ) => {
   const source = sources.find((s) => s.id === sourceId);
@@ -173,7 +173,7 @@ const Data = () => {
   } = useUsage();
   const [rowSelection, setRowSelection] = useState({});
   const [isDeleting, setIsDeleting] = useState(false);
-  const [sourceToRemove, setSourceToRemove] = useState<Source | undefined>(
+  const [sourceToRemove, setSourceToRemove] = useState<DbSource | undefined>(
     undefined,
   );
   const [sorting, setSorting] = useState<SortingState>([
@@ -232,9 +232,9 @@ const Data = () => {
           },
           footer: (info) => info.column.id,
           sortingFn: (rowA, rowB, columnId) => {
-            const valueA: { sourceId: Source['id']; path: string } =
+            const valueA: { sourceId: DbSource['id']; path: string } =
               rowA.getValue(columnId);
-            const valueB: { sourceId: Source['id']; path: string } =
+            const valueB: { sourceId: DbSource['id']; path: string } =
               rowB.getValue(columnId);
             const nameA = getNameForPath(sources, valueA.sourceId, valueA.path);
             const nameB = getNameForPath(sources, valueB.sourceId, valueB.path);

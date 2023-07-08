@@ -26,7 +26,6 @@ import {
   DateCountHistogramEntry,
   FileReferenceFileData,
   FileSectionHeading,
-  FileSectionMatchResult,
   FileSectionMeta,
   FileSectionReference,
   FileType,

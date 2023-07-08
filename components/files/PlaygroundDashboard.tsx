@@ -43,7 +43,7 @@ import {
   getLabelForSource,
 } from '@/lib/utils';
 import { getApiUrl } from '@/lib/utils.edge';
-import { Source, SourceType } from '@/types/types';
+import { DbSource, SourceType } from '@/types/types';
 
 import StatusMessage from './StatusMessage';
 import { UpgradeNote } from './UpgradeNote';
@@ -314,7 +314,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
   const [isPlaygroundVisible, setPlaygroundVisible] = useState(true);
   const [isPlaygroundLoaded, setPlaygroundLoaded] = useState(false);
-  const [sourceToRemove, setSourceToRemove] = useState<Source | undefined>(
+  const [sourceToRemove, setSourceToRemove] = useState<DbSource | undefined>(
     undefined,
   );
   // const playgroundRef = useRef<HTMLDivElement>(null);

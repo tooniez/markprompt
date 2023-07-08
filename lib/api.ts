@@ -12,7 +12,7 @@ import {
   FileData,
   Project,
   PromptConfig,
-  Source,
+  DbSource,
   SourceType,
   Team,
   Token,
@@ -87,7 +87,7 @@ export const deletePromptConfig = async (
 };
 
 export const processFile = async (
-  sourceId: Source['id'],
+  sourceId: DbSource['id'],
   fileData: FileData,
 ) => {
   const res = await fetch('/api/v1/openai/train-file', {
@@ -277,18 +277,18 @@ export const addSource = async (
   projectId: Project['id'],
   sourceType: SourceType,
   data: any,
-): Promise<Source> => {
+): Promise<DbSource> => {
   const res = await fetch(`/api/project/${projectId}/sources`, {
     method: 'POST',
     body: JSON.stringify({ projectId, type: sourceType, data }),
     headers: { 'Content-Type': 'application/json', accept: 'application/json' },
   });
-  return getResponseOrThrow<Source>(res);
+  return getResponseOrThrow<DbSource>(res);
 };
 
 export const deleteSource = async (
   projectId: Project['id'],
-  id: Source['id'],
+  id: DbSource['id'],
 ) => {
   const res = await fetch(`/api/project/${projectId}/sources`, {
     method: 'DELETE',

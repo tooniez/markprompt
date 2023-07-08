@@ -19,7 +19,7 @@ import {
   FileData,
   GitHubSourceDataType,
   MotifSourceDataType,
-  Source,
+  DbSource,
   WebsiteSourceDataType,
 } from '@/types/types';
 
@@ -78,8 +78,8 @@ export type State = {
   state: TrainingState;
   errors: string[];
   generateEmbeddings: (
-    sourceId: Source['id'],
-    sourceType: Source['type'],
+    sourceId: DbSource['id'],
+    sourceType: DbSource['type'],
     numFiles: number,
     getFilePath: (index: number) => string,
     getFileNameContent: (
@@ -139,8 +139,8 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
     async (
       index: number,
       checksums: { path: any; checksum: any }[],
-      sourceId: Source['id'],
-      sourceType: Source['type'],
+      sourceId: DbSource['id'],
+      sourceType: DbSource['type'],
       numFiles: number,
       getFilePath: (index: number) => string,
       getFileNameContent: (
@@ -264,8 +264,8 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
   const generateEmbeddings = useCallback(
     async (
-      sourceId: Source['id'],
-      sourceType: Source['type'],
+      sourceId: DbSource['id'],
+      sourceType: DbSource['type'],
       numFiles: number,
       getFilePath: (index: number) => string,
       getFileNameContent: (
@@ -318,7 +318,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
   const _trainSource = useCallback(
     async (
-      source: Source,
+      source: DbSource,
       onFileProcessed: () => void,
       onError: (message: string) => void,
     ) => {
