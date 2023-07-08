@@ -494,17 +494,16 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
         completionsUrl: getApiUrl('completions', false),
       },
       trigger: { floating: true },
-      search: {
-        ...markpromptOptions.search,
-        searchUrl: getApiUrl('search', false),
-      },
+      // search: {
+      //   ...markpromptOptions.search,
+      //   searchUrl: getApiUrl('search', false),
+      // },
       references: {
-        ...markpromptOptions.references,
+        // ...markpromptOptions.references,
         // loadingText: loadingHeading,
         // referencesText: referencesHeading,
         // transformReferenceId: (path: string) => {
         //   const file = files?.find((f) => f.path === path);
-
         //   if (file) {
         //     let name = path;
         //     const metaTitle = (file.meta as any).title;
@@ -513,13 +512,11 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
         //     } else {
         //       name = removeFileExtension(getNameFromPath(path));
         //     }
-
         //     return {
         //       text: name,
         //       href: path,
         //     };
         //   }
-
         //   return { text: 'Unknown', href: '#' };
         // },
       },
