@@ -109,6 +109,7 @@ export type PromptQueryHistogram = {
   count: number | null;
 };
 
+// This should be imported from @markprompt/core once it's published.
 // A prompt reference consists of a section reference (typically the
 // section heading) and the parent file info.
 export type FileSectionReference = {

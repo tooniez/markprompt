@@ -1,4 +1,3 @@
-import { Source } from '@markprompt/core';
 import { createClient } from '@supabase/supabase-js';
 import { stripIndent } from 'common-tags';
 import {
@@ -179,6 +178,8 @@ export default async function handler(req: NextRequest) {
 
   const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
 
+  const sectionsTs = Date.now();
+
   let fileSections: FileSectionMatchResult[] = [];
   let promptEmbedding: number[] | undefined = undefined;
   try {
@@ -201,6 +202,8 @@ export default async function handler(req: NextRequest) {
       return new Response(`${e}`, { status: 400 });
     }
   }
+
+  const sectionsDelta = Date.now() - sectionsTs;
 
   track(projectId, 'generate completions', { projectId });
 
@@ -275,7 +278,12 @@ export default async function handler(req: NextRequest) {
     body: JSON.stringify(payload),
   });
 
-  const debugInfo = params.includeDebugInfo ? { fullPrompt } : {};
+  const debugInfo = {
+    fullPrompt,
+    ts: {
+      sections: sectionsDelta,
+    },
+  };
 
   if (!stream) {
     if (!res.ok) {
@@ -416,7 +424,19 @@ export default async function handler(req: NextRequest) {
     },
   });
 
-  return new Response(readableStream, {
-    headers: { references: JSON.stringify(references) },
-  });
+  // Headers cannot include non-UTF-8 characters, so make sure any strings
+  // we pass in the headers are properly encoded before sending.
+  const headerEncoder = new TextEncoder();
+  const encodedReferences = headerEncoder
+    .encode(JSON.stringify({ references }))
+    .toString();
+  const encodedDebugInfo = headerEncoder
+    .encode(JSON.stringify(debugInfo))
+    .toString();
+
+  const headers = new Headers();
+  headers.append('x-markprompt-data', encodedReferences);
+  headers.append('x-markprompt-debug-info', encodedDebugInfo);
+
+  return new Response(readableStream, { headers });
 }
