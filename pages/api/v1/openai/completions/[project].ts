@@ -429,13 +429,13 @@ export default async function handler(req: NextRequest) {
   const encodedReferences = headerEncoder
     .encode(JSON.stringify({ references }))
     .toString();
-  const encodedDebugInfo = headerEncoder
-    .encode(JSON.stringify(debugInfo))
-    .toString();
+  // const encodedDebugInfo = headerEncoder
+  //   .encode(JSON.stringify(debugInfo))
+  //   .toString();
 
   const headers = new Headers();
   headers.append('x-markprompt-data', encodedReferences);
-  headers.append('x-markprompt-debug-info', encodedDebugInfo);
+  // headers.append('x-markprompt-debug-info', encodedDebugInfo);
 
   return new Response(readableStream, { headers });
 }
