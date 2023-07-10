@@ -244,15 +244,15 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           throw e;
         } else {
           // Otherwise, just show a notification and continue
-          console.error(`Error processing ${file.name}: ${JSON.stringify(e)}`);
+          console.error(`Error processing ${file?.name}: ${JSON.stringify(e)}`);
           toast.error(
-            `Error processing file ${nameAndContent.name}: ${JSON.stringify(
+            `Error processing file ${nameAndContent?.name}: ${JSON.stringify(
               e,
             )}`,
           );
           setErrors((errors) => [
             ...errors,
-            `Error processing ${file.name}: ${JSON.stringify(e)}`,
+            `Error processing ${file?.name}: ${JSON.stringify(e)}`,
           ]);
         }
       }

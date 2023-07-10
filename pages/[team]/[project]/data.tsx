@@ -224,10 +224,12 @@ const Data = () => {
           header: () => <span>Name</span>,
           cell: (info) => {
             const value = info.getValue();
+            console.log('Name', JSON.stringify(value, null, 2));
             // Ensure compat with previously trained data, where we don't
             // extract the title in the meta.
             return (
-              value.title ?? getNameForPath(sources, value.sourceId, value.path)
+              value?.title ??
+              getNameForPath(sources, value.sourceId, value.path)
             );
           },
           footer: (info) => info.column.id,
@@ -246,6 +248,7 @@ const Data = () => {
         id: 'path',
         header: () => <span>Path</span>,
         cell: (info) => {
+          console.log('Path', JSON.stringify(info.getValue(), null, 2));
           return (
             <Tooltip.Provider>
               <Tooltip.Root>
@@ -271,6 +274,11 @@ const Data = () => {
         cell: (info) => {
           const value = info.getValue();
           const source = sources.find((s) => s.id === value);
+          console.log(
+            'Source',
+            JSON.stringify(value, null, 2),
+            JSON.stringify(source, null, 2),
+          );
           if (source) {
             return getLabelForSource(source, false);
           } else {
@@ -282,7 +290,13 @@ const Data = () => {
       columnHelper.accessor((row) => row.updated_at, {
         id: 'updated',
         header: () => <span>Updated</span>,
-        cell: (info) => dayjs(info.getValue()).fromNow(),
+        cell: (info) => {
+          console.log(
+            'Updated',
+            JSON.stringify(dayjs(info.getValue()).fromNow(), null, 2),
+          );
+          return dayjs(info.getValue()).fromNow();
+        },
         footer: (info) => info.column.id,
       }),
     ],
