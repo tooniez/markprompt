@@ -15,7 +15,6 @@ import cn from 'classnames';
 import dayjs from 'dayjs';
 // Cf. https://github.com/iamkun/dayjs/issues/297#issuecomment-1202327426
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { isString } from 'lodash-es';
 import { MoreHorizontal, Globe, Upload } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { FC, useMemo, useState } from 'react';
@@ -225,13 +224,18 @@ const Data = () => {
           header: () => <span>Name</span>,
           cell: (info) => {
             const value = info.getValue();
+            console.log(
+              'Name',
+              value?.title,
+              '---',
+              getNameForPath(sources, value.sourceId, value.path),
+            );
             // Ensure compat with previously trained data, where we don't
-            // extract the title in the meta. Note that title might be
-            // non-string values as well.
-            if (value?.title && isString(value.title)) {
-              return value.title;
-            }
-            return getNameForPath(sources, value.sourceId, value.path);
+            // extract the title in the meta.
+            return (
+              value?.title ??
+              getNameForPath(sources, value.sourceId, value.path)
+            );
           },
           footer: (info) => info.column.id,
           sortingFn: (rowA, rowB, columnId) => {
@@ -249,6 +253,7 @@ const Data = () => {
         id: 'path',
         header: () => <span>Path</span>,
         cell: (info) => {
+          console.log('Path', JSON.stringify(info.getValue(), null, 2));
           return (
             <Tooltip.Provider>
               <Tooltip.Root>
@@ -274,6 +279,11 @@ const Data = () => {
         cell: (info) => {
           const value = info.getValue();
           const source = sources.find((s) => s.id === value);
+          console.log(
+            'Source',
+            JSON.stringify(value, null, 2),
+            JSON.stringify(source, null, 2),
+          );
           if (source) {
             return getLabelForSource(source, false);
           } else {
@@ -286,6 +296,10 @@ const Data = () => {
         id: 'updated',
         header: () => <span>Updated</span>,
         cell: (info) => {
+          console.log(
+            'Updated',
+            JSON.stringify(dayjs(info.getValue()).fromNow(), null, 2),
+          );
           return dayjs(info.getValue()).fromNow();
         },
         footer: (info) => info.column.id,
