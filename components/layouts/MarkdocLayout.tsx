@@ -186,9 +186,11 @@ export const videoTag = {
   render: 'Video',
   children: ['paragraph', 'tag', 'list'],
   attributes: {
-    src: {
-      type: String,
-    },
+    src: { type: String },
+    className: { type: String },
+    autoPlay: { type: Boolean },
+    controls: { type: Boolean },
+    loop: { type: Boolean },
   },
 };
 
