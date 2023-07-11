@@ -65,7 +65,7 @@ export default async function CompletionsMiddleware(req: NextRequest) {
   try {
     body = await req.json();
   } catch (e) {
-    new NextResponse(
+    return new NextResponse(
       JSON.stringify({
         success: false,
         message: `Error parsing request body: ${e}. Make sure the POST query parameters are passed in the request body.`,
