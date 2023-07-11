@@ -324,6 +324,9 @@ export default async function handler(req: NextRequest) {
           isIDontKnowResponse(text, iDontKnowMessage),
           references,
         );
+
+        const headers = new Headers();
+        headers.append('Content-Type', 'application/json');
         return new Response(
           JSON.stringify({
             text,
@@ -332,6 +335,7 @@ export default async function handler(req: NextRequest) {
           }),
           {
             status: 200,
+            headers,
           },
         );
       }
