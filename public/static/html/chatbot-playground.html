@@ -127,7 +127,7 @@
         if (
           !el ||
           !el instanceof HTMLElement ||
-          !event.data?.props ||
+          !event.data?.serializedProps ||
           !event.data?.colors
         ) {
           return;
@@ -139,9 +139,9 @@
         );
 
         markprompt(event.data.projectKey, el, {
-          ...event.data.props,
+          ...event.data.serializedProps,
           trigger: {
-            ...event.data.props?.trigger,
+            ...event.data.serializedProps?.trigger,
             customElement: true,
           },
         });

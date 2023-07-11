@@ -324,7 +324,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
           </AccordionContent>
         </Accordion.Item>
       </Accordion.Root>
-      {/* <Accordion.Root className="mt-2 w-full" type="single" collapsible>
+      <Accordion.Root className="mt-2 w-full" type="single" collapsible>
         <Accordion.Item value="options">
           <AccordionTrigger>Link mappings</AccordionTrigger>
           <AccordionContent className="pt-4">
@@ -362,7 +362,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
             </div>
           </AccordionContent>
         </Accordion.Item>
-      </Accordion.Root> */}
+      </Accordion.Root>
     </div>
   );
 };

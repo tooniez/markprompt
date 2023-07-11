@@ -58,6 +58,7 @@ import { SpinnerIcon } from '../icons/Spinner';
 import Button from '../ui/Button';
 import { InfoTooltip } from '../ui/InfoTooltip';
 import { PulseDot } from '../ui/PulseDot';
+import { FileSectionReference } from '@markprompt/core';
 
 const WebsiteAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Website'),
@@ -486,7 +487,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       return;
     }
 
-    const props = {
+    const serializedProps = {
       projectKey: project.private_dev_api_key,
       showBranding: markpromptOptions.showBranding,
       prompt: {
@@ -494,14 +495,22 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
         completionsUrl: getApiUrl('completions', false),
       },
       trigger: { floating: true },
-      // search: {
-      //   ...markpromptOptions.search,
-      //   searchUrl: getApiUrl('search', false),
-      // },
+      search: {
+        ...markpromptOptions.search,
+        searchUrl: getApiUrl('search', false),
+      },
       references: {
-        // ...markpromptOptions.references,
-        // loadingText: loadingHeading,
+        ...markpromptOptions.references,
+        // loadingText: loadingText,
         // referencesText: referencesHeading,
+        // getHref: (reference: FileSectionReference) => {
+        //   console.log('reference', JSON.stringify(reference, null, 2));
+        //   return '';
+        // },
+        // getLabel: (reference: FileSectionReference) => {
+        //   console.log('reference', JSON.stringify(reference, null, 2));
+        //   return 'Hihi';
+        // },
         // transformReferenceId: (path: string) => {
         //   const file = files?.find((f) => f.path === path);
         //   if (file) {
@@ -525,7 +534,13 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     const colors = isDark ? theme.colors.dark : theme.colors.light;
     theme.size;
     playgroundRef.current.contentWindow.postMessage(
-      { props, colors, size: theme.size, dimensions: theme.dimensions, isDark },
+      {
+        serializedProps,
+        colors,
+        size: theme.size,
+        dimensions: theme.dimensions,
+        isDark,
+      },
       '*',
     );
   }, [files, isPlaygroundLoaded, project, theme, isDark, markpromptOptions]);
