@@ -61,7 +61,18 @@ export default async function CompletionsMiddleware(req: NextRequest) {
     }
   }
 
-  const body = await req.json();
+  let body: any = {};
+  try {
+    body = await req.json();
+  } catch (e) {
+    new NextResponse(
+      JSON.stringify({
+        success: false,
+        message: `Error parsing request body: ${e}. Make sure the POST query parameters are passed in the request body.`,
+      }),
+      { status: 401, headers: { 'content-type': 'application/json' } },
+    );
+  }
 
   const token = getAuthorizationToken(req.headers.get('Authorization'));
   // In v0, we support projectKey query parameters
