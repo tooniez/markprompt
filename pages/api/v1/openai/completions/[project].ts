@@ -9,7 +9,6 @@ import type { NextRequest } from 'next/server';
 
 import * as constants from '@/lib/constants';
 import { I_DONT_KNOW, MAX_PROMPT_LENGTH } from '@/lib/constants';
-import { getBody } from '@/lib/middleware/common';
 import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
@@ -36,18 +35,6 @@ import {
 
 export const config = {
   runtime: 'edge',
-};
-// This function is used in the case where the request parameters come
-// via a query string, in which case we can have false values represented
-// by strings such as "false" or "0".
-const isFalsy = (param: any) => {
-  if (typeof param === 'string') {
-    return param === 'false' || param === '0';
-  }
-  if (typeof param === 'number') {
-    return param === 0;
-  }
-  return param === false;
 };
 
 const isIDontKnowResponse = (
@@ -120,11 +107,7 @@ export default async function handler(req: NextRequest) {
   }
 
   try {
-    let params = await getBody(req);
-    if (!params) {
-      return new Response(`Missing request body`, { status: 400 });
-    }
-    console.log('params', JSON.stringify(params, null, 2));
+    let params = await req.json();
     const modelInfo = stringToLLMInfo(params.model);
     const prompt = (params.prompt as string)?.substring(0, MAX_PROMPT_LENGTH);
     const iDontKnowMessage =
@@ -132,9 +115,7 @@ export default async function handler(req: NextRequest) {
       (params.iDontKnowMessage as string) || // v0
       I_DONT_KNOW;
     let stream = true;
-    // Params can be a POST request body or a query string, so handle both
-    // cases here.
-    if (isFalsy(params.stream)) {
+    if (params.stream === false) {
       stream = false;
     }
 

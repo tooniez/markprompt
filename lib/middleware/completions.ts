@@ -6,7 +6,6 @@ import { ApiError, Project } from '@/types/types';
 
 import {
   checkWhitelistedDomainIfProjectKey,
-  getBody,
   getProjectIdFromKey,
   getProjectIdFromToken,
   noProjectForTokenResponse,
@@ -62,7 +61,7 @@ export default async function CompletionsMiddleware(req: NextRequest) {
     }
   }
 
-  const body = await getBody(req);
+  const body = await req.json();
 
   const token = getAuthorizationToken(req.headers.get('Authorization'));
   // In v0, we support projectKey query parameters

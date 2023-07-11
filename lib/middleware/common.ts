@@ -153,22 +153,3 @@ export const checkWhitelistedDomainIfProjectKey = async (
     }
   }
 };
-
-export const getBody = async (req: NextRequest) => {
-  try {
-    const body = await req.json();
-    return body;
-  } catch (e) {
-    try {
-      const urlSearchParams = new URLSearchParams(req.nextUrl.search);
-      console.log('SEARCH PARAMS', JSON.stringify(req.nextUrl, null, 2));
-      console.log(
-        'SEARCH PARAMS ENTRIES',
-        JSON.stringify(Object.fromEntries(urlSearchParams.entries()), null, 2),
-      );
-      return Object.fromEntries(urlSearchParams.entries());
-    } catch {
-      return undefined;
-    }
-  }
-};
