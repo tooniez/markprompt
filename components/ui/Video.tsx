@@ -11,6 +11,7 @@ export const Video: FC<VideoProps> = ({ src }) => {
       <video
         playsInline
         loop
+        muted
         autoPlay={true}
         className="w-full"
         preload="auto"
