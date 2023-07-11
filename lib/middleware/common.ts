@@ -161,6 +161,11 @@ export const getBody = async (req: NextRequest) => {
   } catch (e) {
     try {
       const urlSearchParams = new URLSearchParams(req.nextUrl.search);
+      console.log('SEARCH PARAMS', JSON.stringify(req.nextUrl, null, 2));
+      console.log(
+        'SEARCH PARAMS ENTRIES',
+        JSON.stringify(Object.fromEntries(urlSearchParams.entries()), null, 2),
+      );
       return Object.fromEntries(urlSearchParams.entries());
     } catch {
       return undefined;

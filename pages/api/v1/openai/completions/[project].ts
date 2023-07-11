@@ -124,6 +124,7 @@ export default async function handler(req: NextRequest) {
     if (!params) {
       return new Response(`Missing request body`, { status: 400 });
     }
+    console.log('params', JSON.stringify(params, null, 2));
     const modelInfo = stringToLLMInfo(params.model);
     const prompt = (params.prompt as string)?.substring(0, MAX_PROMPT_LENGTH);
     const iDontKnowMessage =
