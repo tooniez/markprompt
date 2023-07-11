@@ -5,12 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/types/supabase';
 import { ApiError, Project } from '@/types/types';
 
-import {
-  get,
-  getIsDomainWhitelistedForProjectKey,
-  getProjectIdByKey,
-  setWithExpiration,
-} from '../redis';
+import { get, getProjectIdByKey, setWithExpiration } from '../redis';
 import { isSKTestKey, truncateMiddle } from '../utils';
 import { isAppHost } from '../utils.edge';
 
@@ -155,6 +150,20 @@ export const checkWhitelistedDomainIfProjectKey = async (
           projectKey,
         )}. If you need to access completions from a non-whitelisted domain, such as localhost, use a test project key instead.`,
       );
+    }
+  }
+};
+
+export const getBody = async (req: NextRequest) => {
+  try {
+    const body = await req.json();
+    return body;
+  } catch (e) {
+    try {
+      const urlSearchParams = new URLSearchParams(req.nextUrl.search);
+      return Object.fromEntries(urlSearchParams.entries());
+    } catch {
+      return undefined;
     }
   }
 };

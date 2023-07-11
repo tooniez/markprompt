@@ -1,10 +1,6 @@
 import { SubmitPromptOptions } from '@markprompt/core';
 
-import {
-  generateRandomSlug,
-  getResponseOrThrow,
-  slugFromNameOrRandom,
-} from '@/lib/utils';
+import { getResponseOrThrow, slugFromNameOrRandom } from '@/lib/utils';
 import {
   DbFile,
   DbUser,
@@ -18,7 +14,6 @@ import {
   Token,
 } from '@/types/types';
 
-import { MIN_SLUG_LENGTH } from './constants';
 import { Theme } from './themes';
 
 export const updateUser = async (values: Partial<DbUser>): Promise<DbUser> => {
