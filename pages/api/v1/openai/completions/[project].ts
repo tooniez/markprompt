@@ -107,7 +107,9 @@ export default async function handler(req: NextRequest) {
   }
 
   try {
+    console.log('!!! INCOMING REQUEST');
     let params = await req.json();
+    console.log('!!! PARAMS', JSON.stringify(params, null, 2));
     const modelInfo = stringToLLMInfo(params.model);
     const prompt = (params.prompt as string)?.substring(0, MAX_PROMPT_LENGTH);
     const iDontKnowMessage =
