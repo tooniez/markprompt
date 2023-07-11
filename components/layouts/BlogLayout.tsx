@@ -184,7 +184,7 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
                 {dayjs(frontmatter.date).format('LL')}
               </p>
             </div>
-            {frontmatter?.cover && (
+            {frontmatter?.cover && !frontmatter?.hideCover && (
               <CloudinaryImage
                 src={frontmatter.cover}
                 alt={frontmatter.title || 'Cover image'}
