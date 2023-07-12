@@ -440,13 +440,13 @@ export const isSKTestKey = (key: string | null) => {
   return key?.startsWith(SK_TEST_PREFIX);
 };
 
-export const stringToLLMInfo = (param?: string): LLMInfo => {
-  switch (param) {
+export const stringToLLMInfo = (model?: string): LLMInfo => {
+  switch (model) {
     case 'gpt-4':
     case 'gpt-3.5-turbo':
       return {
         vendor: 'openai',
-        model: { type: 'chat_completions', value: param },
+        model: { type: 'chat_completions', value: model },
       };
     case 'text-davinci-003':
     case 'text-davinci-002':
@@ -459,7 +459,7 @@ export const stringToLLMInfo = (param?: string): LLMInfo => {
     case 'ada':
       return {
         vendor: 'openai',
-        model: { type: 'completions', value: param },
+        model: { type: 'completions', value: model },
       };
     default:
       return {
