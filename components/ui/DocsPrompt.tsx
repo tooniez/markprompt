@@ -69,7 +69,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
                 ''
               }
               prompt={{
-                completionsUrl: getApiUrl('completions', false),
+                apiUrl: getApiUrl('completions', false),
                 model: 'gpt-4',
                 placeholder: 'Ask Docs AI',
                 cta: 'Ask Docs AI',
