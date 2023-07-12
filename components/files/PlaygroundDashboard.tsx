@@ -58,7 +58,6 @@ import { SpinnerIcon } from '../icons/Spinner';
 import Button from '../ui/Button';
 import { InfoTooltip } from '../ui/InfoTooltip';
 import { PulseDot } from '../ui/PulseDot';
-import { FileSectionReference } from '@markprompt/core';
 
 const WebsiteAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Website'),
