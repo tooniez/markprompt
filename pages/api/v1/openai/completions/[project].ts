@@ -134,6 +134,17 @@ const buildFullPrompt = (
 
   return stripIndent(_template);
 };
+
+const isFalsy = (param: any) => {
+  if (typeof param === 'string') {
+    return param === 'false' || param === '0';
+  } else if (typeof param === 'number') {
+    return param === 0;
+  } else {
+    return param === false;
+  }
+};
+
 export default async function handler(req: NextRequest) {
   // Preflight check
   if (req.method === 'OPTIONS') {
@@ -156,7 +167,7 @@ export default async function handler(req: NextRequest) {
       (params.iDontKnowMessage as string) || // v0
       I_DONT_KNOW;
     let stream = true;
-    if (params.stream === false) {
+    if (isFalsy(params.stream)) {
       stream = false;
     }
 
