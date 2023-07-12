@@ -486,7 +486,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       return;
     }
 
-    const props = {
+    const serializedProps = {
       projectKey: project.private_dev_api_key,
       showBranding: markpromptOptions.showBranding,
       prompt: {
@@ -494,14 +494,22 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
         completionsUrl: getApiUrl('completions', false),
       },
       trigger: { floating: true },
-      // search: {
-      //   ...markpromptOptions.search,
-      //   searchUrl: getApiUrl('search', false),
-      // },
+      search: {
+        ...markpromptOptions.search,
+        searchUrl: getApiUrl('search', false),
+      },
       references: {
-        // ...markpromptOptions.references,
-        // loadingText: loadingHeading,
+        ...markpromptOptions.references,
+        // loadingText: loadingText,
         // referencesText: referencesHeading,
+        // getHref: (reference: FileSectionReference) => {
+        //   console.log('reference', JSON.stringify(reference, null, 2));
+        //   return '';
+        // },
+        // getLabel: (reference: FileSectionReference) => {
+        //   console.log('reference', JSON.stringify(reference, null, 2));
+        //   return 'Hihi';
+        // },
         // transformReferenceId: (path: string) => {
         //   const file = files?.find((f) => f.path === path);
         //   if (file) {
@@ -525,7 +533,13 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     const colors = isDark ? theme.colors.dark : theme.colors.light;
     theme.size;
     playgroundRef.current.contentWindow.postMessage(
-      { props, colors, size: theme.size, dimensions: theme.dimensions, isDark },
+      {
+        serializedProps,
+        colors,
+        size: theme.size,
+        dimensions: theme.dimensions,
+        isDark,
+      },
       '*',
     );
   }, [files, isPlaygroundLoaded, project, theme, isDark, markpromptOptions]);
@@ -864,9 +878,9 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
             </GetCode>
           </div>
           <div className="px-6 pt-4 text-neutral-300">
-            <h2 className="mb-4 text-lg font-bold">Design</h2>
+            <h2 className="mb-4 text-lg font-bold">Component</h2>
             <UIConfigurator />
-            <h2 className="mb-4 mt-12 text-lg font-bold">Model configurator</h2>
+            <h2 className="mb-4 mt-12 text-lg font-bold">Model</h2>
             <ModelConfigurator />
           </div>
         </div>
