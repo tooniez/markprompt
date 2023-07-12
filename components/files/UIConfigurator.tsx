@@ -1,7 +1,7 @@
 import * as Accordion from '@radix-ui/react-accordion';
 import * as Switch from '@radix-ui/react-switch';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
-import { Info } from 'lucide-react';
+import { Info, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { ChangeEvent, FC, useMemo } from 'react';
 
@@ -64,8 +64,16 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
       <Row label="Theme">
         <ThemePicker />
       </Row>
-      {/* <Row label="Instant search">
+      <Row label="Instant search">
         <div className="flex flex-row items-center justify-end gap-2">
+          <ButtonOrLinkWrapper
+            className="mr-1 flex flex-none items-center rounded-full"
+            Component="div"
+          >
+            <Tag className="flex flex-row items-center gap-1" color="sky">
+              <Sparkles className="h-4 w-3" /> New
+            </Tag>
+          </ButtonOrLinkWrapper>
           <Switch.Root
             className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 disabled:cursor-not-allowed data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600 disabled:data-[state='checked']:opacity-40"
             checked={!!(markpromptOptions.search as any)?.enabled}
@@ -82,7 +90,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
             <Switch.Thumb className="block h-4 w-4 translate-x-[1px] transform rounded-full bg-white transition data-[state='checked']:translate-x-[13px]" />
           </Switch.Root>
         </div>
-      </Row> */}
+      </Row>
       <Row label="Include branding">
         <div className="flex flex-row items-center justify-end gap-2">
           {!_canRemoveBranding && (
@@ -109,7 +117,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
       </Row>
       <Accordion.Root className="mt-2 w-full" type="single" collapsible>
         <Accordion.Item value="options">
-          <AccordionTrigger>UI options</AccordionTrigger>
+          <AccordionTrigger>UI configuration</AccordionTrigger>
           <AccordionContent className="pt-4">
             <div className="flex flex-col gap-2">
               <Row label="Size">
@@ -324,7 +332,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
           </AccordionContent>
         </Accordion.Item>
       </Accordion.Root>
-      <Accordion.Root className="mt-2 w-full" type="single" collapsible>
+      {/* <Accordion.Root className="mt-2 w-full" type="single" collapsible>
         <Accordion.Item value="options">
           <AccordionTrigger>Link mappings</AccordionTrigger>
           <AccordionContent className="pt-4">
@@ -362,7 +370,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
             </div>
           </AccordionContent>
         </Accordion.Item>
-      </Accordion.Root>
+      </Accordion.Root> */}
     </div>
   );
 };
