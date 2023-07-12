@@ -7,8 +7,12 @@ import {
 } from 'eventsource-parser';
 import type { NextRequest } from 'next/server';
 
-import * as constants from '@/lib/constants';
-import { I_DONT_KNOW, MAX_PROMPT_LENGTH } from '@/lib/constants';
+import {
+  CONTEXT_TOKENS_CUTOFF,
+  I_DONT_KNOW,
+  MAX_PROMPT_LENGTH,
+  STREAM_SEPARATOR,
+} from '@/lib/constants';
 import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
@@ -231,7 +235,7 @@ export default async function handler(req: NextRequest) {
     for (const section of fileSections) {
       numTokens += section.file_sections_token_count;
 
-      if (numTokens >= constants.CONTEXT_TOKENS_CUTOFF) {
+      if (numTokens >= CONTEXT_TOKENS_CUTOFF) {
         break;
       }
 
@@ -253,7 +257,7 @@ export default async function handler(req: NextRequest) {
 
     const fullPrompt = stripIndent(
       ((params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE.template)
-        ?.replace('{{I_DONT_KNOW}}', iDontKnowMessage || constants.I_DONT_KNOW)
+        ?.replace('{{I_DONT_KNOW}}', iDontKnowMessage || I_DONT_KNOW)
         ?.replace('{{CONTEXT}}', contextText)
         ?.replace('{{PROMPT}}', sanitizedQuery) || '',
     );
@@ -366,9 +370,7 @@ export default async function handler(req: NextRequest) {
                 // deprecated, in favor of passing the full reference
                 // info in the response header.
                 const queue = encoder.encode(
-                  `${JSON.stringify(referencePaths || [])}${
-                    constants.STREAM_SEPARATOR
-                  }`,
+                  `${JSON.stringify(referencePaths || [])}${STREAM_SEPARATOR}`,
                 );
                 controller.enqueue(queue);
                 didSendHeader = true;
