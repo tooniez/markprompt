@@ -100,6 +100,40 @@ const supabaseAdmin = createClient<Database>(
 
 const allowedMethods = ['POST'];
 
+const buildFullPrompt = (
+  template: string,
+  context: string,
+  prompt: string,
+  iDontKnowMessage: string,
+  contextTemplateKeyword: string,
+  promptTemplateKeyword: string,
+  iDontKnowTemplateKeyword: string,
+  // If the template does not contain the {{CONTEXT}} keyword, we inject
+  // the context by default. This can be prevented by setting the
+  // `doNotInjectContext` variable to true.
+  doNotInjectContext = false,
+  // Same with query
+  doNotInjectPrompt = false,
+) => {
+  let _template = template.replace(
+    iDontKnowTemplateKeyword,
+    iDontKnowMessage || I_DONT_KNOW,
+  );
+
+  if (template.includes(contextTemplateKeyword)) {
+    _template = _template.replace(contextTemplateKeyword, context);
+  } else if (!doNotInjectContext) {
+    _template = `Here is some context which might contain valuable information to answer the question. It is in the form of sections preceded by a section id:\n\n---\n\n${context}\n\n---\n\n${_template}`;
+  }
+
+  if (template.includes(promptTemplateKeyword)) {
+    _template = _template.replace(promptTemplateKeyword, prompt);
+  } else if (!doNotInjectPrompt) {
+    _template = `${_template}\n\nPrompt: ${prompt}\n`;
+  }
+
+  return stripIndent(_template);
+};
 export default async function handler(req: NextRequest) {
   // Preflight check
   if (req.method === 'OPTIONS') {
@@ -112,7 +146,10 @@ export default async function handler(req: NextRequest) {
 
   try {
     let params = await req.json();
-    const modelInfo = stringToLLMInfo(params.model);
+
+    console.log('[COMPLETIONS] Params:', JSON.stringify(params, null, 2));
+
+    const modelInfo = stringToLLMInfo(params?.model);
     const prompt = (params.prompt as string)?.substring(0, MAX_PROMPT_LENGTH);
     const iDontKnowMessage =
       (params.i_dont_know_message as string) || // v1
@@ -255,11 +292,16 @@ export default async function handler(req: NextRequest) {
 
     const referencePaths = references.map((r) => r.file.path);
 
-    const fullPrompt = stripIndent(
-      ((params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE.template)
-        ?.replace('{{I_DONT_KNOW}}', iDontKnowMessage || I_DONT_KNOW)
-        ?.replace('{{CONTEXT}}', contextText)
-        ?.replace('{{PROMPT}}', sanitizedQuery) || '',
+    const fullPrompt = buildFullPrompt(
+      (params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE.template!,
+      contextText,
+      sanitizedQuery,
+      iDontKnowMessage,
+      params.contextTag || '{{CONTEXT}}',
+      params.promptTag || '{{PROMPT}}',
+      params.idkTag || '{{I_DONT_KNOW}}',
+      !!params.doNotInjectContext,
+      !!params.doNotInjectPrompt,
     );
 
     const payload = getPayload(
