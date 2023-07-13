@@ -756,14 +756,14 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                   onOverlay={false}
                   top={
                     overlayDimensions.playgroundTop +
-                    (theme.size === 'sm' ? 48 : 51)
+                    (theme.size === 'sm' ? 105 : 107)
                   }
                   left={overlayDimensions.playgroundLeft + 90}
                   width={overlayDimensions.playgroundWidth / 2 - 90}
                   height={
                     overlayDimensions.overlayMessageTop -
                     overlayDimensions.playgroundTop -
-                    (theme.size === 'sm' ? 47 : 50)
+                    (theme.size === 'sm' ? 105 : 107)
                   }
                 />
               )}
