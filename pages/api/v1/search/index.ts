@@ -1,4 +1,5 @@
 import { FileReferenceFileData } from '@markprompt/core';
+import { FileSectionReferenceSectionData } from '@markprompt/core/dist/types';
 import { createClient } from '@supabase/supabase-js';
 import FlexSearch from 'flexsearch';
 import { uniq } from 'lodash-es';
@@ -14,10 +15,7 @@ import {
 } from '@/lib/utils';
 import { safeParseInt, safeParseJSON } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
-import {
-  FileSectionMeta,
-  FileSectionReferenceSectionData,
-} from '@/types/types';
+import { FileSectionMeta } from '@/types/types';
 
 const MAX_SEARCH_RESULTS = 20;
 
