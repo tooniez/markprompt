@@ -20,14 +20,14 @@ export const SharedHead: FC<SharedHeadProps> = ({
       <meta
         name="description"
         content={
-          description || 'Enterprise-grade ChatGPT for your website and docs'
+          description || 'Enterprise-grade AI bots for your website and docs'
         }
         key="desc"
       />
       <meta
         property="og:description"
         content={
-          description || 'Enterprise-grade ChatGPT for your website and docs'
+          description || 'Enterprise-grade AI bots for your website and docs'
         }
       />
 
@@ -43,7 +43,7 @@ export const SharedHead: FC<SharedHeadProps> = ({
       <meta
         name="twitter:description"
         content={
-          description || 'Enterprise-grade ChatGPT for your website and docs'
+          description || 'Enterprise-grade AI bots for your website and docs'
         }
       />
       <meta name="twitter:image" content={ogImage} />

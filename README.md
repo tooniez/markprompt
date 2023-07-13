@@ -1,5 +1,5 @@
 <a href="https://markprompt.com">
-  <img alt="Markprompt – Enterprise-grade ChatGPT for your website and docs" src="https://github.com/motifland/markprompt-js/assets/504893/9df7ac5a-1ac3-4b33-9bb3-a146d119ed73">
+  <img alt="Markprompt – Enterprise-grade AI bots for your website and docs" src="https://github.com/motifland/markprompt-js/assets/504893/9df7ac5a-1ac3-4b33-9bb3-a146d119ed73">
   <h1 align="center">Markprompt</h1>
 </a>
 
