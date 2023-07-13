@@ -72,11 +72,7 @@ type Data =
 
 const allowedMethods = ['GET'];
 
-const createKWICSnippet = async (
-  content: string,
-  searchTerm: string,
-  maxLength = 200,
-) => {
+const removeNonStandardText = async (content: string) => {
   // Remove Markdown formatting, remove leadHeading, and trim around
   // the keyword. This creates a snippet suitable for displaying in
   // search results.
@@ -85,7 +81,15 @@ const createKWICSnippet = async (
   )
     .replace(/\s+/g, ' ')
     .replace(/\\n/g, ' ');
+  return plainText;
+};
 
+const createKWICSnippet = async (
+  content: string,
+  searchTerm: string,
+  maxLength = 200,
+) => {
+  const plainText = await removeNonStandardText(content);
   const index = plainText.toLowerCase().indexOf(searchTerm.toLowerCase());
 
   if (index === -1) {
@@ -344,11 +348,18 @@ export default async function handler(
       sectionMeta,
     );
 
+    // At this stage, we remove all non-standard text, to ensure
+    // we only search parts that will actually be shown to the user.
+    // For instance, searching `react` might return code snippets
+    // include React imports, but code is removed from the search
+    // results in the KWIC code below, so it is unintuitive to include
+    // them.
+    const content = await removeNonStandardText(match.content);
     index.add({
       id: `${match.id}`,
       matchType,
       ...sectionReference,
-      content: match.content,
+      content,
     });
   }
 
