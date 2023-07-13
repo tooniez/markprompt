@@ -43,7 +43,18 @@ export const DEFAULT_MARKPROMPT_OPTIONS_GPT4: SerializableMarkpromptOptions = {
   },
   references: {
     ...DEFAULT_MARKPROMPT_OPTIONS.references,
-    serializedTransformReferenceId: `let href = referenceId;
+    getHref: undefined,
+    getLabel: undefined,
+    serializedGetHref: `let href = referenceId;
+
+// Remove file extension
+const lastDotIndex = referenceId.lastIndexOf('.');
+if (lastDotIndex >= 0) {
+  href = referenceId.substring(0, lastDotIndex);
+}
+
+return href`,
+    serializedGetLabel: `let href = referenceId;
 
 // Remove file extension
 const lastDotIndex = referenceId.lastIndexOf('.');
@@ -53,12 +64,11 @@ if (lastDotIndex >= 0) {
 
 // For label, capitalize last path component
 const lastPathComponent = href.split('/').slice(-1)[0]
-const text = lastPathComponent.charAt(0).toUpperCase() + text.slice(1);
-
-return { href, text }`,
+return text = lastPathComponent.charAt(0).toUpperCase() + text.slice(1);`,
   },
   search: {
     ...DEFAULT_MARKPROMPT_OPTIONS.search,
+    getHref: undefined,
     serializedGetHref: `const lastDotIndex = path.lastIndexOf('.');
 let cleanPath = path;
 if (lastDotIndex >= 0) {

@@ -196,7 +196,8 @@ export type SerializableMarkpromptOptions = Omit<
   'references' | 'search'
 > & {
   references?: MarkpromptOptions['references'] & {
-    serializedTransformReferenceId?: string;
+    serializedGetHref?: string;
+    serializedGetLabel?: string;
   };
   search?: MarkpromptOptions['search'] & {
     serializedGetHref?: string;

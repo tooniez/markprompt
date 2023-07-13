@@ -1,12 +1,3 @@
-// import {
-//   DEFAULT_SUBMIT_PROMPT_OPTIONS,
-//   DEFAULT_SUBMIT_SEARCH_QUERY_OPTIONS,
-//   FileSectionReference,
-//   Source,
-//   SubmitPromptOptions,
-//   SubmitSearchQueryOptions,
-// } from '@markprompt/core';
-
 export const I_DONT_KNOW = 'Sorry, I am not sure how to answer that.';
 export const MIN_CONTENT_LENGTH = 5;
 export const MAX_PROMPT_LENGTH = 200;
@@ -26,8 +17,8 @@ export const DEFAULT_MARKPROMPT_CONFIG = `{
 }`;
 
 export const MARKPROMPT_JS_PACKAGE_VERSIONS = {
-  css: '0.6.1',
-  web: '0.10.0',
-  react: '0.12.0',
-  'docusaurus-theme-search': '0.5.12',
+  css: '0.8.0',
+  web: '0.12.2',
+  react: '0.14.0',
+  'docusaurus-theme-search': '0.7.0',
 };
