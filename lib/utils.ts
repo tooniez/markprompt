@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 
-import { FileReferenceFileData } from '@markprompt/core';
+import { FileReferenceFileData, FileSectionReference } from '@markprompt/core';
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
 import { format } from 'date-fns';
@@ -27,7 +27,6 @@ import {
   DateCountHistogramEntry,
   FileSectionHeading,
   FileSectionMeta,
-  FileSectionReference,
   FileType,
   GitHubSourceDataType,
   HistogramStat,

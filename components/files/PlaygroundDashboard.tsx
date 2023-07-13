@@ -501,36 +501,9 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       },
       references: {
         ...markpromptOptions.references,
-        // loadingText: loadingText,
-        // referencesText: referencesHeading,
         getHref: undefined,
-        // getHref: (reference: FileSectionReference) => {
-        //   console.log('reference', JSON.stringify(reference, null, 2));
-        //   return '';
-        // },
         getLabel: undefined,
-        // getLabel: (reference: FileSectionReference) => {
-        //   console.log('reference', JSON.stringify(reference, null, 2));
-        //   return 'Hihi';
-        // },
         transformReferenceId: undefined,
-        // transformReferenceId: (path: string) => {
-        //   const file = files?.find((f) => f.path === path);
-        //   if (file) {
-        //     let name = path;
-        //     const metaTitle = (file.meta as any).title;
-        //     if (metaTitle) {
-        //       name = metaTitle;
-        //     } else {
-        //       name = removeFileExtension(getNameFromPath(path));
-        //     }
-        //     return {
-        //       text: name,
-        //       href: path,
-        //     };
-        //   }
-        //   return { text: 'Unknown', href: '#' };
-        // },
       },
     };
 
