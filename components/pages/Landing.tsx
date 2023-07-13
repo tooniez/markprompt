@@ -160,7 +160,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
 
   return (
     <>
-      <SharedHead title="Markprompt | Enterprise-grade AI bots for your website and docs" />
+      <SharedHead title="Markprompt | Enterprise-grade AI prompts for your website and docs" />
       {/* <div className="z-40 bg-fuchsia-700 py-1.5 px-6 sm:px-8">
         <Link
           href="/blog/markprompt-qa"
@@ -183,7 +183,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
               </Link>
               <h1 className="gradient-heading mt-6 text-left text-4xl leading-[36px] tracking-[-0.6px] sm:mr-[-50px] sm:text-6xl sm:leading-[64px]">
                 <Balancer>
-                  Enterprise-grade AI bots for your website and docs
+                  Enterprise-grade AI prompts for your website and docs
                 </Balancer>
               </h1>
               <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base text-neutral-500 sm:mt-4 sm:text-lg">
