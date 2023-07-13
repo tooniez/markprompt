@@ -2,6 +2,7 @@ import {
   type OpenAIChatCompletionsModelId,
   OpenAICompletionsModelId,
   OpenAIEmbeddingsModelId,
+  FileReferenceFileData,
 } from '@markprompt/core';
 import { MarkpromptOptions } from '@markprompt/react';
 
@@ -125,13 +126,6 @@ export type FileSectionReferenceSectionData = {
       slug?: string;
     };
   };
-};
-
-export type FileReferenceFileData = {
-  title?: string;
-  path: string;
-  meta?: any;
-  source: Source;
 };
 
 export type FileType = 'mdx' | 'mdoc' | 'md' | 'rst' | 'html' | 'txt';

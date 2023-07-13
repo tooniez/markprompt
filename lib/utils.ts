@@ -24,7 +24,6 @@ import { GitHubIcon } from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
 import {
   DateCountHistogramEntry,
-  FileReferenceFileData,
   FileSectionHeading,
   FileSectionMeta,
   FileSectionReference,
@@ -42,6 +41,7 @@ import {
 
 import { MIN_SLUG_LENGTH } from './constants';
 import { removeSchema } from './utils.edge';
+import { FileReferenceFileData } from '@markprompt/core';
 
 const lookup = [
   { value: 1, symbol: '' },

@@ -1,3 +1,4 @@
+import { FileReferenceFileData } from '@markprompt/core';
 import { createClient } from '@supabase/supabase-js';
 import FlexSearch from 'flexsearch';
 import { uniq } from 'lodash-es';
@@ -14,7 +15,6 @@ import {
 import { safeParseInt, safeParseJSON } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
-  FileReferenceFileData,
   FileSectionMeta,
   FileSectionReferenceSectionData,
 } from '@/types/types';
