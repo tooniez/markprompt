@@ -48,6 +48,10 @@ export default async function EmbedMiddleware(req: NextRequest) {
         position: absolute;
         inset: 0px;
       }
+
+      .MarkpromptContentPlain {
+        grid-template-rows: 1fr auto !important;
+      }
     </style>
   </head>
   <body>
