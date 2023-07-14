@@ -2,7 +2,6 @@ import {
   type OpenAIChatCompletionsModelId,
   OpenAICompletionsModelId,
   OpenAIEmbeddingsModelId,
-  FileReferenceFileData,
 } from '@markprompt/core';
 import { MarkpromptOptions } from '@markprompt/react';
 

@@ -1,5 +1,4 @@
-import { FileReferenceFileData } from '@markprompt/core';
-import { FileSectionReferenceSectionData } from '@markprompt/core/dist/types';
+import { SearchResult, Source } from '@markprompt/core';
 import { createClient } from '@supabase/supabase-js';
 import FlexSearch from 'flexsearch';
 import { uniq } from 'lodash-es';
@@ -35,28 +34,6 @@ type Index = FlexSearch.Document<
   { id: string } & SearchResult,
   ['file', 'meta', 'content', 'matchType']
 >;
-
-// TODO: These types should come from @markprompt/core
-
-type SearchResult = {
-  matchType: 'title' | 'leadHeading' | 'content';
-  file: FileReferenceFileData;
-} & SearchResultSection;
-
-type SearchResultSection = {
-  content?: string;
-  meta?: FileSectionReferenceSectionData['meta'];
-};
-
-type SourceType = 'github' | 'motif' | 'website' | 'file-upload' | 'api-upload';
-
-type Source = {
-  type: SourceType;
-  data: {
-    url?: string;
-    domain?: string;
-  };
-};
 
 type Data =
   | {
