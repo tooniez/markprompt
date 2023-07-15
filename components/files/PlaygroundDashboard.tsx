@@ -491,12 +491,12 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       showBranding: markpromptOptions.showBranding,
       prompt: {
         ...markpromptOptions.prompt,
-        completionsUrl: getApiUrl('completions', false),
+        apiUrl: getApiUrl('completions', false),
       },
       trigger: { floating: true },
       search: {
         ...markpromptOptions.search,
-        searchUrl: getApiUrl('search', false),
+        apiUrl: getApiUrl('search', false),
         getHref: undefined,
       },
       references: {

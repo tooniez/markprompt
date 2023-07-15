@@ -312,21 +312,38 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                 />
               </Row>
               {(markpromptOptions.search as any)?.enabled && (
-                <Row label="Ask AI label">
-                  <Input
-                    inputSize="sm"
-                    value={markpromptOptions.prompt?.cta}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                      setMarkpromptOptions({
-                        ...markpromptOptions,
-                        prompt: {
-                          ...markpromptOptions.prompt,
-                          cta: event.target.value,
-                        },
-                      });
-                    }}
-                  />
-                </Row>
+                <>
+                  <Row label="Search tab">
+                    <Input
+                      inputSize="sm"
+                      value={markpromptOptions.search?.tabLabel}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                        setMarkpromptOptions({
+                          ...markpromptOptions,
+                          search: {
+                            ...markpromptOptions.search,
+                            tabLabel: event.target.value,
+                          },
+                        });
+                      }}
+                    />
+                  </Row>
+                  <Row label="Ask tab">
+                    <Input
+                      inputSize="sm"
+                      value={markpromptOptions.prompt?.tabLabel}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                        setMarkpromptOptions({
+                          ...markpromptOptions,
+                          prompt: {
+                            ...markpromptOptions.prompt,
+                            tabLabel: event.target.value,
+                          },
+                        });
+                      }}
+                    />
+                  </Row>
+                </>
               )}
             </div>
           </AccordionContent>

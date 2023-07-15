@@ -122,12 +122,22 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
           <DropdownMenu.Separator className="dropdown-menu-separator" />
           {team && (
             <DropdownMenu.Item className="dropdown-menu-item dropdown-menu-item-indent">
-              <Link href={`/${team.slug}`}>Team settings</Link>
+              <Link
+                href={`/${team.slug}`}
+                onClick={() => {
+                  setOpen(false);
+                }}
+              >
+                Team settings
+              </Link>
             </DropdownMenu.Item>
           )}
           <DropdownMenu.Item
             className="dropdown-menu-item dropdown-menu-item-indent"
-            onClick={onNewTeamClick}
+            onClick={() => {
+              setOpen(false);
+              onNewTeamClick();
+            }}
           >
             Create new team
           </DropdownMenu.Item>
@@ -202,7 +212,6 @@ const ProjectPicker = () => {
 export const TeamProjectPicker = () => {
   const router = useRouter();
   const session = useSession();
-  const { user } = useUser();
   const { teams, mutate: mutateTeams, loading: loadingTeams } = useTeams();
   const { team } = useTeam();
   const { project, loading: loadingProject } = useProject();

@@ -17,11 +17,11 @@ export default async function EmbedMiddleware(req: NextRequest) {
     display: 'plain',
     prompt: {
       ...params.markpromptOptions.prompt,
-      completionsUrl: getApiUrl('completions', false),
+      apiUrl: getApiUrl('completions', false),
     },
     search: {
       ...params.markpromptOptions.search,
-      searchUrl: getApiUrl('search', false),
+      apiUrl: getApiUrl('search', false),
     },
   };
 
