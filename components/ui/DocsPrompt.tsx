@@ -6,8 +6,8 @@ import colors from 'tailwindcss/colors';
 import { getApiUrl } from '@/lib/utils.edge';
 
 import tailwindConfig from '../../tailwind.config';
-
 import '@markprompt/css';
+import { MarkpromptFilledIcon } from '../icons/MarkpromptFilled';
 
 type DocsPromptProps = {
   children: ReactNode;
@@ -44,18 +44,18 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
                 )?.['neutral']?.['1100']};
                 --markprompt-mutedForeground: ${colors.neutral['500']};
                 --markprompt-border: ${colors.neutral['900']};
-                --markprompt-input: ${colors.white};
+                --markprompt-input: ${colors.neutral['100']};
                 --markprompt-primary: ${colors.sky['500']};
-                --markprompt-primaryForeground: ${colors.white};
+                --markprompt-primaryForeground: ${colors.neutral['100']};
                 --markprompt-primaryMuted: ${colors.sky['400']};
                 --markprompt-secondary: ${(
                   tailwindConfig.theme?.extend?.colors as any
                 )?.['neutral']?.['1000']};
-                --markprompt-secondaryForeground: ${colors.white};
-                --markprompt-primaryHighlight: ${colors.pink['500']};
-                --markprompt-secondaryHighlight: ${colors.purple['500']};
+                --markprompt-secondaryForeground: ${colors.neutral['100']};
+                --markprompt-primaryHighlight: ${colors.fuchsia['500']};
+                --markprompt-secondaryHighlight: ${colors.pink['500']};
                 --markprompt-overlay: #00000040;
-                --markprompt-ring: ${colors.white};
+                --markprompt-ring: ${colors.neutral['100']};
                 --markprompt-radius: 5px;
               }
 
@@ -80,7 +80,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
               }
             `}
           </style>
-          <div className="flex h-[calc(100vh-240px)] max-h-[560px] w-full flex-grow overflow-hidden">
+          <div className="flex h-[calc(100vh-240px)] max-h-[560px] w-full flex-grow flex-grow overflow-hidden">
             <Markprompt
               display="plain"
               showBranding={false}
@@ -116,89 +116,30 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
                 enabled: true,
                 apiUrl: getApiUrl('search', false),
                 placeholder: 'Search docs…',
-                // getHref: (path, sectionHeading, source) => {
-                //   console.log('path', path, sectionHeading, source);
-                //   return '';
-                // },
+                getHref: (reference) => {
+                  return reference.file.path
+                    .replace('/pages', '')
+                    .replace(/.mdoc$/gi, '')
+                    .replace(/.mdx$/gi, '')
+                    .replace(/\/index$/gi, '');
+                },
               }}
             />
+          </div>
+          <div className="flex flex-none flex-row items-center justify-center gap-2 border-t border-neutral-900 px-4 py-2 text-center text-xs text-neutral-500">
+            <span>Powered by</span>
+            <a
+              className="inline-flex flex-row items-center gap-2 text-neutral-100"
+              href="https://markprompt.com"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <MarkpromptFilledIcon className="h-4 w-4" />{' '}
+              <span>Markprompt AI</span>
+            </a>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
   );
-  // return (
-  //   <Dialog.Root
-  //     open={promptOpen}
-  //     onOpenChange={(open) => {
-  //       setPromptOpen(open);
-  //       onOpenChange?.(open);
-  //     }}
-  //   >
-  //     <Dialog.Trigger asChild>{children}</Dialog.Trigger>
-  //     <Dialog.Portal>
-  //       <Dialog.Content className="animate-chat-window z-30 mr-4 mb-4 w-[calc(100vw-32px)] sm:w-full">
-  //         <div className="relative mt-4 h-[calc(100vh-240px)] max-h-[560px] w-full overflow-hidden rounded-lg border border-neutral-800 bg-neutral-1000 text-sm shadow-2xl sm:w-[400px]">
-  //           <style jsx global>
-  //             {`
-  //               :root {
-  //                 --markprompt-background: #050505;
-  //                 --markprompt-foreground: #d4d4d4;
-  //                 --markprompt-muted: #171717;
-  //                 --markprompt-mutedForeground: #737373;
-  //                 --markprompt-border: #262626;
-  //                 --markprompt-input: #fff;
-  //                 --markprompt-primary: #0ea5e9;
-  //                 --markprompt-primaryForeground: #fff;
-  //                 --markprompt-primaryMuted: #38bdf8;
-  //                 --markprompt-secondary: #0e0e0e;
-  //                 --markprompt-secondaryForeground: #fff;
-  //                 --markprompt-primaryHighlight: #ec4899;
-  //                 --markprompt-secondaryHighlight: #a855f7;
-  //                 --markprompt-overlay: #00000040;
-  //                 --markprompt-ring: #fff;
-  //                 --markprompt-radius: 5px;
-  //               }
-
-  //               input {
-  //                 background-color: transparent;
-  //               }
-
-  //               .MarkpromptPrompt {
-  //                 background-color: transparent;
-  //               }
-  //             `}
-  //           </style>
-  //           <Markprompt
-  //             display="plain"
-  //             showBranding={false}
-  //             close={{
-  //               visible: false,
-  //             }}
-  //             projectKey={
-  //               (process.env.NODE_ENV === 'production'
-  //                 ? process.env.NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY
-  //                 : process.env
-  //                     .NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY_TEST) ||
-  //               ''
-  //             }
-  //             prompt={{
-  //               apiUrl: getApiUrl('completions', false),
-  //               model: 'gpt-4',
-  //               placeholder: 'Ask Docs AI',
-  //             }}
-  //             search={{
-  //               enabled: true,
-  //               apiUrl: getApiUrl('search', false),
-  //               // getHref: (path, sectionHeading, source) => {
-  //               //   console.log('path', path, sectionHeading, source);
-  //               //   return '';
-  //               // },
-  //             }}
-  //           />
-  //         </div>
-  //       </Dialog.Content>
-  //     </Dialog.Portal>
-  //   </Dialog.Root>
-  // );
 };

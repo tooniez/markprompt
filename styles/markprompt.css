@@ -202,3 +202,33 @@
 .MarkpromptTab {
   @apply gap-1 p-2 text-sm !important;
 }
+
+.MarkpromptSearchResultLink {
+  @apply bg-neutral-900 !important;
+}
+
+[aria-selected='true'] .MarkpromptSearchResultLink {
+  @apply bg-neutral-700/40 !important;
+}
+
+.MarkpromptSearchResultTag {
+  @apply bg-neutral-800 font-normal text-neutral-300;
+}
+[aria-selected='true'] .MarkpromptSearchResultTag {
+  @apply border-neutral-900 bg-neutral-900 text-neutral-100;
+}
+
+.MarkpromptSearchResultIconWrapperBordered {
+  @apply bg-neutral-800;
+}
+[aria-selected='true'] .MarkpromptSearchResultIconWrapperBordered {
+  @apply border-neutral-900 bg-neutral-900;
+}
+
+.MarkpromptClose {
+  @apply border-neutral-800 bg-neutral-1100;
+}
+
+[aria-selected='true'] .MarkpromptMatch {
+  @apply border-sky-500 text-sky-500 !important;
+}
