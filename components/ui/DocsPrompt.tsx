@@ -129,7 +129,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
               }}
             />
           </div>
-          <div className="flex flex-none flex-row items-center justify-center gap-2 border-t border-neutral-900 px-4 py-2 text-center text-xs text-neutral-500">
+          <div className="flex flex-none flex-row items-center justify-center gap-2 border-t border-neutral-900 bg-neutral-1100 px-4 py-2 text-center text-xs text-neutral-500">
             <span>Powered by</span>
             <a
               className="inline-flex flex-row items-center gap-2 text-neutral-100"
