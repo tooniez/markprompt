@@ -145,6 +145,10 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
                 placeholder: 'Search docs…',
                 getHref,
               }}
+              onOpenChange={(open) => {
+                console.log('open', open);
+                // setPromptOpen
+              }}
             />
           </div>
           <div className="flex flex-none flex-row items-center justify-center gap-2 border-t border-neutral-900 bg-neutral-1000 px-4 py-2 text-center text-xs text-neutral-500">
