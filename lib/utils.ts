@@ -952,6 +952,5 @@ const getPlatform = () => {
 
 export const isMacLike = () => {
   const platform = getPlatform();
-  console.log('platform', platform);
   return platform.indexOf('mac') === 0 || platform === 'iPhone';
 };

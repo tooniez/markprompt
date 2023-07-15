@@ -2,8 +2,6 @@ import Markdoc, { RenderableTreeNode } from '@markdoc/markdoc';
 import { Search } from 'lucide-react';
 import React, { FC, createContext } from 'react';
 
-import { isMacLike } from '@/lib/utils';
-
 import LandingNavbar from './LandingNavbar';
 import {
   Fence,
@@ -17,6 +15,7 @@ import { Collapse, CollapseGroup } from '../ui/Collapse';
 import { ContentImage } from '../ui/ContentImage';
 import { DocsPrompt } from '../ui/DocsPrompt';
 import { Heading } from '../ui/Heading';
+import { Key } from '../ui/Key';
 import { Note } from '../ui/Note';
 import { Pattern } from '../ui/Pattern';
 import { Video } from '../ui/Video';
@@ -53,7 +52,12 @@ export const DocsLayout: FC<DocsLayoutProps> = ({ content, toc }: any) => {
                     >
                       <Search className="h-4 w-4 flex-none text-neutral-500" />
                       <div className="flex-grow truncate">Search or ask AI</div>
-                      <kbd className="key">{isMacLike() ? '⌘' : 'Ctrl'} K</kbd>
+                      <Key
+                        cmdCtrl
+                        className="select-none rounded border-neutral-800 bg-neutral-1000 px-1 py-0.5 font-sans text-xs font-medium"
+                      >
+                        K
+                      </Key>
                     </button>
                   </DocsPrompt>
                 </div>

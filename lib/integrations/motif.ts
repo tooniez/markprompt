@@ -38,9 +38,7 @@ export const getMotifPublicFileMetadata = async (
 
   return (json.data || []).files
     .map((f: any) => {
-      console.log('f', JSON.stringify(f, null, 2));
       const fullFilePath = toFilePath(f.path, f.name);
-      console.log('fullFilePath', JSON.stringify(fullFilePath, null, 2));
       if (
         shouldIncludeFileWithPath(
           fullFilePath,

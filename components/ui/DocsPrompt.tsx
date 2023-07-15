@@ -145,9 +145,8 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
                 placeholder: 'Search docs…',
                 getHref,
               }}
-              onOpenChange={(open) => {
-                console.log('open', open);
-                // setPromptOpen
+              onDidRequestOpenChange={(open) => {
+                setPromptOpen(open);
               }}
             />
           </div>
