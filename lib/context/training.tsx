@@ -367,6 +367,10 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               config.include || [],
               config.exclude || [],
             );
+            console.log(
+              'filesMetadata',
+              JSON.stringify(filesMetadata, null, 2),
+            );
 
             await generateEmbeddings(
               source.id,

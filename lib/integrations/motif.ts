@@ -1,12 +1,24 @@
 import { isPresent } from 'ts-is-present';
 
-import { shouldIncludeFileWithPath } from '../utils';
+import { getFileExtension, shouldIncludeFileWithPath } from '../utils';
 
 export const isMotifProjectAccessible = async (projectDomain: string) => {
   const res = await fetch(
     `https://api.motif.land/v1/projects/project-domain/${projectDomain}`,
   );
   return res.ok;
+};
+
+// Motif serves the filename (e.g. index.mdoc or my-post.mdx) as well
+// as the computed url path (/docs or /blog/my-post). Given these
+// two infos, we recreated the file path.
+const toFilePath = (urlPath: string, filename: string) => {
+  if (filename.toLowerCase().startsWith('index.')) {
+    return `${urlPath}/${filename}`;
+  } else {
+    const fileExtension = getFileExtension(filename);
+    return `${urlPath}.${fileExtension}`;
+  }
 };
 
 export const getMotifPublicFileMetadata = async (
@@ -26,7 +38,9 @@ export const getMotifPublicFileMetadata = async (
 
   return (json.data || []).files
     .map((f: any) => {
-      const fullFilePath = `${f.path}/${f.name}`;
+      console.log('f', JSON.stringify(f, null, 2));
+      const fullFilePath = toFilePath(f.path, f.name);
+      console.log('fullFilePath', JSON.stringify(fullFilePath, null, 2));
       if (
         shouldIncludeFileWithPath(
           fullFilePath,
