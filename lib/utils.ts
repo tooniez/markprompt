@@ -937,3 +937,21 @@ export const buildSectionReferenceFromMatchResult = async (
       : {}),
   };
 };
+
+const getPlatform = () => {
+  if (typeof navigator === 'undefined') {
+    return 'unknown';
+  }
+  return (
+    (navigator as any)?.userAgentData?.platform ||
+    navigator.userAgent.toLowerCase() ||
+    navigator.platform ||
+    'unknown'
+  ).toLowerCase();
+};
+
+export const isMacLike = () => {
+  const platform = getPlatform();
+  console.log('platform', platform);
+  return platform.indexOf('mac') === 0 || platform === 'iPhone';
+};

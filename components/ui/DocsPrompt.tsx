@@ -36,6 +36,24 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
     onOpenChange?.(promptOpen);
   }, [promptOpen, onOpenChange]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (
+        (event.key === 'k' && event.ctrlKey) ||
+        (event.key === 'k' && event.metaKey)
+      ) {
+        event.preventDefault();
+        setPromptOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [setPromptOpen]);
+
   return (
     <Dialog.Root open={promptOpen} onOpenChange={setPromptOpen}>
       <Dialog.Trigger asChild>{children}</Dialog.Trigger>
@@ -56,7 +74,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
                 --markprompt-foreground: ${colors.neutral['300']};
                 --markprompt-muted: ${(
                   tailwindConfig.theme?.extend?.colors as any
-                )?.['neutral']?.['1100']};
+                )?.['neutral']?.['1000']};
                 --markprompt-mutedForeground: ${colors.neutral['500']};
                 --markprompt-border: ${colors.neutral['900']};
                 --markprompt-input: ${colors.neutral['100']};
@@ -129,7 +147,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
               }}
             />
           </div>
-          <div className="flex flex-none flex-row items-center justify-center gap-2 border-t border-neutral-900 bg-neutral-1100 px-4 py-2 text-center text-xs text-neutral-500">
+          <div className="flex flex-none flex-row items-center justify-center gap-2 border-t border-neutral-900 bg-neutral-1000 px-4 py-2 text-center text-xs text-neutral-500">
             <span>Powered by</span>
             <a
               className="inline-flex flex-row items-center gap-2 text-neutral-100"
