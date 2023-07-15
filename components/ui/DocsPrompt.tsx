@@ -1,3 +1,4 @@
+import { FileSectionReference } from '@markprompt/core';
 import { Markprompt } from '@markprompt/react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { FC, ReactNode, useEffect, useState } from 'react';
@@ -12,6 +13,20 @@ import { MarkpromptFilledIcon } from '../icons/MarkpromptFilled';
 type DocsPromptProps = {
   children: ReactNode;
   onOpenChange?: (open: boolean) => void;
+};
+
+const getHref = (reference: FileSectionReference) => {
+  const basePath = reference.file.path
+    .replace('/pages', '')
+    .replace(/\.mdoc$/gi, '')
+    .replace(/\.mdx$/gi, '')
+    .replace(/\/index\.\w+$/gi, '');
+  const hash = reference.meta?.leadHeading?.slug;
+  if (!hash) {
+    return basePath;
+  } else {
+    return `${basePath}#${hash}`;
+  }
 };
 
 export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
@@ -80,7 +95,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
               }
             `}
           </style>
-          <div className="flex h-[calc(100vh-240px)] max-h-[560px] w-full flex-grow flex-grow overflow-hidden">
+          <div className="flex h-[calc(100vh-240px)] max-h-[560px] w-full flex-grow overflow-hidden">
             <Markprompt
               display="plain"
               showBranding={false}
@@ -104,25 +119,13 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
                     'Untitled'
                   );
                 },
-                getHref: (reference) => {
-                  return reference.file.path
-                    .replace('/pages', '')
-                    .replace(/.mdoc$/gi, '')
-                    .replace(/.mdx$/gi, '')
-                    .replace(/\/index$/gi, '');
-                },
+                getHref,
               }}
               search={{
                 enabled: true,
                 apiUrl: getApiUrl('search', false),
                 placeholder: 'Search docs…',
-                getHref: (reference) => {
-                  return reference.file.path
-                    .replace('/pages', '')
-                    .replace(/.mdoc$/gi, '')
-                    .replace(/.mdx$/gi, '')
-                    .replace(/\/index$/gi, '');
-                },
+                getHref,
               }}
             />
           </div>
