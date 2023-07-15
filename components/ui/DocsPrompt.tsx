@@ -18,9 +18,9 @@ type DocsPromptProps = {
 const getHref = (reference: FileSectionReference) => {
   const basePath = reference.file.path
     .replace('/pages', '')
+    .replace(/\/index\.?\w*$/gi, '')
     .replace(/\.mdoc$/gi, '')
-    .replace(/\.mdx$/gi, '')
-    .replace(/\/index\.\w+$/gi, '');
+    .replace(/\.mdx$/gi, '');
   const hash = reference.meta?.leadHeading?.slug;
   if (!hash) {
     return basePath;
