@@ -491,12 +491,12 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       showBranding: markpromptOptions.showBranding,
       prompt: {
         ...markpromptOptions.prompt,
-        completionsUrl: getApiUrl('completions', false),
+        apiUrl: getApiUrl('completions', false),
       },
       trigger: { floating: true },
       search: {
         ...markpromptOptions.search,
-        searchUrl: getApiUrl('search', false),
+        apiUrl: getApiUrl('search', false),
         getHref: undefined,
       },
       references: {
@@ -812,8 +812,6 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                     ref={playgroundRef}
                     src="/static/html/chatbot-playground.html"
                     className="absolute inset-0 h-full w-full bg-transparent"
-                    allowTransparency={true}
-                    frameBorder={0}
                     onLoad={() => {
                       setTimeout(() => {
                         setPlaygroundLoaded(true);

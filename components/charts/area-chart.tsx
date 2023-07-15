@@ -15,7 +15,7 @@ import {
 import { WithTooltipProvidedProps } from '@visx/tooltip/lib/enhancers/withTooltip';
 import { max, extent, bisector } from 'd3-array';
 import * as d3TimeFormat from 'd3-time-format';
-import { timeParse, timeFormat } from 'd3-time-format';
+import { timeFormat } from 'd3-time-format';
 import { FC, MouseEvent, TouchEvent, useCallback, useMemo } from 'react';
 import colors from 'tailwindcss/colors';
 

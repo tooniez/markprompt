@@ -1,21 +1,14 @@
-.MarkpromptForm {
-  @apply pr-8;
-}
+/* .MarkpromptViews {
+  @apply absolute inset-0;
+} */
 
 .MarkpromptPrompt {
   @apply border-0 bg-transparent py-3 px-0 text-sm outline-none ring-0 placeholder:text-neutral-500 !important;
 }
 
-.MarkpromptBackButton {
-  @apply py-1.5 px-3 text-sky-500;
-}
-
-.MarkpromptBackButton span:last-child {
-  @apply font-normal;
-}
-
 .MarkpromptReferences {
-  padding-top: 0.5rem !important;
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
 }
 
 .MarkpromptReferences p {
@@ -204,4 +197,38 @@
 .MarkpromptAnswer code {
   @apply text-xs font-medium;
   color: var(--markprompt-foreground);
+}
+
+.MarkpromptTab {
+  @apply gap-1 p-2 text-sm !important;
+}
+
+.MarkpromptSearchResultLink {
+  @apply bg-neutral-900 !important;
+}
+
+[aria-selected='true'] .MarkpromptSearchResultLink {
+  @apply bg-neutral-700/40 !important;
+}
+
+.MarkpromptSearchResultTag {
+  @apply bg-neutral-800 font-normal text-neutral-300;
+}
+[aria-selected='true'] .MarkpromptSearchResultTag {
+  @apply border-neutral-900 bg-neutral-900 text-neutral-100;
+}
+
+.MarkpromptSearchResultIconWrapperBordered {
+  @apply bg-neutral-800;
+}
+[aria-selected='true'] .MarkpromptSearchResultIconWrapperBordered {
+  @apply border-neutral-900 bg-neutral-900;
+}
+
+.MarkpromptClose {
+  @apply border-neutral-800 bg-neutral-1100;
+}
+
+[aria-selected='true'] .MarkpromptMatch {
+  @apply border-sky-500 text-sky-500 !important;
 }

@@ -50,7 +50,9 @@ export const DocsLayout: FC<DocsLayoutProps> = ({ content, toc }: any) => {
                       aria-label="Ask docs"
                     >
                       <Search className="h-4 w-4 flex-none text-neutral-500" />
-                      <div className="flex-grow truncate">Ask docs...</div>
+                      <div className="flex-grow truncate">
+                        Search or ask docs…
+                      </div>
                     </button>
                   </DocsPrompt>
                 </div>

@@ -1,5 +1,6 @@
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import cn from 'classnames';
+import { SearchIcon } from 'lucide-react';
 import Link from 'next/link';
 import { FC } from 'react';
 
@@ -10,6 +11,7 @@ import useUser from '@/lib/hooks/use-user';
 import { MarkpromptIcon } from '../icons/Markprompt';
 import TeamProjectPicker from '../team/TeamProjectPicker';
 import Button from '../ui/Button';
+import { DocsPrompt } from '../ui/DocsPrompt';
 import { ContactWindow } from '../user/ChatWindow';
 import ProfileMenu from '../user/ProfileMenu';
 
@@ -88,6 +90,23 @@ export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
                   Docs
                 </a>
               </NavigationMenu.Link>
+            </NavigationMenu.Item>
+            <NavigationMenu.Item>
+              <DocsPrompt>
+                <button
+                  className="rounded-md p-2 outline-none transition duration-300 hover:bg-neutral-900"
+                  role="button"
+                  aria-label="Ask Markprompt"
+                >
+                  <div className="relative" aria-hidden="true">
+                    <SearchIcon
+                      className={cn(
+                        'h-4 w-4 transform text-neutral-300 duration-300',
+                      )}
+                    />
+                  </div>
+                </button>
+              </DocsPrompt>
             </NavigationMenu.Item>
           </NavigationMenu.List>
         </NavigationMenu.Root>

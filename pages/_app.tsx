@@ -90,7 +90,5 @@ export const PromptOutsideOnboarding = () => {
   if (user && !user.has_completed_onboarding) {
     return <></>;
   }
-
-  // return <ChatWindow closeOnClickOutside />;
-  return <MarkpromptPromptWindow />;
+  return <></>;
 };

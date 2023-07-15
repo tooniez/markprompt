@@ -1,9 +1,13 @@
 import { Markprompt } from '@markprompt/react';
-import * as Popover from '@radix-ui/react-popover';
-import { FC, ReactNode, useState } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { FC, ReactNode, useEffect, useState } from 'react';
+import colors from 'tailwindcss/colors';
 
-import '@markprompt/css';
 import { getApiUrl } from '@/lib/utils.edge';
+
+import tailwindConfig from '../../tailwind.config';
+import '@markprompt/css';
+import { MarkpromptFilledIcon } from '../icons/MarkpromptFilled';
 
 type DocsPromptProps = {
   children: ReactNode;
@@ -13,54 +17,73 @@ type DocsPromptProps = {
 export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
   const [promptOpen, setPromptOpen] = useState(false);
 
+  useEffect(() => {
+    onOpenChange?.(promptOpen);
+  }, [promptOpen, onOpenChange]);
+
   return (
-    <Popover.Root
-      open={promptOpen}
-      onOpenChange={(open) => {
-        setPromptOpen(open);
-        onOpenChange?.(open);
-      }}
-    >
-      <Popover.Trigger asChild>{children}</Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content className="animate-chat-window z-30 mr-4 mb-4 w-[calc(100vw-32px)] sm:w-full">
-          <div className="relative mt-4 h-[calc(100vh-240px)] max-h-[560px] w-full overflow-hidden rounded-lg border border-neutral-800 bg-neutral-1000 text-sm shadow-2xl sm:w-[400px]">
-            <style jsx global>
-              {`
-                :root {
-                  --markprompt-background: #050505;
-                  --markprompt-foreground: #d4d4d4;
-                  --markprompt-muted: #171717;
-                  --markprompt-mutedForeground: #737373;
-                  --markprompt-border: #262626;
-                  --markprompt-input: #fff;
-                  --markprompt-primary: #0ea5e9;
-                  --markprompt-primaryForeground: #fff;
-                  --markprompt-primaryMuted: #38bdf8;
-                  --markprompt-secondary: #0e0e0e;
-                  --markprompt-secondaryForeground: #fff;
-                  --markprompt-primaryHighlight: #ec4899;
-                  --markprompt-secondaryHighlight: #a855f7;
-                  --markprompt-overlay: #00000040;
-                  --markprompt-ring: #fff;
-                  --markprompt-radius: 5px;
-                }
+    <Dialog.Root open={promptOpen} onOpenChange={setPromptOpen}>
+      <Dialog.Trigger asChild>{children}</Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
+        <Dialog.Content
+          className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[720px] flex-col overflow-hidden"
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+          }}
+        >
+          <style jsx global>
+            {`
+              :root {
+                --markprompt-background: ${(
+                  tailwindConfig.theme?.extend?.colors as any
+                )?.['neutral']?.['1000']};
+                --markprompt-foreground: ${colors.neutral['300']};
+                --markprompt-muted: ${(
+                  tailwindConfig.theme?.extend?.colors as any
+                )?.['neutral']?.['1100']};
+                --markprompt-mutedForeground: ${colors.neutral['500']};
+                --markprompt-border: ${colors.neutral['900']};
+                --markprompt-input: ${colors.neutral['100']};
+                --markprompt-primary: ${colors.sky['500']};
+                --markprompt-primaryForeground: ${colors.neutral['100']};
+                --markprompt-primaryMuted: ${colors.sky['400']};
+                --markprompt-secondary: ${(
+                  tailwindConfig.theme?.extend?.colors as any
+                )?.['neutral']?.['1000']};
+                --markprompt-secondaryForeground: ${colors.neutral['100']};
+                --markprompt-primaryHighlight: ${colors.fuchsia['500']};
+                --markprompt-secondaryHighlight: ${colors.pink['500']};
+                --markprompt-overlay: #00000040;
+                --markprompt-ring: ${colors.neutral['100']};
+                --markprompt-radius: 5px;
+              }
 
-                input {
-                  background-color: transparent;
-                }
+              input {
+                background-color: transparent;
+              }
 
-                .MarkpromptPrompt {
-                  background-color: transparent;
-                }
-              `}
-            </style>
+              .MarkpromptPrompt {
+                background-color: transparent;
+              }
+
+              .MarkpromptClose {
+                padding: 0.25rem;
+                text-transform: uppercase;
+              }
+
+              kbd {
+                font-weight: 600;
+                font-size: 0.5rem;
+                font-family: Inter, sans-serif;
+                color: ${colors.neutral['500']};
+              }
+            `}
+          </style>
+          <div className="flex h-[calc(100vh-240px)] max-h-[560px] w-full flex-grow flex-grow overflow-hidden">
             <Markprompt
               display="plain"
               showBranding={false}
-              close={{
-                visible: false,
-              }}
               projectKey={
                 (process.env.NODE_ENV === 'production'
                   ? process.env.NEXT_PUBLIC_MARKPROMPT_WEBSITE_DOCS_PROJECT_KEY
@@ -71,21 +94,52 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
               prompt={{
                 apiUrl: getApiUrl('completions', false),
                 model: 'gpt-4',
-                placeholder: 'Ask Docs AI',
-                cta: 'Ask Docs AI',
+                placeholder: 'Ask AI…',
               }}
-              // search={{
-              //   enabled: true,
-              //   searchUrl: getApiUrl('search', false),
-              //   getHref: (path, sectionHeading, source) => {
-              //     console.log('path', path, sectionHeading, source);
-              //     return '';
-              //   },
-              // }}
+              references={{
+                getLabel: (reference) => {
+                  return (
+                    reference.meta?.leadHeading?.value ||
+                    reference.file?.title ||
+                    'Untitled'
+                  );
+                },
+                getHref: (reference) => {
+                  return reference.file.path
+                    .replace('/pages', '')
+                    .replace(/.mdoc$/gi, '')
+                    .replace(/.mdx$/gi, '')
+                    .replace(/\/index$/gi, '');
+                },
+              }}
+              search={{
+                enabled: true,
+                apiUrl: getApiUrl('search', false),
+                placeholder: 'Search docs…',
+                getHref: (reference) => {
+                  return reference.file.path
+                    .replace('/pages', '')
+                    .replace(/.mdoc$/gi, '')
+                    .replace(/.mdx$/gi, '')
+                    .replace(/\/index$/gi, '');
+                },
+              }}
             />
           </div>
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+          <div className="flex flex-none flex-row items-center justify-center gap-2 border-t border-neutral-900 px-4 py-2 text-center text-xs text-neutral-500">
+            <span>Powered by</span>
+            <a
+              className="inline-flex flex-row items-center gap-2 text-neutral-100"
+              href="https://markprompt.com"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <MarkpromptFilledIcon className="h-4 w-4" />{' '}
+              <span>Markprompt AI</span>
+            </a>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };

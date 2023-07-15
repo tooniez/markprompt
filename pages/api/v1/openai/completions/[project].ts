@@ -158,7 +158,7 @@ export default async function handler(req: NextRequest) {
   try {
     let params = await req.json();
 
-    console.log('[COMPLETIONS] Params:', JSON.stringify(params, null, 2));
+    console.debug('[COMPLETIONS] Params:', JSON.stringify(params, null, 2));
 
     const modelInfo = stringToLLMInfo(params?.model);
     const prompt = (params.prompt as string)?.substring(0, MAX_PROMPT_LENGTH);
