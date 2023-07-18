@@ -1,8 +1,7 @@
 import * as Accordion from '@radix-ui/react-accordion';
 import * as Switch from '@radix-ui/react-switch';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
-import { Info, Sparkles } from 'lucide-react';
-import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 import { ChangeEvent, FC, useMemo } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
@@ -13,13 +12,13 @@ import { Theme, ThemeColorKeys, ThemeColors } from '@/lib/themes';
 import { SerializableMarkpromptOptions } from '@/types/types';
 
 import { Row } from './PlaygroundDashboard';
+import { SearchProviderConfig } from './SearchProviderConfig';
 import { ThemePicker } from './ThemePicker';
 import { AccordionContent, AccordionTrigger } from '../ui/Accordion';
 import { ButtonOrLinkWrapper } from '../ui/Button';
 import ColorPickerInput from '../ui/ColorPickerInput';
 import Input from '../ui/Input';
 import { Tag } from '../ui/Tag';
-import { NoAutoTextArea } from '../ui/TextArea';
 
 type ThemeColorPickerProps = {
   colors: ThemeColors;
@@ -60,7 +59,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
   const _canRemoveBranding = team && canRemoveBranding(team);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col">
       <Row label="Theme">
         <ThemePicker />
       </Row>
@@ -83,6 +82,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                 search: {
                   ...markpromptOptions.search,
                   enabled: b,
+                  ...(!b ? { provider: undefined } : {}),
                 },
               } as SerializableMarkpromptOptions)
             }
@@ -91,6 +91,7 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
           </Switch.Root>
         </div>
       </Row>
+      {markpromptOptions.search?.enabled && <SearchProviderConfig />}
       <Row label="Include branding">
         <div className="flex flex-row items-center justify-end gap-2">
           {!_canRemoveBranding && (

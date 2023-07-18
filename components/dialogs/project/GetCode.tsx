@@ -54,8 +54,7 @@ export const KeyNote = ({
 // markprompt-js function/component. It only includes values
 // that are different from the default options.
 const getDiffOptions = (markpromptOptions: SerializableMarkpromptOptions) => {
-  const diffOptions = diff(DEFAULT_MARKPROMPT_OPTIONS_GPT4, markpromptOptions);
-  return pruneEmpty(diffOptions);
+  return pruneEmpty(diff(DEFAULT_MARKPROMPT_OPTIONS_GPT4, markpromptOptions));
 };
 
 const getDiffTheme = (theme: Theme) => {

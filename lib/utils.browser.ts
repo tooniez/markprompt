@@ -1,15 +1,19 @@
 // Browser-dependent utilities. Cannot run on edge runtimes.
 import { stringify } from 'json5';
 import {
+  cloneDeep,
   filter,
   isArray,
   isEmpty,
   isNull,
   isPlainObject,
   isString,
+  isUndefined,
   map,
   mapValues,
+  omit,
   pickBy,
+  unset,
 } from 'lodash-es';
 
 import { Json } from '@/types/supabase';
@@ -50,9 +54,15 @@ export const propsObjectToJSXPropsString = (props: any): string | undefined => {
 };
 
 export function pruneEmpty(object: any) {
-  if (isString(object)) return _sanitizeString(object);
-  if (isArray(object)) return _sanitizeArray(object);
-  if (isPlainObject(object)) return _sanitizeObject(object);
+  if (isString(object)) {
+    return _sanitizeString(object);
+  }
+  if (isArray(object)) {
+    return _sanitizeArray(object);
+  }
+  if (isPlainObject(object)) {
+    return _sanitizeObject(object);
+  }
   return object;
 }
 
@@ -71,6 +81,7 @@ const _sanitizeObject = (object: any): any => {
 const _isProvided = (value: any): any => {
   const typeIsNotSupported =
     !isNull(value) &&
+    !isUndefined(value) &&
     !isString(value) &&
     !isArray(value) &&
     !isPlainObject(value);

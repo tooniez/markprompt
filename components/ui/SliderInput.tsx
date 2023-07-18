@@ -28,7 +28,7 @@ export const SliderInput: FC<SliderInputProps> = ({
   ...props
 }) => {
   return (
-    <div className={cn(className, 'flex flex-col gap-2')}>
+    <div className={cn(className, 'flex flex-col')}>
       <Row label={label} tip={tip}>
         <Input
           {...props}
@@ -45,7 +45,7 @@ export const SliderInput: FC<SliderInputProps> = ({
           inputSize="sm"
         />
       </Row>
-      <div className="col-span-2">
+      <div className="col-span-2 mt-2">
         <Slider.Root
           onValueChange={([p]) => {
             setValue(p);

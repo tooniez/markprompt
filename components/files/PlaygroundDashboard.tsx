@@ -91,16 +91,37 @@ export const Row = ({
   label,
   tip,
   className,
+  indented,
+  collapseMargin,
   children,
 }: {
   label: string | ReactNode;
   tip?: string;
   className?: string;
+  indented?: boolean;
+  collapseMargin?: boolean;
   children?: ReactNode;
 }) => {
   return (
-    <div className={cn(className, 'grid grid-cols-2 items-center gap-4')}>
-      <div className="flex flex-row items-center gap-2 py-1 text-sm text-neutral-300">
+    <div
+      className={cn(
+        className,
+        {
+          'my-1': !collapseMargin,
+          'py-1': collapseMargin,
+          'border-l border-neutral-800': indented,
+        },
+        'grid grid-cols-2 items-center gap-4',
+      )}
+    >
+      <div
+        className={cn(
+          'flex flex-row items-center gap-2 py-1 text-sm text-neutral-300',
+          {
+            'pl-3': indented,
+          },
+        )}
+      >
         <span className="truncate">{label}</span>
         {tip && (
           <span className="flex-grow">

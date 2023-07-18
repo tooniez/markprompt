@@ -41,7 +41,7 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
     team && !canConfigureModel(team) && !_isDefaultMarkpromptPromptOptions;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col">
       <Accordion.Root
         type="single"
         value={shouldShowCustomConfigNote ? 'note' : undefined}
