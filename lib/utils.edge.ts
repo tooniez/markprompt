@@ -28,6 +28,17 @@ export const removeSchema = (origin: string) => {
   return origin.replace(/(^\w+:|^)\/\//, '');
 };
 
+export const getDomain = (url: string) => {
+  let hostname: string;
+  if (url.includes('://')) {
+    hostname = new URL(url).hostname;
+  } else {
+    hostname = url.split('/')[0];
+  }
+  const domain = hostname.replace(/^www\./, '');
+  return domain;
+};
+
 export const safeParseInt = (
   value: string | undefined | null,
   fallbackValue: number,

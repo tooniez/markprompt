@@ -18,7 +18,7 @@ import { ManagedAppContext } from '@/lib/context/app';
 import { ManagedConfigContext } from '@/lib/context/config';
 import { ManagedTrainingContext } from '@/lib/context/training';
 import useUser from '@/lib/hooks/use-user';
-import { getAppHost } from '@/lib/utils.edge';
+import { getAppHost, getDomain } from '@/lib/utils.edge';
 
 const inter = Inter({ subsets: ['latin'] });
 

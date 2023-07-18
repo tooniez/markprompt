@@ -49,7 +49,7 @@ import {
   isValidDomain,
   truncateMiddle,
 } from '@/lib/utils';
-import { removeSchema } from '@/lib/utils.edge';
+import { getDomain, removeSchema } from '@/lib/utils.edge';
 import { Domain, Project, Token } from '@/types/types';
 
 const ProjectSettingsPage = () => {
@@ -230,15 +230,10 @@ const ProjectSettingsPage = () => {
                 validateOnMount
                 validate={async (values) => {
                   const errors: FormikErrors<FormikValues> = {};
-                  if (
-                    values.domain_name &&
-                    !isValidDomain(removeSchema(values.domain_name))
-                  ) {
+                  const domain = getDomain(values.domain_name);
+                  if (values.domain_name && !isValidDomain(domain)) {
                     errors.domain_name = 'Invalid domain.';
-                  } else if (
-                    values.domain_name &&
-                    domainNames.includes(values.domain_name)
-                  ) {
+                  } else if (domain && domainNames.includes(domain)) {
                     errors.domain_name = 'Domain already added.';
                   }
                   return errors;
@@ -246,14 +241,19 @@ const ProjectSettingsPage = () => {
                 onSubmit={async (values, { setSubmitting, resetForm }) => {
                   setSubmitting(true);
                   try {
-                    const newName = removeSchema(values.domain_name);
-                    const newDomain = await addDomain(project.id, newName);
+                    const newDomainName = getDomain(values.domain_name);
+                    const newDomain = await addDomain(
+                      project.id,
+                      newDomainName,
+                    );
                     await mutateDomains([
-                      ...(domains || []).filter((d) => d.name !== newName),
+                      ...(domains || []).filter(
+                        (d) => d.name !== newDomainName,
+                      ),
                       newDomain,
                     ]);
                     toast.success('Domain added.');
-                    resetForm({ values: { domain_name: 'a' } });
+                    resetForm({ values: { domain_name: '' } });
                   } catch (e) {
                     toast.error('Error adding domain.');
                     console.error('Error adding domain', e);
