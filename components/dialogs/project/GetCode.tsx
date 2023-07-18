@@ -526,19 +526,26 @@ const GetCode = ({
                     code={docusaurusCode(apiKey, markpromptOptions)}
                   />
                   <Note type="info" size="sm" className="mt-4">
-                    If your Docusaurus project already has a search plugin, such
-                    as <code>theme-search-algolia</code>, you need to swizzle
-                    the current search plugin, and add Markprompt as a
-                    standalone component.{' '}
-                    <a
-                      target="_blank"
-                      rel="noreferrer"
-                      className="subtle-underline"
-                      href="https://github.com/motifland/markprompt-js/tree/main/packages/docusaurus-theme-search#usage-with-another-search-plugin"
-                    >
-                      Read more
-                    </a>{' '}
-                    →
+                    <p className="pb-2">
+                      If your Docusaurus project already has a search plugin,
+                      such as <code>theme-search-algolia</code>, you need to
+                      swizzle the current search plugin, and add Markprompt as a
+                      standalone component.{' '}
+                      <a
+                        target="_blank"
+                        rel="noreferrer"
+                        className="subtle-underline"
+                        href="https://github.com/motifland/markprompt-js/tree/main/packages/docusaurus-theme-search#usage-with-another-search-plugin"
+                      >
+                        Read more
+                      </a>{' '}
+                      →
+                    </p>
+                    <p>
+                      Alternatively, you can use Algolia directly in the
+                      Markprompt component, by toggling on &ldquo;Instant
+                      search&rdquo; and selecting Algolia as provider.
+                    </p>
                   </Note>
                   {themeCSS && (
                     <>
