@@ -1,4 +1,8 @@
-import { FileSectionReference } from '@markprompt/core';
+import {
+  AlgoliaDocSearchHit,
+  FileSectionReference,
+  SearchResult,
+} from '@markprompt/core';
 import { Markprompt } from '@markprompt/react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { FC, ReactNode, useEffect, useState } from 'react';
@@ -15,13 +19,20 @@ type DocsPromptProps = {
   onOpenChange?: (open: boolean) => void;
 };
 
-const getHref = (reference: FileSectionReference) => {
-  const basePath = reference.file.path
+const getHref = (
+  reference: FileSectionReference | SearchResult | AlgoliaDocSearchHit,
+) => {
+  if ((reference as AlgoliaDocSearchHit)?.hierarchy) {
+    return (reference as AlgoliaDocSearchHit).url;
+  }
+
+  const _reference = reference as FileSectionReference;
+  const basePath = _reference.file.path
     .replace('/pages', '')
     .replace(/\/index\.?\w*$/gi, '')
     .replace(/\.mdoc$/gi, '')
     .replace(/\.mdx$/gi, '');
-  const hash = reference.meta?.leadHeading?.slug;
+  const hash = _reference.meta?.leadHeading?.slug;
   if (!hash) {
     return basePath;
   } else {

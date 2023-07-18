@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { DEFAULT_MARKPROMPT_OPTIONS } from '@markprompt/react';
+import {
+  DEFAULT_MARKPROMPT_OPTIONS,
+  MarkpromptOptions,
+} from '@markprompt/react';
 import {
   createContext,
   FC,
@@ -35,17 +38,47 @@ export type State = {
   restoreModelDefaults: () => void;
 };
 
-export const DEFAULT_MARKPROMPT_OPTIONS_GPT4: SerializableMarkpromptOptions = {
-  ...DEFAULT_MARKPROMPT_OPTIONS,
-  prompt: {
-    ...DEFAULT_MARKPROMPT_OPTIONS.prompt,
-    model: 'gpt-4',
-  },
-  references: {
-    ...DEFAULT_MARKPROMPT_OPTIONS.references,
-    getHref: undefined,
-    getLabel: undefined,
-    serializedGetHref: `let href = referenceId;
+const removeUnserializableEntries = (
+  markpromptOptions: SerializableMarkpromptOptions,
+): SerializableMarkpromptOptions => {
+  const { references, search, ...rest } = markpromptOptions;
+  let serializableMarkpromptOptions: Partial<SerializableMarkpromptOptions> =
+    rest;
+
+  if (references) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { getHref, getLabel, ...restReferences } = references;
+    serializableMarkpromptOptions = {
+      ...serializableMarkpromptOptions,
+      references: restReferences,
+    };
+  }
+
+  if (search) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { getHref, getHeading, getTitle, getSubtitle, ...restSearch } =
+      search;
+    serializableMarkpromptOptions = {
+      ...serializableMarkpromptOptions,
+      search: restSearch,
+    };
+  }
+
+  return serializableMarkpromptOptions;
+};
+
+export const DEFAULT_MARKPROMPT_OPTIONS_GPT4: SerializableMarkpromptOptions =
+  removeUnserializableEntries({
+    ...DEFAULT_MARKPROMPT_OPTIONS,
+    prompt: {
+      ...DEFAULT_MARKPROMPT_OPTIONS.prompt,
+      model: 'gpt-4',
+    },
+    references: {
+      ...DEFAULT_MARKPROMPT_OPTIONS.references,
+      getHref: undefined,
+      getLabel: undefined,
+      serializedGetHref: `let href = referenceId;
 
 // Remove file extension
 const lastDotIndex = referenceId.lastIndexOf('.');
@@ -54,7 +87,7 @@ if (lastDotIndex >= 0) {
 }
 
 return href`,
-    serializedGetLabel: `let href = referenceId;
+      serializedGetLabel: `let href = referenceId;
 
 // Remove file extension
 const lastDotIndex = referenceId.lastIndexOf('.');
@@ -65,11 +98,14 @@ if (lastDotIndex >= 0) {
 // For label, capitalize last path component
 const lastPathComponent = href.split('/').slice(-1)[0]
 return text = lastPathComponent.charAt(0).toUpperCase() + text.slice(1);`,
-  },
-  search: {
-    ...DEFAULT_MARKPROMPT_OPTIONS.search,
-    getHref: undefined,
-    serializedGetHref: `const lastDotIndex = path.lastIndexOf('.');
+    },
+    search: {
+      ...DEFAULT_MARKPROMPT_OPTIONS.search,
+      getHref: undefined,
+      getHeading: undefined,
+      getTitle: undefined,
+      getSubtitle: undefined,
+      serializedGetHref: `const lastDotIndex = path.lastIndexOf('.');
 let cleanPath = path;
 if (lastDotIndex >= 0) {
   cleanPath = path.substring(0, lastDotIndex);
@@ -85,8 +121,8 @@ if (sectionHeading?.id) {
   return \`\${cleanPath}#\${slugger.slug(sectionHeading.value)}\`;
 }
 return cleanPath;`,
-  },
-};
+    },
+  });
 
 const initialState: State = {
   markpromptOptions: DEFAULT_MARKPROMPT_OPTIONS_GPT4,
