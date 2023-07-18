@@ -82,7 +82,6 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
                 search: {
                   ...markpromptOptions.search,
                   enabled: b,
-                  ...(!b ? { provider: undefined } : {}),
                 },
               } as SerializableMarkpromptOptions)
             }

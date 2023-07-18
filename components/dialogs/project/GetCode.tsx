@@ -52,9 +52,27 @@ export const KeyNote = ({
 
 // Builds the shortest version of the options to pass to a
 // markprompt-js function/component. It only includes values
-// that are different from the default options.
-const getDiffOptions = (markpromptOptions: SerializableMarkpromptOptions) => {
-  return pruneEmpty(diff(DEFAULT_MARKPROMPT_OPTIONS_GPT4, markpromptOptions));
+// that are different from the default options, and removes extraneous
+// options, such as search provider options if search is not enabled.
+const getCodeOptionsToDisplay = (
+  markpromptOptions: SerializableMarkpromptOptions,
+) => {
+  let diffOptions = pruneEmpty(
+    diff(DEFAULT_MARKPROMPT_OPTIONS_GPT4, markpromptOptions),
+  ) as Partial<SerializableMarkpromptOptions>;
+  if (!diffOptions.search?.enabled) {
+    // If search is disabled, we still keep the search provider options
+    // in store so that they are not reset if accidentally search is disabled,
+    // yet we don't want the provider options to be in the code snippets if
+    // search is disabled.
+    diffOptions = {
+      ...diffOptions,
+      search: {
+        enabled: false,
+      },
+    };
+  }
+  return diffOptions;
 };
 
 const getDiffTheme = (theme: Theme) => {
@@ -115,10 +133,10 @@ const reactCode = (
   isTestKey: boolean,
   markpromptOptions: SerializableMarkpromptOptions,
 ) => {
-  const diffOptions = getDiffOptions(markpromptOptions);
+  const codeOptionsToDisplay = getCodeOptionsToDisplay(markpromptOptions);
 
   let propsStringFormatted = '';
-  const propsString = propsObjectToJSXPropsString(diffOptions);
+  const propsString = propsObjectToJSXPropsString(codeOptionsToDisplay);
   if (propsString) {
     propsStringFormatted = '\n' + indentString(propsString, 6);
   }
@@ -138,14 +156,14 @@ const vanillaCode = (
   containerId: string,
   markpromptOptions: SerializableMarkpromptOptions,
 ) => {
-  const diffOptions = getDiffOptions(markpromptOptions);
+  const codeOptionsToDisplay = getCodeOptionsToDisplay(markpromptOptions);
   return `import '@markprompt/css';
 import { markprompt } from '@markprompt/web';
 
 markprompt(
   '${projectKey}',
   '${containerId}',
-${indentString(stringify(diffOptions, null, 2), 2)}
+${indentString(stringify(codeOptionsToDisplay, null, 2), 2)}
 );`;
 };
 
@@ -155,10 +173,10 @@ const scriptTagCode = (
   markpromptOptions: SerializableMarkpromptOptions,
   themeCSS: string,
 ) => {
-  const diffOptions = {
+  const codeOptionsToDisplay = {
     projectKey: projectKey,
     container: `#${containerId}`,
-    ...getDiffOptions(markpromptOptions),
+    ...getCodeOptionsToDisplay(markpromptOptions),
   };
 
   let styleBlock = '';
@@ -173,7 +191,10 @@ ${indentString(themeCSS, 2)}
     MARKPROMPT_JS_PACKAGE_VERSIONS.css
   }/markprompt.css" />
 <script>
-  window.markprompt = ${indentString(stringify(diffOptions, null, 2), 4).trim()}
+  window.markprompt = ${indentString(
+    stringify(codeOptionsToDisplay, null, 2),
+    4,
+  ).trim()}
 </script>
 <script async src="https://unpkg.com/@markprompt/web@${
     MARKPROMPT_JS_PACKAGE_VERSIONS.web
@@ -191,7 +212,7 @@ const embedCode = (
 ) => {
   const props = {
     projectKey: projectKey,
-    markpromptOptions: getDiffOptions(markpromptOptions),
+    markpromptOptions: getCodeOptionsToDisplay(markpromptOptions),
     themeCSS,
   };
 
@@ -216,7 +237,7 @@ const docusaurusCode = (
 ) => {
   const diffOptions = {
     projectKey: projectKey,
-    ...getDiffOptions(markpromptOptions),
+    ...getCodeOptionsToDisplay(markpromptOptions),
   };
 
   return `const config = {
