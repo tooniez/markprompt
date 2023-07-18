@@ -1,13 +1,15 @@
 import { AlgoliaProvider } from '@markprompt/core/dist/search';
 import * as Select from '@radix-ui/react-select';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { ChangeEvent, FC } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
+import { safeParseJSON } from '@/lib/utils.edge';
 
 import { Row } from './PlaygroundDashboard';
 import Input from '../ui/Input';
 import { SelectItem } from '../ui/Select';
+import { NoAutoTextArea } from '../ui/TextArea';
 
 type SearchProviderConfigProps = {
   className?: string;
@@ -137,6 +139,51 @@ export const SearchProviderConfig: FC<SearchProviderConfigProps> = () => {
                 });
               }}
             />
+          </Row>
+          <Row label="Search parameters" top indented collapseMargin></Row>
+          <Row fullWidth indented collapseMargin>
+            <div className="flex w-full flex-col">
+              <NoAutoTextArea
+                value={
+                  markpromptOptions.search?.provider?.searchParameters
+                    ? JSON.stringify(
+                        markpromptOptions.search.provider.searchParameters,
+                        null,
+                        2,
+                      )
+                    : ''
+                }
+                className="min-h-[100px] w-full font-mono text-xs"
+                onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                  const searchParameters = safeParseJSON(
+                    event.target.value,
+                    undefined,
+                  );
+                  setMarkpromptOptions({
+                    ...markpromptOptions,
+                    search: {
+                      ...markpromptOptions.search,
+                      provider: {
+                        ...(markpromptOptions.search
+                          ?.provider as AlgoliaProvider),
+                        searchParameters,
+                      },
+                    },
+                  });
+                }}
+              />
+              <a
+                href="https://www.algolia.com/doc/api-reference/search-api-parameters/"
+                target="_blank"
+                rel="noreferrer"
+                className="button-ring mt-4 mb-4 flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
+              >
+                <Info className="h-4 w-4 text-neutral-300" />
+                <span className="subtle-underline">
+                  Learn more about Algolia search parameters
+                </span>
+              </a>
+            </div>
           </Row>
         </>
       )}
