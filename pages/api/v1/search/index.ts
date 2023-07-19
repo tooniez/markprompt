@@ -248,29 +248,23 @@ export default async function handler(
   const index: Index = new FlexSearch.Document({
     cache: 100,
     preset: 'performance',
-    // tokenize: 'strict',
-    // optimize: true,
-    // resolution: 9,
     document: {
       id: 'id',
       index: [
         {
           field: 'fileTitle',
           tokenize: 'forward',
-          // resolution: 9,
+          resolution: 9,
         },
         {
           field: 'leadHeading',
           tokenize: 'forward',
-          // resolution: 8,
+          resolution: 8,
         },
         {
           field: 'content',
           tokenize: 'full',
-          // context: {
-          //   depth: 1,
-          //   resolution: 3,
-          // },
+          resolution: 5,
         },
       ],
       store: ['fileId', 'matchType', 'fileTitle', 'leadHeading', 'content'],
