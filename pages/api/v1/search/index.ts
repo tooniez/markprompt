@@ -248,27 +248,29 @@ export default async function handler(
   const index: Index = new FlexSearch.Document({
     cache: 100,
     preset: 'performance',
-    tokenize: 'full',
+    // tokenize: 'strict',
+    // optimize: true,
+    // resolution: 9,
     document: {
       id: 'id',
       index: [
         {
           field: 'fileTitle',
           tokenize: 'forward',
-          optimize: true,
-          resolution: 9,
-        },
-        {
-          field: 'content',
-          tokenize: 'strict',
-          optimize: true,
-          resolution: 6,
+          // resolution: 9,
         },
         {
           field: 'leadHeading',
           tokenize: 'forward',
-          optimize: true,
-          resolution: 8,
+          // resolution: 8,
+        },
+        {
+          field: 'content',
+          tokenize: 'full',
+          // context: {
+          //   depth: 1,
+          //   resolution: 3,
+          // },
         },
       ],
       store: ['fileId', 'matchType', 'fileTitle', 'leadHeading', 'content'],
@@ -337,6 +339,7 @@ export default async function handler(
     // For instance, searching `react` might return code snippets
     // including React imports, which adds unnecessary noise.
     const content = await removeNonStandardText(match.content);
+
     index.add({
       id: String(match.id),
       fileId: String(match.file_id),
@@ -348,13 +351,27 @@ export default async function handler(
     });
   }
 
-  // Return at most `MAX_FILE_TITLE_MATCHES` file title matches
-  const rankedResults = (
-    index.search<true>(query, limit, {
-      enrich: true,
-      suggest: true,
-    })[0]?.result || []
-  ).slice(0, limit);
+  const matchGroups = index.search<true>(query, limit, {
+    enrich: true,
+    suggest: true,
+  });
+  let c = 0;
+  const rankedResults = [];
+  const storedMatchIds: string[] = [];
+  for (const matchGroup of matchGroups) {
+    for (const result of matchGroup.result) {
+      if (c > limit) {
+        break;
+      }
+      const matchId = String(result.id);
+      if (storedMatchIds.includes(matchId)) {
+        continue;
+      }
+      storedMatchIds.push(matchId);
+      rankedResults.push(result);
+      c++;
+    }
+  }
 
   const rerankAddSectionsDelta = Date.now() - rerankAddSectionsTs;
 
