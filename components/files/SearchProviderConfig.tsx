@@ -187,6 +187,13 @@ export const SearchProviderConfig: FC<SearchProviderConfigProps> = () => {
           </Row>
         </>
       )}
+      <Row fullWidth>
+        <div className="mt-2 flex w-full flex-col">
+          <p className="rounded border border-dashed border-orange-900/50 bg-orange-900/20 p-3 text-xs text-orange-400">
+            Force retraining may be required to index your content for search.
+          </p>
+        </div>
+      </Row>
     </>
   );
 };

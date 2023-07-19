@@ -20,12 +20,14 @@ import { ToggleMessage } from '../ui/ToggleMessage';
 
 type FileDndProps = {
   isOnEmptyStateDataPanel?: boolean;
+  forceRetrain?: boolean;
   onTrainingComplete: () => void;
   className?: string;
 };
 
 export const FileDnd: FC<FileDndProps> = ({
   isOnEmptyStateDataPanel,
+  forceRetrain,
   onTrainingComplete,
 }) => {
   const supabase = useSupabaseClient();
@@ -101,6 +103,7 @@ export const FileDnd: FC<FileDndProps> = ({
       sourceId,
       'file-upload',
       pickedFiles.length,
+      !!forceRetrain,
       (i) => pickedFiles[i].path,
       async (i) => {
         const name = pickedFiles[i].name;
@@ -126,6 +129,7 @@ export const FileDnd: FC<FileDndProps> = ({
     mutateFiles,
     mutateSources,
     project?.id,
+    forceRetrain,
   ]);
 
   const hasFiles = pickedFiles?.length > 0;

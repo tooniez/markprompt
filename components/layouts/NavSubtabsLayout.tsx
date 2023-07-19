@@ -13,8 +13,8 @@ export type NavSubtabsLayoutProps = {
   noHeading?: boolean;
   width?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   subTabItems?: SubTabItem[];
-  SubHeading?: JSXElementConstructor<any>;
-  RightHeading?: JSXElementConstructor<any>;
+  SubHeading?: ReactNode;
+  RightHeading?: ReactNode;
   children?: ReactNode;
 };
 
@@ -63,13 +63,11 @@ export const NavSubtabsLayout: FC<NavSubtabsLayoutProps> = ({
                     {RightHeading && (
                       <>
                         <div className="flex-grow" />
-                        <div className="flex-none">
-                          <RightHeading />
-                        </div>
+                        <div className="flex-none">{RightHeading}</div>
                       </>
                     )}
                   </div>
-                  {SubHeading && <SubHeading />}
+                  {SubHeading}
                 </div>
               )}
               {children}

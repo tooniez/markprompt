@@ -81,15 +81,16 @@ export type State = {
     sourceId: DbSource['id'],
     sourceType: DbSource['type'],
     numFiles: number,
+    forceRetrain: boolean,
     getFilePath: (index: number) => string,
     getFileNameContent: (
       index: number,
     ) => Promise<{ name: string; content: string }>,
     onFileProcessed?: () => void,
-    forceRetrain?: boolean,
   ) => Promise<void>;
   stopGeneratingEmbeddings: () => void;
   trainAllSources: (
+    forceRetrain: boolean,
     onFileProcessed: () => void,
     onError: (message: string) => void,
   ) => void;
@@ -142,6 +143,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       sourceId: DbSource['id'],
       sourceType: DbSource['type'],
       numFiles: number,
+      forceRetrain: boolean,
       getFilePath: (index: number) => string,
       getFileNameContent: (
         index: number,
@@ -185,7 +187,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       const currentChecksum = createChecksum(nameAndContent.content);
 
       // Check the checksum (or SHA if GitHub file), and skip if equals.
-      if (prevChecksum === currentChecksum) {
+      if (prevChecksum === currentChecksum && !forceRetrain) {
         console.info('Skipping', path, '(already processed)');
         return;
       }
@@ -267,6 +269,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       sourceId: DbSource['id'],
       sourceType: DbSource['type'],
       numFiles: number,
+      forceRetrain: boolean,
       getFilePath: (index: number) => string,
       getFileNameContent: (
         index: number,
@@ -300,6 +303,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 sourceId,
                 sourceType,
                 numFiles,
+                forceRetrain,
                 getFilePath,
                 getFileNameContent,
                 onFileProcessed,
@@ -319,6 +323,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
   const _trainSource = useCallback(
     async (
       source: DbSource,
+      forceRetrain: boolean,
       onFileProcessed: () => void,
       onError: (message: string) => void,
     ) => {
@@ -341,6 +346,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               source.id,
               'github',
               fileData.length,
+              forceRetrain,
               (i) => getMarkpromptPathFromGitHubArchivePath(fileData[i].path),
               async (i) => {
                 const name = fileData[i].name;
@@ -372,6 +378,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               source.id,
               'motif',
               filesMetadata.length,
+              forceRetrain,
               (i) => filesMetadata[i].path,
               async (i) => {
                 const name = filesMetadata[i].name;
@@ -402,6 +409,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 source.id,
                 'website',
                 urls.length,
+                forceRetrain,
                 (i) => urls[i],
                 async (i) => {
                   const url = urls[i];
@@ -483,10 +491,14 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
   );
 
   const trainAllSources = useCallback(
-    async (onFileProcessed: () => void, onError: (message: string) => void) => {
+    async (
+      forceRetrain: boolean,
+      onFileProcessed: () => void,
+      onError: (message: string) => void,
+    ) => {
       setState({ state: 'fetching_data' });
       for (const source of sources) {
-        await _trainSource(source, onFileProcessed, onError);
+        await _trainSource(source, forceRetrain, onFileProcessed, onError);
       }
       setState({ state: 'idle' });
     },
