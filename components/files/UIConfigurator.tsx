@@ -1,7 +1,7 @@
 import * as Accordion from '@radix-ui/react-accordion';
 import * as Switch from '@radix-ui/react-switch';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
-import { Sparkles } from 'lucide-react';
+import { ExternalLinkIcon, Sparkles } from 'lucide-react';
 import { ChangeEvent, FC, useMemo } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
@@ -19,6 +19,7 @@ import { ButtonOrLinkWrapper } from '../ui/Button';
 import ColorPickerInput from '../ui/ColorPickerInput';
 import Input from '../ui/Input';
 import { Tag } from '../ui/Tag';
+import Link from 'next/link';
 
 type ThemeColorPickerProps = {
   colors: ThemeColors;
@@ -119,8 +120,21 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
         <Accordion.Item value="options">
           <AccordionTrigger>UI configuration</AccordionTrigger>
           <AccordionContent className="pt-4">
-            <div className="flex flex-col gap-2">
-              <Row label="Size">
+            <div className="flex flex-col">
+              <Row label="Link mapping">
+                <div className="flex flex-row items-center justify-end gap-2">
+                  <Link
+                    className="subtle-underline text-xs text-neutral-300"
+                    href="/docs#link-mapping"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Setup
+                  </Link>
+                  <ExternalLinkIcon className="h-3 w-3 text-neutral-500" />
+                </div>
+              </Row>
+              <Row className="mt-4" label="Size">
                 <ToggleGroup.Root
                   className="grid w-full grid-cols-2 overflow-hidden rounded border border-neutral-800 bg-neutral-1000 text-xs font-medium text-neutral-300"
                   type="single"

@@ -1,6 +1,7 @@
 import { AlgoliaProvider } from '@markprompt/core/dist/search';
 import * as Select from '@radix-ui/react-select';
-import { ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp, ExternalLinkIcon, Info } from 'lucide-react';
+import Link from 'next/link';
 import { ChangeEvent, FC } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
@@ -9,7 +10,6 @@ import { safeParseJSON } from '@/lib/utils.edge';
 import { Row } from './PlaygroundDashboard';
 import Input from '../ui/Input';
 import { SelectItem } from '../ui/Select';
-import { Tag } from '../ui/Tag';
 import { NoAutoTextArea } from '../ui/TextArea';
 
 type SearchProviderConfigProps = {
@@ -73,10 +73,7 @@ export const SearchProviderConfig: FC<SearchProviderConfigProps> = () => {
                 <Select.Group>
                   <SelectItem value="markprompt">
                     <div className="flex flex-row items-center gap-2">
-                      <span className="flex-grow truncate">Markprompt</span>
-                      <Tag className="flex-none" color="sky">
-                        Beta
-                      </Tag>
+                      Markprompt
                     </div>
                   </SelectItem>
                   <SelectItem value="algolia">Algolia</SelectItem>
@@ -89,6 +86,33 @@ export const SearchProviderConfig: FC<SearchProviderConfigProps> = () => {
           </Select.Portal>{' '}
         </Select.Root>
       </Row>
+      {markpromptOptions.search?.provider?.name !== 'algolia' && (
+        <>
+          <Row label="Link mapping" indented collapseMargin>
+            <div className="flex flex-row items-center justify-end gap-2">
+              <Link
+                className="subtle-underline text-xs text-neutral-300"
+                href="/docs#link-mapping"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Setup
+              </Link>
+              <ExternalLinkIcon className="h-3 w-3 text-neutral-500" />
+            </div>
+          </Row>
+          <Row fullWidth>
+            <div className="mt-2 flex w-full flex-col">
+              <p className="rounded border border-dashed border-orange-900/50 bg-orange-900/20 p-3 text-xs text-orange-400">
+                The Markprompt search provider is experimental. Retraining with
+                the &ldquo;force retrain&rdquo; option may be required to make
+                your content available for search.
+              </p>
+            </div>
+          </Row>
+        </>
+      )}
+
       {markpromptOptions.search?.provider?.name === 'algolia' && (
         <>
           <Row label="API key" indented collapseMargin>
@@ -195,13 +219,6 @@ export const SearchProviderConfig: FC<SearchProviderConfigProps> = () => {
           </Row>
         </>
       )}
-      <Row fullWidth>
-        <div className="mt-2 flex w-full flex-col">
-          <p className="rounded border border-dashed border-orange-900/50 bg-orange-900/20 p-3 text-xs text-orange-400">
-            Force retraining may be required to index your content for search.
-          </p>
-        </div>
-      </Row>
     </>
   );
 };
