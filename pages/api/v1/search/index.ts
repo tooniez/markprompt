@@ -3,14 +3,13 @@ import { createClient } from '@supabase/supabase-js';
 import FlexSearch from 'flexsearch';
 import { uniq } from 'lodash-es';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { remark } from 'remark';
-import remarkGfm from 'remark-gfm';
-// import strip from 'strip-markdown';
+import { isPresent } from 'ts-is-present';
 
 import { track } from '@/lib/posthog';
 import {
   buildFileReferenceFromMatchResult,
   buildSectionReferenceFromMatchResult,
+  inferFileTitle,
   stripMarkdown,
 } from '@/lib/utils';
 import { safeParseInt, safeParseJSON } from '@/lib/utils.edge';
@@ -32,8 +31,16 @@ type FTSFileTitleResult =
   Database['public']['Functions']['fts_file_title']['Returns'][number];
 
 type Index = FlexSearch.Document<
-  { id: string } & SearchResult,
-  ['file', 'meta', 'content', 'matchType']
+  // { id: string } & SearchResult,
+  {
+    id: string;
+    fileId: string;
+    matchType: SearchResult['matchType'];
+    fileTitle?: string | undefined;
+    leadHeading?: string | undefined;
+    content?: string | undefined;
+  },
+  ['fileId', 'matchType', 'fileTitle', 'leadHeading', 'content']
 >;
 
 type Data =
@@ -57,7 +64,8 @@ const removeNonStandardText = async (content: string) => {
     //   await remark().use(remarkGfm).use(strip).process(content.trim()),
     // )
     .replace(/\s+/g, ' ')
-    .replace(/\\n/g, ' ');
+    .replace(/\\n/g, ' ')
+    .replace(/\\/g, '');
   return plainText;
 };
 
@@ -245,7 +253,7 @@ export default async function handler(
       id: 'id',
       index: [
         {
-          field: 'file:meta:title',
+          field: 'fileTitle',
           tokenize: 'forward',
           optimize: true,
           resolution: 9,
@@ -257,13 +265,13 @@ export default async function handler(
           resolution: 6,
         },
         {
-          field: 'meta:leadHeading:value',
+          field: 'leadHeading',
           tokenize: 'forward',
           optimize: true,
           resolution: 8,
         },
       ],
-      store: ['file', 'meta', 'content', 'matchType'],
+      store: ['fileId', 'matchType', 'fileTitle', 'leadHeading', 'content'],
     },
     context: {
       resolution: 9,
@@ -281,21 +289,17 @@ export default async function handler(
   for (const match of _fileTitleDBMatches || []) {
     const fileData = fileAugmentationData.find((f) => f.id === match.id);
     if (fileData) {
-      const fileReference = await buildFileReferenceFromMatchResult(
-        fileData.path,
-        fileData.meta,
-        fileData.source.type,
-        fileData.source.data,
-      );
+      const title = await inferFileTitle(fileData.meta, fileData.path);
 
-      if (fileReference.title) {
-        fileTitles.push(fileReference.title);
+      if (title) {
+        fileTitles.push(title);
       }
 
       index.add({
-        id: `${match.id}`,
+        id: String(match.id),
+        fileId: String(match.id),
         matchType: 'title',
-        file: fileReference,
+        fileTitle: title,
       });
     }
   }
@@ -303,10 +307,6 @@ export default async function handler(
   const rerankAddFilesDelta = Date.now() - rerankAddFilesTs;
 
   const rerankAddSectionsTs = Date.now();
-  let sectionReferenceDelta = 0;
-  const sectionReferenceDeltas = [];
-  let removeNonStandardTextDelta = 0;
-  const removeNonStandardTextDeltas = [];
 
   for (const match of _fileSectionContentDBMatches || []) {
     const fileData = fileAugmentationData.find((f) => f.id === match.file_id);
@@ -332,46 +332,20 @@ export default async function handler(
       ? 'leadHeading'
       : 'content';
 
-    const buildReferenceTs = Date.now();
-    const sectionReference = await buildSectionReferenceFromMatchResult(
-      fileData.path,
-      fileData.meta,
-      fileData.source.type,
-      fileData.source.data,
-      sectionMeta,
-    );
-    const d = Date.now() - buildReferenceTs;
-    if (d > 20) {
-      console.debug(
-        JSON.stringify({
-          path: fileData.path,
-          meta: fileData.meta,
-          type: fileData.source.type,
-          data: fileData.source.data,
-          sectionMeta,
-        }),
-      );
-    }
-    sectionReferenceDelta += d;
-    sectionReferenceDeltas.push(d);
-
     // At this stage, we remove all non-standard text, to ensure
     // we only search parts that will actually be shown to the user.
     // For instance, searching `react` might return code snippets
-    // include React imports, but code is removed from the search
-    // results in the KWIC code below, so it is unintuitive to include
-    // them.
-    const removeNonStandardTextTs = Date.now();
+    // including React imports, which adds unnecessary noise.
     const content = await removeNonStandardText(match.content);
-    removeNonStandardTextDeltas.push();
     index.add({
-      id: `${match.id}`,
+      id: String(match.id),
+      fileId: String(match.file_id),
       matchType,
-      ...sectionReference,
       content,
+      ...(sectionMeta?.leadHeading?.value
+        ? { leadHeading: sectionMeta?.leadHeading?.value }
+        : {}),
     });
-    removeNonStandardTextDelta += Date.now() - removeNonStandardTextTs;
-    removeNonStandardTextDeltas.push(Date.now() - removeNonStandardTextTs);
   }
 
   // Return at most `MAX_FILE_TITLE_MATCHES` file title matches
@@ -380,9 +354,7 @@ export default async function handler(
       enrich: true,
       suggest: true,
     })[0]?.result || []
-  )
-    .slice(0, limit)
-    .map((r) => r.doc);
+  ).slice(0, limit);
 
   const rerankAddSectionsDelta = Date.now() - rerankAddSectionsTs;
 
@@ -392,18 +364,74 @@ export default async function handler(
 
   const kwicTs = Date.now();
 
-  const results = await Promise.all(
-    rankedResults.map(async (r) => {
-      const { content, ...rest } = r;
-      return {
-        ...rest,
-        ...(content && !!includeSectionContent ? { content } : {}),
-        ...(content
-          ? { snippet: await createKWICSnippet(content, query) }
-          : {}),
-      };
-    }),
-  );
+  // We add as little info as possible to the indexes. In particular, we
+  // don't build the full section references during FlexSearch search,
+  // as these operations are expensive: some take >20ms, which is not ideal
+  // when we need to process all 50 results returning from the database query.
+  // Only when we have the final result set, with `limit` imposed, do we
+  // build the full SearchResult object.
+  const results: SearchResult[] = (
+    await Promise.all(
+      rankedResults.map(async (r) => {
+        if (r.doc.matchType === 'title') {
+          const matchId = String(r.id);
+          const fileDataId = (_fileTitleDBMatches || []).find(
+            (m) => String(m.id) === matchId,
+          );
+          const fileData = fileAugmentationData.find(
+            (f) => f.id === fileDataId?.id,
+          );
+          if (!fileData) {
+            return undefined;
+          }
+          const fileReference = await buildFileReferenceFromMatchResult(
+            fileData.path,
+            fileData.meta,
+            fileData.source.type,
+            fileData.source.data,
+          );
+
+          return {
+            matchType: r.doc.matchType,
+            file: fileReference,
+          };
+        } else {
+          const fileData = fileAugmentationData.find(
+            (f) => String(f.id) === r.doc.fileId,
+          );
+          if (!fileData) {
+            return undefined;
+          }
+          const fileSectionData = (_fileSectionContentDBMatches || []).find(
+            (m) => String(m.id) === String(r.id),
+          );
+
+          if (!fileSectionData) {
+            return undefined;
+          }
+
+          const content = r.doc.content;
+
+          const sectionReference = await buildSectionReferenceFromMatchResult(
+            fileData.path,
+            fileData.meta,
+            fileData.source.type,
+            fileData.source.data,
+            fileSectionData.meta as any,
+          );
+
+          return {
+            matchType: r.doc.matchType,
+            ...sectionReference,
+            ...(content && !!includeSectionContent ? { content } : {}),
+            ...(content
+              ? { snippet: await createKWICSnippet(content, query) }
+              : {}),
+          };
+        }
+      }),
+    )
+  ).filter(isPresent);
 
   const kwicDelta = Date.now() - kwicTs;
 
@@ -419,12 +447,6 @@ export default async function handler(
         index: rerankIndexDelta,
         addFiles: rerankAddFilesDelta,
         addSections: rerankAddSectionsDelta,
-        sectionReference: sectionReferenceDelta,
-        removeNonStandardText: removeNonStandardTextDelta,
-        sectionReferenceDeltas: JSON.stringify(sectionReferenceDeltas),
-        removeNonStandardTextDeltas: JSON.stringify(
-          removeNonStandardTextDeltas,
-        ),
       },
       kwic: kwicDelta,
     },
