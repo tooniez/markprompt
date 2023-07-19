@@ -992,9 +992,6 @@ const processTitle = async (
     // IMPORTANT: this remark code takes substantial time, and slows down
     // search results. Use only when stricly needed
     return stripMarkdown(title.trim());
-    // return String(
-    //   await remark().use(remarkGfm).use(strip).process(title),
-    // ).trim();
   }
 
   return title.trim();

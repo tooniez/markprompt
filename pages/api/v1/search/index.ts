@@ -304,7 +304,9 @@ export default async function handler(
 
   const rerankAddSectionsTs = Date.now();
   let sectionReferenceDelta = 0;
+  const sectionReferenceDeltas = [];
   let removeNonStandardTextDelta = 0;
+  const removeNonStandardTextDeltas = [];
 
   for (const match of _fileSectionContentDBMatches || []) {
     const fileData = fileAugmentationData.find((f) => f.id === match.file_id);
@@ -339,6 +341,7 @@ export default async function handler(
       sectionMeta,
     );
     sectionReferenceDelta += Date.now() - buildReferenceTs;
+    sectionReferenceDeltas.push(Date.now() - buildReferenceTs);
 
     // At this stage, we remove all non-standard text, to ensure
     // we only search parts that will actually be shown to the user.
@@ -348,6 +351,7 @@ export default async function handler(
     // them.
     const removeNonStandardTextTs = Date.now();
     const content = await removeNonStandardText(match.content);
+    removeNonStandardTextDeltas.push();
     index.add({
       id: `${match.id}`,
       matchType,
@@ -355,6 +359,7 @@ export default async function handler(
       content,
     });
     removeNonStandardTextDelta += Date.now() - removeNonStandardTextTs;
+    removeNonStandardTextDeltas.push(Date.now() - removeNonStandardTextTs);
   }
 
   // Return at most `MAX_FILE_TITLE_MATCHES` file title matches
@@ -404,6 +409,10 @@ export default async function handler(
         addSections: rerankAddSectionsDelta,
         sectionReference: sectionReferenceDelta,
         removeNonStandardText: removeNonStandardTextDelta,
+        sectionReferenceDeltas: JSON.stringify(sectionReferenceDeltas),
+        removeNonStandardTextDeltas: JSON.stringify(
+          removeNonStandardTextDeltas,
+        ),
       },
       kwic: kwicDelta,
     },
