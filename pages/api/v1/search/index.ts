@@ -340,8 +340,20 @@ export default async function handler(
       fileData.source.data,
       sectionMeta,
     );
-    sectionReferenceDelta += Date.now() - buildReferenceTs;
-    sectionReferenceDeltas.push(Date.now() - buildReferenceTs);
+    const d = Date.now() - buildReferenceTs;
+    if (d > 20) {
+      console.debug(
+        JSON.stringify({
+          path: fileData.path,
+          meta: fileData.meta,
+          type: fileData.source.type,
+          data: fileData.source.data,
+          sectionMeta,
+        }),
+      );
+    }
+    sectionReferenceDelta += d;
+    sectionReferenceDeltas.push(d);
 
     // At this stage, we remove all non-standard text, to ensure
     // we only search parts that will actually be shown to the user.
