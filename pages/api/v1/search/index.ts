@@ -5,12 +5,13 @@ import { uniq } from 'lodash-es';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { remark } from 'remark';
 import remarkGfm from 'remark-gfm';
-import strip from 'strip-markdown';
+// import strip from 'strip-markdown';
 
 import { track } from '@/lib/posthog';
 import {
   buildFileReferenceFromMatchResult,
   buildSectionReferenceFromMatchResult,
+  stripMarkdown,
 } from '@/lib/utils';
 import { safeParseInt, safeParseJSON } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
@@ -51,9 +52,10 @@ const removeNonStandardText = async (content: string) => {
   // Remove Markdown formatting, remove leadHeading, and trim around
   // the keyword. This creates a snippet suitable for displaying in
   // search results.
-  const plainText = String(
-    await remark().use(remarkGfm).use(strip).process(content.trim()),
-  )
+  const plainText = stripMarkdown(content.trim())
+    // const plainText = String(
+    //   await remark().use(remarkGfm).use(strip).process(content.trim()),
+    // )
     .replace(/\s+/g, ' ')
     .replace(/\\n/g, ' ');
   return plainText;
