@@ -202,19 +202,17 @@ export default async function handler(
     .select('id, path, meta, sources(data, type)')
     .in('id', matchingFileIdsFromTitleAndContent);
 
-  const fileAugmentationData = await Promise.all(
-    (_fileAugmentationData || []).map(async (d) => {
-      const { sources, ...rest } = d;
-      const source = sources as Source;
-      return {
-        ...rest,
-        source: {
-          ...(source.data ? { data: source.data } : {}),
-          type: source.type,
-        } as Source,
-      };
-    }),
-  );
+  const fileAugmentationData = (_fileAugmentationData || []).map((d) => {
+    const { sources, ...rest } = d;
+    const source = sources as Source;
+    return {
+      ...rest,
+      source: {
+        ...(source.data ? { data: source.data } : {}),
+        type: source.type,
+      } as Source,
+    };
+  });
 
   const metadataDelta = Date.now() - metadataTs;
 
@@ -363,6 +361,22 @@ export default async function handler(
           : {}),
       };
     }),
+  );
+
+  console.debug(
+    'Search',
+    JSON.stringify(
+      {
+        projectId,
+        middleware: safeParseJSON(req.query.mts as string, []),
+        ftsFileTitle: ftsFileTitleDelta,
+        ftsFileSectionContent: ftsFileSectionContentDelta,
+        metadata: metadataDelta,
+        rerank: rerankDelta,
+      },
+      null,
+      2,
+    ),
   );
 
   return res.status(200).json({

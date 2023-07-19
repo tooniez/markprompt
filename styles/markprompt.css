@@ -211,10 +211,10 @@
   @apply bg-neutral-700/40 !important;
 }
 
-.MarkpromptSearchResultTag {
+.MarkpromptSearchResultHeading {
   @apply bg-neutral-800 font-normal text-neutral-300;
 }
-[aria-selected='true'] .MarkpromptSearchResultTag {
+[aria-selected='true'] .MarkpromptSearchResultHeading {
   @apply border-neutral-900 bg-neutral-900 text-neutral-100;
 }
 

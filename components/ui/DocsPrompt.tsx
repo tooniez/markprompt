@@ -126,6 +126,7 @@ export const DocsPrompt: FC<DocsPromptProps> = ({ children, onOpenChange }) => {
           </style>
           <div className="flex h-[calc(100vh-240px)] max-h-[560px] w-full flex-grow overflow-hidden">
             <Markprompt
+              debug
               display="plain"
               showBranding={false}
               projectKey={

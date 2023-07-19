@@ -50,7 +50,6 @@ const getRateLimit = async (
     limiter: Ratelimit.fixedWindow(tokens, window),
     analytics: true,
   });
-
   return ratelimit.limit(key);
 };
 

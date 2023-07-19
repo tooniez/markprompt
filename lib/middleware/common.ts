@@ -48,6 +48,7 @@ export const getProjectIdFromToken = async (
     .from('tokens')
     .select('project_id')
     .eq('value', token)
+    .limit(1)
     .maybeSingle();
 
   return data?.project_id;

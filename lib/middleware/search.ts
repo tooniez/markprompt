@@ -12,7 +12,7 @@ import {
 } from './common';
 import { checkSearchRateLimits } from '../rate-limits';
 import { getAuthorizationToken, truncateMiddle } from '../utils';
-import { removeSchema } from '../utils.edge';
+// import { removeSchema } from '../utils.edge';
 
 // Admin access to Supabase, bypassing RLS.
 const supabaseAdmin = createClient<Database>(
@@ -24,44 +24,44 @@ export default async function SearchMiddleware(req: NextRequest) {
   const mts: any[] = [];
   let ts = Date.now();
 
-  if (process.env.NODE_ENV === 'production') {
-    // Check that IP is present and not rate limited
-    if (!req.ip) {
-      return new Response('Forbidden', { status: 403 });
-    }
+  // if (process.env.NODE_ENV === 'production') {
+  //   // Check that IP is present and not rate limited
+  //   if (!req.ip) {
+  //     return new Response('Forbidden', { status: 403 });
+  //   }
 
-    const rateLimitIPResult = await checkSearchRateLimits({
-      value: req.ip,
-      type: 'ip',
-    });
+  //   const rateLimitIPResult = await checkSearchRateLimits({
+  //     value: req.ip,
+  //     type: 'ip',
+  //   });
 
-    if (!rateLimitIPResult.result.success) {
-      console.error(
-        `[SEARCH] [RATE-LIMIT] IP ${req.ip}, origin: ${req.headers.get(
-          'origin',
-        )}`,
-      );
-      return new Response('Too many requests', { status: 429 });
-    }
-  }
+  //   if (!rateLimitIPResult.result.success) {
+  //     console.error(
+  //       `[SEARCH] [RATE-LIMIT] IP ${req.ip}, origin: ${req.headers.get(
+  //         'origin',
+  //       )}`,
+  //     );
+  //     return new Response('Too many requests', { status: 429 });
+  //   }
+  // }
 
-  const requesterOrigin = req.headers.get('origin');
-  const requesterHost = requesterOrigin && removeSchema(requesterOrigin);
+  // const requesterOrigin = req.headers.get('origin');
+  // const requesterHost = requesterOrigin && removeSchema(requesterOrigin);
 
-  if (requesterHost) {
-    // Browser requests. Check that origin is not rate-limited.
-    const rateLimitHostnameResult = await checkSearchRateLimits({
-      value: requesterHost,
-      type: 'hostname',
-    });
+  // if (requesterHost) {
+  //   // Browser requests. Check that origin is not rate-limited.
+  //   const rateLimitHostnameResult = await checkSearchRateLimits({
+  //     value: requesterHost,
+  //     type: 'hostname',
+  //   });
 
-    if (!rateLimitHostnameResult.result.success) {
-      console.error(
-        `[SEARCH] [RATE-LIMIT] IP: ${req.ip}, origin: ${requesterOrigin}`,
-      );
-      return new Response('Too many requests', { status: 429 });
-    }
-  }
+  //   if (!rateLimitHostnameResult.result.success) {
+  //     console.error(
+  //       `[SEARCH] [RATE-LIMIT] IP: ${req.ip}, origin: ${requesterOrigin}`,
+  //     );
+  //     return new Response('Too many requests', { status: 429 });
+  //   }
+  // }
 
   const token = getAuthorizationToken(req.headers.get('Authorization'));
   const projectKey = req.nextUrl.searchParams.get('projectKey');
