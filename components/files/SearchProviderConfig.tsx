@@ -9,8 +9,8 @@ import { safeParseJSON } from '@/lib/utils.edge';
 import { Row } from './PlaygroundDashboard';
 import Input from '../ui/Input';
 import { SelectItem } from '../ui/Select';
-import { NoAutoTextArea } from '../ui/TextArea';
 import { Tag } from '../ui/Tag';
+import { NoAutoTextArea } from '../ui/TextArea';
 
 type SearchProviderConfigProps = {
   className?: string;
