@@ -10,11 +10,10 @@ const Team = () => {
     <TeamSettingsLayout
       title="Plans"
       width="2xl"
-      SubHeading={() => {
-        if (!team) {
-          return <></>;
-        }
-        return (
+      SubHeading={
+        !team ? (
+          <></>
+        ) : (
           <p className="mb-6 text-sm text-neutral-500">
             You are currently on the{' '}
             <span className="font-semibold text-neutral-400">
@@ -22,8 +21,8 @@ const Team = () => {
             </span>{' '}
             plan.
           </p>
-        );
-      }}
+        )
+      }
     >
       <PlanPicker />
     </TeamSettingsLayout>

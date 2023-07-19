@@ -103,7 +103,7 @@ const Usage = () => {
     <TeamSettingsLayout
       title="Usage"
       titleComponent={<div className="flex items-center">Usage</div>}
-      RightHeading={() => (
+      RightHeading={
         <div className="flex w-full items-center gap-4">
           <div className="flex-grow" />
           <DropdownMenu.Root>
@@ -149,15 +149,13 @@ const Usage = () => {
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
         </div>
-      )}
-      SubHeading={() => {
-        return (
-          <p className="mb-6 text-sm text-neutral-500">
-            Below is a summary of your monthly usage of the query API. Dates are
-            UTC-based, and data is updated in real time.
-          </p>
-        );
-      }}
+      }
+      SubHeading={
+        <p className="mb-6 text-sm text-neutral-500">
+          Below is a summary of your monthly usage of the query API. Dates are
+          UTC-based, and data is updated in real time.
+        </p>
+      }
     >
       <BarChart
         data={barChartData}

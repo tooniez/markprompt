@@ -12,7 +12,7 @@ const Team = () => {
   return (
     <TeamSettingsLayout
       title="Projects"
-      RightHeading={() => (
+      RightHeading={
         <>
           {team?.slug && (
             <Button
@@ -24,7 +24,7 @@ const Team = () => {
             </Button>
           )}
         </>
-      )}
+      }
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {team &&

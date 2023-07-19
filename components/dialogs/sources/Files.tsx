@@ -8,9 +8,11 @@ import useUsage from '@/lib/hooks/use-usage';
 
 const FilesAddSourceDialog = ({
   onDidAddSource,
+  forceRetrain,
   children,
 }: {
   openPricingAsDialog?: boolean;
+  forceRetrain?: boolean;
   onDidAddSource?: () => void;
   children: ReactNode;
 }) => {
@@ -34,6 +36,7 @@ const FilesAddSourceDialog = ({
                   onDidAddSource?.();
                 }, 1000);
               }}
+              forceRetrain={forceRetrain}
             />
           </div>
           {!isInfiniteEmbeddingsTokensAllowance && (

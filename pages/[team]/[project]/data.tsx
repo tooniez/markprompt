@@ -1,5 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import * as Popover from '@radix-ui/react-popover';
+import * as Switch from '@radix-ui/react-switch';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import {
   SortingState,
@@ -16,7 +18,13 @@ import dayjs from 'dayjs';
 // Cf. https://github.com/iamkun/dayjs/issues/297#issuecomment-1202327426
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { isString } from 'lodash-es';
-import { MoreHorizontal, Globe, Upload } from 'lucide-react';
+import {
+  MoreHorizontal,
+  Globe,
+  Upload,
+  Settings2Icon,
+  SettingsIcon,
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -53,32 +61,26 @@ import { DbSource } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
+const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
+
 const GitHubAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/GitHub'),
-  {
-    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
-  },
+  { loading: () => Loading },
 );
 
 const MotifAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Motif'),
-  {
-    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
-  },
+  { loading: () => Loading },
 );
 
 const WebsiteAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Website'),
-  {
-    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
-  },
+  { loading: () => Loading },
 );
 
 const FilesAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Files'),
-  {
-    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
-  },
+  { loading: () => Loading },
 );
 
 const getBasePath = (pathWithFile: string) => {
@@ -173,6 +175,7 @@ const Data = () => {
     mutate: mutateFileStats,
   } = useUsage();
   const [rowSelection, setRowSelection] = useState({});
+  const [forceRetrain, setForceRetrain] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [sourceToRemove, setSourceToRemove] = useState<DbSource | undefined>(
     undefined,
@@ -315,7 +318,7 @@ const Data = () => {
     <ProjectSettingsLayout
       title="Data"
       width="2xl"
-      RightHeading={() => (
+      RightHeading={
         <div className="flex w-full items-center gap-4">
           <div className="flex-grow" />
           <StatusMessage
@@ -380,6 +383,45 @@ const Data = () => {
           )}
           {numSelected === 0 && canTrain && (
             <div className="flex flex-row items-center gap-2">
+              <Popover.Root>
+                <Popover.Trigger asChild>
+                  <button
+                    className="rounded-md p-2 text-neutral-500 outline-none transition duration-300 hover:bg-neutral-900 hover:text-neutral-400"
+                    role="button"
+                    aria-label="Configure training"
+                  >
+                    <SettingsIcon className="h-4 w-4 transform duration-300" />
+                  </button>
+                </Popover.Trigger>
+                <Popover.Portal>
+                  <Popover.Content
+                    sideOffset={0}
+                    alignOffset={-10}
+                    align="end"
+                    className="animate-menu-up z-30 mt-2 -mr-8 ml-8 w-[320px] rounded-lg border border-neutral-900 bg-neutral-1000 p-4 shadow-2xl"
+                  >
+                    <div className="flex flex-none flex-row items-center gap-2">
+                      <label
+                        className="flex-grow truncate text-sm font-normal text-neutral-300"
+                        htmlFor="product-updates"
+                      >
+                        Force retrain
+                      </label>
+                      <Switch.Root
+                        className="switch-root"
+                        checked={forceRetrain}
+                        onCheckedChange={setForceRetrain}
+                      >
+                        <Switch.Thumb className="switch-thumb" />
+                      </Switch.Root>
+                    </div>
+                    <p className="mt-2 text-xs text-neutral-400">
+                      If on, previously indexed content will be retrained, even
+                      if it hasn&apos;t changed.
+                    </p>
+                  </Popover.Content>
+                </Popover.Portal>
+              </Popover.Root>
               <Button
                 loading={
                   trainingState.state === 'loading' ||
@@ -390,6 +432,7 @@ const Data = () => {
                 onClick={async () => {
                   track('start training');
                   await trainAllSources(
+                    forceRetrain,
                     () => {
                       mutateFiles();
                     },
@@ -408,7 +451,7 @@ const Data = () => {
             </div>
           )}
         </div>
-      )}
+      }
     >
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-4">
         <div className="flex w-full flex-col gap-2">
@@ -484,7 +527,7 @@ const Data = () => {
                 <span className="truncate">Connect Motif project</span>
               </button>
             </MotifAddSourceDialog>
-            <FilesAddSourceDialog>
+            <FilesAddSourceDialog forceRetrain={forceRetrain}>
               <button
                 className={cn(
                   'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
@@ -503,6 +546,7 @@ const Data = () => {
           <div className="h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100 sm:col-span-3">
             <FileDnd
               isOnEmptyStateDataPanel
+              forceRetrain={forceRetrain}
               onTrainingComplete={() => {
                 toast.success('Processing complete.', {
                   id: 'processing-complete',

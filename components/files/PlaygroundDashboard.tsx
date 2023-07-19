@@ -1,4 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import * as Popover from '@radix-ui/react-popover';
+import * as Switch from '@radix-ui/react-switch';
 import cn from 'classnames';
 import { motion } from 'framer-motion';
 import {
@@ -8,6 +10,7 @@ import {
   Code,
   Stars,
   Share as ShareIcon,
+  SettingsIcon,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -349,6 +352,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     overlayMessageWidth: 0,
     overlayMessageHeight: 0,
   });
+  const [forceRetrain, setForceRetrain] = useState(false);
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
   const [isPlaygroundVisible, setPlaygroundVisible] = useState(true);
   const [isPlaygroundLoaded, setPlaygroundLoaded] = useState(false);
@@ -363,6 +367,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
 
   const startTraining = useCallback(async () => {
     await trainAllSources(
+      forceRetrain,
       () => {
         // Do nothing
       },
@@ -372,7 +377,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     );
     mutateFiles();
     toast.success('Done processing sources.');
-  }, [trainAllSources, mutateFiles]);
+  }, [trainAllSources, mutateFiles, forceRetrain]);
 
   const _addSource = useCallback(
     async (sourceType: SourceType, data: any) => {
@@ -713,14 +718,55 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
               numSelected={0}
             />
           )}
-          <Button
-            className="w-full"
-            variant={isTrained ? 'plain' : 'glow'}
-            loading={trainingState.state !== 'idle'}
-            onClick={startTraining}
-          >
-            Process sources
-          </Button>
+          <div className="flex flex-row items-center gap-2">
+            <Button
+              className="w-full"
+              variant={isTrained ? 'plain' : 'glow'}
+              loading={trainingState.state !== 'idle'}
+              onClick={startTraining}
+            >
+              Process sources
+            </Button>
+            <Popover.Root>
+              <Popover.Trigger asChild>
+                <button
+                  className="rounded-md p-2 text-neutral-500 outline-none transition duration-300 hover:bg-neutral-900 hover:text-neutral-400"
+                  role="button"
+                  aria-label="Configure training"
+                >
+                  <SettingsIcon className="h-5 w-5 transform duration-300" />
+                </button>
+              </Popover.Trigger>
+              <Popover.Portal>
+                <Popover.Content
+                  sideOffset={0}
+                  alignOffset={-10}
+                  align="end"
+                  className="animate-menu-up z-30 mt-2 -mr-8 ml-8 w-[320px] rounded-lg border border-neutral-900 bg-neutral-1000 p-4 shadow-2xl"
+                >
+                  <div className="flex flex-none flex-row items-center gap-2">
+                    <label
+                      className="flex-grow truncate text-sm font-normal text-neutral-300"
+                      htmlFor="product-updates"
+                    >
+                      Force retrain
+                    </label>
+                    <Switch.Root
+                      className="switch-root"
+                      checked={forceRetrain}
+                      onCheckedChange={setForceRetrain}
+                    >
+                      <Switch.Thumb className="switch-thumb" />
+                    </Switch.Root>
+                  </div>
+                  <p className="mt-2 text-xs text-neutral-400">
+                    If on, previously indexed content will be retrained, even if
+                    it hasn&apos;t changed.
+                  </p>
+                </Popover.Content>
+              </Popover.Portal>
+            </Popover.Root>
+          </div>
         </div>
       </div>
       <div className="relative col-span-2">
