@@ -65,12 +65,8 @@ const getCodeOptionsToDisplay = (
     // in store so that they are not reset if accidentally search is disabled,
     // yet we don't want the provider options to be in the code snippets if
     // search is disabled.
-    diffOptions = {
-      ...diffOptions,
-      search: {
-        enabled: false,
-      },
-    };
+    const { search, ...rest } = diffOptions;
+    diffOptions = rest;
   }
   return diffOptions;
 };

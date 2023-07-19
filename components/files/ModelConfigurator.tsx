@@ -5,7 +5,7 @@ import { ChangeEvent, FC, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 
 import {
-  isDefaultMarkpromptPromptOptions,
+  isDefaultMarkpromptModelConfiguration,
   useConfigContext,
 } from '@/lib/context/config';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';
@@ -33,12 +33,12 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
 
   const _canConfigureModel = team && canConfigureModel(team);
 
-  const _isDefaultMarkpromptPromptOptions = useMemo(() => {
-    return isDefaultMarkpromptPromptOptions(markpromptOptions);
+  const _isDefaultMarkpromptModelConfiguration = useMemo(() => {
+    return isDefaultMarkpromptModelConfiguration(markpromptOptions);
   }, [markpromptOptions]);
 
   const shouldShowCustomConfigNote =
-    team && !canConfigureModel(team) && !_isDefaultMarkpromptPromptOptions;
+    team && !canConfigureModel(team) && !_isDefaultMarkpromptModelConfiguration;
 
   return (
     <div className="flex flex-col">
@@ -51,7 +51,7 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
           <AccordionContent className="mb-4">
             <UpgradeNote showDialog>
               You can experiment with custom model configurations here. In order
-              to use them in production, please upgrade to the Pro plan.
+              to use them in production, upgrade to the Pro plan.
             </UpgradeNote>
           </AccordionContent>
         </Accordion.Item>

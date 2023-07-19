@@ -8,6 +8,7 @@ import {
 } from 'eventsource-parser';
 import type { NextRequest } from 'next/server';
 
+import { modelConfigFields } from '@/lib/config';
 import {
   CONTEXT_TOKENS_CUTOFF,
   I_DONT_KNOW,
@@ -160,12 +161,12 @@ export default async function handler(req: NextRequest) {
 
     console.debug('[COMPLETIONS] Params:', JSON.stringify(params, null, 2));
 
-    const modelInfo = stringToLLMInfo(params?.model);
     const prompt = (params.prompt as string)?.substring(0, MAX_PROMPT_LENGTH);
     const iDontKnowMessage =
       (params.i_dont_know_message as string) || // v1
       (params.iDontKnowMessage as string) || // v0
       I_DONT_KNOW;
+
     let stream = true;
     if (isFalsy(params.stream)) {
       stream = false;
@@ -213,19 +214,16 @@ export default async function handler(req: NextRequest) {
       const teamTierInfo = await getTeamTierInfo(supabaseAdmin, projectId);
       if (!teamTierInfo || !canUseCustomModelConfig(teamTierInfo)) {
         // Custom model configurations are part of the Pro and Enterprise plans.
-        params = {
-          ...params,
-          promptTemplate: undefined,
-          temperature: undefined,
-          topP: undefined,
-          frequencyPenalty: undefined,
-          presencePenalty: undefined,
-          maxTokens: undefined,
-          sectionsMatchCount: undefined,
-          sectionsMatchThreshold: undefined,
-        };
+        for (const field of modelConfigFields) {
+          params = {
+            ...params,
+            [field]: undefined,
+          };
+        }
       }
     }
+
+    const modelInfo = stringToLLMInfo(params?.model);
 
     const { byoOpenAIKey } = await getProjectConfigData(
       supabaseAdmin,

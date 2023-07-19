@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import {
-  DEFAULT_MARKPROMPT_OPTIONS,
-  MarkpromptOptions,
-} from '@markprompt/react';
+import { DEFAULT_MARKPROMPT_OPTIONS } from '@markprompt/react';
 import {
   createContext,
   FC,
@@ -13,6 +10,7 @@ import {
 
 import { SerializableMarkpromptOptions } from '@/types/types';
 
+import { modelConfigFields } from '../config';
 import useProject from '../hooks/use-project';
 import { useLocalStorage } from '../hooks/utils/use-localstorage';
 import {
@@ -137,16 +135,18 @@ const initialState: State = {
   restoreModelDefaults: () => {},
 };
 
-export const isDefaultMarkpromptPromptOptions = (
+export const isDefaultMarkpromptModelConfiguration = (
   markpromptOptions: SerializableMarkpromptOptions,
 ) => {
   // Checks whether the model config part of markpromptOptions equals
   // the default values. This is to show the upgrade note in case of
-  // a change.
-  for (const key of Object.keys(DEFAULT_MARKPROMPT_OPTIONS_GPT4.prompt!)) {
+  // a change. It needs to match with the params reset code in the
+  // completions endpoint.
+  for (const field of modelConfigFields) {
+    const option = (markpromptOptions.prompt as any)?.[field];
     if (
-      (markpromptOptions.prompt as any)?.[key] !==
-      (DEFAULT_MARKPROMPT_OPTIONS_GPT4.prompt as any)[key]
+      typeof option !== 'undefined' &&
+      option !== (DEFAULT_MARKPROMPT_OPTIONS_GPT4.prompt as any)[field]
     ) {
       return false;
     }
