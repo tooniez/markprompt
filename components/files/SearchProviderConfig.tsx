@@ -10,6 +10,7 @@ import { Row } from './PlaygroundDashboard';
 import Input from '../ui/Input';
 import { SelectItem } from '../ui/Select';
 import { NoAutoTextArea } from '../ui/TextArea';
+import { Tag } from '../ui/Tag';
 
 type SearchProviderConfigProps = {
   className?: string;
@@ -70,7 +71,14 @@ export const SearchProviderConfig: FC<SearchProviderConfigProps> = () => {
               </Select.ScrollUpButton>
               <Select.Viewport>
                 <Select.Group>
-                  <SelectItem value="markprompt">Markprompt</SelectItem>
+                  <SelectItem value="markprompt">
+                    <div className="flex flex-row items-center gap-2">
+                      <span className="flex-grow truncate">Markprompt</span>
+                      <Tag className="flex-none" color="sky">
+                        Beta
+                      </Tag>
+                    </div>
+                  </SelectItem>
                   <SelectItem value="algolia">Algolia</SelectItem>
                 </Select.Group>
               </Select.Viewport>
