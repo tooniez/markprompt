@@ -2,6 +2,7 @@ import * as Accordion from '@radix-ui/react-accordion';
 import * as Switch from '@radix-ui/react-switch';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
 import { ExternalLinkIcon, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 import { ChangeEvent, FC, useMemo } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
@@ -19,7 +20,6 @@ import { ButtonOrLinkWrapper } from '../ui/Button';
 import ColorPickerInput from '../ui/ColorPickerInput';
 import Input from '../ui/Input';
 import { Tag } from '../ui/Tag';
-import Link from 'next/link';
 
 type ThemeColorPickerProps = {
   colors: ThemeColors;
