@@ -88,6 +88,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
 ) {
+  const totalTs = Date.now();
+
   // Preflight check
   if (req.method === 'OPTIONS') {
     return new Response('ok', { status: 200 });
@@ -233,6 +235,7 @@ export default async function handler(
 
   const index: Index = new FlexSearch.Document({
     cache: 100,
+    preset: 'performance',
     tokenize: 'full',
     document: {
       id: 'id',
@@ -350,6 +353,8 @@ export default async function handler(
 
   const includeSectionContent = req.query.includeSectionContent === 'true';
 
+  const kwicTs = Date.now();
+
   const results = await Promise.all(
     rankedResults.map(async (r) => {
       const { content, ...rest } = r;
@@ -363,29 +368,17 @@ export default async function handler(
     }),
   );
 
-  console.debug(
-    'Search',
-    JSON.stringify(
-      {
-        projectId,
-        middleware: safeParseJSON(req.query.mts as string, []),
-        ftsFileTitle: ftsFileTitleDelta,
-        ftsFileSectionContent: ftsFileSectionContentDelta,
-        metadata: metadataDelta,
-        rerank: rerankDelta,
-      },
-      null,
-      2,
-    ),
-  );
+  const kwicDelta = Date.now() - kwicTs;
 
   return res.status(200).json({
     debug: {
+      total: Date.now() - totalTs,
       middleware: safeParseJSON(req.query.mts as string, []),
       ftsFileTitle: ftsFileTitleDelta,
       ftsFileSectionContent: ftsFileSectionContentDelta,
       metadata: metadataDelta,
       rerank: rerankDelta,
+      kwic: kwicDelta,
     },
     data: results,
   });
