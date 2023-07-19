@@ -233,6 +233,8 @@ export default async function handler(
 
   const rerankTs = Date.now();
 
+  const rerankIndexTs = Date.now();
+
   const index: Index = new FlexSearch.Document({
     cache: 100,
     preset: 'performance',
@@ -268,6 +270,10 @@ export default async function handler(
     },
   });
 
+  const rerankIndexDelta = Date.now() - rerankIndexTs;
+
+  const rerankAddFilesTs = Date.now();
+
   const fileTitles: string[] = [];
 
   for (const match of _fileTitleDBMatches || []) {
@@ -291,6 +297,12 @@ export default async function handler(
       });
     }
   }
+
+  const rerankAddFilesDelta = Date.now() - rerankAddFilesTs;
+
+  const rerankAddSectionsTs = Date.now();
+  let sectionReferenceDelta = 0;
+  let removeNonStandardTextDelta = 0;
 
   for (const match of _fileSectionContentDBMatches || []) {
     const fileData = fileAugmentationData.find((f) => f.id === match.file_id);
@@ -316,6 +328,7 @@ export default async function handler(
       ? 'leadHeading'
       : 'content';
 
+    const buildReferenceTs = Date.now();
     const sectionReference = await buildSectionReferenceFromMatchResult(
       fileData.path,
       fileData.meta,
@@ -323,6 +336,7 @@ export default async function handler(
       fileData.source.data,
       sectionMeta,
     );
+    sectionReferenceDelta += Date.now() - buildReferenceTs;
 
     // At this stage, we remove all non-standard text, to ensure
     // we only search parts that will actually be shown to the user.
@@ -330,6 +344,7 @@ export default async function handler(
     // include React imports, but code is removed from the search
     // results in the KWIC code below, so it is unintuitive to include
     // them.
+    const removeNonStandardTextTs = Date.now();
     const content = await removeNonStandardText(match.content);
     index.add({
       id: `${match.id}`,
@@ -337,6 +352,7 @@ export default async function handler(
       ...sectionReference,
       content,
     });
+    removeNonStandardTextDelta += Date.now() - removeNonStandardTextTs;
   }
 
   // Return at most `MAX_FILE_TITLE_MATCHES` file title matches
@@ -348,6 +364,8 @@ export default async function handler(
   )
     .slice(0, limit)
     .map((r) => r.doc);
+
+  const rerankAddSectionsDelta = Date.now() - rerankAddSectionsTs;
 
   const rerankDelta = Date.now() - rerankTs;
 
@@ -377,7 +395,14 @@ export default async function handler(
       ftsFileTitle: ftsFileTitleDelta,
       ftsFileSectionContent: ftsFileSectionContentDelta,
       metadata: metadataDelta,
-      rerank: rerankDelta,
+      rerank: {
+        total: rerankDelta,
+        index: rerankIndexDelta,
+        addFiles: rerankAddFilesDelta,
+        addSections: rerankAddSectionsDelta,
+        sectionReference: sectionReferenceDelta,
+        removeNonStandardText: removeNonStandardTextDelta,
+      },
       kwic: kwicDelta,
     },
     data: results,
