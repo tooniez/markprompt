@@ -593,10 +593,14 @@ export const generateFileEmbeddings = async (
     .insert(embeddingsData);
 
   if (error) {
-    console.error('Error storing embeddings:', JSON.stringify(error));
+    console.error(
+      'Error storing embeddings in bulk:',
+      JSON.stringify(error),
+      '- Storing one by one instead',
+    );
     errors.push({
       path: file.path,
-      message: `Error storing embeddings: ${error.message}`,
+      message: `Error storing embeddings in bulk: ${error.message} - Storing one by one instead`,
     });
     // Too large? Attempt one embedding at a time.
     for (const data of embeddingsData) {
