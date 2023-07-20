@@ -1,11 +1,33 @@
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Popover from '@radix-ui/react-popover';
 import cn from 'classnames';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Check } from 'lucide-react';
+import { useMemo } from 'react';
 import { DateRange } from 'react-day-picker';
 
 import Button from '@/components/ui/Button';
 import { Calendar } from '@/components/ui/Calendar';
+import {
+  FixedDateRange,
+  dateRangeToFixedRange,
+  fixedRangeToDateRange,
+} from '@/lib/hooks/use-insights';
+
+const toLabel = (range: FixedDateRange) => {
+  switch (range) {
+    case FixedDateRange.TODAY:
+      return 'Today';
+    case FixedDateRange.PAST_7_DAYS:
+      return 'Past 7 days';
+    case FixedDateRange.PAST_4_WEEKS:
+      return 'Past 4 weeks';
+    case FixedDateRange.PAST_3_MONTHS:
+      return 'Past 3 months';
+    case FixedDateRange.PAST_12_MONTHS:
+      return 'Past 12 months';
+  }
+};
 
 export const DateRangePicker = ({
   className,
@@ -18,21 +40,81 @@ export const DateRangePicker = ({
   setRange?: (range: DateRange | undefined) => void;
   disabled?: boolean;
 }) => {
+  const selectedFixedRange = useMemo(() => {
+    return dateRangeToFixedRange(range);
+  }, [range]);
+
   return (
     <div
-      className={cn('grid gap-2', className, {
+      className={cn('flex flex-row', className, {
         'cursor-not-allowed': disabled,
       })}
     >
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild>
+          <Button
+            variant="plain"
+            left
+            light
+            buttonSize="sm"
+            disabled={disabled}
+            asDropdown
+            squareCorners="right"
+            className={cn(
+              'justify-start text-left font-normal',
+              !range && 'text-muted-foreground',
+            )}
+          >
+            {typeof selectedFixedRange === 'undefined'
+              ? 'Custom'
+              : toLabel(selectedFixedRange)}
+          </Button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            className="animate-menu-up dropdown-menu-content"
+            sideOffset={5}
+          >
+            {Object.keys(FixedDateRange)
+              .filter((rangeKey) => isNaN(Number(rangeKey)))
+              .map((rangeKey, i) => {
+                const range =
+                  FixedDateRange[rangeKey as keyof typeof FixedDateRange];
+                const checked = range === selectedFixedRange;
+                return (
+                  <DropdownMenu.CheckboxItem
+                    key={`date-range-picker-${rangeKey}`}
+                    className="dropdown-menu-item dropdown-menu-item-indent"
+                    checked={checked}
+                    onClick={() => {
+                      setRange?.(fixedRangeToDateRange(range));
+                    }}
+                  >
+                    <>
+                      {checked && (
+                        <DropdownMenu.ItemIndicator className="dropdown-menu-item-indicator">
+                          <Check className="h-3 w-3" />
+                        </DropdownMenu.ItemIndicator>
+                      )}
+                      {toLabel(range)}
+                    </>
+                  </DropdownMenu.CheckboxItem>
+                );
+              })}
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
       <Popover.Root>
         <Popover.Trigger asChild>
           <Button
             variant="plain"
             left
             light
+            buttonSize="sm"
+            squareCorners="left"
             disabled={disabled}
             className={cn(
-              'w-[300px] justify-start text-left font-normal',
+              'justify-start text-left font-normal',
               !range && 'text-muted-foreground',
             )}
             Icon={(props) => (

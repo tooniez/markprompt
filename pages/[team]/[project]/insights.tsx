@@ -8,9 +8,7 @@ import { TopReferences } from '@/components/insights/top-references';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
 import { processQueryStats } from '@/lib/api';
-import useInsights, {
-  defaultInsightsDateRange,
-} from '@/lib/hooks/use-insights';
+import useInsights from '@/lib/hooks/use-insights';
 import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
 import { canViewInsights } from '@/lib/stripe/tiers';
@@ -41,7 +39,7 @@ const Insights = () => {
       <div className="flex cursor-not-allowed justify-start">
         <DateRangePicker
           disabled={team && !canViewInsights(team)}
-          range={dateRange ?? defaultInsightsDateRange}
+          range={dateRange}
           setRange={setDateRange}
         />
       </div>

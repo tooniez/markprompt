@@ -1,5 +1,5 @@
-import { cva } from 'class-variance-authority';
 import cn from 'classnames';
+import { ChevronDownIcon } from 'lucide-react';
 import Link from 'next/link';
 import { forwardRef, JSXElementConstructor, ReactNode } from 'react';
 
@@ -45,11 +45,13 @@ export type ButtonProps = {
   light?: boolean;
   left?: boolean;
   href?: string;
+  squareCorners?: 'right' | 'left';
   children?: ReactNode;
   target?: string;
   rel?: string;
   className?: string;
   asLink?: boolean;
+  asDropdown?: boolean;
   disabled?: boolean;
   loading?: boolean;
   loadingMessage?: string;
@@ -66,10 +68,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       light,
       href,
       left,
+      squareCorners,
       children,
       Icon,
       className,
       asLink,
+      asDropdown,
       disabled,
       loading,
       loadingMessage,
@@ -93,8 +97,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             ? className
             : cn(
                 className,
-                'button-ring relative flex select-none flex-row items-center whitespace-nowrap rounded-md border disabled:cursor-not-allowed',
+                'button-ring relative flex select-none flex-row items-center whitespace-nowrap border disabled:cursor-not-allowed',
                 {
+                  'rounded-md': !squareCorners,
+                  'rounded-l-md border-r-0': squareCorners === 'right',
+                  'rounded-r-md': squareCorners === 'left',
                   'justify-center': !left,
                   'justify-start': left,
                   'border-transparent bg-white text-neutral-900 hover:bg-neutral-300 disabled:bg-neutral-900 disabled:text-neutral-500 hover:disabled:bg-neutral-900':
@@ -155,6 +162,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         >
           {children}
         </div>
+        {asDropdown && (
+          <ChevronDownIcon className="-mr-0.5 ml-2 h-4 w-4 text-neutral-500" />
+        )}
       </Comp>
     );
   },

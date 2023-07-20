@@ -1,4 +1,3 @@
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -8,7 +7,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
@@ -133,7 +131,7 @@ export function QueriesDataTable<TData, TValue>({
   });
 
   return (
-    <div className="w-full">
+    <div className="relative flex min-h-screen w-full flex-col">
       <div className="flex items-center py-4">
         <div className="relative">
           <Input
@@ -241,6 +239,9 @@ export function QueriesDataTable<TData, TValue>({
             </Button>
           </div> */}
         </div>
+      </div>
+      <div className="sticky bottom-0 left-0 right-0 flex h-24 w-full border">
+        Bottom
       </div>
     </div>
   );
