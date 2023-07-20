@@ -46,14 +46,17 @@ const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
                 <CloudinaryImage
                   src={firstEntry.frontmatter.cover}
                   alt={firstEntry.frontmatter.title || 'Cover image'}
-                  className="h-[440px] w-full rounded-lg border border-neutral-900 object-cover"
+                  className="h-[220px] w-full rounded-lg border border-neutral-900 object-cover sm:h-[440px]"
                 />
               </div>
-              <div className="prose prose-invert col-span-2 flex flex-col pt-12 sm:prose-lg">
-                <h2 className="text-neutral-100" style={{ marginBottom: 4 }}>
+              <div className="prose prose-invert col-span-2 flex flex-col sm:prose-lg sm:pt-12">
+                <h2
+                  className="text-center text-neutral-100 sm:text-left"
+                  style={{ marginBottom: 4 }}
+                >
                   <Balancer>{firstEntry.frontmatter.title}</Balancer>
                 </h2>
-                <div className="flex flex-row items-center gap-4">
+                <div className="mt-2 flex flex-col items-center gap-4 sm:flex-row">
                   {firstEntry.frontmatter.authors && (
                     <AuthorList
                       authors={firstEntry.frontmatter.authors}
@@ -61,10 +64,10 @@ const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
                       size="sm"
                     />
                   )}
-                  <p className="mt-4 text-sm font-normal text-neutral-500 antialiased">
-                    {dayjs(firstEntry.frontmatter.date).format('LL')}
-                  </p>
                 </div>
+                <p className="mt-4 text-center text-sm font-normal text-neutral-500 antialiased sm:text-left">
+                  {dayjs(firstEntry.frontmatter.date).format('LL')}
+                </p>
 
                 <p className="mt-4 text-base font-normal text-neutral-500 antialiased">
                   {firstEntry.frontmatter.description}
