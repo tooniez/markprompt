@@ -192,13 +192,15 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
               />
             )}
             {frontmatter?.splashVideo && (
-              <Video
-                src={frontmatter?.splashVideo}
-                className="w-full rounded-lg border border-neutral-900"
-                autoPlay
-                loop
-                controls
-              />
+              <div className="mb-16">
+                <Video
+                  src={frontmatter?.splashVideo}
+                  className="w-full rounded-lg border border-neutral-900"
+                  autoPlay
+                  loop
+                  controls
+                />
+              </div>
             )}
             <div className="relative mx-auto w-full max-w-screen-md overflow-hidden">
               <ProseContainer>
