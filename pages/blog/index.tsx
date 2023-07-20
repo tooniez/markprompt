@@ -74,7 +74,7 @@ const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
                   {firstEntry.frontmatter.description}
                 </p>
 
-                <p className="mt-4 text-sm font-normal text-neutral-400 antialiased">
+                <p className="mt-4 mb-8 text-sm font-normal text-neutral-400 antialiased">
                   Read the post →
                 </p>
               </div>
