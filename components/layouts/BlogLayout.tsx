@@ -71,18 +71,21 @@ export const AuthorList = ({
   justify,
   highlight,
   linkTwitter,
+  centerOnSm,
 }: {
   authors: { name: string; avatar: string }[];
   size?: 'sm' | 'base';
   justify?: 'center';
   highlight?: boolean;
   linkTwitter?: boolean;
+  centerOnSm?: boolean;
 }) => {
   return (
     <div
-      className={cn('flex flex-row flex-wrap gap-4', {
+      className={cn('flex flex-row flex-wrap', {
         'gap-4': size === 'sm',
         'gap-8': size === 'base',
+        'justify-center gap-4 sm:justify-start': centerOnSm,
       })}
     >
       {authors?.map(

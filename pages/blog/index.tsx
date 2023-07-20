@@ -62,6 +62,7 @@ const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
                       authors={firstEntry.frontmatter.authors}
                       highlight
                       size="sm"
+                      centerOnSm
                     />
                   )}
                 </div>
