@@ -33,8 +33,10 @@ const ResourcesPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
           frontmatter.shortTitle || frontmatter.title
         } | Markprompt Resources`}
         description={frontmatter.description}
-        coverUrl={
-          frontmatter.cover || 'https://markprompt.com/static/cover.png'
+        ogImage={
+          frontmatter['og:image'] ||
+          frontmatter.cover ||
+          'https://markprompt.com/static/cover.png'
         }
       />
       <ResourcesLayout

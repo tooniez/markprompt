@@ -30,7 +30,7 @@ const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
     <>
       <SharedHead
         title="Markprompt Blog"
-        coverUrl="https://markprompt.com/static/cover-blog.png"
+        ogImage="https://markprompt.com/static/cover-blog.png"
       />
       <div className="relative mx-auto min-h-screen w-full">
         <Pattern />

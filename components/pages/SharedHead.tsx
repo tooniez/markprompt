@@ -4,15 +4,15 @@ import { FC } from 'react';
 type SharedHeadProps = {
   title: string;
   description?: string;
-  coverUrl?: string;
+  ogImage?: string;
 };
 
 export const SharedHead: FC<SharedHeadProps> = ({
   title,
   description,
-  coverUrl,
+  ogImage,
 }) => {
-  const ogImage = coverUrl ?? 'https://markprompt.com/static/cover.png';
+  const _ogImage = ogImage ?? 'https://markprompt.com/static/cover.png';
   return (
     <Head>
       <title>{title}</title>
@@ -34,7 +34,7 @@ export const SharedHead: FC<SharedHeadProps> = ({
       <meta property="og:url" content="https://markprompt.com/" />
       <meta property="og:type" content="website" />
       <meta property="og:title" content={title} />
-      <meta property="og:image" content={ogImage} />
+      <meta property="og:image" content={_ogImage} />
 
       <meta name="twitter:card" content="summary_large_image" />
       <meta property="twitter:domain" content="markprompt.com" />
@@ -46,7 +46,7 @@ export const SharedHead: FC<SharedHeadProps> = ({
           description || 'Enterprise-grade AI prompts for your website and docs'
         }
       />
-      <meta name="twitter:image" content={ogImage} />
+      <meta name="twitter:image" content={_ogImage} />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
     </Head>
   );

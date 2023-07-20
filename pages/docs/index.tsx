@@ -17,7 +17,7 @@ const DocsPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
     <>
       <SharedHead
         title="Markprompt Docs"
-        coverUrl="https://markprompt.com/static/cover-docs.png"
+        ogImage="https://markprompt.com/static/cover-docs.png"
       />
       <DocsLayout content={JSON.parse(content)} toc={toc} />
     </>
