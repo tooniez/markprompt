@@ -304,17 +304,17 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
               * BYO: Bring your own API key
             </p>
           </div> */}
-          <div className="relative mt-16 grid w-full max-w-screen-xl grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-4">
+          <div className="relative mt-16 grid w-full max-w-screen-xl grid-cols-1 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-3">
             <Blurs />
             <PricingCard
               tier={DEFAULT_TIERS.find((t) => t.id === 'hobby')!}
               cta="Get started with Hobby"
               priceLabel="Free"
             />
-            <PricingCard
+            {/* <PricingCard
               tier={DEFAULT_TIERS.find((t) => t.id === 'starter')!}
               cta="Get started with Starter"
-            />
+            /> */}
             <PricingCard
               tier={DEFAULT_TIERS.find((t) => t.id === 'pro')!}
               highlight
