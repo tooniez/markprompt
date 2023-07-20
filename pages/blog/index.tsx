@@ -52,11 +52,11 @@ const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
               <div className="prose prose-invert col-span-2 flex flex-col sm:prose-lg sm:pt-12">
                 <h2
                   className="text-center text-neutral-100 sm:text-left"
-                  style={{ marginBottom: 4 }}
+                  style={{ marginBottom: 16 }}
                 >
                   <Balancer>{firstEntry.frontmatter.title}</Balancer>
                 </h2>
-                <div className="mt-2 flex flex-col items-center gap-4 sm:flex-row">
+                <div className="flex flex-col items-center gap-4 sm:flex-row">
                   {firstEntry.frontmatter.authors && (
                     <AuthorList
                       authors={firstEntry.frontmatter.authors}
