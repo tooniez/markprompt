@@ -179,6 +179,7 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
                   authors={frontmatter.authors}
                   justify="center"
                   linkTwitter
+                  centerOnSm
                 />
               )}
             </div>
