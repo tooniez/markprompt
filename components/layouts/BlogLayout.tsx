@@ -195,6 +195,9 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
               <Video
                 src={frontmatter?.splashVideo}
                 className="w-full rounded-lg border border-neutral-900"
+                autoPlay
+                loop
+                controls
               />
             )}
             <div className="relative mx-auto w-full max-w-screen-md overflow-hidden">
