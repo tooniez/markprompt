@@ -191,6 +191,12 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
                 className="w-full rounded-lg border border-neutral-900"
               />
             )}
+            {frontmatter?.splashVideo && (
+              <Video
+                src={frontmatter?.splashVideo}
+                className="w-full rounded-lg border border-neutral-900"
+              />
+            )}
             <div className="relative mx-auto w-full max-w-screen-md overflow-hidden">
               <ProseContainer>
                 {Markdoc.renderers.react(content, React, {

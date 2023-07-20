@@ -1,6 +1,21 @@
+import cn from 'classnames';
 import Image from 'next/image';
+import { FC } from 'react';
 
-export const ContentImage = ({ src, alt, title, ...props }: any) => {
+type ContentImageProps = {
+  src: string;
+  alt: string;
+  title: string;
+  className: string;
+};
+
+export const ContentImage: FC<ContentImageProps> = ({
+  src,
+  alt,
+  title,
+  className,
+  ...props
+}) => {
   const [width, height] = src
     .split('/')
     .slice(-1)[0]
@@ -9,11 +24,11 @@ export const ContentImage = ({ src, alt, title, ...props }: any) => {
     .split('x');
   return (
     <Image
-      className="rounded"
+      className={cn(className, 'rounded')}
       alt={alt}
       src={src}
-      width={width}
-      height={height}
+      width={parseInt(width)}
+      height={parseInt(height)}
       title={title}
       {...props}
     />
