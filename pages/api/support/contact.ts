@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { type SendEmailResponse, Resend } from 'resend';
+import { Resend } from 'resend';
+import { CreateEmailResponse } from 'resend/build/src/emails/interfaces';
 
 import { checkEmailRateLimits } from '@/lib/rate-limits';
 import { isValidEmail } from '@/lib/utils';
@@ -7,7 +8,7 @@ import { isValidEmail } from '@/lib/utils';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 type Data = {
-  data?: SendEmailResponse;
+  data?: CreateEmailResponse;
   error?: any;
 };
 
