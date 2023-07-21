@@ -40,7 +40,7 @@ export const EmailPreview: FC<EmailPreviewProps> = ({
       <div className="relative flex min-h-screen w-full justify-center overflow-y-auto px-8 pt-8 pb-[200px]">
         <div className="fixed inset-0 z-0 bg-neutral-900" />
         <div className="z-10 w-full max-w-screen-lg overflow-hidden rounded-md bg-neutral-50 px-20 py-8 shadow-xl">
-          <div className="mx-auto max-w-[480px] border border-dashed border-neutral-200 bg-white p-0">
+          <div className="mx-auto max-w-[480px] border border-dashed border-neutral-200 bg-white p-0 text-neutral-900">
             <Template
               date={_date}
               markdown={markdown}

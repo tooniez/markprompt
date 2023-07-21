@@ -9,6 +9,7 @@ import { FC } from 'react';
 
 import { SharedHead } from '@/components/pages/SharedHead';
 
+// SSR: false to avoid hydration warnings.
 const EmailPreview = dynamic(() => import('@/components/emails/Preview'), {
   ssr: false,
 });
