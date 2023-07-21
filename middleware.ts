@@ -2,6 +2,7 @@ import { NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 
 import AppMiddleware from './lib/middleware/app';
 import CompletionsMiddleware from './lib/middleware/completions';
+import EmailMiddleware from './lib/middleware/email';
 import EmbedMiddleware from './lib/middleware/embed';
 import SearchMiddleware from './lib/middleware/search';
 import MatchSectionsMiddleware from './lib/middleware/sections';
@@ -29,13 +30,16 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
     return EmbedMiddleware(req);
   }
 
+  const path = req.nextUrl.pathname;
   if (hostname === getAppHost()) {
-    return AppMiddleware(req);
+    if (path?.startsWith('/emails')) {
+      return EmailMiddleware(req);
+    } else {
+      return AppMiddleware(req);
+    }
   }
 
   if (hostname === 'api.markprompt.com' || hostname === 'api.localhost:3000') {
-    const path = req.nextUrl.pathname;
-
     if (
       path?.startsWith('/completions') ||
       path?.startsWith('/v1/completions')
