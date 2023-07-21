@@ -49,7 +49,7 @@ export const EmailPreview: FC<EmailPreviewProps> = ({
             />
           </div>
         </div>
-        <div className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-end bg-white px-8 py-6 shadow-2xl">
+        <div className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-end bg-white px-8 py-6 text-neutral-900 shadow-2xl">
           <div
             className="grid w-full grid-cols-2 gap-y-2 gap-x-4 truncate text-sm"
             style={{
