@@ -17,7 +17,7 @@ export default function Document() {
         <link rel="manifest" href="/static/favicons/site.webmanifest" />
         <meta name="theme-color" content="#4a4a4a" />
       </Head>
-      <body>
+      <body id="app">
         <Main />
         <NextScript />
       </body>
