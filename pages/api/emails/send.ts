@@ -12,10 +12,6 @@ import { Database } from '@/types/supabase';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const SENDER_EMAIL = `${process.env
-  .MARKPROMPT_NEWSLETTER_EMAIL_SENDER_NAME!} <${process.env
-  .MARKPROMPT_NEWSLETTER_EMAIL_SENDER_EMAIL!}>`;
-
 type Data = {
   data?: CreateEmailResponse;
   error?: string;
@@ -62,7 +58,9 @@ export default async function handler(
 
   try {
     const data = await resend.emails.send({
-      from: SENDER_EMAIL,
+      from: `${process.env.MARKPROMPT_NEWSLETTER_SENDER_NAME!} <${process.env
+        .MARKPROMPT_NEWSLETTER_SENDER_EMAIL!}>`,
+      reply_to: process.env.MARKPROMPT_NEWSLETTER_REPLY_TO!,
       to: recipients,
       subject: req.body.subject,
       text,
