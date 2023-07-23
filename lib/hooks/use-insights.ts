@@ -1,13 +1,14 @@
-import { addMonths } from 'date-fns';
 import {
   add,
-  format,
   isToday,
   isSameDay,
   startOfDay,
   endOfDay,
+  parseISO,
+  formatISO,
 } from 'date-fns';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { utcToZonedTime } from 'date-fns-tz';
+import { useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import useSWR from 'swr';
 
@@ -16,14 +17,12 @@ import {
   Project,
   PromptQueryStat,
   ReferenceWithOccurrenceCount,
-  SerializedDateRange,
 } from '@/types/types';
 
 import useProject from './use-project';
 import useTeam from './use-team';
-import { useLocalStorage } from './utils/use-localstorage';
 import { canViewInsights } from '../stripe/tiers';
-import { fetcher } from '../utils';
+import { REFERENCE_TIMEZONE, fetcher } from '../utils';
 
 export enum FixedDateRange {
   TODAY = 0,
@@ -74,133 +73,139 @@ export const dateRangeToFixedRange = (
   return FixedDateRange.PAST_3_MONTHS;
 };
 
-export const fixedRangeToDateRange = (
-  range: FixedDateRange | undefined,
-): DateRange => {
+export const dateRangeToDateRangeZonedTime = (dateRangeUTC: DateRange) => {
   return {
-    from: getFixedDateRangeStart(
-      typeof range !== 'undefined' ? range : FixedDateRange.PAST_3_MONTHS,
-    ),
-    to: endOfDay(new Date()),
+    from:
+      dateRangeUTC.from &&
+      utcToZonedTime(dateRangeUTC.from, REFERENCE_TIMEZONE),
+    to: dateRangeUTC.to && utcToZonedTime(dateRangeUTC.to, REFERENCE_TIMEZONE),
   };
 };
 
-// const serializeRange = (range: DateRange) => {
-//   return {
-//     from: range.from?.getTime(),
-//     to: range.to?.getTime(),
-//   };
-// };
+export const fixedRangeToDateRangeZonedTime = (
+  range: FixedDateRange | undefined,
+): DateRange => {
+  return dateRangeToDateRangeZonedTime({
+    from: getFixedDateRangeStart(
+      typeof range === 'number' && !isNaN(range)
+        ? range
+        : FixedDateRange.PAST_3_MONTHS,
+    ),
+    to: endOfDay(new Date()),
+  });
+};
 
-// const deserializeRange = (range: {
-//   from: number | undefined;
-//   to: number | undefined;
-// }): DateRange => {
-//   return {
-//     from: range.from ? new Date(range.from) : undefined,
-//     to: range.to ? new Date(range.to) : undefined,
-//   };
-// };
-
-// export const defaultInsightsDateRange = {
-//   from: addMonths(new Date(), -1),
-//   to: new Date(),
-// };
-// const defaultSerializedDateRange = serializeRange(defaultInsightsDateRange);
-
-const getStoredRange = (projectId: Project['id'] | undefined): DateRange => {
+const getStoredRangeOrDefaultZonedTime = (
+  projectId: Project['id'] | undefined,
+): DateRange => {
   if (projectId) {
     const storedFixedRange = localStorage.getItem(
       `${projectId}:insights:date-range`,
     );
     try {
       if (storedFixedRange) {
-        return fixedRangeToDateRange(parseInt(storedFixedRange));
+        return fixedRangeToDateRangeZonedTime(parseInt(storedFixedRange));
       }
     } catch {
       // Do nothing
     }
   }
-  return fixedRangeToDateRange(FixedDateRange.PAST_3_MONTHS);
+  return fixedRangeToDateRangeZonedTime(FixedDateRange.PAST_3_MONTHS);
 };
 
 export default function useInsights() {
   const { team } = useTeam();
   const { project } = useProject();
   const [page, setPage] = useState(0);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(
-    fixedRangeToDateRange(FixedDateRange.PAST_3_MONTHS),
-  );
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   useEffect(() => {
     if (project?.id) {
-      setDateRange(getStoredRange(project.id));
+      setDateRange(getStoredRangeOrDefaultZonedTime(project.id));
     }
   }, [project?.id]);
 
   useEffect(() => {
-    if (dateRange && project?.id) {
-      const fixedDateRange = dateRangeToFixedRange(dateRange);
+    if (!dateRange || !project?.id) {
+      return;
+    }
+    const fixedDateRange = dateRangeToFixedRange(dateRange);
+    if (fixedDateRange) {
       localStorage.setItem(
         `${project?.id}:insights:date-range`,
         String(fixedDateRange),
       );
     }
+    // When switching date ranges, reset page to 0
+    setPage(0);
   }, [dateRange, project?.id]);
 
-  const from = dateRange?.from?.getTime();
-  const to = dateRange?.to?.getTime();
+  const fromISO = dateRange?.from && formatISO(dateRange?.from);
+  const toISO = dateRange?.to && formatISO(dateRange?.to);
+  const limit = team && canViewInsights(team) ? 20 : 3;
 
   const {
-    data: queries,
-    mutate,
+    data,
+    mutate: mutateQueries,
     error: queriesError,
   } = useSWR(
-    project?.id && from && to
-      ? `/api/project/${
-          project.id
-        }/insights/queries?page=${page}&from=${from}&to=${to}&limit=${
-          team && canViewInsights(team) ? 20 : 3
-        }`
+    project?.id && fromISO && toISO
+      ? `/api/project/${project.id}/insights/queries?page=${page}&from=${fromISO}&to=${toISO}&limit=${limit}`
       : null,
-    fetcher<PromptQueryStat[]>,
+    fetcher<{ queries: PromptQueryStat[] }>,
   );
 
-  const loadingQueries = !queries && !queriesError;
-
   const { data: topReferences, error: topReferencesError } = useSWR(
-    project?.id && from && to
+    project?.id && fromISO && toISO
       ? `/api/project/${
           project.id
-        }/insights/references?from=${from}&to=${to}&limit=${
+        }/insights/references?from=${fromISO}&to=${toISO}&limit=${
           team && canViewInsights(team) ? 20 : 2
         }`
       : null,
     fetcher<ReferenceWithOccurrenceCount[]>,
   );
 
-  const loadingTopReferences = !topReferences && !topReferencesError;
+  // Important: queriesHistogramResponse returns bins with timestamps in UTC.
+  // So for instance, if there is an event on 7/19 at 1pm in PST time zone,
+  // the histogram will return 7/19 00:00 in UTC, which is correct. We should
+  // treat that as 7/19 in local time zone without the time info, otherwise
+  // it would map to 7/18 in PST time.
+  const { data: queriesHistogramResponse, error: queriesHistogramError } =
+    useSWR(
+      project?.id && fromISO && toISO
+        ? `/api/project/${project.id}/insights/queries-histogram?from=${fromISO}&to=${toISO}`
+        : null,
+      fetcher<{ date: string; count: number }[]>,
+    );
 
-  const { data: queriesHistogram, error: queriesHistogramError } = useSWR(
-    project?.id && from && to
-      ? `/api/project/${project.id}/insights/queries-histogram?from=${from}&to=${to}`
-      : null,
-    fetcher<DateCountHistogramEntry[]>,
+  console.log(
+    'queriesHistogramResponse',
+    JSON.stringify(queriesHistogramResponse, null, 2),
   );
-
-  const loadingQueriesHistogram = !queriesHistogram && !queriesHistogramError;
+  // Parse all dates here, once and for all
+  const queriesHistogram = useMemo(() => {
+    return queriesHistogramResponse?.map(
+      (d) =>
+        ({
+          count: d.count,
+          date: parseISO(d.date),
+        } as DateCountHistogramEntry),
+    );
+  }, [queriesHistogramResponse]);
 
   return {
-    queries,
+    queries: data?.queries,
     topReferences,
-    loadingQueries,
-    loadingTopReferences,
     queriesHistogram,
-    loadingQueriesHistogram,
     dateRange,
     setDateRange,
     page,
     setPage,
-    mutate,
+    mutateQueries,
+    loadingQueries: !data?.queries && !queriesError,
+    loadingTopReferences: !topReferences && !topReferencesError,
+    loadingQueriesHistogram: !queriesHistogram && !queriesHistogramError,
+    hasMorePages: data?.queries?.length === limit,
   };
 }

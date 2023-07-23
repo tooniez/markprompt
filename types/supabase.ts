@@ -943,6 +943,19 @@ export interface Database {
           id: number
         }[]
       }
+      get_insights_query_histogram: {
+        Args: {
+          project_id: string
+          from_tz: string
+          to_tz: string
+          tz: string
+          trunc_interval: string
+        }
+        Returns: {
+          date: string
+          occurrences: number
+        }[]
+      }
       ivfflathandler: {
         Args: {
           "": unknown

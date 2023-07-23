@@ -12,7 +12,7 @@ type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export type TimeInterval = '1h' | '24h' | '7d' | '30d' | '3m' | '1y';
 export type TimePeriod = 'hour' | 'day' | 'weekofyear' | 'month' | 'year';
 export type HistogramStat = { start: number; end: number; value: number };
-export type DateCountHistogramEntry = { date: string; count: number };
+export type DateCountHistogramEntry = { date: Date; count: number };
 export type ProjectUsageHistogram = {
   projectId: Project['id'];
   histogram: DateCountHistogramEntry[];
@@ -106,7 +106,7 @@ export type ReferenceWithOccurrenceCount = {
 };
 export type PromptQueryHistogram = {
   date: string | null;
-  count: number | null;
+  occurrences: number | null;
 };
 
 export type FileType = 'mdx' | 'mdoc' | 'md' | 'rst' | 'html' | 'txt';

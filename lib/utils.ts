@@ -5,14 +5,12 @@ import { createHash } from 'crypto';
 import { FileReferenceFileData, FileSectionReference } from '@markprompt/core';
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
-import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import dayjs from 'dayjs';
 import { ChevronsUp, Globe, Upload } from 'lucide-react';
 import { minimatch } from 'minimatch';
 import { customAlphabet } from 'nanoid';
 import pako from 'pako';
-import { remark } from 'remark';
-import remarkGfm from 'remark-gfm';
 import tailwindColors from 'tailwindcss/colors';
 import type { Config } from 'unique-names-generator';
 import {
@@ -342,12 +340,18 @@ export const formatNumQueries = (quota: number) => {
 
 const now = new Date();
 
-export const formatShortDateTime = (date: Date) => {
+export const REFERENCE_TIMEZONE =
+  typeof Intl === 'object'
+    ? Intl.DateTimeFormat().resolvedOptions().timeZone
+    : 'UTC';
+
+export const formatShortDateTimeInTimeZone = (date: Date) => {
   // Short date and time
   // Jun 12, 8:20 PM
   // Jun 12 2022, 8:20 PM
-  return format(
+  return formatInTimeZone(
     date,
+    REFERENCE_TIMEZONE,
     `MMM d${date.getFullYear() !== now.getFullYear() ? ', yyyy' : ''}, h:mm a`,
   );
 };

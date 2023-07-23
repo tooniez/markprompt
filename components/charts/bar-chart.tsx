@@ -23,7 +23,7 @@ export type BarChartData = {
 
 type FixedBarChartProps = {
   data: BarChartData[];
-  isLoading: boolean;
+  isLoading?: boolean;
   interval: TimeInterval;
   width?: number;
   height?: number;

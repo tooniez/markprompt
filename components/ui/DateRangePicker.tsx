@@ -1,7 +1,7 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Popover from '@radix-ui/react-popover';
 import cn from 'classnames';
-import { format } from 'date-fns';
+import { format, startOfDay, endOfDay } from 'date-fns';
 import { Calendar as CalendarIcon, Check } from 'lucide-react';
 import { useMemo } from 'react';
 import { DateRange } from 'react-day-picker';
@@ -10,8 +10,9 @@ import Button from '@/components/ui/Button';
 import { Calendar } from '@/components/ui/Calendar';
 import {
   FixedDateRange,
+  dateRangeToDateRangeZonedTime,
   dateRangeToFixedRange,
-  fixedRangeToDateRange,
+  fixedRangeToDateRangeZonedTime,
 } from '@/lib/hooks/use-insights';
 
 const toLabel = (range: FixedDateRange) => {
@@ -87,7 +88,7 @@ export const DateRangePicker = ({
                     className="dropdown-menu-item dropdown-menu-item-indent"
                     checked={checked}
                     onClick={() => {
-                      setRange?.(fixedRangeToDateRange(range));
+                      setRange?.(fixedRangeToDateRangeZonedTime(range));
                     }}
                   >
                     <>
@@ -145,7 +146,17 @@ export const DateRangePicker = ({
               mode="range"
               defaultMonth={range?.from}
               selected={range}
-              onSelect={setRange}
+              onSelect={(range) => {
+                if (!range || !setRange) {
+                  return;
+                }
+                setRange(
+                  dateRangeToDateRangeZonedTime({
+                    from: range.from && startOfDay(range.from),
+                    to: range.to && endOfDay(range.to),
+                  }),
+                );
+              }}
               numberOfMonths={2}
             />
           </Popover.Content>

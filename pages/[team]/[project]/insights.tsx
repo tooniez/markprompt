@@ -25,6 +25,9 @@ const Insights = () => {
     loadingQueriesHistogram,
     dateRange,
     setDateRange,
+    page,
+    setPage,
+    hasMorePages,
   } = useInsights();
 
   useEffect(() => {
@@ -46,18 +49,15 @@ const Insights = () => {
       <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-3">
         <div className="col-span-2">
           <Card title="Latest questions">
-            {!loadingQueries && queries?.length === 0 ? (
-              <p className="mt-2 text-sm text-neutral-500">
-                No questions asked in this time range.
-              </p>
-            ) : (
-              <QueriesDataTable
-                loading={loadingQueries}
-                columns={columns}
-                data={queries || []}
-                showUpgradeMessage={team && !canViewInsights(team)}
-              />
-            )}
+            <QueriesDataTable
+              loading={loadingQueries}
+              columns={columns}
+              data={queries || []}
+              showUpgradeMessage={team && !canViewInsights(team)}
+              page={page}
+              setPage={setPage}
+              hasMorePages={hasMorePages}
+            />
           </Card>
         </div>
         <div className="flex flex-col gap-8">
@@ -83,6 +83,7 @@ const Insights = () => {
               </p>
             ) : (
               <QueriesHistogram
+                dateRange={dateRange}
                 loading={loadingQueriesHistogram}
                 data={queriesHistogram || []}
               />

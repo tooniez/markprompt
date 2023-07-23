@@ -26,12 +26,16 @@ import {
   TableRow,
 } from '@/components/ui/Table';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';
+import { REFERENCE_TIMEZONE } from '@/lib/utils';
 
 interface QueriesDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   loading?: boolean;
   showUpgradeMessage?: boolean;
+  page: number;
+  setPage: (page: number) => void;
+  hasMorePages: boolean;
 }
 
 function DataTable<TData, TValue>({
@@ -101,6 +105,9 @@ export function QueriesDataTable<TData, TValue>({
   data,
   loading,
   showUpgradeMessage,
+  page,
+  setPage,
+  hasMorePages,
 }: QueriesDataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -125,7 +132,6 @@ export function QueriesDataTable<TData, TValue>({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
-    // getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
@@ -133,20 +139,22 @@ export function QueriesDataTable<TData, TValue>({
   return (
     <div className="relative flex min-h-screen w-full flex-col">
       <div className="flex items-center py-4">
-        <div className="relative">
-          <Input
-            inputSize="sm"
-            placeholder="Search questions..."
-            value={
-              (table.getColumn('prompt')?.getFilterValue() as string) ?? ''
-            }
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              table.getColumn('prompt')?.setFilterValue(e.target.value)
-            }
-            className="max-w-sm"
-          />
-          <SkeletonPanel loading={loading} />
-        </div>
+        {!loading && data?.length > 0 && (
+          <div className="relative">
+            <Input
+              inputSize="sm"
+              placeholder="Search questions..."
+              value={
+                (table.getColumn('prompt')?.getFilterValue() as string) ?? ''
+              }
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                table.getColumn('prompt')?.setFilterValue(e.target.value)
+              }
+              className="max-w-sm"
+            />
+            <SkeletonPanel loading={loading} />
+          </div>
+        )}
         {/* <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <Button variant="plain" className="ml-auto">
@@ -176,7 +184,14 @@ export function QueriesDataTable<TData, TValue>({
       </div>
       <div className="relative flex min-h-[320px] flex-col rounded-md">
         <SkeletonTable loading={loading} />
-        <DataTable table={table} columns={columns} />
+
+        {!loading && data?.length === 0 ? (
+          <p className="mt-2 text-sm text-neutral-500">
+            No questions asked in this time range.
+          </p>
+        ) : (
+          <DataTable table={table} columns={columns} />
+        )}
         {showUpgradeMessage && !loading && (
           <div className="relative mt-2 flex flex-col">
             <div className="z-10 flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-neutral-900 bg-neutral-1100/10 p-12 backdrop-blur-md">
@@ -208,6 +223,24 @@ export function QueriesDataTable<TData, TValue>({
           </div>
         )}
       </div>
+      <div className="flex flex-row gap-2 border-t border-neutral-900 py-4">
+        <Button
+          variant="plain"
+          buttonSize="xs"
+          onClick={() => setPage(page - 1)}
+          disabled={page === 0 || loading}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="plain"
+          buttonSize="xs"
+          onClick={() => setPage(page + 1)}
+          disabled={!hasMorePages || loading}
+        >
+          Next
+        </Button>
+      </div>
       <div className="py-4">
         <div className="relative flex items-center justify-end space-x-2">
           <SkeletonPanel loading={loading} />
@@ -218,30 +251,9 @@ export function QueriesDataTable<TData, TValue>({
           </div> */}
           <div className="flex-1 text-xs text-neutral-500">
             Insights are generated every hour. Sensitive information is
-            redacted.
+            redacted. Dates are shown in {REFERENCE_TIMEZONE} time.
           </div>
-          {/* <div className="flex flex-row gap-2">
-            <Button
-              variant="plain"
-              buttonSize="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="plain"
-              buttonSize="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Next
-            </Button>
-          </div> */}
         </div>
-      </div>
-      <div className="sticky bottom-0 left-0 right-0 flex h-24 w-full border">
-        Bottom
       </div>
     </div>
   );
