@@ -10,7 +10,7 @@ import { Database } from './supabase';
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type TimeInterval = '1h' | '24h' | '7d' | '30d' | '3m' | '1y';
-export type TimePeriod = 'hour' | 'day' | 'weekofyear' | 'month' | 'year';
+export type DateGranularity = 'hour' | 'day' | 'week' | 'month' | 'year';
 export type HistogramStat = { start: number; end: number; value: number };
 export type DateCountHistogramEntry = { date: Date; count: number };
 export type ProjectUsageHistogram = {
@@ -87,7 +87,7 @@ export type OAuthToken =
   Database['public']['Tables']['user_access_tokens']['Row'];
 export type PromptConfig =
   Database['public']['Tables']['prompt_configs']['Row'];
-export type QueryStat = Database['public']['Tables']['query_stats']['Row'];
+export type DbQueryStat = Database['public']['Tables']['query_stats']['Row'];
 
 export type Source = PartialBy<Pick<DbSource, 'type' | 'data'>, 'data'>;
 export type FileData = { path: string; name: string; content: string };
@@ -95,7 +95,7 @@ export type PathContentData = Pick<FileData, 'path' | 'content'>;
 export type Checksum = Pick<DbFile, 'path' | 'checksum'>;
 export type SourceType = Pick<Source, 'type'>['type'];
 export type PromptQueryStat = Pick<
-  QueryStat,
+  DbQueryStat,
   'id' | 'created_at' | 'prompt' | 'no_response'
 >;
 export type ReferenceWithOccurrenceCount = {

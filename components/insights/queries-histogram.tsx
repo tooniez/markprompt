@@ -9,17 +9,20 @@ import {
   isSameWeek,
   isSameMonth,
   startOfDay,
+  endOfHour,
   endOfDay,
+  endOfWeek,
+  endOfMonth,
 } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { DateRange } from 'react-day-picker';
 
-import { DateCountHistogramEntry } from '@/types/types';
+import { REFERENCE_TIMEZONE } from '@/lib/utils';
+import { DateCountHistogramEntry, DateGranularity } from '@/types/types';
 
 import BarChart from '../charts/bar-chart';
 import { SkeletonTable } from '../ui/Skeletons';
-import { REFERENCE_TIMEZONE } from '@/lib/utils';
 
 type QueriesHistogramProps = {
   data: DateCountHistogramEntry[];
@@ -30,29 +33,45 @@ type QueriesHistogramProps = {
 const getHistogram = (
   data: DateCountHistogramEntry[],
   dateRange: DateRange,
-  granularity: 'hours' | 'days' | 'weeks' | 'months',
+  granularity: DateGranularity,
 ) => {
   if (!dateRange?.from || !dateRange?.to) {
     return [];
   }
 
-  const binFunction =
-    granularity === 'hours'
-      ? eachHourOfInterval
-      : granularity === 'days'
-      ? eachDayOfInterval
-      : granularity === 'weeks'
-      ? eachWeekOfInterval
-      : eachMonthOfInterval;
+  let binFunction: (interval: Interval) => Date[];
+  let compareFunction: (
+    dateLeft: Date | number,
+    dateRight: Date | number,
+  ) => boolean;
+  let endOfBinFuntion: (date: Date | number) => Date;
 
-  const compareFunction =
-    granularity === 'hours'
-      ? isSameHour
-      : granularity === 'days'
-      ? isSameDay
-      : granularity === 'weeks'
-      ? isSameWeek
-      : isSameMonth;
+  switch (granularity) {
+    case 'hour': {
+      binFunction = eachHourOfInterval;
+      compareFunction = isSameHour;
+      endOfBinFuntion = endOfHour;
+      break;
+    }
+    case 'day': {
+      binFunction = eachDayOfInterval;
+      compareFunction = isSameDay;
+      endOfBinFuntion = endOfDay;
+      break;
+    }
+    case 'week': {
+      binFunction = eachWeekOfInterval;
+      compareFunction = isSameWeek;
+      endOfBinFuntion = endOfWeek;
+      break;
+    }
+    default: {
+      binFunction = eachMonthOfInterval;
+      compareFunction = isSameMonth;
+      endOfBinFuntion = endOfMonth;
+      break;
+    }
+  }
 
   const bins = binFunction({
     start: dateRange.from,
@@ -63,36 +82,12 @@ const getHistogram = (
     let count = 0;
     for (const entry of data) {
       if (compareFunction(entry.date, bin)) {
-        console.log(
-          'Same day',
-          JSON.stringify(entry.date),
-          JSON.stringify(bin),
-        );
-        count += 1;
-      } else {
-        console.log(
-          'Not same day',
-          JSON.stringify(entry.date),
-          JSON.stringify(bin),
-        );
+        count += entry.count;
       }
     }
-    // for
-    // const countInBin = data
-    //   .filter((d) => {
-    //     try {
-    //       console.log('Is same day?', d.date, h, compareFunction(d.date, h));
-    //       return compareFunction(d.date, h);
-    //     } catch {
-    //       return false;
-    //     }
-    //   })
-    //   .reduce((acc, d) => {
-    //     return acc + d.count;
-    //   }, 0);
     return {
       start: startOfDay(bin).getTime(),
-      end: endOfDay(bin).getTime(),
+      end: endOfBinFuntion(bin).getTime(),
       value: count,
     };
   });
@@ -115,16 +110,16 @@ export const QueriesHistogram: FC<QueriesHistogramProps> = ({
 
     if (numDays < 2) {
       // If interval is shorter than 2 days, display hour histogram
-      return getHistogram(data, dateRange, 'hours');
+      return getHistogram(data, dateRange, 'hour');
     } else if (numDays < 31) {
       // If interval is shorter than 31 days, display day histogram
-      return getHistogram(data, dateRange, 'days');
+      return getHistogram(data, dateRange, 'day');
     } else if (numDays < 95) {
-      // If interval is shorter than 95 days, display weeks histogram
-      return getHistogram(data, dateRange, 'weeks');
+      // If interval is shorter than 95 days, display week histogram
+      return getHistogram(data, dateRange, 'week');
     } else {
       // Display months histogram
-      return getHistogram(data, dateRange, 'months');
+      return getHistogram(data, dateRange, 'month');
     }
   }, [dateRange, data]);
 

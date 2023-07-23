@@ -5,6 +5,7 @@ import { ParentSize } from '@visx/responsive';
 import { scaleBand, scaleLinear } from '@visx/scale';
 import { Bar } from '@visx/shape';
 import { useTooltip, useTooltipInPortal } from '@visx/tooltip';
+import { isSameDay } from 'date-fns';
 import type { FC } from 'react';
 import { useMemo } from 'react';
 import colors from 'tailwindcss/colors';
@@ -98,6 +99,19 @@ const FixedBarChart: FC<FixedBarChartProps & ResponsiveBarChartProps> = ({
   });
 
   let tooltipTimeout: number | undefined;
+
+  const tooltipInterval = useMemo(() => {
+    if (!tooltipData?.start || !tooltipData?.end) {
+      return '';
+    }
+    if (isSameDay(tooltipData.start, tooltipData.end)) {
+      return intervalData[interval].format(tooltipData.start);
+    } else {
+      return `${intervalData[interval].format(
+        tooltipData.start,
+      )} - ${intervalData[interval].format(tooltipData.end)}`;
+    }
+  }, [interval, tooltipData?.start, tooltipData?.end]);
 
   return (
     <figure className="flex" style={{ width: parentWidth }}>
@@ -197,10 +211,7 @@ const FixedBarChart: FC<FixedBarChartProps & ResponsiveBarChartProps> = ({
               </span>{' '}
               {countLabel}
             </h3>
-            <p className="text-xs text-white/50">
-              {intervalData[interval].format(tooltipData.start)} -{' '}
-              {intervalData[interval].format(tooltipData.end)}
-            </p>
+            <p className="text-xs text-white/50">{tooltipInterval}</p>
           </div>
         </TooltipInPortal>
       )}

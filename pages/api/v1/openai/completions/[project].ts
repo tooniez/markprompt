@@ -18,8 +18,16 @@ import {
 import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
-import { getMatchingSections, storePrompt } from '@/lib/sections';
-import { canUseCustomModelConfig } from '@/lib/stripe/tiers';
+import {
+  getMatchingSections,
+  PromptNoResponseReason,
+  storePrompt,
+} from '@/lib/sections';
+import {
+  canUseCustomModelConfig,
+  getAccessibleInsightsType,
+  InsightsType,
+} from '@/lib/stripe/tiers';
 import { getProjectConfigData, getTeamTierInfo } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import {
@@ -32,6 +40,7 @@ import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
   ApiError,
+  DbQueryStat,
   FileSectionMatchResult,
   FileSectionMeta,
   OpenAIModelIdWithType,
@@ -100,6 +109,30 @@ const supabaseAdmin = createClient<Database>(
 );
 
 const allowedMethods = ['POST'];
+
+const _storePrompt = async (
+  projectId: Project['id'],
+  prompt: string,
+  responseText: string | undefined,
+  promptEmbedding: number[] | undefined,
+  errorReason: PromptNoResponseReason | undefined,
+  references: FileSectionReference[],
+  insightsType: InsightsType | undefined,
+): Promise<DbQueryStat['id'] | undefined> => {
+  // Store prompt always.
+  // Store response in >= basic insights.
+  // Store embeddings in >= advanced insights.
+  // Store references in >= basic insights.
+  return storePrompt(
+    supabaseAdmin,
+    projectId,
+    prompt,
+    insightsType ? responseText : undefined,
+    insightsType === 'advanced' ? promptEmbedding : undefined,
+    errorReason,
+    insightsType ? references : undefined,
+  );
+};
 
 const buildFullPrompt = (
   template: string,
@@ -208,6 +241,7 @@ export default async function handler(req: NextRequest) {
       return new Response('Too many requests', { status: 429 });
     }
 
+    let insightsType: InsightsType | undefined = 'advanced';
     if (!isRequestFromMarkprompt(req.headers.get('origin'))) {
       // Custom model configurations are part of the Pro and Enterprise plans
       // when used outside of the Markprompt dashboard.
@@ -221,6 +255,7 @@ export default async function handler(req: NextRequest) {
           };
         }
       }
+      insightsType = teamTierInfo && getAccessibleInsightsType(teamTierInfo);
     }
 
     const modelInfo = stringToLLMInfo(params?.model);
@@ -250,6 +285,16 @@ export default async function handler(req: NextRequest) {
       fileSections = sectionsResponse.fileSections;
       promptEmbedding = sectionsResponse.promptEmbedding;
     } catch (e) {
+      await _storePrompt(
+        projectId,
+        prompt,
+        undefined,
+        promptEmbedding,
+        'no_sections',
+        [],
+        insightsType,
+      );
+
       if (e instanceof ApiError) {
         return new Response(e.message, { status: e.code });
       } else {
@@ -346,14 +391,14 @@ export default async function handler(req: NextRequest) {
     if (!stream) {
       if (!res.ok) {
         const message = await res.text();
-        await storePrompt(
-          supabaseAdmin,
+        await _storePrompt(
           projectId,
           prompt,
-          null,
+          undefined,
           promptEmbedding,
-          true,
+          'api_error',
           references,
+          insightsType,
         );
         return new Response(
           `Unable to retrieve completions response: ${message}`,
@@ -370,14 +415,15 @@ export default async function handler(req: NextRequest) {
           'completions',
         );
         const text = getCompletionsResponseText(json, modelInfo.model);
-        await storePrompt(
-          supabaseAdmin,
+        const idk = isIDontKnowResponse(text, iDontKnowMessage);
+        const promptId = await _storePrompt(
           projectId,
           prompt,
           text,
           promptEmbedding,
-          isIDontKnowResponse(text, iDontKnowMessage),
+          idk ? 'idk' : undefined,
           references,
+          insightsType,
         );
 
         const headers = new Headers();
@@ -386,6 +432,7 @@ export default async function handler(req: NextRequest) {
           JSON.stringify({
             text,
             references,
+            promptId,
             debugInfo,
           }),
           {
@@ -402,6 +449,7 @@ export default async function handler(req: NextRequest) {
     // count.
     let responseText = '';
     let didSendHeader = false;
+    let promptId: DbQueryStat['id'] | undefined = undefined;
 
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
@@ -468,14 +516,15 @@ export default async function handler(req: NextRequest) {
           );
         }
 
-        await storePrompt(
-          supabaseAdmin,
+        const idk = isIDontKnowResponse(responseText, iDontKnowMessage);
+        promptId = await _storePrompt(
           projectId,
           prompt,
           responseText,
           promptEmbedding,
-          isIDontKnowResponse(responseText, iDontKnowMessage),
+          idk ? 'idk' : undefined,
           references,
+          insightsType,
         );
 
         // We're done, wind down
@@ -487,15 +536,18 @@ export default async function handler(req: NextRequest) {
     // Headers cannot include non-UTF-8 characters, so make sure any strings
     // we pass in the headers are properly encoded before sending.
     const headerEncoder = new TextEncoder();
-    const encodedReferences = headerEncoder
-      .encode(JSON.stringify({ references }))
+    const encodedData = headerEncoder
+      .encode(JSON.stringify({ references, promptId }))
       .toString();
+
+    const headers = new Headers();
+    headers.append('x-markprompt-data', encodedData);
+
     // const encodedDebugInfo = headerEncoder
     //   .encode(JSON.stringify(debugInfo))
     //   .toString();
-
-    const headers = new Headers();
-    headers.append('x-markprompt-data', encodedReferences);
+    // We need to make sure debug info is truncated to stay within
+    // limits of header size.
     // headers.append('x-markprompt-debug-info', encodedDebugInfo);
 
     return new Response(readableStream, { headers });

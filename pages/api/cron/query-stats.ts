@@ -21,6 +21,7 @@ import {
 type Data = {
   status?: string;
   processed?: number;
+  message?: string;
   error?: string;
 };
 
@@ -216,7 +217,11 @@ export default async function handler(
       .limit(20);
 
     if (!data) {
-      return res.status(200).send({ status: 'ok', processed: 0 });
+      return res.status(200).send({
+        status: 'ok',
+        processed: 0,
+        message: 'All queries have been processed',
+      });
     }
 
     let totalProcessed = 0;

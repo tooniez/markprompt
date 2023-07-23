@@ -20,23 +20,6 @@ const supabaseAdmin = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY || '',
 );
 
-const getTimePeriod = (
-  param: string,
-): 'hour' | 'day' | 'week' | 'month' | 'year' => {
-  switch (param) {
-    case 'hour':
-      return 'hour';
-    case 'weekofyear':
-      return 'week';
-    case 'month':
-      return 'month';
-    case 'year':
-      return 'year';
-    default:
-      return 'day';
-  }
-};
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
@@ -58,16 +41,14 @@ export default async function handler(
   const projectId = req.query.id as Project['id'];
 
   if (req.method === 'GET') {
-    const period = getTimePeriod(req.query.period as string);
-
     const { data: queries, error } = await supabaseAdmin.rpc(
       'get_insights_query_histogram',
       {
         project_id: projectId,
         from_tz: req.query.from as string,
         to_tz: req.query.to as string,
-        tz: req.query.tx as string,
-        trunc_interval: period,
+        tz: req.query.tz as string,
+        trunc_interval: (req.query.period as string) || 'day',
       },
     );
 

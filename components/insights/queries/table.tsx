@@ -139,7 +139,9 @@ export function QueriesDataTable<TData, TValue>({
   return (
     <div className="relative flex min-h-screen w-full flex-col">
       <div className="flex items-center py-4">
-        {!loading && data?.length > 0 && (
+        {/* Disable search for now since it only searches the current
+            page of results. */}
+        {false && !loading && data?.length > 0 && (
           <div className="relative">
             <Input
               inputSize="sm"
@@ -187,7 +189,9 @@ export function QueriesDataTable<TData, TValue>({
 
         {!loading && data?.length === 0 ? (
           <p className="mt-2 text-sm text-neutral-500">
-            No questions asked in this time range.
+            {page === 0
+              ? 'No questions asked in this time range.'
+              : 'No more questions asked in this time range.'}
           </p>
         ) : (
           <DataTable table={table} columns={columns} />
@@ -242,7 +246,7 @@ export function QueriesDataTable<TData, TValue>({
         </Button>
       </div>
       <div className="py-4">
-        <div className="relative flex items-center justify-end space-x-2">
+        <div className="relative flex items-center justify-end">
           <SkeletonPanel loading={loading} />
           {/* <div className="flex-1 text-sm text-neutral-500">
             {table.getFilteredSelectedRowModel().rows.length} of{' '}

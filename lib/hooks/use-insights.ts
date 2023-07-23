@@ -174,22 +174,18 @@ export default function useInsights() {
   const { data: queriesHistogramResponse, error: queriesHistogramError } =
     useSWR(
       project?.id && fromISO && toISO
-        ? `/api/project/${project.id}/insights/queries-histogram?from=${fromISO}&to=${toISO}`
+        ? `/api/project/${project.id}/insights/queries-histogram?from=${fromISO}&to=${toISO}&tz=${REFERENCE_TIMEZONE}&period=day`
         : null,
-      fetcher<{ date: string; count: number }[]>,
+      fetcher<{ date: string; occurrences: number }[]>,
     );
 
-  console.log(
-    'queriesHistogramResponse',
-    JSON.stringify(queriesHistogramResponse, null, 2),
-  );
   // Parse all dates here, once and for all
   const queriesHistogram = useMemo(() => {
     return queriesHistogramResponse?.map(
       (d) =>
         ({
-          count: d.count,
           date: parseISO(d.date),
+          count: d.occurrences,
         } as DateCountHistogramEntry),
     );
   }, [queriesHistogramResponse]);
