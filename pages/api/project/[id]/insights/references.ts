@@ -48,11 +48,6 @@ export default async function handler(
 
   if (req.method === 'GET') {
     const limit = Math.min(safeParseInt(req.query.limit as string, 50), 50);
-    const from = format(
-      new Date(parseInt(req.query.from as string)),
-      'yyyy-MM-dd',
-    );
-    const to = format(new Date(parseInt(req.query.to as string)), 'yyyy-MM-dd');
     const {
       error,
       data: references,
@@ -68,8 +63,8 @@ export default async function handler(
         | null;
     } = await supabaseAdmin.rpc('query_stats_top_references', {
       project_id: projectId,
-      from_tz: from,
-      to_tz: to,
+      from_tz: req.query.from as string,
+      to_tz: req.query.to as string,
       match_count: limit,
     });
 

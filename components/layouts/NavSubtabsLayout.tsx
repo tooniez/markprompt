@@ -1,6 +1,6 @@
 import cn from 'classnames';
 import Head from 'next/head';
-import { FC, JSXElementConstructor, ReactNode } from 'react';
+import { FC, ReactNode } from 'react';
 
 import useUser from '@/lib/hooks/use-user';
 
@@ -8,7 +8,7 @@ import { NavLayout } from './NavLayout';
 import SubTabs, { SubTabItem } from './SubTabs';
 
 export type NavSubtabsLayoutProps = {
-  title: string;
+  title?: string;
   titleComponent?: ReactNode;
   noHeading?: boolean;
   width?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';

@@ -12,7 +12,7 @@ type Data =
       status?: string;
       error?: string;
     }
-  | PromptQueryStat[];
+  | { queries: PromptQueryStat[] };
 
 const allowedMethods = ['GET'];
 
@@ -45,18 +45,13 @@ export default async function handler(
   if (req.method === 'GET') {
     const limit = Math.min(safeParseInt(req.query.limit as string, 50), 50);
     const page = safeParseInt(req.query.page as string, 0);
-    const from = format(
-      new Date(parseInt(req.query.from as string)),
-      'yyyy-MM-dd',
-    );
-    const to = format(new Date(parseInt(req.query.to as string)), 'yyyy-MM-dd');
     const { data: queries, error } = await supabaseAdmin
       .from('query_stats')
       .select('id,created_at,prompt,no_response')
       .eq('project_id', projectId)
       .eq('processed', true)
-      .gte('created_at', from)
-      .lte('created_at', to)
+      .gte('created_at', req.query.from)
+      .lte('created_at', req.query.to)
       .not('prompt', 'is', null)
       .order('created_at', { ascending: false })
       .range(page * limit, (page + 1) * (limit - 1));
@@ -69,7 +64,7 @@ export default async function handler(
       return res.status(404).json({ error: 'No results found.' });
     }
 
-    return res.status(200).json(queries);
+    return res.status(200).json({ queries: queries });
   }
 
   return res.status(400).end();

@@ -7,31 +7,51 @@ import { backOff } from 'exponential-backoff';
 import { CreateEmbeddingResponse } from 'openai';
 
 import { Database } from '@/types/supabase';
-import { ApiError, FileSectionMatchResult, Project } from '@/types/types';
+import {
+  ApiError,
+  DbQueryStat,
+  FileSectionMatchResult,
+  Project,
+} from '@/types/types';
 
 import { createEmbedding, createModeration } from './openai.edge';
 import { recordProjectTokenCount } from './tinybird';
 import { stringToLLMInfo } from './utils';
 
+export type PromptNoResponseReason = 'no_sections' | 'idk' | 'api_error';
+
 export const storePrompt = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
   prompt: string,
-  response: string | null,
-  embedding: any,
-  noResponse: boolean,
-  references: FileSectionReference[],
-) => {
-  return supabase.from('query_stats').insert([
-    {
-      project_id: projectId,
-      prompt,
-      ...(response ? { response } : {}),
-      embedding,
-      ...(noResponse ? { no_response: noResponse } : {}),
-      ...(references && references?.length > 0 ? { meta: { references } } : {}),
-    },
-  ]);
+  response: string | undefined,
+  embedding: number[] | undefined,
+  noResponseReason: PromptNoResponseReason | undefined,
+  references: FileSectionReference[] | undefined,
+): Promise<DbQueryStat['id'] | undefined> => {
+  const meta = {
+    ...(references && references?.length > 0 ? { references } : {}),
+    ...(typeof noResponseReason !== 'undefined' ? { noResponseReason } : {}),
+  };
+
+  const { data } = await supabase
+    .from('query_stats')
+    .insert([
+      {
+        project_id: projectId,
+        prompt,
+        ...(response ? { response } : {}),
+        ...(embedding ? { embedding: embedding as any } : {}),
+        ...(typeof noResponseReason !== 'undefined'
+          ? { no_response: !!noResponseReason }
+          : {}),
+        ...(Object.keys(meta).length > 0 ? { meta } : {}),
+      },
+    ])
+    .select('id')
+    .limit(1)
+    .maybeSingle();
+  return data?.id;
 };
 
 export const getMatchingSections = async (
@@ -134,15 +154,6 @@ export const getMatchingSections = async (
   if (!fileSections || fileSections?.length === 0) {
     console.error(
       `[${source.toUpperCase()}] [LOAD-EMBEDDINGS] [${projectId}] - No relevant sections found`,
-    );
-    await storePrompt(
-      supabaseAdmin,
-      projectId,
-      verbatimPrompt,
-      null,
-      promptEmbedding,
-      true,
-      [],
     );
     throw new ApiError(400, 'No relevant sections found');
   }

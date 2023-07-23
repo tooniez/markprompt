@@ -1,12 +1,10 @@
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
-import { format, parseISO } from 'date-fns';
-import { ArrowDown, ArrowUp, MoreHorizontal } from 'lucide-react';
+import { parseISO } from 'date-fns';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 
 import Button from '@/components/ui/Button';
-import { Checkbox } from '@/components/ui/Checkbox';
 import { Tag } from '@/components/ui/Tag';
-import { formatShortDateTime } from '@/lib/utils';
+import { formatShortDateTimeInTimeZone } from '@/lib/utils';
 import { PromptQueryStat } from '@/types/types';
 
 export const columns: ColumnDef<PromptQueryStat>[] = [
@@ -112,7 +110,9 @@ export const columns: ColumnDef<PromptQueryStat>[] = [
       );
     },
     cell: ({ row }) => {
-      const date = formatShortDateTime(parseISO(row.getValue('created_at')));
+      const date = formatShortDateTimeInTimeZone(
+        parseISO(row.getValue('created_at')),
+      );
       return (
         <div className="overflow-hidden truncate whitespace-nowrap text-sm text-neutral-500">
           {date}

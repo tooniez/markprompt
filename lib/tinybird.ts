@@ -64,7 +64,7 @@ export const getProjectCompletionsTokenCount = async (
 
   return response.data?.map((d: any) => {
     return {
-      date: dayjs(d['toStartOfDay(timestamp)']).toISOString(),
+      date: dayjs(d['toStartOfDay(timestamp)']).toDate(),
       count: d['count()'],
     } as DateCountHistogramEntry;
   });

@@ -17,10 +17,12 @@ export type PlanDetails = {
   tiers: Tier[];
 };
 
+export type InsightsType = 'basic' | 'advanced';
+
 export type TierDetails = {
   quotas?: { embeddings?: number; completions?: number };
   features?: {
-    insights?: { type: 'basic' | 'advanced' };
+    insights?: { type: InsightsType };
     sectionsAPI?: { enabled: boolean };
     customModelConfig?: { enabled: boolean };
     customPageFetcher?: { enabled: boolean };
@@ -254,6 +256,12 @@ export const canConfigureModel = (teamTierInfo: TeamTierInfo) => {
 export const canViewInsights = (teamTierInfo: TeamTierInfo) => {
   const insightsType = getTierDetails(teamTierInfo).features?.insights?.type;
   return insightsType === 'basic' || insightsType === 'advanced';
+};
+
+export const getAccessibleInsightsType = (
+  teamTierInfo: TeamTierInfo,
+): InsightsType | undefined => {
+  return getTierDetails(teamTierInfo).features?.insights?.type;
 };
 
 export const isCustomPageFetcherEnabled = (teamTierInfo: TeamTierInfo) => {

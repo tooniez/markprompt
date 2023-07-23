@@ -9,7 +9,7 @@ export const SkeletonTable: FC<SkeletonProps> = ({ loading }) => {
   return (
     <div
       className={cn(
-        'pointer-events-none absolute inset-0 z-10 bg-neutral-1100 transition',
+        'pointer-events-none absolute inset-0 z-0 bg-neutral-1100 transition',
         {
           'opacity-0': !loading,
         },
@@ -28,7 +28,7 @@ export const SkeletonPanel: FC<SkeletonProps> = ({ loading }) => {
   return (
     <div
       className={cn(
-        'pointer-events-none absolute inset-0 z-10 bg-neutral-1100 transition',
+        'pointer-events-none absolute inset-0 z-0 bg-neutral-1100 transition',
         {
           'opacity-0': !loading,
         },

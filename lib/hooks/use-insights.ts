@@ -1,125 +1,207 @@
-import { addMonths } from 'date-fns';
-import { useCallback, useMemo, useState } from 'react';
+import {
+  add,
+  isToday,
+  isSameDay,
+  startOfDay,
+  endOfDay,
+  parseISO,
+  formatISO,
+} from 'date-fns';
+import { utcToZonedTime } from 'date-fns-tz';
+import { useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import useSWR from 'swr';
 
 import {
   DateCountHistogramEntry,
+  Project,
   PromptQueryStat,
   ReferenceWithOccurrenceCount,
-  SerializedDateRange,
 } from '@/types/types';
 
 import useProject from './use-project';
 import useTeam from './use-team';
-import { useLocalStorage } from './utils/use-localstorage';
 import { canViewInsights } from '../stripe/tiers';
-import { fetcher } from '../utils';
+import { REFERENCE_TIMEZONE, fetcher } from '../utils';
 
-const serializeRange = (range: DateRange) => {
+export enum FixedDateRange {
+  TODAY = 0,
+  PAST_7_DAYS = 1,
+  PAST_4_WEEKS = 2,
+  PAST_3_MONTHS = 3,
+  PAST_12_MONTHS = 4,
+}
+
+const getFixedDateRangeStart = (range: FixedDateRange) => {
+  switch (range) {
+    case FixedDateRange.TODAY:
+      return startOfDay(new Date());
+    case FixedDateRange.PAST_7_DAYS:
+      return startOfDay(add(new Date(), { days: -7 }));
+    case FixedDateRange.PAST_4_WEEKS:
+      return startOfDay(add(new Date(), { weeks: -4 }));
+    case FixedDateRange.PAST_3_MONTHS:
+      return startOfDay(add(new Date(), { months: -3 }));
+    case FixedDateRange.PAST_12_MONTHS:
+      return startOfDay(add(new Date(), { months: -12 }));
+  }
+};
+
+export const dateRangeToFixedRange = (
+  range: DateRange | undefined,
+): FixedDateRange | undefined => {
+  if (!range) {
+    return FixedDateRange.PAST_3_MONTHS;
+  }
+
+  const start = range.from;
+  const end = range.to;
+
+  if (!start || !end || !isToday(end)) {
+    return undefined;
+  }
+
+  for (const rangeKey of Object.keys(FixedDateRange)) {
+    if (isNaN(Number(rangeKey))) {
+      const range = FixedDateRange[rangeKey as keyof typeof FixedDateRange];
+      if (isSameDay(start, getFixedDateRangeStart(range))) {
+        return range;
+      }
+    }
+  }
+
+  return FixedDateRange.PAST_3_MONTHS;
+};
+
+export const dateRangeToDateRangeZonedTime = (dateRangeUTC: DateRange) => {
   return {
-    from: range.from?.getTime(),
-    to: range.to?.getTime(),
+    from:
+      dateRangeUTC.from &&
+      utcToZonedTime(dateRangeUTC.from, REFERENCE_TIMEZONE),
+    to: dateRangeUTC.to && utcToZonedTime(dateRangeUTC.to, REFERENCE_TIMEZONE),
   };
 };
 
-const deserializeRange = (range: {
-  from: number | undefined;
-  to: number | undefined;
-}): DateRange => {
-  return {
-    from: range.from ? new Date(range.from) : undefined,
-    to: range.to ? new Date(range.to) : undefined,
-  };
+export const fixedRangeToDateRangeZonedTime = (
+  range: FixedDateRange | undefined,
+): DateRange => {
+  return dateRangeToDateRangeZonedTime({
+    from: getFixedDateRangeStart(
+      typeof range === 'number' && !isNaN(range)
+        ? range
+        : FixedDateRange.PAST_3_MONTHS,
+    ),
+    to: endOfDay(new Date()),
+  });
 };
 
-export const defaultInsightsDateRange = {
-  from: addMonths(new Date(), -1),
-  to: new Date(),
+const getStoredRangeOrDefaultZonedTime = (
+  projectId: Project['id'] | undefined,
+): DateRange => {
+  if (projectId) {
+    const storedFixedRange = localStorage.getItem(
+      `${projectId}:insights:date-range`,
+    );
+    try {
+      if (storedFixedRange) {
+        return fixedRangeToDateRangeZonedTime(parseInt(storedFixedRange));
+      }
+    } catch {
+      // Do nothing
+    }
+  }
+  return fixedRangeToDateRangeZonedTime(FixedDateRange.PAST_3_MONTHS);
 };
-const defaultSerializedDateRange = serializeRange(defaultInsightsDateRange);
 
 export default function useInsights() {
   const { team } = useTeam();
   const { project } = useProject();
   const [page, setPage] = useState(0);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-  const [serializedRange, setSerializedRange] = useLocalStorage<
-    SerializedDateRange | undefined
-  >(
-    !project?.id ? null : `${project.id}:insights:date-range`,
-    defaultSerializedDateRange,
-  );
-
-  const dateRange = useMemo(() => {
-    if (!serializedRange?.from && !serializedRange?.to) {
-      return undefined;
+  useEffect(() => {
+    if (project?.id) {
+      setDateRange(getStoredRangeOrDefaultZonedTime(project.id));
     }
-    return deserializeRange({
-      from: serializedRange?.from,
-      to: serializedRange?.to,
-    });
-  }, [serializedRange?.from, serializedRange?.to]);
+  }, [project?.id]);
 
-  const setDateRange = useCallback(
-    (range: DateRange | undefined) => {
-      if (range) {
-        setSerializedRange(serializeRange(range));
-      }
-    },
-    [setSerializedRange],
-  );
+  useEffect(() => {
+    if (!dateRange || !project?.id) {
+      return;
+    }
+    const fixedDateRange = dateRangeToFixedRange(dateRange);
+    if (fixedDateRange) {
+      localStorage.setItem(
+        `${project?.id}:insights:date-range`,
+        String(fixedDateRange),
+      );
+    }
+    // When switching date ranges, reset page to 0
+    setPage(0);
+  }, [dateRange, project?.id]);
+
+  const fromISO = dateRange?.from && formatISO(dateRange?.from);
+  const toISO = dateRange?.to && formatISO(dateRange?.to);
+  const limit = team && canViewInsights(team) ? 20 : 3;
 
   const {
-    data: queries,
-    mutate,
+    data,
+    mutate: mutateQueries,
     error: queriesError,
   } = useSWR(
-    project?.id && serializedRange?.from && serializedRange?.to
-      ? `/api/project/${project.id}/insights/queries?page=${page}&from=${
-          serializedRange?.from
-        }&to=${serializedRange?.to}&limit=${
-          team && canViewInsights(team) ? 50 : 3
-        }`
+    project?.id && fromISO && toISO
+      ? `/api/project/${project.id}/insights/queries?page=${page}&from=${fromISO}&to=${toISO}&limit=${limit}`
       : null,
-    fetcher<PromptQueryStat[]>,
+    fetcher<{ queries: PromptQueryStat[] }>,
   );
 
-  const loadingQueries = !queries && !queriesError;
-
   const { data: topReferences, error: topReferencesError } = useSWR(
-    project?.id && serializedRange?.from && serializedRange?.to
-      ? `/api/project/${project.id}/insights/references?from=${
-          serializedRange?.from
-        }&to=${serializedRange?.to}&limit=${
+    project?.id && fromISO && toISO
+      ? `/api/project/${
+          project.id
+        }/insights/references?from=${fromISO}&to=${toISO}&limit=${
           team && canViewInsights(team) ? 20 : 2
         }`
       : null,
     fetcher<ReferenceWithOccurrenceCount[]>,
   );
 
-  const loadingTopReferences = !topReferences && !topReferencesError;
+  // Important: queriesHistogramResponse returns bins with timestamps in UTC.
+  // So for instance, if there is an event on 7/19 at 1pm in PST time zone,
+  // the histogram will return 7/19 00:00 in UTC, which is correct. We should
+  // treat that as 7/19 in local time zone without the time info, otherwise
+  // it would map to 7/18 in PST time.
+  const { data: queriesHistogramResponse, error: queriesHistogramError } =
+    useSWR(
+      project?.id && fromISO && toISO
+        ? `/api/project/${project.id}/insights/queries-histogram?from=${fromISO}&to=${toISO}&tz=${REFERENCE_TIMEZONE}&period=day`
+        : null,
+      fetcher<{ date: string; occurrences: number }[]>,
+    );
 
-  const { data: queriesHistogram, error: queriesHistogramError } = useSWR(
-    project?.id && serializedRange?.from && serializedRange?.to
-      ? `/api/project/${project.id}/insights/queries-histogram?from=${serializedRange?.from}&to=${serializedRange?.to}`
-      : null,
-    fetcher<DateCountHistogramEntry[]>,
-  );
-
-  const loadingQueriesHistogram = !queriesHistogram && !queriesHistogramError;
+  // Parse all dates here, once and for all
+  const queriesHistogram = useMemo(() => {
+    return queriesHistogramResponse?.map(
+      (d) =>
+        ({
+          date: parseISO(d.date),
+          count: d.occurrences,
+        } as DateCountHistogramEntry),
+    );
+  }, [queriesHistogramResponse]);
 
   return {
-    queries,
+    queries: data?.queries,
     topReferences,
-    loadingQueries,
-    loadingTopReferences,
     queriesHistogram,
-    loadingQueriesHistogram,
     dateRange,
     setDateRange,
     page,
     setPage,
-    mutate,
+    mutateQueries,
+    loadingQueries: !data?.queries && !queriesError,
+    loadingTopReferences: !topReferences && !topReferencesError,
+    loadingQueriesHistogram: !queriesHistogram && !queriesHistogramError,
+    hasMorePages: data?.queries?.length === limit,
   };
 }
