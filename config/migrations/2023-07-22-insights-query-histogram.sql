@@ -6,7 +6,7 @@ create or replace function get_insights_query_histogram(
   trunc_interval text
 )
 returns table (
-  date timestampt,
+  date timestamp,
   occurrences bigint
 )
 language plpgsql
