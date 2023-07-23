@@ -109,6 +109,11 @@ export type PromptQueryHistogram = {
   occurrences: number | null;
 };
 
+export type QueryStatsProcessingResponseData = {
+  processed?: number;
+  allProcessed?: boolean;
+};
+
 export type FileType = 'mdx' | 'mdoc' | 'md' | 'rst' | 'html' | 'txt';
 
 export type ProjectUsage = number;

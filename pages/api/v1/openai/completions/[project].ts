@@ -432,7 +432,7 @@ export default async function handler(req: NextRequest) {
           JSON.stringify({
             text,
             references,
-            promptId,
+            responseId: promptId,
             debugInfo,
           }),
           {
@@ -537,7 +537,7 @@ export default async function handler(req: NextRequest) {
     // we pass in the headers are properly encoded before sending.
     const headerEncoder = new TextEncoder();
     const encodedData = headerEncoder
-      .encode(JSON.stringify({ references, promptId }))
+      .encode(JSON.stringify({ references, responseId: promptId }))
       .toString();
 
     const headers = new Headers();

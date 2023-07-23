@@ -15,15 +15,16 @@ import { Database } from '@/types/supabase';
 import {
   OpenAIModelIdWithType,
   Project,
+  QueryStatsProcessingResponseData,
   geLLMInfoFromModel,
 } from '@/types/types';
 
-type Data = {
-  status?: string;
-  processed?: number;
-  message?: string;
-  error?: string;
-};
+type Data =
+  | {
+      status?: string;
+      error?: string;
+    }
+  | QueryStatsProcessingResponseData;
 
 const allowedMethods = ['GET'];
 
@@ -61,7 +62,11 @@ const trimQueries = (queries: QueryStatData[], maxTokens: number) => {
 
 const processProjectQueryStats = async (
   projectId: Project['id'],
-): Promise<number> => {
+): Promise<{
+  status: 'processed_success' | 'no_more_stats_to_process' | 'error';
+  message?: string;
+  processed?: number;
+}> => {
   // We don't want to mix questions in the same GPT-4 prompt, as we want to
   // guarantee that prompts do not get mistakenly interchanged.
   const { data: queries }: { data: QueryStatData[] | null } =
@@ -69,10 +74,11 @@ const processProjectQueryStats = async (
       .from('query_stats')
       .select('id,prompt,response')
       .match({ project_id: projectId, processed: false })
+      .order('created_at', { ascending: false })
       .limit(10);
 
   if (!queries || queries.length === 0) {
-    return 0;
+    return { status: 'no_more_stats_to_process' };
   }
 
   // Ensure that no queries alone are too large for the prompt. If one
@@ -81,7 +87,7 @@ const processProjectQueryStats = async (
   // to delete all individual queries that exceed the token threshold.
   // We also go substantially below the token cutoff to ensure the prompt
   // output remains small. Otherwise, we may have a timeout.
-  const maxTokens = CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO * 0.5;
+  const maxTokens = CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO * 0.45;
   const overflowingQueryIds = queries
     .map((q) => (estimateQueryTokenCount(q) > maxTokens ? q.id : null))
     .filter(isPresent);
@@ -152,7 +158,7 @@ Return as a JSON with the exact same structure.`;
       '[QUERY-STATS] Error fetching completions:',
       JSON.stringify(json),
     );
-    return 0;
+    return { status: 'error', message: JSON.stringify(json) };
   }
 
   const tokenCount = safeParseInt(json.usage.total_tokens, 0);
@@ -171,7 +177,6 @@ Return as a JSON with the exact same structure.`;
       `[QUERY-STATS] Processed ${processedQueryStatData.length} prompts`,
     );
     for (const entry of processedQueryStatData) {
-      console.info('Updating', entry.id);
       const { error } = await supabaseAdmin
         .from('query_stats')
         .update({
@@ -188,12 +193,14 @@ Return as a JSON with the exact same structure.`;
       }
     }
 
-    return processedQueryStatData.length;
+    return {
+      status: 'processed_success',
+      processed: processedQueryStatData.length,
+    };
   } catch {
     console.error('[QUERY-STATS] Error updating response:', text);
+    return { status: 'error', message: text };
   }
-
-  return 0;
 };
 
 export default async function handler(
@@ -208,7 +215,17 @@ export default async function handler(
   const projectId = req.query.projectId as Project['id'];
   if (projectId) {
     const processed = await processProjectQueryStats(projectId);
-    return res.status(200).send({ status: 'ok', processed });
+    if (processed.status === 'error') {
+      return res.status(400).json({
+        error: `Error processing stats: ${processed.message}`,
+      });
+    } else if (processed.status === 'no_more_stats_to_process') {
+      return res.status(200).json({ allProcessed: true });
+    } else {
+      return res
+        .status(200)
+        .send({ status: 'ok', processed: processed.processed });
+    }
   } else {
     // First in line are projects whose unprocessed prompts are oldest.
     const { data } = await supabaseAdmin
@@ -217,20 +234,22 @@ export default async function handler(
       .limit(20);
 
     if (!data) {
-      return res.status(200).send({
-        status: 'ok',
-        processed: 0,
-        message: 'All queries have been processed',
-      });
+      return res.status(200).json({ allProcessed: true });
     }
 
     let totalProcessed = 0;
     for (const { project_id } of data) {
       if (project_id) {
-        const processed = await processProjectQueryStats(project_id);
-        totalProcessed += processed;
+        const processResponse = await processProjectQueryStats(project_id);
+        if (
+          processResponse.status === 'processed_success' &&
+          processResponse.processed
+        ) {
+          totalProcessed += processResponse.processed;
+        }
       }
     }
+
     return res.status(200).send({ status: 'ok', processed: totalProcessed });
   }
 }

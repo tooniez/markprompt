@@ -7,11 +7,13 @@ import { QueriesHistogram } from '@/components/insights/queries-histogram';
 import { TopReferences } from '@/components/insights/top-references';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
+import { Tag } from '@/components/ui/Tag';
 import { processQueryStats } from '@/lib/api';
 import useInsights from '@/lib/hooks/use-insights';
 import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
-import { canViewInsights } from '@/lib/stripe/tiers';
+import { canViewInsights, getAccessibleInsightsType } from '@/lib/stripe/tiers';
+import { useDebouncedState } from '@/lib/utils.react';
 
 const Insights = () => {
   const { project } = useProject();
@@ -29,16 +31,65 @@ const Insights = () => {
     setPage,
     hasMorePages,
   } = useInsights();
+  const [isProcessingQueryStats, setProcessingQueryStats] = useDebouncedState(
+    false,
+    1000,
+  );
 
   useEffect(() => {
-    if (!project?.id) {
+    if (!team || !project?.id) {
       return;
     }
-    processQueryStats(project.id);
-  }, [project?.id]);
+    let stopProcessing = false;
+    const insightsType = getAccessibleInsightsType(team);
+    if (!insightsType) {
+      // Don't process insights unless on the adequate plan.
+      return;
+    }
+
+    const process = async () => {
+      if (stopProcessing) {
+        setProcessingQueryStats(false);
+        return;
+      }
+      const res = await processQueryStats(project.id);
+      console.debug('Process query stats response:', JSON.stringify(res));
+      if (res.allProcessed) {
+        setProcessingQueryStats(false);
+      } else {
+        // Don't show processing every time the page is opened,
+        // while checking processing state. Only show processing
+        // after a first round-trip, where it's confirmed we're
+        // not done processing stats.
+        setProcessingQueryStats(true);
+        process();
+      }
+    };
+
+    process();
+
+    return () => {
+      stopProcessing = true;
+    };
+  }, [project?.id, setProcessingQueryStats]);
 
   return (
-    <ProjectSettingsLayout title="Insights" width="2xl">
+    <ProjectSettingsLayout
+      titleComponent={
+        <div className="flex items-center">
+          Insights
+          {isProcessingQueryStats && (
+            <>
+              {' '}
+              <Tag size="sm" color="fuchsia" className="ml-2">
+                Processing
+              </Tag>
+            </>
+          )}
+        </div>
+      }
+      width="2xl"
+    >
       <div className="flex cursor-not-allowed justify-start">
         <DateRangePicker
           disabled={team && !canViewInsights(team)}

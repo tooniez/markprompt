@@ -12,6 +12,7 @@ import {
   SourceType,
   Team,
   Token,
+  QueryStatsProcessingResponseData,
 } from '@/types/types';
 
 import { Theme } from './themes';
@@ -312,5 +313,5 @@ export const processQueryStats = async (projectId: Project['id']) => {
       accept: 'application/json',
     },
   });
-  return getResponseOrThrow<void>(res);
+  return getResponseOrThrow<QueryStatsProcessingResponseData>(res);
 };
