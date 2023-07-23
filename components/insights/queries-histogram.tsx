@@ -3,7 +3,6 @@ import {
   eachDayOfInterval,
   eachWeekOfInterval,
   eachMonthOfInterval,
-  differenceInDays,
   isSameHour,
   isSameDay,
   isSameWeek,

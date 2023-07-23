@@ -25,8 +25,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/Table';
+import { REFERENCE_TIMEZONE } from '@/lib/date';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';
-import { REFERENCE_TIMEZONE } from '@/lib/utils';
 
 interface QueriesDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
