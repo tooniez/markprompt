@@ -394,11 +394,11 @@ export const sampleVisitsData: HistogramStat[] = Array.from(
 
 export const sampleTokenCountData: DateCountHistogramEntry[] = [
   {
-    date: dayjs().startOf('day').toISOString(),
+    date: dayjs().startOf('day').toDate(),
     count: 1,
   },
   {
-    date: dayjs().add(-1, 'days').startOf('day').toISOString(),
+    date: dayjs().add(-1, 'days').startOf('day').toDate(),
     count: 1,
   },
 ];

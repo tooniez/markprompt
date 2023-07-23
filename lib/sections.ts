@@ -4,7 +4,6 @@ import {
 } from '@markprompt/core';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { backOff } from 'exponential-backoff';
-import { isEmpty } from 'lodash-es';
 import { CreateEmbeddingResponse } from 'openai';
 
 import { Database } from '@/types/supabase';
@@ -46,7 +45,7 @@ export const storePrompt = async (
         ...(typeof noResponseReason !== 'undefined'
           ? { no_response: !!noResponseReason }
           : {}),
-        ...(!isEmpty(meta) ? { meta } : {}),
+        ...(Object.keys(meta).length > 0 ? { meta } : {}),
       },
     ])
     .select('id')
