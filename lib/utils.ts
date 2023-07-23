@@ -5,6 +5,7 @@ import { createHash } from 'crypto';
 import { FileReferenceFileData, FileSectionReference } from '@markprompt/core';
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
+import { differenceInDays } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import dayjs from 'dayjs';
 import { ChevronsUp, Globe, Upload } from 'lucide-react';
@@ -336,24 +337,6 @@ export const formatNumQueries = (quota: number) => {
   return quota === -1
     ? 'Unlimited queries'
     : `Up to ${formatNumberK(quota)} tokens`;
-};
-
-const now = new Date();
-
-export const REFERENCE_TIMEZONE =
-  typeof Intl === 'object'
-    ? Intl.DateTimeFormat().resolvedOptions().timeZone
-    : 'UTC';
-
-export const formatShortDateTimeInTimeZone = (date: Date) => {
-  // Short date and time
-  // Jun 12, 8:20 PM
-  // Jun 12 2022, 8:20 PM
-  return formatInTimeZone(
-    date,
-    REFERENCE_TIMEZONE,
-    `MMM d${date.getFullYear() !== now.getFullYear() ? ', yyyy' : ''}, h:mm a`,
-  );
 };
 
 export const truncate = (text: string, maxLength: number) => {

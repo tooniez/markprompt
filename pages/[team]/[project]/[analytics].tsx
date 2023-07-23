@@ -7,6 +7,7 @@ import { Tag } from '@/components/ui/Tag';
 const Analytics = () => {
   return (
     <ProjectSettingsLayout
+      title="Analytics"
       titleComponent={
         <div className="flex items-center">
           Analytics{' '}

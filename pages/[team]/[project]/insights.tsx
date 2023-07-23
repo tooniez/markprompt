@@ -40,12 +40,14 @@ const Insights = () => {
     if (!team || !project?.id) {
       return;
     }
-    let stopProcessing = false;
     const insightsType = getAccessibleInsightsType(team);
     if (!insightsType) {
+      console.info('No processing insights');
       // Don't process insights unless on the adequate plan.
       return;
     }
+
+    let stopProcessing = false;
 
     const process = async () => {
       if (stopProcessing) {
@@ -66,15 +68,21 @@ const Insights = () => {
       }
     };
 
+    console.log('Start processing query stats');
     process();
 
     return () => {
       stopProcessing = true;
     };
-  }, [project?.id, setProcessingQueryStats]);
+  }, [project?.id, setProcessingQueryStats, team]);
+
+  useEffect(() => {
+    console.log('queriesHistogram', JSON.stringify(queriesHistogram, null, 2));
+  }, [queriesHistogram]);
 
   return (
     <ProjectSettingsLayout
+      title="Insights"
       titleComponent={
         <div className="flex items-center">
           Insights

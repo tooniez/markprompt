@@ -21,8 +21,9 @@ import {
 
 import useProject from './use-project';
 import useTeam from './use-team';
+import { REFERENCE_TIMEZONE, getHistogramBinSize } from '../date';
 import { canViewInsights } from '../stripe/tiers';
-import { REFERENCE_TIMEZONE, fetcher } from '../utils';
+import { fetcher } from '../utils';
 
 export enum FixedDateRange {
   TODAY = 0,
@@ -174,7 +175,11 @@ export default function useInsights() {
   const { data: queriesHistogramResponse, error: queriesHistogramError } =
     useSWR(
       project?.id && fromISO && toISO
-        ? `/api/project/${project.id}/insights/queries-histogram?from=${fromISO}&to=${toISO}&tz=${REFERENCE_TIMEZONE}&period=day`
+        ? `/api/project/${
+            project.id
+          }/insights/queries-histogram?from=${fromISO}&to=${toISO}&tz=${REFERENCE_TIMEZONE}&period=${getHistogramBinSize(
+            dateRange,
+          )}`
         : null,
       fetcher<{ date: string; occurrences: number }[]>,
     );

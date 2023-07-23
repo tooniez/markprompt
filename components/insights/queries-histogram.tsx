@@ -15,10 +15,10 @@ import {
   endOfMonth,
 } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
-import { FC, useEffect, useMemo } from 'react';
+import { FC, useMemo } from 'react';
 import { DateRange } from 'react-day-picker';
 
-import { REFERENCE_TIMEZONE } from '@/lib/utils';
+import { REFERENCE_TIMEZONE, getHistogramBinSize } from '@/lib/date';
 import { DateCountHistogramEntry, DateGranularity } from '@/types/types';
 
 import BarChart from '../charts/bar-chart';
@@ -103,24 +103,7 @@ export const QueriesHistogram: FC<QueriesHistogramProps> = ({
       return [];
     }
 
-    const numDays = differenceInDays(
-      dateRange.to || new Date(),
-      dateRange.from || new Date(),
-    );
-
-    if (numDays < 2) {
-      // If interval is shorter than 2 days, display hour histogram
-      return getHistogram(data, dateRange, 'hour');
-    } else if (numDays < 31) {
-      // If interval is shorter than 31 days, display day histogram
-      return getHistogram(data, dateRange, 'day');
-    } else if (numDays < 95) {
-      // If interval is shorter than 95 days, display week histogram
-      return getHistogram(data, dateRange, 'week');
-    } else {
-      // Display months histogram
-      return getHistogram(data, dateRange, 'month');
-    }
+    return getHistogram(data, dateRange, getHistogramBinSize(dateRange));
   }, [dateRange, data]);
 
   return (

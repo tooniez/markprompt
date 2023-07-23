@@ -8,7 +8,7 @@ import { NavLayout } from './NavLayout';
 import SubTabs, { SubTabItem } from './SubTabs';
 
 export type NavSubtabsLayoutProps = {
-  title?: string;
+  title: string;
   titleComponent?: ReactNode;
   noHeading?: boolean;
   width?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';

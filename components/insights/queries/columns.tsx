@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 
 import Button from '@/components/ui/Button';
 import { Tag } from '@/components/ui/Tag';
-import { formatShortDateTimeInTimeZone } from '@/lib/utils';
+import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import { PromptQueryStat } from '@/types/types';
 
 export const columns: ColumnDef<PromptQueryStat>[] = [
