@@ -150,6 +150,7 @@ create table public.query_stats (
   no_response        boolean,
   upvoted            boolean,
   downvoted          boolean,
+  feedback           text,
   processed          boolean not null default false,
   procesed_state     query_stat_processed_state default 'unprocessed',
   embedding          vector(1536)
