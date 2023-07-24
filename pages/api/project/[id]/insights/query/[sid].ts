@@ -35,8 +35,10 @@ export default async function handler(
     const { data, error } = await supabase
       .from('query_stats')
       .select('id,created_at,prompt,response,no_response,feedback,meta')
-      .eq('id', req.query.queryStatId as DbQueryStat['id'])
-      .eq('processed', true)
+      .match({
+        id: req.query.sid as DbQueryStat['id'],
+        processed_state: 'processed',
+      })
       .limit(1)
       .maybeSingle();
 

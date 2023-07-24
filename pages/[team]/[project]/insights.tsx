@@ -1,6 +1,12 @@
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
 import { parseISO } from 'date-fns';
-import { ArrowDown, ArrowUp, PanelRightIcon } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  MoreHorizontalIcon,
+  PanelRightIcon,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Card } from '@/components/dashboard/Card';
@@ -183,28 +189,58 @@ const Insights = () => {
       //   id: 'actions',
       //   enableHiding: false,
       //   cell: ({ row }) => {
-      //     const payment = row.original;
+      //     // const payment = row.original;
 
       //     return (
-      //       <DropdownMenu.Root>
+      //       <DropdownMenu.Root
+      //       // onOpenChange={(open) => setMenuOpen(open)}
+      //       // open={isMenuOpen}
+      //       >
       //         <DropdownMenu.Trigger asChild>
-      //           <Button noStyle className="flex items-center">
-      //             <span className="sr-only">Open menu</span>
-      //             <MoreHorizontal className="h-4 w-4 text-neutral-500" />
-      //           </Button>
+      //           <div className="flex items-center justify-center border">
+      //             <button
+      //               className="button-ring select-none rounded-full outline-none transition hover:opacity-70"
+      //               aria-label="Open menu"
+      //             >
+      //               <MoreHorizontalIcon className="h-4 w-4 text-neutral-500" />
+      //             </button>
+      //           </div>
       //         </DropdownMenu.Trigger>
-      //         <DropdownMenu.Content align="end">
-      //           <DropdownMenu.Label>Actions</DropdownMenu.Label>
-      //           <DropdownMenu.Item
-      //             onClick={() => navigator.clipboard.writeText(payment.id)}
+      //         <DropdownMenu.Portal>
+      //           <DropdownMenu.Content
+      //             className="animate-menu-up dropdown-menu-content mr-2 min-w-[160px]"
+      //             sideOffset={5}
       //           >
-      //             Copy payment ID
-      //           </DropdownMenu.Item>
-      //           <DropdownMenu.Separator />
-      //           <DropdownMenu.Item>View customer</DropdownMenu.Item>
-      //           <DropdownMenu.Item>View payment details</DropdownMenu.Item>
-      //         </DropdownMenu.Content>
+      //             <DropdownMenu.Label className="dropdown-menu-item-noindent">
+      //               <div className="flex flex-col pt-2 pb-3">
+      //                 <p className="text-sm text-neutral-300">Ok</p>
+      //               </div>
+      //             </DropdownMenu.Label>
+      //           </DropdownMenu.Content>
+      //         </DropdownMenu.Portal>
       //       </DropdownMenu.Root>
+      //       // <DropdownMenu.Root>
+      //       //   <DropdownMenu.Trigger>
+      //       //     <Button
+      //       //       noStyle
+      //       //       className="flex flex-none items-center rounded-md p-1 outline-none hover:bg-neutral-900"
+      //       //     >
+      //       //       <span className="sr-only">Open menu</span>
+      //       //       <MoreHorizontalIcon className="h-4 w-4 text-neutral-500" />
+      //       //     </Button>
+      //       //   </DropdownMenu.Trigger>
+      //       //   <DropdownMenu.Content align="end">
+      //       //     <DropdownMenu.Label>Actions</DropdownMenu.Label>
+      //       //     <DropdownMenu.Item
+      //       //       onClick={() => navigator.clipboard.writeText(payment.id)}
+      //       //     >
+      //       //       Copy payment ID
+      //       //     </DropdownMenu.Item>
+      //       //     <DropdownMenu.Separator />
+      //       //     <DropdownMenu.Item>View customer</DropdownMenu.Item>
+      //       //     <DropdownMenu.Item>View payment details</DropdownMenu.Item>
+      //       //   </DropdownMenu.Content>
+      //       // </DropdownMenu.Root>
       //     );
       //   },
       // },

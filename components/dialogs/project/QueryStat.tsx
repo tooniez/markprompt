@@ -26,7 +26,7 @@ const QueryStatDialog: FC<QueryStatDialogProps> = ({
   const { project } = useProject();
   const { data: queryStat, error } = useSWR(
     queryStatId && project?.id
-      ? `/api/project/${project.id}/insights/query-stats/${queryStatId}`
+      ? `/api/project/${project.id}/insights/query/${queryStatId}`
       : null,
     fetcher<PromptQueryStatFull | undefined>,
   );
