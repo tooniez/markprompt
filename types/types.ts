@@ -111,6 +111,7 @@ export type PromptQueryHistogram = {
 
 export type QueryStatsProcessingResponseData = {
   processed?: number;
+  errored?: number;
   allProcessed?: boolean;
 };
 

@@ -23,7 +23,7 @@ export type PromptNoResponseReason = 'no_sections' | 'idk' | 'api_error';
 export const storePrompt = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
-  prompt: string,
+  prompt: string | undefined,
   response: string | undefined,
   embedding: number[] | undefined,
   noResponseReason: PromptNoResponseReason | undefined,
@@ -39,7 +39,7 @@ export const storePrompt = async (
     .insert([
       {
         project_id: projectId,
-        prompt,
+        ...(prompt ? { prompt } : {}),
         ...(response ? { response } : {}),
         ...(embedding ? { embedding: embedding as any } : {}),
         ...(typeof noResponseReason !== 'undefined'

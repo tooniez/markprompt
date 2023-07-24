@@ -20,6 +20,7 @@ const Insights = () => {
   const { team } = useTeam();
   const {
     queries,
+    mutateQueries,
     loadingQueries,
     topReferences,
     loadingTopReferences,
@@ -55,6 +56,7 @@ const Insights = () => {
         return;
       }
       const res = await processQueryStats(project.id);
+      await mutateQueries();
       console.debug('Process query stats response:', JSON.stringify(res));
       if (res.allProcessed) {
         setProcessingQueryStats(false);
@@ -68,17 +70,13 @@ const Insights = () => {
       }
     };
 
-    console.log('Start processing query stats');
+    console.debug('Start processing query stats');
     process();
 
     return () => {
       stopProcessing = true;
     };
-  }, [project?.id, setProcessingQueryStats, team]);
-
-  useEffect(() => {
-    console.log('queriesHistogram', JSON.stringify(queriesHistogram, null, 2));
-  }, [queriesHistogram]);
+  }, [project?.id, setProcessingQueryStats, team, mutateQueries]);
 
   return (
     <ProjectSettingsLayout

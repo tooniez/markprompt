@@ -118,7 +118,19 @@ const _storePrompt = async (
   errorReason: PromptNoResponseReason | undefined,
   references: FileSectionReference[],
   insightsType: InsightsType | undefined,
+  excludeData: boolean,
 ): Promise<DbQueryStat['id'] | undefined> => {
+  if (excludeData) {
+    storePrompt(
+      supabaseAdmin,
+      projectId,
+      undefined,
+      undefined,
+      undefined,
+      errorReason,
+      undefined,
+    );
+  }
   // Store prompt always.
   // Store response in >= basic insights.
   // Store embeddings in >= advanced insights.
@@ -179,6 +191,16 @@ const isFalsy = (param: any) => {
   }
 };
 
+const isTruthy = (param: any) => {
+  if (typeof param === 'string') {
+    return param === 'true' || param === '1';
+  } else if (typeof param === 'number') {
+    return param === 1;
+  } else {
+    return param === true;
+  }
+};
+
 export default async function handler(req: NextRequest) {
   // Preflight check
   if (req.method === 'OPTIONS') {
@@ -203,6 +225,11 @@ export default async function handler(req: NextRequest) {
     let stream = true;
     if (isFalsy(params.stream)) {
       stream = false;
+    }
+
+    let excludeFromInsights = false;
+    if (!isTruthy(params.excludeFromInsights)) {
+      excludeFromInsights = true;
     }
 
     const { pathname, searchParams } = new URL(req.url);
@@ -293,6 +320,7 @@ export default async function handler(req: NextRequest) {
         'no_sections',
         [],
         insightsType,
+        excludeFromInsights,
       );
 
       if (e instanceof ApiError) {
@@ -399,6 +427,7 @@ export default async function handler(req: NextRequest) {
           'api_error',
           references,
           insightsType,
+          excludeFromInsights,
         );
         return new Response(
           `Unable to retrieve completions response: ${message}`,
@@ -424,6 +453,7 @@ export default async function handler(req: NextRequest) {
           idk ? 'idk' : undefined,
           references,
           insightsType,
+          excludeFromInsights,
         );
 
         const headers = new Headers();
@@ -525,6 +555,7 @@ export default async function handler(req: NextRequest) {
           idk ? 'idk' : undefined,
           references,
           insightsType,
+          excludeFromInsights,
         );
 
         // We're done, wind down
