@@ -50,9 +50,6 @@ const QueryStatDialog: FC<QueryStatDialogProps> = ({
               )}
             </Dialog.Title>
           </div>
-          {/* <Dialog.Description className="dialog-description-xl mt-2 flex-none border-b border-neutral-900 pb-4">
-            Use the code below in your HTML pages or web application.
-          </Dialog.Description> */}
           <div className="flex h-full w-full flex-grow flex-col gap-4 overflow-y-auto p-6">
             {loading ? (
               <div className="relative">
