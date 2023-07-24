@@ -359,12 +359,11 @@ export interface Database {
           created_at: string
           downvoted: boolean | null
           embedding: string | null
+          feedback: string
           id: string
           meta: Json | null
           no_response: boolean | null
           processed: boolean
-          processed_prompt: string | null
-          processed_response: string | null
           processed_state:
             | Database["public"]["Enums"]["query_stat_processed_state"]
             | null
@@ -378,12 +377,11 @@ export interface Database {
           created_at?: string
           downvoted?: boolean | null
           embedding?: string | null
+          feedback?: string
           id?: string
           meta?: Json | null
           no_response?: boolean | null
           processed?: boolean
-          processed_prompt?: string | null
-          processed_response?: string | null
           processed_state?:
             | Database["public"]["Enums"]["query_stat_processed_state"]
             | null
@@ -397,12 +395,11 @@ export interface Database {
           created_at?: string
           downvoted?: boolean | null
           embedding?: string | null
+          feedback?: string
           id?: string
           meta?: Json | null
           no_response?: boolean | null
           processed?: boolean
-          processed_prompt?: string | null
-          processed_response?: string | null
           processed_state?:
             | Database["public"]["Enums"]["query_stat_processed_state"]
             | null
@@ -642,6 +639,7 @@ export interface Database {
           full_name: string | null
           has_completed_onboarding: boolean
           id: string
+          last_email_id: string
           outreach_tag: string | null
           subscribe_to_product_updates: boolean
           updated_at: string | null
@@ -652,6 +650,7 @@ export interface Database {
           full_name?: string | null
           has_completed_onboarding?: boolean
           id: string
+          last_email_id?: string
           outreach_tag?: string | null
           subscribe_to_product_updates?: boolean
           updated_at?: string | null
@@ -662,6 +661,7 @@ export interface Database {
           full_name?: string | null
           has_completed_onboarding?: boolean
           id?: string
+          last_email_id?: string
           outreach_tag?: string | null
           subscribe_to_product_updates?: boolean
           updated_at?: string | null

@@ -1,19 +1,33 @@
-import { useEffect } from 'react';
+import { ColumnDef } from '@tanstack/react-table';
+import { parseISO } from 'date-fns';
+import { ArrowDown, ArrowUp, PanelRightIcon } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Card } from '@/components/dashboard/Card';
-import { columns } from '@/components/insights/queries/columns';
+import QueryStat from '@/components/dialogs/project/QueryStat';
 import { QueriesDataTable } from '@/components/insights/queries/table';
 import { QueriesHistogram } from '@/components/insights/queries-histogram';
 import { TopReferences } from '@/components/insights/top-references';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
+import Button from '@/components/ui/Button';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
 import { Tag } from '@/components/ui/Tag';
 import { processQueryStats } from '@/lib/api';
+import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useInsights from '@/lib/hooks/use-insights';
 import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
 import { canViewInsights, getAccessibleInsightsType } from '@/lib/stripe/tiers';
 import { useDebouncedState } from '@/lib/utils.react';
+import { DbQueryStat, PromptQueryStat } from '@/types/types';
+
+export const PromptStatusTag = ({ noResponse }: { noResponse: boolean }) => {
+  return (
+    <Tag color={noResponse ? 'orange' : 'green'}>
+      {noResponse ? 'No response' : 'Answered'}
+    </Tag>
+  );
+};
 
 const Insights = () => {
   const { project } = useProject();
@@ -36,6 +50,166 @@ const Insights = () => {
     false,
     1000,
   );
+  const [currentQueryStatId, setCurrentQueryStatId] = useState<
+    DbQueryStat['id'] | undefined
+  >(undefined);
+  const [queryStatDialogOpen, setQueryStatDialogOpen] = useState(false);
+
+  const columns = useMemo(() => {
+    return [
+      // {
+      //   id: 'select',
+      //   header: ({ table }) => (
+      //     <Checkbox
+      //       checked={table.getIsAllPageRowsSelected()}
+      //       indeterminate={table.getIsSomeRowsSelected()}
+      //       onChange={table.getToggleAllRowsSelectedHandler()}
+      //       aria-label="Select all"
+      //     />
+      //   ),
+      //   cell: ({ row }) => (
+      //     <Checkbox
+      //       checked={row.getIsSelected()}
+      //       onChange={row.getToggleSelectedHandler()}
+      //       aria-label="Select row"
+      //     />
+      //   ),
+      //   enableSorting: false,
+      //   enableHiding: false,
+      // },
+      {
+        accessorKey: 'prompt',
+        header: ({ column }) => {
+          const sorted = column.getIsSorted();
+          return (
+            <Button
+              className="p-0 text-neutral-300"
+              noStyle
+              onClick={() => column.toggleSorting(sorted === 'asc')}
+            >
+              <div className="flex flex-row items-center gap-2">
+                Question
+                {sorted === 'asc' ? (
+                  <ArrowUp className="h-3 w-3" />
+                ) : sorted === 'desc' ? (
+                  <ArrowDown className="h-3 w-3" />
+                ) : null}
+              </div>
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          return (
+            <div className="group relative flex w-full">
+              <div className="overflow-hidden truncate text-neutral-300">
+                {row.getValue('prompt')}
+              </div>
+              <div className="absolute right-0 top-0 bottom-0 flex items-center justify-center opacity-0 transition duration-100 group-hover:opacity-100">
+                <Button
+                  buttonSize="xs"
+                  variant="plain"
+                  Icon={PanelRightIcon}
+                  onClick={() => {
+                    setCurrentQueryStatId(row.original.id);
+                    setQueryStatDialogOpen(true);
+                  }}
+                >
+                  Open
+                </Button>
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'no_response',
+        header: ({ column }) => {
+          const sorted = column.getIsSorted();
+          return (
+            <Button
+              className="p-0 text-neutral-300"
+              noStyle
+              onClick={() => column.toggleSorting(sorted === 'asc')}
+            >
+              <div className="flex flex-row items-center gap-2">
+                Status
+                {sorted === 'asc' ? (
+                  <ArrowUp className="h-3 w-3" />
+                ) : sorted === 'desc' ? (
+                  <ArrowDown className="h-3 w-3" />
+                ) : null}
+              </div>
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const noResponse = !!row.getValue('no_response');
+          return <PromptStatusTag noResponse={noResponse} />;
+        },
+      },
+      {
+        accessorKey: 'created_at',
+        header: ({ column }) => {
+          const sorted = column.getIsSorted();
+          return (
+            <Button
+              className="p-0 text-neutral-300"
+              noStyle
+              onClick={() => column.toggleSorting(sorted === 'asc')}
+            >
+              <div className="flex flex-row items-center gap-2">
+                Date
+                {sorted === 'asc' ? (
+                  <ArrowUp className="h-3 w-3" />
+                ) : sorted === 'desc' ? (
+                  <ArrowDown className="h-3 w-3" />
+                ) : null}
+              </div>
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const date = formatShortDateTimeInTimeZone(
+            parseISO(row.getValue('created_at')),
+          );
+          return (
+            <div className="overflow-hidden truncate whitespace-nowrap text-sm text-neutral-500">
+              {date}
+            </div>
+          );
+        },
+      },
+      // {
+      //   id: 'actions',
+      //   enableHiding: false,
+      //   cell: ({ row }) => {
+      //     const payment = row.original;
+
+      //     return (
+      //       <DropdownMenu.Root>
+      //         <DropdownMenu.Trigger asChild>
+      //           <Button noStyle className="flex items-center">
+      //             <span className="sr-only">Open menu</span>
+      //             <MoreHorizontal className="h-4 w-4 text-neutral-500" />
+      //           </Button>
+      //         </DropdownMenu.Trigger>
+      //         <DropdownMenu.Content align="end">
+      //           <DropdownMenu.Label>Actions</DropdownMenu.Label>
+      //           <DropdownMenu.Item
+      //             onClick={() => navigator.clipboard.writeText(payment.id)}
+      //           >
+      //             Copy payment ID
+      //           </DropdownMenu.Item>
+      //           <DropdownMenu.Separator />
+      //           <DropdownMenu.Item>View customer</DropdownMenu.Item>
+      //           <DropdownMenu.Item>View payment details</DropdownMenu.Item>
+      //         </DropdownMenu.Content>
+      //       </DropdownMenu.Root>
+      //     );
+      //   },
+      // },
+    ] as ColumnDef<PromptQueryStat>[];
+  }, []);
 
   useEffect(() => {
     if (!team || !project?.id) {
@@ -169,6 +343,11 @@ const Insights = () => {
           </Card>
         </div>
       </div>
+      <QueryStat
+        queryStatId={currentQueryStatId}
+        open={queryStatDialogOpen}
+        setOpen={setQueryStatDialogOpen}
+      />
     </ProjectSettingsLayout>
   );
 };

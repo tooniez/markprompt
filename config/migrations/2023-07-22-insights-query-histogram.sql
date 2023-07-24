@@ -29,6 +29,9 @@ create type query_stat_processed_state as enum ('processed', 'ignored', 'unproce
 alter table query_stats
 add column processed_state query_stat_processed_state default 'unprocessed';
 
+alter table query_stats
+add column feedback text not null default '';
+
 -- Emails
 
 alter table users

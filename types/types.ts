@@ -98,6 +98,16 @@ export type PromptQueryStat = Pick<
   DbQueryStat,
   'id' | 'created_at' | 'prompt' | 'no_response'
 >;
+export type PromptQueryStatFull = Pick<
+  DbQueryStat,
+  | 'id'
+  | 'created_at'
+  | 'prompt'
+  | 'response'
+  | 'no_response'
+  | 'feedback'
+  | 'meta'
+>;
 export type ReferenceWithOccurrenceCount = {
   path: string;
   occurrences: number;
