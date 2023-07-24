@@ -159,8 +159,11 @@ const processProjectQueryStats = async (
       if (!query.prompt) {
         throw new Error('No prompt in query.');
       }
+
+      console.log('*** Processing prompt');
       const redactedPrompt = await redactSensitiveInfo(projectId, query.prompt);
       let redactedResponse: string | undefined = undefined;
+      console.log('*** redactedPrompt', redactedPrompt);
       if (query.response) {
         redactedResponse = await redactSensitiveInfo(projectId, query.response);
       }
@@ -175,8 +178,8 @@ const processProjectQueryStats = async (
         .eq('id', query.id);
       processed += 1;
     } catch {
+      console.log('*** Error processing');
       errored += 1;
-      await supabaseAdmin.from('query_stats').delete().eq('id', query.id);
     }
   }
 

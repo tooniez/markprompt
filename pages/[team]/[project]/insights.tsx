@@ -55,22 +55,30 @@ const Insights = () => {
         setProcessingQueryStats(false);
         return;
       }
-      const res = await processQueryStats(project.id);
-      await mutateQueries();
-      console.debug('Process query stats response:', JSON.stringify(res));
-      if (res.allProcessed) {
-        setProcessingQueryStats(false);
-      } else {
-        // Don't show processing every time the page is opened,
-        // while checking processing state. Only show processing
-        // after a first round-trip, where it's confirmed we're
-        // not done processing stats.
-        setProcessingQueryStats(true);
+      try {
+        console.debug('Start processing query stats');
+        const res = await processQueryStats(project.id);
+        await mutateQueries();
+        console.debug('Process query stats response:', JSON.stringify(res));
+
+        if (res.allProcessed) {
+          console.log('[ALL PROCESSED]');
+          setProcessingQueryStats(false);
+        } else {
+          console.log('[PROCESSING NEXT BATCH]');
+          // Don't show processing every time the page is opened,
+          // while checking processing state. Only show processing
+          // after a first round-trip, where it's confirmed we're
+          // not done processing stats.
+          setProcessingQueryStats(true);
+          process();
+        }
+      } catch (e) {
+        console.error('Error processing stats', e);
         process();
       }
     };
 
-    console.debug('Start processing query stats');
     process();
 
     return () => {
