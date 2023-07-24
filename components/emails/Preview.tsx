@@ -14,15 +14,6 @@ type EmailPreviewProps = {
   emailId: string;
 };
 
-const getUnsubscribeMarkdown = (templateId: TemplateId) => {
-  switch (templateId) {
-    case 'plain':
-      return '[Unsubscribe]({{{RESEND_UNSUBSCRIBE_URL}}}) if you do not wish to receive updates from me.';
-    case 'monthly_update':
-      return 'You are receiving this email because you signed up at [markprompt.com](https://markprompt.com). [Unsubscribe]({{{RESEND_UNSUBSCRIBE_URL}}}).';
-  }
-};
-
 export const EmailPreview: FC<EmailPreviewProps> = ({
   title: subject,
   markdown,
@@ -35,7 +26,6 @@ export const EmailPreview: FC<EmailPreviewProps> = ({
   const _date = parseISO(date);
 
   const Template = getTemplate(templateId);
-  const unsubscribeMarkdown = getUnsubscribeMarkdown(templateId);
 
   const sendBatch = useCallback(
     async (num = 0, processed = 0) => {
@@ -45,7 +35,6 @@ export const EmailPreview: FC<EmailPreviewProps> = ({
         body: JSON.stringify({
           subject,
           markdown,
-          unsubscribeMarkdown,
           preview,
           templateId,
           emailId,
@@ -70,15 +59,7 @@ export const EmailPreview: FC<EmailPreviewProps> = ({
         // sendBatch(num + 1, processed + (json.emails || []).length);
       }
     },
-    [
-      _date,
-      emailId,
-      markdown,
-      preview,
-      subject,
-      templateId,
-      unsubscribeMarkdown,
-    ],
+    [_date, emailId, markdown, preview, subject, templateId],
   );
 
   return (
@@ -87,12 +68,7 @@ export const EmailPreview: FC<EmailPreviewProps> = ({
         <div className="fixed inset-0 z-0 bg-neutral-900" />
         <div className="z-10 w-full max-w-screen-lg overflow-hidden rounded-md bg-neutral-50 px-20 py-8 shadow-xl">
           <div className="mx-auto max-w-[480px] border border-dashed border-neutral-200 bg-white p-0 text-neutral-900">
-            <Template
-              date={_date}
-              markdown={markdown}
-              unsubscribeMarkdown={unsubscribeMarkdown}
-              preview={preview}
-            />
+            <Template date={_date} markdown={markdown} preview={preview} />
           </div>
         </div>
         <div className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-end bg-white px-8 py-6 text-neutral-900 shadow-2xl">

@@ -56,12 +56,10 @@ export default async function handler(
   }
 
   const markdown = req.body.markdown;
-  const unsubscribeMarkdown = req.body.unsubscribeMarkdown;
 
   const react = getTemplate(req.body.templateId)({
     date: parseISO(req.body.date),
     markdown,
-    unsubscribeMarkdown,
     preview: req.body.preview,
     withHtml: true,
   });
@@ -71,15 +69,13 @@ export default async function handler(
   // the unsubscribe link.
   const text =
     String(await remark().use(strip).process(markdown)) +
-    '\n\n' +
-    unsubscribeMarkdown;
+    '\n\n{{{RESEND_UNSUBSCRIBE_URL}}}';
 
   try {
     const resendData = await resend.emails.send({
       from: `${process.env.MARKPROMPT_NEWSLETTER_SENDER_NAME!} <${process.env
         .MARKPROMPT_NEWSLETTER_SENDER_EMAIL!}>`,
       reply_to: process.env.MARKPROMPT_NEWSLETTER_REPLY_TO!,
-      // to: emails,
       to: emails,
       subject: req.body.subject,
       text,

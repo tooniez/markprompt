@@ -9,7 +9,7 @@ import { FC } from 'react';
 
 import { SharedHead } from '@/components/pages/SharedHead';
 
-const EMAIL_ID = '2023-07-21-algolia';
+const EMAIL_ID = '2023-07-24-algolia';
 const EMAIL_FOLDER = 'resources/newsletters';
 
 // SSR: false to avoid hydration warnings.
