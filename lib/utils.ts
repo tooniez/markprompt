@@ -39,7 +39,7 @@ import {
   WebsiteSourceDataType,
 } from '@/types/types';
 
-import { MIN_SLUG_LENGTH } from './constants';
+import { APPROX_CHARS_PER_TOKEN, MIN_SLUG_LENGTH } from './constants';
 import { removeSchema } from './utils.edge';
 
 const lookup = [
@@ -834,8 +834,6 @@ export const roundToLowerOrderDecimal = (n: number) => {
   const roundedNumber = Math.round(n / order) * order;
   return roundedNumber;
 };
-
-const APPROX_CHARS_PER_TOKEN = 3.8;
 
 // Fast approximate token count. We use a slightly smaller value
 // to ensure we stay within boundaries.

@@ -3,7 +3,10 @@ import { stripIndent } from 'common-tags';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { isPresent } from 'ts-is-present';
 
-import { CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO } from '@/lib/constants';
+import {
+  APPROX_CHARS_PER_TOKEN,
+  CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO,
+} from '@/lib/constants';
 import { getProjectConfigData } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import {
@@ -61,6 +64,16 @@ const trimQueries = (queries: QueryStatData[], maxTokens: number) => {
   return trimmedQueries;
 };
 
+// Ensure that no queries alone are too large for the prompt. If one
+// such query exists.
+
+const MAX_CONTENT_SIZE =
+  CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO * 0.45 * APPROX_CHARS_PER_TOKEN;
+
+const trimContent = (content: string) => {
+  return content.slice(0, MAX_CONTENT_SIZE);
+};
+
 const redactSensitiveInfo = async (
   projectId: Project['id'],
   content: string,
@@ -88,7 +101,7 @@ const redactSensitiveInfo = async (
           stripIndent(`You are an information security expert. The following is a section of text. Remove any sensitive information, such as person names, phone numbers and specific figures. When removing a piece of info, replace it with [REDACTED]. You should be very aggressive in removing information. If in doubt, redact it away.
 
         ---
-        ${content}
+        ${trimContent(content)}
         ---
 
         Redacted version:`),
@@ -160,10 +173,18 @@ const processProjectQueryStats = async (
         throw new Error('No prompt in query.');
       }
 
-      console.log('*** Processing prompt');
+      console.log(
+        '*** Processing prompt',
+        query.prompt.length,
+        query.prompt.slice(0, 20),
+      );
       const redactedPrompt = await redactSensitiveInfo(projectId, query.prompt);
       let redactedResponse: string | undefined = undefined;
-      console.log('*** redactedPrompt', redactedPrompt);
+      console.log(
+        '*** redactedPrompt',
+        redactedPrompt.length,
+        redactedPrompt.slice(0, 20),
+      );
       if (query.response) {
         redactedResponse = await redactSensitiveInfo(projectId, query.response);
       }
