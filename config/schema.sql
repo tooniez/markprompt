@@ -11,7 +11,8 @@ create table users (
   avatar_url                   text,
   has_completed_onboarding     boolean not null default false,
   subscribe_to_product_updates boolean not null default false,
-  outreach_tag                 text
+  outreach_tag                 text,
+  last_email_id                text
 );
 
 -- Teams

@@ -15,13 +15,16 @@ export const MDXComponent: FC<MDXComponentProps> = ({ children, meta }) => {
       <Head>
         <title>{`${meta.title} | Markprompt`}</title>
       </Head>
-      <div className="prose prose-invert mx-auto mt-16 max-w-screen-md px-8 pb-20 pt-12">
-        <div className="mb-20">
-          <Link href="/" className="outline-none">
+      <div className="mx-auto mt-16 max-w-screen-md px-8 pb-20 pt-12">
+        <div className="not-prose mb-20">
+          <Link
+            href="/"
+            className="inline-block border-b-0 no-underline outline-none"
+          >
             <MarkpromptIcon className="h-20 w-20 text-white" />
           </Link>
         </div>
-        {children}
+        <div className="prose prose-invert ">{children}</div>
       </div>
     </>
   );
