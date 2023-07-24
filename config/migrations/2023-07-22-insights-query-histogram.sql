@@ -21,3 +21,10 @@ begin
   group by date_trunc(trunc_interval, created_at at time zone tz);
 end;
 $$;
+
+-- Processed state
+
+create type query_stat_processed_state as enum ('processed', 'ignored', 'unprocessed');
+
+alter table query_stats
+add column processed_state query_stat_processed_state default 'unprocessed';

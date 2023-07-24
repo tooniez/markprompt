@@ -49,7 +49,7 @@ export default async function handler(
       .from('query_stats')
       .select('id,created_at,prompt,no_response')
       .eq('project_id', projectId)
-      .eq('processed', true)
+      .eq('processed_state', 'processed')
       .gte('created_at', req.query.from)
       .lte('created_at', req.query.to)
       .not('prompt', 'is', null)

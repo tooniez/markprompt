@@ -62,10 +62,8 @@ const Insights = () => {
         console.debug('Process query stats response:', JSON.stringify(res));
 
         if (res.allProcessed) {
-          console.log('[ALL PROCESSED]');
           setProcessingQueryStats(false);
         } else {
-          console.log('[PROCESSING NEXT BATCH]');
           // Don't show processing every time the page is opened,
           // while checking processing state. Only show processing
           // after a first round-trip, where it's confirmed we're

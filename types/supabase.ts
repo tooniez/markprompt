@@ -363,6 +363,11 @@ export interface Database {
           meta: Json | null
           no_response: boolean | null
           processed: boolean
+          processed_prompt: string | null
+          processed_response: string | null
+          processed_state:
+            | Database["public"]["Enums"]["query_stat_processed_state"]
+            | null
           project_id: string
           prompt: string | null
           reference_paths: string[] | null
@@ -377,6 +382,11 @@ export interface Database {
           meta?: Json | null
           no_response?: boolean | null
           processed?: boolean
+          processed_prompt?: string | null
+          processed_response?: string | null
+          processed_state?:
+            | Database["public"]["Enums"]["query_stat_processed_state"]
+            | null
           project_id: string
           prompt?: string | null
           reference_paths?: string[] | null
@@ -391,6 +401,11 @@ export interface Database {
           meta?: Json | null
           no_response?: boolean | null
           processed?: boolean
+          processed_prompt?: string | null
+          processed_response?: string | null
+          processed_state?:
+            | Database["public"]["Enums"]["query_stat_processed_state"]
+            | null
           project_id?: string
           prompt?: string | null
           reference_paths?: string[] | null
@@ -1034,6 +1049,8 @@ export interface Database {
     }
     Enums: {
       membership_type: "viewer" | "admin"
+      processed_type: "processed" | "ignored"
+      query_stat_processed_state: "processed" | "ignored" | "unprocessed"
       source_type: "github" | "motif" | "website" | "file-upload" | "api-upload"
     }
     CompositeTypes: {

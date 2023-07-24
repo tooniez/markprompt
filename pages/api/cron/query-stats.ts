@@ -149,13 +149,12 @@ const processProjectQueryStats = async (
   processed?: number;
   errored?: number;
 }> => {
-  // We don't want to mix questions in the same GPT-4 prompt, as we want to
-  // guarantee that prompts do not get mistakenly interchanged.
   const { data: queries }: { data: QueryStatData[] | null } =
     await supabaseAdmin
       .from('query_stats')
-      .select('id,prompt,response')
-      .match({ project_id: projectId, processed: false })
+      .select('id,prompt,response,processed_state')
+      .eq('project_id', projectId)
+      .eq('processed_state', 'unprocessed')
       .order('created_at', { ascending: false })
       .limit(10);
 
@@ -173,18 +172,8 @@ const processProjectQueryStats = async (
         throw new Error('No prompt in query.');
       }
 
-      console.log(
-        '*** Processing prompt',
-        query.prompt.length,
-        query.prompt.slice(0, 20),
-      );
       const redactedPrompt = await redactSensitiveInfo(projectId, query.prompt);
       let redactedResponse: string | undefined = undefined;
-      console.log(
-        '*** redactedPrompt',
-        redactedPrompt.length,
-        redactedPrompt.slice(0, 20),
-      );
       if (query.response) {
         redactedResponse = await redactSensitiveInfo(projectId, query.response);
       }
@@ -192,15 +181,18 @@ const processProjectQueryStats = async (
       await supabaseAdmin
         .from('query_stats')
         .update({
-          processed: true,
+          processed_state: 'processed',
           prompt: redactedPrompt,
           ...(redactedResponse ? { response: redactedResponse } : {}),
         })
         .eq('id', query.id);
       processed += 1;
-    } catch {
-      console.log('*** Error processing');
+    } catch (e) {
       errored += 1;
+      await supabaseAdmin
+        .from('query_stats')
+        .update({ processed_state: 'ignored' })
+        .eq('id', query.id);
     }
   }
 
@@ -229,7 +221,7 @@ export default async function handler(
       return res.status(200).send({
         status: 'ok',
         processed: processed.processed,
-        errored: processed.processed,
+        errored: processed.errored,
       });
     }
   } else {
