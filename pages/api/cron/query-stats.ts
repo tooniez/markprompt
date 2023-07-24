@@ -144,7 +144,7 @@ const processProjectQueryStats = async (
       .select('id,prompt,response')
       .match({ project_id: projectId, processed: false })
       .order('created_at', { ascending: false })
-      .limit(100);
+      .limit(10);
 
   if (!queries || queries.length === 0) {
     return { status: 'no_more_stats_to_process' };
