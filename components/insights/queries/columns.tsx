@@ -79,7 +79,7 @@ export const columns: ColumnDef<PromptQueryStat>[] = [
     cell: ({ row }) => {
       const noResponse = !!row.getValue('no_response');
       if (!noResponse) {
-        return <></>;
+        return <Tag color="green">Answered</Tag>;
       }
       return (
         <div className="overflow-hidden">
