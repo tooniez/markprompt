@@ -14,7 +14,9 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 type Data = {
   data?: CreateEmailResponse;
+  emails?: string[];
   error?: string;
+  done?: boolean;
 };
 
 const allowedMethods = ['POST'];
@@ -35,7 +37,23 @@ export default async function handler(
     return res.status(403).json({ error: 'Forbidden' });
   }
 
-  const recipients = ['michael@motif.land'];
+  const emailId = req.body.emailId;
+  if (!emailId) {
+    return res.status(400).json({ error: 'Please provide an emailId.' });
+  }
+
+  // const { data } = await supabase
+  //   .from('users')
+  //   .select('id,email')
+  //   .not('last_email_id', 'eq', req.body.emailId)
+  //   .limit(40);
+
+  // const emails = (data || []).map((d) => d.email);
+  const emails = ['michael@motif.land'];
+
+  if (emails.length === 0) {
+    return res.status(200).json({ done: true });
+  }
 
   const markdown = req.body.markdown;
   const unsubscribeMarkdown = req.body.unsubscribeMarkdown;
@@ -57,19 +75,27 @@ export default async function handler(
     unsubscribeMarkdown;
 
   try {
-    const data = await resend.emails.send({
+    const resendData = await resend.emails.send({
       from: `${process.env.MARKPROMPT_NEWSLETTER_SENDER_NAME!} <${process.env
         .MARKPROMPT_NEWSLETTER_SENDER_EMAIL!}>`,
       reply_to: process.env.MARKPROMPT_NEWSLETTER_REPLY_TO!,
-      to: recipients,
+      // to: emails,
+      to: emails,
       subject: req.body.subject,
       text,
       react,
     });
 
-    res.status(200).json({ data });
+    // const ids = (data || []).map((d) => d.id);
+
+    // await supabase
+    //   .from('users')
+    //   .update({ last_email_id: emailId })
+    //   .in('id', ids);
+
+    res.status(200).json({ data: resendData, emails });
   } catch (error) {
     console.error(error);
-    res.status(400).json({ error: JSON.stringify(error) });
+    res.status(400).json({ error: JSON.stringify(error), emails });
   }
 }

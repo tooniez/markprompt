@@ -1,5 +1,5 @@
 import { formatISO, parseISO } from 'date-fns';
-import { FC, useState } from 'react';
+import { FC, useCallback, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import Button from '@/components/ui/Button';
@@ -11,12 +11,13 @@ type EmailPreviewProps = {
   preview: string;
   date: string;
   templateId: TemplateId;
+  emailId: string;
 };
 
 const getUnsubscribeMarkdown = (templateId: TemplateId) => {
   switch (templateId) {
     case 'plain':
-      return '[Unsubscribe]({{{RESEND_UNSUBSCRIBE_URL}}})  if you do not wish to receive updates from me.';
+      return '[Unsubscribe]({{{RESEND_UNSUBSCRIBE_URL}}}) if you do not wish to receive updates from me.';
     case 'monthly_update':
       return 'You are receiving this email because you signed up at [markprompt.com](https://markprompt.com). [Unsubscribe]({{{RESEND_UNSUBSCRIBE_URL}}}).';
   }
@@ -28,12 +29,57 @@ export const EmailPreview: FC<EmailPreviewProps> = ({
   preview,
   date,
   templateId,
+  emailId,
 }) => {
   const [sending, setSending] = useState(false);
   const _date = parseISO(date);
 
   const Template = getTemplate(templateId);
   const unsubscribeMarkdown = getUnsubscribeMarkdown(templateId);
+
+  const sendBatch = useCallback(
+    async (num = 0, processed = 0) => {
+      console.debug(`Sending batch ${num}`);
+      const res = await fetch('/api/emails/send', {
+        method: 'POST',
+        body: JSON.stringify({
+          subject,
+          markdown,
+          unsubscribeMarkdown,
+          preview,
+          templateId,
+          emailId,
+          date: formatISO(_date),
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          accept: 'application/json',
+        },
+      });
+      if (!res.ok) {
+        console.error(await res.text());
+        toast.error('Error sending emails, see console logs');
+        return;
+      }
+
+      const json = await res.json();
+      if (json.done) {
+        toast.error('Emails have been sent!');
+      } else {
+        console.debug('Sent:', JSON.stringify(json.emails, null, 2));
+        // sendBatch(num + 1, processed + (json.emails || []).length);
+      }
+    },
+    [
+      _date,
+      emailId,
+      markdown,
+      preview,
+      subject,
+      templateId,
+      unsubscribeMarkdown,
+    ],
+  );
 
   return (
     <>
@@ -70,27 +116,7 @@ export const EmailPreview: FC<EmailPreviewProps> = ({
             loading={sending}
             onClick={async () => {
               setSending(true);
-              const res = await fetch('/api/emails/send', {
-                method: 'POST',
-                body: JSON.stringify({
-                  subject,
-                  markdown,
-                  unsubscribeMarkdown,
-                  preview,
-                  templateId,
-                  date: formatISO(_date),
-                }),
-                headers: {
-                  'Content-Type': 'application/json',
-                  accept: 'application/json',
-                },
-              });
-              if (!res.ok) {
-                console.error(await res.text());
-                toast.error('Error sending emails, see console logs');
-              } else {
-                toast.error('Emails have been sent!');
-              }
+              await sendBatch();
               setSending(false);
             }}
           >

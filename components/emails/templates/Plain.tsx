@@ -42,6 +42,7 @@ export const PlainTemplate: FC<PlainTemplate> = ({
             }}
           />
         </Section>
+        <Link href="{{{RESEND_UNSUBSCRIBE_URL}}}">Unsubscribe!!</Link>
       </Container>
     </Wrapper>
   );

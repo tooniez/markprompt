@@ -35,4 +35,4 @@ add column feedback text not null default '';
 -- Emails
 
 alter table users
-add column last_email_id text default null;
+add column last_email_id text not null default '';

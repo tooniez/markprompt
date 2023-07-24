@@ -12,7 +12,7 @@ create table users (
   has_completed_onboarding     boolean not null default false,
   subscribe_to_product_updates boolean not null default false,
   outreach_tag                 text,
-  last_email_id                text
+  last_email_id                text not null default ''
 );
 
 -- Teams
