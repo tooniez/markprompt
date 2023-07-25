@@ -2,20 +2,22 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { createClient } from '@supabase/supabase-js';
 import { parseISO } from 'date-fns';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import pLimit from 'p-limit';
+import { ReactElement } from 'react';
 import { remark } from 'remark';
 import { Resend } from 'resend';
-import { CreateEmailResponse } from 'resend/build/src/emails/interfaces';
 import strip from 'strip-markdown';
 
 import { getTemplate } from '@/lib/email';
 import { canSendEmails } from '@/lib/middleware/email';
 import { Database } from '@/types/supabase';
+import { DbUser } from '@/types/types';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 type Data = {
-  data?: CreateEmailResponse;
-  emails?: string[];
+  sent?: string[];
+  errored?: string[];
   error?: string;
   done?: boolean;
 };
@@ -44,11 +46,38 @@ const getProductionSupabaseAdminLocally = () => {
 
 const productionSupabaseAdmin = getProductionSupabaseAdminLocally();
 
-// Notes: we've built this handler to make it possible to run
+const sendEmail = async (
+  subject: string,
+  email: string,
+  text: string,
+  react: ReactElement<any, any>,
+) => {
+  return resend.emails.send({
+    from: `${process.env.MARKPROMPT_NEWSLETTER_SENDER_NAME!} <${process.env
+      .MARKPROMPT_NEWSLETTER_SENDER_EMAIL!}>`,
+    reply_to: process.env.MARKPROMPT_NEWSLETTER_REPLY_TO!,
+    to: email,
+    subject,
+    text,
+    react,
+  });
+};
+
+// Note: we've built this handler to make it possible to run
 // locally. In particular, it uses the client Supabase instance
 // to fetch session data (à priori on localhost), and the
 // admin Supabase instance specifically with production keys,
 // to run the user fetching/updating on the production database.
+
+// The process for sending an email newsletter is:
+// - Create a Markdown file in resoources/newsletters
+// - Paste the file name (without the md extension) in pages/emails/preview
+// - Preview it on localhost:3000/emails/preview
+// - Remove the last_email_id values for all users
+// - Hit send on the preview page. This will send the newsletter to
+//   all users whose last_email_id value is not yet set to the id of the
+//   email, and once the email is successfully sent, it will update the
+//   last_email_id value so that the email cannot be sent twice.
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
@@ -79,13 +108,10 @@ export default async function handler(
     .from('users')
     .select('id,email')
     .not('last_email_id', 'eq', req.body.emailId)
-    // .eq('email', 'michael@motif.land')
-    .limit(1);
+    .limit(10);
 
-  const emails = (data || []).map((d) => d.email);
-  // const emails = ['michael@motif.land'];
-
-  if (emails.length === 0) {
+  const users = data || [];
+  if (users.length === 0) {
     return res.status(200).json({ done: true });
   }
 
@@ -98,38 +124,49 @@ export default async function handler(
     withHtml: true,
   });
 
+  if (!react) {
+    res.status(400).json({ error: 'Unable to create React component.' });
+    return;
+  }
+
   // Make sure the unsubscribe Markdown is also included in the plain text
-  // version, but keep the verbatim Markdown as we don't want to strip away
-  // the unsubscribe link.
+  // version.
   const text =
     String(await remark().use(strip).process(markdown)) +
     '\n\nUnsubscribe link: {{{RESEND_UNSUBSCRIBE_URL}}}';
 
-  console.log('Sending to', JSON.stringify(emails, null, 2));
+  const successUsers: Pick<DbUser, 'id' | 'email'>[] = [];
+  const errorUsers: Pick<DbUser, 'id' | 'email'>[] = [];
+
+  const limit = pLimit(10);
 
   try {
-    const resendData = await resend.emails.send({
-      from: `${process.env.MARKPROMPT_NEWSLETTER_SENDER_NAME!} <${process.env
-        .MARKPROMPT_NEWSLETTER_SENDER_EMAIL!}>`,
-      reply_to: process.env.MARKPROMPT_NEWSLETTER_REPLY_TO!,
-      to: emails,
-      subject: req.body.subject,
-      text,
-      react,
-    });
+    await Promise.all(
+      users.map((user) => {
+        return limit(async () => {
+          try {
+            await sendEmail(req.body.subject, user.email, text, react);
 
-    const ids = (data || []).map((d) => d.id);
+            successUsers.push(user);
 
-    console.log('ids', JSON.stringify(ids, null, 2));
-
-    await productionSupabaseAdmin
-      .from('users')
-      .update({ last_email_id: emailId })
-      .in('id', ids);
-
-    res.status(200).json({ data: resendData, emails });
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ error: JSON.stringify(error), emails });
+            // Update immediately in DB, and not later, since the serveless
+            // function could time out.
+            await productionSupabaseAdmin
+              .from('users')
+              .update({ last_email_id: emailId })
+              .eq('id', user.id);
+          } catch {
+            errorUsers.push(user);
+          }
+        });
+      }),
+    );
+  } catch (e) {
+    console.error(e);
   }
+
+  res.status(200).json({
+    sent: successUsers.map((u) => u.email),
+    errored: errorUsers.map((u) => u.email),
+  });
 }

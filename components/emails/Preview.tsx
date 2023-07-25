@@ -52,10 +52,10 @@ export const EmailPreview: FC<EmailPreviewProps> = ({
       }
 
       const json = await res.json();
+      console.debug('Response:', JSON.stringify(json, null, 2));
       if (json.done) {
         toast.error('Emails have been sent!');
       } else {
-        console.debug('Sent:', JSON.stringify(json.emails, null, 2));
         await sendBatch(num + 1, processed + (json.emails || []).length);
       }
     },
