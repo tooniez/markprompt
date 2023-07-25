@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 import { parseISO } from 'date-fns';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { remark } from 'remark';
@@ -21,6 +22,33 @@ type Data = {
 
 const allowedMethods = ['POST'];
 
+const RUN_AGAINST_PROD = true;
+
+const SUPABASE_ADMIN_NEXT_PUBLIC_SUPABASE_URL = RUN_AGAINST_PROD
+  ? process.env.NEXT_PUBLIC_SUPABASE_URL_PRODUCTION___WARNING___
+  : process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+const SUPABASE_ADMIN_SERVICE_ROLE_KEY = RUN_AGAINST_PROD
+  ? process.env.___WARNING___SUPABASE_SERVICE_ROLE_KEY_PRODUCTION
+  : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+const getProductionSupabaseAdminLocally = () => {
+  // This code is for running against the Supabase production instance
+  // locally. We deliberately use keys with warnings to ensure we don't
+  // accidentally copy paste this code elsewhere.
+  return createClient<Database>(
+    SUPABASE_ADMIN_NEXT_PUBLIC_SUPABASE_URL || '',
+    SUPABASE_ADMIN_SERVICE_ROLE_KEY || '',
+  );
+};
+
+const productionSupabaseAdmin = getProductionSupabaseAdminLocally();
+
+// Notes: we've built this handler to make it possible to run
+// locally. In particular, it uses the client Supabase instance
+// to fetch session data (à priori on localhost), and the
+// admin Supabase instance specifically with production keys,
+// to run the user fetching/updating on the production database.
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
@@ -30,8 +58,13 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
-  const supabase = createServerSupabaseClient<Database>({ req, res });
-  const _canSendEmails = await canSendEmails(supabase);
+  // Use the session-based Supabase client here. This is required for the
+  // canSendEmails check, which looks at the session active user.
+  const localSupabaseClient = createServerSupabaseClient<Database>({
+    req,
+    res,
+  });
+  const _canSendEmails = await canSendEmails(localSupabaseClient);
 
   if (!_canSendEmails) {
     return res.status(403).json({ error: 'Forbidden' });
@@ -42,14 +75,15 @@ export default async function handler(
     return res.status(400).json({ error: 'Please provide an emailId.' });
   }
 
-  // const { data } = await supabase
-  //   .from('users')
-  //   .select('id,email')
-  //   .not('last_email_id', 'eq', req.body.emailId)
-  //   .limit(40);
+  const { data } = await productionSupabaseAdmin
+    .from('users')
+    .select('id,email')
+    .not('last_email_id', 'eq', req.body.emailId)
+    // .eq('email', 'michael@motif.land')
+    .limit(1);
 
-  // const emails = (data || []).map((d) => d.email);
-  const emails = ['michael@motif.land'];
+  const emails = (data || []).map((d) => d.email);
+  // const emails = ['michael@motif.land'];
 
   if (emails.length === 0) {
     return res.status(200).json({ done: true });
@@ -69,7 +103,9 @@ export default async function handler(
   // the unsubscribe link.
   const text =
     String(await remark().use(strip).process(markdown)) +
-    '\n\n{{{RESEND_UNSUBSCRIBE_URL}}}';
+    '\n\nUnsubscribe link: {{{RESEND_UNSUBSCRIBE_URL}}}';
+
+  console.log('Sending to', JSON.stringify(emails, null, 2));
 
   try {
     const resendData = await resend.emails.send({
@@ -82,12 +118,14 @@ export default async function handler(
       react,
     });
 
-    // const ids = (data || []).map((d) => d.id);
+    const ids = (data || []).map((d) => d.id);
 
-    // await supabase
-    //   .from('users')
-    //   .update({ last_email_id: emailId })
-    //   .in('id', ids);
+    console.log('ids', JSON.stringify(ids, null, 2));
+
+    await productionSupabaseAdmin
+      .from('users')
+      .update({ last_email_id: emailId })
+      .in('id', ids);
 
     res.status(200).json({ data: resendData, emails });
   } catch (error) {

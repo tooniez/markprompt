@@ -34,12 +34,14 @@ export const PlainTemplate: FC<PlainTemplate> = ({
         <Section style={section}>
           <MarkdownContainer markdown={markdown} />
         </Section>
-        <Text>
-          <Link href="{{{RESEND_UNSUBSCRIBE_URL}}}" className="underline">
-            Unsubscribe
-          </Link>{' '}
-          if you do not wish to receive updates from me.
-        </Text>
+        <Section>
+          <Text>
+            <Link href="{{{RESEND_UNSUBSCRIBE_URL}}}" className="underline">
+              Unsubscribe
+            </Link>{' '}
+            if you do not wish to receive updates from me.
+          </Text>
+        </Section>
       </Container>
     </Wrapper>
   );

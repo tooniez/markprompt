@@ -56,7 +56,7 @@ export const EmailPreview: FC<EmailPreviewProps> = ({
         toast.error('Emails have been sent!');
       } else {
         console.debug('Sent:', JSON.stringify(json.emails, null, 2));
-        // sendBatch(num + 1, processed + (json.emails || []).length);
+        await sendBatch(num + 1, processed + (json.emails || []).length);
       }
     },
     [_date, emailId, markdown, preview, subject, templateId],
