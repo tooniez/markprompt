@@ -19,7 +19,6 @@ import { Wrapper } from './Shared';
 type MonthlyUpdateTemplateProps = {
   date: Date;
   markdown: string;
-  unsubscribeMarkdown: string;
   preview: string;
   withHtml?: boolean;
 };
@@ -57,7 +56,6 @@ export const SocialCard = ({
 export const MonthlyUpdateTemplate: FC<MonthlyUpdateTemplateProps> = ({
   date,
   markdown,
-  unsubscribeMarkdown,
   preview,
   withHtml,
 }) => {
@@ -147,15 +145,18 @@ export const MonthlyUpdateTemplate: FC<MonthlyUpdateTemplateProps> = ({
             </Link>
             .
           </Text>
-          <MarkdownContainer
-            markdown={unsubscribeMarkdown}
-            components={{
-              a: (props: any) => (
-                <Link className="inline-block text-xs underline" {...props} />
-              ),
-            }}
-          />
         </Section>
+        <Text>
+          You are receiving this email because you signed up at{' '}
+          <Link href="https://markprompt.com" className="underline">
+            markprompt.com
+          </Link>
+          .{' '}
+          <Link href="{{{RESEND_UNSUBSCRIBE_URL}}}" className="underline">
+            Unsubscribe
+          </Link>
+          .
+        </Text>
       </Container>
     </Wrapper>
   );

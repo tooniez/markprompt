@@ -1,4 +1,4 @@
-import { Container, Section, Link } from '@react-email/components';
+import { Container, Section, Link, Text } from '@react-email/components';
 import { FC } from 'react';
 
 import { MarkdownContainer } from './MarkdownContainer';
@@ -6,7 +6,6 @@ import { Wrapper } from './Shared';
 
 type PlainTemplate = {
   markdown: string;
-  unsubscribeMarkdown: string;
   preview: string;
   withHtml?: boolean;
 };
@@ -22,7 +21,6 @@ const section = {
 
 export const PlainTemplate: FC<PlainTemplate> = ({
   markdown,
-  unsubscribeMarkdown,
   preview,
   withHtml,
 }) => {
@@ -35,12 +33,14 @@ export const PlainTemplate: FC<PlainTemplate> = ({
       <Container style={container}>
         <Section style={section}>
           <MarkdownContainer markdown={markdown} />
-          <MarkdownContainer
-            markdown={unsubscribeMarkdown}
-            components={{
-              a: (props: any) => <Link className="underline" {...props} />,
-            }}
-          />
+        </Section>
+        <Section>
+          <Text>
+            <Link href="{{{RESEND_UNSUBSCRIBE_URL}}}" className="underline">
+              Unsubscribe
+            </Link>{' '}
+            if you do not wish to receive updates from me.
+          </Text>
         </Section>
       </Container>
     </Wrapper>
