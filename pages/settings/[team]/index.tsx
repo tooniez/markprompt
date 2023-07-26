@@ -207,7 +207,7 @@ const TeamSettingsPage = () => {
                 )}
               </CTABar>
             </SettingsCard>
-            <SettingsCard title="Updates">
+            {/* <SettingsCard title="Updates">
               <form>
                 <div className="flex flex-row items-center gap-4 px-4 pt-4 pb-6">
                   <label
@@ -231,7 +231,7 @@ const TeamSettingsPage = () => {
                   </Switch.Root>
                 </div>
               </form>
-            </SettingsCard>
+            </SettingsCard> */}
           </>
         )}
         <SettingsCard
