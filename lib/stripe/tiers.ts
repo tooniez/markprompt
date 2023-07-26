@@ -98,7 +98,7 @@ export const DEFAULT_TIERS: Tier[] = [
   {
     id: 'pro',
     name: 'Pro',
-    description: 'For production',
+    description: 'For startups',
     items: [
       '600K tokens* (≈ 500 documents)',
       '1000 GPT-4 completions per month',

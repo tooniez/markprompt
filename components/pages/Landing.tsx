@@ -1,4 +1,3 @@
-import * as Slider from '@radix-ui/react-slider';
 import { Application } from '@splinetool/runtime';
 import cn from 'classnames';
 import Link from 'next/link';
