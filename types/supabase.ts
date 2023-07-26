@@ -359,7 +359,7 @@ export interface Database {
           created_at: string
           downvoted: boolean | null
           embedding: string | null
-          feedback: string
+          feedback: Json | null
           id: string
           meta: Json | null
           no_response: boolean | null
@@ -377,7 +377,7 @@ export interface Database {
           created_at?: string
           downvoted?: boolean | null
           embedding?: string | null
-          feedback?: string
+          feedback?: Json | null
           id?: string
           meta?: Json | null
           no_response?: boolean | null
@@ -395,7 +395,7 @@ export interface Database {
           created_at?: string
           downvoted?: boolean | null
           embedding?: string | null
-          feedback?: string
+          feedback?: Json | null
           id?: string
           meta?: Json | null
           no_response?: boolean | null

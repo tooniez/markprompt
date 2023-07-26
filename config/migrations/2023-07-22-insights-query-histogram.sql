@@ -30,7 +30,7 @@ alter table query_stats
 add column processed_state query_stat_processed_state default 'unprocessed';
 
 alter table query_stats
-add column feedback text not null default '';
+add column feedback jsonb;
 
 -- Emails
 
