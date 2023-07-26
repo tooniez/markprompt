@@ -51,29 +51,6 @@ const Onboarding = () => {
               height: 'var(--onboarding-footer-height)',
             }}
           >
-            <form>
-              <div className="flex flex-row items-center gap-4">
-                <label
-                  className="flex-grow truncate text-sm text-neutral-300"
-                  htmlFor="product-updates"
-                >
-                  Subscribe to product updates
-                </label>
-                <Switch.Root
-                  className="switch-root"
-                  id="product-updates"
-                  checked={!!user?.subscribe_to_product_updates}
-                  onCheckedChange={async (checked: boolean) => {
-                    await updateUser({
-                      subscribe_to_product_updates: checked,
-                    });
-                    await mutateUser();
-                  }}
-                >
-                  <Switch.Thumb className="switch-thumb" />
-                </Switch.Root>
-              </div>
-            </form>
             <Button
               variant="glow"
               onClick={() => {
