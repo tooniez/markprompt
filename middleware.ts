@@ -51,6 +51,8 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
       return MatchSectionsMiddleware(req);
     } else if (path?.startsWith('/v1/search')) {
       return SearchMiddleware(req);
+    } else if (path?.startsWith('/v1/feedback')) {
+      return NextResponse.rewrite(new URL('/api/v1/feedback', req.url));
     }
   }
 

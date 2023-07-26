@@ -51,6 +51,7 @@ function DataTable<TData, TValue>({
     <Table>
       <colgroup>
         <col className="w-[calc(50%-220px)]" />
+        <col className="w-[100px]" />
         <col className="w-[150px]" />
         <col className="w-[190px]" />
       </colgroup>

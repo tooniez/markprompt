@@ -6,6 +6,8 @@ import {
   ArrowUp,
   MoreHorizontalIcon,
   PanelRightIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -61,6 +63,7 @@ const Insights = () => {
   >(undefined);
   const [queryStatDialogOpen, setQueryStatDialogOpen] = useState(false);
 
+  console.log('queries', JSON.stringify(queries, null, 2));
   const columns = useMemo(() => {
     return [
       // {
@@ -106,7 +109,7 @@ const Insights = () => {
         },
         cell: ({ row }) => {
           return (
-            <div className="group relative flex w-full">
+            <div className="prompt group relative flex w-full">
               <div className="overflow-hidden truncate text-neutral-300">
                 {row.getValue('prompt')}
               </div>
@@ -122,6 +125,44 @@ const Insights = () => {
                 >
                   Open
                 </Button>
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'feedback',
+        header: ({ column }) => {
+          const sorted = column.getIsSorted();
+          return (
+            <Button
+              className="p-0 text-neutral-300"
+              noStyle
+              onClick={() => column.toggleSorting(sorted === 'asc')}
+            >
+              <div className="flex flex-row items-center gap-2">
+                Feedback
+                {sorted === 'asc' ? (
+                  <ArrowUp className="h-3 w-3" />
+                ) : sorted === 'desc' ? (
+                  <ArrowDown className="h-3 w-3" />
+                ) : null}
+              </div>
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const vote = (row.getValue('feedback') as any)?.vote;
+          return (
+            <div className="group relative flex">
+              <div className="overflow-hidden truncate text-neutral-300">
+                {vote === '1' ? (
+                  <ThumbsUpIcon className="h-4 w-4 text-green-600" />
+                ) : vote === '-1' ? (
+                  <ThumbsDownIcon className="h-4 w-4 text-rose-600" />
+                ) : (
+                  <></>
+                )}
               </div>
             </div>
           );
