@@ -132,7 +132,7 @@ export const DEFAULT_TIERS: Tier[] = [
 export const PLACEHOLDER_ENTERPRISE_TIER: Tier = {
   id: 'placeholder-enterprise',
   name: 'Enterprise',
-  description: 'For production',
+  description: 'For scale',
   items: [
     'Teams',
     'Integrations',
