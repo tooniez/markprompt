@@ -530,6 +530,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     }
 
     const serializedProps = {
+      ...markpromptOptions,
       projectKey: project.private_dev_api_key,
       showBranding: markpromptOptions.showBranding,
       prompt: {
