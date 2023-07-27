@@ -51,7 +51,25 @@ export const storePrompt = async (
     .select('id')
     .limit(1)
     .maybeSingle();
+
   return data?.id;
+};
+
+export const updatePrompt = async (
+  supabase: SupabaseClient<Database>,
+  promptId: DbQueryStat['id'],
+  response: string | undefined,
+  noResponseReason: PromptNoResponseReason | undefined,
+) => {
+  return supabase
+    .from('query_stats')
+    .update({
+      ...(response ? { response } : {}),
+      ...(typeof noResponseReason !== 'undefined'
+        ? { no_response: !!noResponseReason }
+        : {}),
+    })
+    .eq('id', promptId);
 };
 
 export const getMatchingSections = async (

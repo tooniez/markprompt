@@ -1,6 +1,7 @@
-import { Database } from '@/types/supabase';
 import { createClient } from '@supabase/supabase-js';
 import { NextApiRequest, NextApiResponse } from 'next';
+
+import { Database } from '@/types/supabase';
 
 // Admin access to Supabase, bypassing RLS.
 const supabaseAdmin = createClient<Database>(
@@ -28,8 +29,6 @@ export default async function handler(
     res.setHeader('Allow', allowedMethods);
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
-
-  const params = req.body;
 
   if (req.method === 'POST') {
     if (!req.body.promptId) {

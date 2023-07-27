@@ -102,7 +102,7 @@ const QueryStatDialog: FC<QueryStatDialogProps> = ({
                         return (
                           <div
                             className="rounded-md border border-neutral-900 bg-neutral-1100 py-1 px-2 text-sm font-medium text-neutral-300"
-                            key={`reference-${f.file.path}-${f.meta?.leadHeading?.slug}-${i}`}
+                            key={`reference-${f.file?.path}-${f.meta?.leadHeading?.slug}-${i}`}
                           >
                             {f.meta?.leadHeading?.value ||
                               f.file?.title ||

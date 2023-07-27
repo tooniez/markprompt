@@ -63,7 +63,6 @@ const Insights = () => {
   >(undefined);
   const [queryStatDialogOpen, setQueryStatDialogOpen] = useState(false);
 
-  console.log('queries', JSON.stringify(queries, null, 2));
   const columns = useMemo(() => {
     return [
       // {
