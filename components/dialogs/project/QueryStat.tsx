@@ -1,6 +1,7 @@
 import { FileSectionReference } from '@markprompt/core';
 import * as Dialog from '@radix-ui/react-dialog';
 import { parseISO } from 'date-fns';
+import { ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react';
 import { FC } from 'react';
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import useSWR from 'swr';
@@ -73,7 +74,15 @@ const QueryStatDialog: FC<QueryStatDialogProps> = ({
                   <div className="text-sm text-neutral-300">
                     <PromptStatusTag noResponse={!!queryStat.no_response} />
                   </div>
-                  <div className="text-sm text-neutral-300">N/A</div>
+                  <div className="text-sm text-neutral-300">
+                    {(queryStat.feedback as any)?.vote === '1' ? (
+                      <ThumbsUpIcon className="h-4 w-4 text-green-600" />
+                    ) : (queryStat.feedback as any)?.vote === '-1' ? (
+                      <ThumbsDownIcon className="h-4 w-4 text-rose-600" />
+                    ) : (
+                      <>N/A</>
+                    )}
+                  </div>
                 </div>
                 <div className="flex flex-col gap-2 border-b border-neutral-900 pb-4">
                   <p className="text-sm text-neutral-500">Response</p>
@@ -93,7 +102,7 @@ const QueryStatDialog: FC<QueryStatDialogProps> = ({
                         return (
                           <div
                             className="rounded-md border border-neutral-900 bg-neutral-1100 py-1 px-2 text-sm font-medium text-neutral-300"
-                            key={`reference-${f.file.path}-${f.meta?.leadHeading?.slug}-${i}`}
+                            key={`reference-${f.file?.path}-${f.meta?.leadHeading?.slug}-${i}`}
                           >
                             {f.meta?.leadHeading?.value ||
                               f.file?.title ||

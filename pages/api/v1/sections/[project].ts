@@ -2,10 +2,10 @@ import { FileSectionReference, Source } from '@markprompt/core';
 import { createClient } from '@supabase/supabase-js';
 import { NextApiRequest, NextApiResponse } from 'next';
 
+import { getMatchingSections } from '@/lib/completions';
 import { getRequesterIp } from '@/lib/middleware/common';
 import { track } from '@/lib/posthog';
 import { checkSectionsRateLimits } from '@/lib/rate-limits';
-import { getMatchingSections } from '@/lib/sections';
 import { canAccessSectionsAPI } from '@/lib/stripe/tiers';
 import { getBYOOpenAIKey, getTeamTierInfo } from '@/lib/supabase';
 import { buildSectionReferenceFromMatchResult } from '@/lib/utils';

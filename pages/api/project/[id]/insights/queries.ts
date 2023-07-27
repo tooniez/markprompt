@@ -47,7 +47,7 @@ export default async function handler(
     const page = safeParseInt(req.query.page as string, 0);
     const { data: queries, error } = await supabaseAdmin
       .from('query_stats')
-      .select('id,created_at,prompt,no_response')
+      .select('id,created_at,prompt,no_response,feedback')
       .eq('project_id', projectId)
       .eq('processed_state', 'processed')
       .gte('created_at', req.query.from)

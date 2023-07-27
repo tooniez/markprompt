@@ -8,6 +8,12 @@ import {
 } from 'eventsource-parser';
 import type { NextRequest } from 'next/server';
 
+import {
+  getMatchingSections,
+  PromptNoResponseReason,
+  storePrompt,
+  updatePrompt,
+} from '@/lib/completions';
 import { modelConfigFields } from '@/lib/config';
 import {
   CONTEXT_TOKENS_CUTOFF,
@@ -18,11 +24,6 @@ import {
 import { track } from '@/lib/posthog';
 import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
-import {
-  getMatchingSections,
-  PromptNoResponseReason,
-  storePrompt,
-} from '@/lib/sections';
 import {
   canUseCustomModelConfig,
   getAccessibleInsightsType,
@@ -121,7 +122,7 @@ const _storePrompt = async (
   excludeData: boolean,
 ): Promise<DbQueryStat['id'] | undefined> => {
   if (excludeData) {
-    storePrompt(
+    return storePrompt(
       supabaseAdmin,
       projectId,
       undefined,
@@ -201,6 +202,23 @@ const isTruthy = (param: any) => {
   }
 };
 
+const getHeaders = (
+  references: FileSectionReference[],
+  promptId: DbQueryStat['id'] | undefined = undefined,
+) => {
+  // Headers cannot include non-UTF-8 characters, so make sure any strings
+  // we pass in the headers are properly encoded before sending.
+  const headers = new Headers();
+  const headerEncoder = new TextEncoder();
+  const encodedHeaderData = headerEncoder
+    .encode(JSON.stringify({ references, promptId }))
+    .toString();
+
+  headers.append('Content-Type', 'application/json');
+  headers.append('x-markprompt-data', encodedHeaderData);
+  return headers;
+};
+
 export default async function handler(req: NextRequest) {
   // Preflight check
   if (req.method === 'OPTIONS') {
@@ -214,8 +232,6 @@ export default async function handler(req: NextRequest) {
   try {
     let params = await req.json();
 
-    console.debug('[COMPLETIONS] Params:', JSON.stringify(params, null, 2));
-
     const prompt = (params.prompt as string)?.substring(0, MAX_PROMPT_LENGTH);
     const iDontKnowMessage =
       (params.i_dont_know_message as string) || // v1
@@ -228,7 +244,7 @@ export default async function handler(req: NextRequest) {
     }
 
     let excludeFromInsights = false;
-    if (!isTruthy(params.excludeFromInsights)) {
+    if (isTruthy(params.excludeFromInsights)) {
       excludeFromInsights = true;
     }
 
@@ -312,7 +328,7 @@ export default async function handler(req: NextRequest) {
       fileSections = sectionsResponse.fileSections;
       promptEmbedding = sectionsResponse.promptEmbedding;
     } catch (e) {
-      await _storePrompt(
+      const promptId = await _storePrompt(
         projectId,
         prompt,
         undefined,
@@ -323,10 +339,12 @@ export default async function handler(req: NextRequest) {
         excludeFromInsights,
       );
 
+      const headers = getHeaders([], promptId);
+
       if (e instanceof ApiError) {
-        return new Response(e.message, { status: e.code });
+        return new Response(e.message, { status: e.code, headers });
       } else {
-        return new Response(`${e}`, { status: 400 });
+        return new Response(`${e}`, { status: 400, headers });
       }
     }
 
@@ -419,7 +437,7 @@ export default async function handler(req: NextRequest) {
     if (!stream) {
       if (!res.ok) {
         const message = await res.text();
-        await _storePrompt(
+        const promptId = await _storePrompt(
           projectId,
           prompt,
           undefined,
@@ -429,9 +447,12 @@ export default async function handler(req: NextRequest) {
           insightsType,
           excludeFromInsights,
         );
+
+        const headers = getHeaders(references, promptId);
+
         return new Response(
           `Unable to retrieve completions response: ${message}`,
-          { status: 400 },
+          { status: 400, headers },
         );
       } else {
         const json = await res.json();
@@ -456,8 +477,8 @@ export default async function handler(req: NextRequest) {
           excludeFromInsights,
         );
 
-        const headers = new Headers();
-        headers.append('Content-Type', 'application/json');
+        const headers = getHeaders(references, promptId);
+
         return new Response(
           JSON.stringify({
             text,
@@ -479,10 +500,24 @@ export default async function handler(req: NextRequest) {
     // count.
     let responseText = '';
     let didSendHeader = false;
-    let promptId: DbQueryStat['id'] | undefined = undefined;
 
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
+
+    // We need to store the prompt here before the streaming starts as
+    // the prompt id needs to be sent in the header, which is done immediately.
+    // We keep the prompt id and update the prompt with the generated response
+    // once it is done.
+    const promptId = await _storePrompt(
+      projectId,
+      prompt,
+      '',
+      promptEmbedding,
+      undefined,
+      references,
+      insightsType,
+      excludeFromInsights,
+    );
 
     const readableStream = new ReadableStream({
       async start(controller) {
@@ -546,17 +581,15 @@ export default async function handler(req: NextRequest) {
           );
         }
 
-        const idk = isIDontKnowResponse(responseText, iDontKnowMessage);
-        promptId = await _storePrompt(
-          projectId,
-          prompt,
-          responseText,
-          promptEmbedding,
-          idk ? 'idk' : undefined,
-          references,
-          insightsType,
-          excludeFromInsights,
-        );
+        if (promptId) {
+          const idk = isIDontKnowResponse(responseText, iDontKnowMessage);
+          await updatePrompt(
+            supabaseAdmin,
+            promptId,
+            responseText,
+            idk ? 'idk' : undefined,
+          );
+        }
 
         // We're done, wind down
         parser.reset();
@@ -564,15 +597,7 @@ export default async function handler(req: NextRequest) {
       },
     });
 
-    // Headers cannot include non-UTF-8 characters, so make sure any strings
-    // we pass in the headers are properly encoded before sending.
-    const headerEncoder = new TextEncoder();
-    const encodedData = headerEncoder
-      .encode(JSON.stringify({ references, responseId: promptId }))
-      .toString();
-
-    const headers = new Headers();
-    headers.append('x-markprompt-data', encodedData);
+    const headers = getHeaders(references, promptId);
 
     // const encodedDebugInfo = headerEncoder
     //   .encode(JSON.stringify(debugInfo))

@@ -96,7 +96,7 @@ export type Checksum = Pick<DbFile, 'path' | 'checksum'>;
 export type SourceType = Pick<Source, 'type'>['type'];
 export type PromptQueryStat = Pick<
   DbQueryStat,
-  'id' | 'created_at' | 'prompt' | 'no_response'
+  'id' | 'created_at' | 'prompt' | 'no_response' | 'feedback'
 >;
 export type PromptQueryStatFull = Pick<
   DbQueryStat,
