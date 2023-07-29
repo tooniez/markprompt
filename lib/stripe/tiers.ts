@@ -292,7 +292,7 @@ export const getEmbeddingTokensAllowance = (
   return getTierDetails(teamTierInfo).quotas?.embeddings || 0;
 };
 
-const MAX_EMBEDDINGS_TOKEN_ALLOWANCE = 1_000_000_000;
+export const MAX_EMBEDDINGS_TOKEN_ALLOWANCE = 1_000_000_000;
 
 // Plans with infinite embeddings tokens allowance still have a limit, not
 // visible to the user.

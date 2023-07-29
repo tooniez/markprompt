@@ -207,6 +207,34 @@ const TeamSettingsPage = () => {
                 )}
               </CTABar>
             </SettingsCard>
+            <SettingsCard
+              title="Email updates"
+              description="Send weekly insights and metrics updates."
+            >
+              <div className="flex flex-none flex-row items-center gap-2 px-4 pt-2 pb-4">
+                <label
+                  className="flex-grow truncate text-sm font-normal text-neutral-500"
+                  htmlFor="product-updates"
+                >
+                  Send updates
+                </label>
+                <Switch.Root
+                  className="switch-root"
+                  id="send-weekly-updates"
+                  checked={(user.config as any)?.sendWeeklyUpdates !== false}
+                  onCheckedChange={async (checked: boolean) => {
+                    const config = {
+                      ...((user.config as any) || {}),
+                      sendWeeklyUpdates: checked,
+                    };
+                    updateUser({ config });
+                    await mutateUser({ ...user, config });
+                  }}
+                >
+                  <Switch.Thumb className="switch-thumb" />
+                </Switch.Root>
+              </div>
+            </SettingsCard>
             {/* <SettingsCard title="Updates">
               <form>
                 <div className="flex flex-row items-center gap-4 px-4 pt-4 pb-6">

@@ -232,6 +232,12 @@ export interface Database {
             columns: ["user_id"]
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "v_users_with_pending_weekly_update_email"
+            referencedColumns: ["id"]
           }
         ]
       }
@@ -283,6 +289,12 @@ export interface Database {
             foreignKeyName: "projects_created_by_fkey"
             columns: ["created_by"]
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "v_users_with_pending_weekly_update_email"
             referencedColumns: ["id"]
           },
           {
@@ -528,6 +540,12 @@ export interface Database {
             columns: ["created_by"]
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teams_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "v_users_with_pending_weekly_update_email"
+            referencedColumns: ["id"]
           }
         ]
       }
@@ -558,6 +576,12 @@ export interface Database {
             foreignKeyName: "tokens_created_by_fkey"
             columns: ["created_by"]
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tokens_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "v_users_with_pending_weekly_update_email"
             referencedColumns: ["id"]
           },
           {
@@ -629,12 +653,19 @@ export interface Database {
             columns: ["user_id"]
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_access_tokens_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "v_users_with_pending_weekly_update_email"
+            referencedColumns: ["id"]
           }
         ]
       }
       users: {
         Row: {
           avatar_url: string | null
+          config: Json | null
           email: string
           full_name: string | null
           has_completed_onboarding: boolean
@@ -646,6 +677,7 @@ export interface Database {
         }
         Insert: {
           avatar_url?: string | null
+          config?: Json | null
           email: string
           full_name?: string | null
           has_completed_onboarding?: boolean
@@ -657,6 +689,7 @@ export interface Database {
         }
         Update: {
           avatar_url?: string | null
+          config?: Json | null
           email?: string
           full_name?: string | null
           has_completed_onboarding?: boolean
@@ -911,6 +944,28 @@ export interface Database {
         }
         Relationships: []
       }
+      v_users_with_pending_weekly_update_email: {
+        Row: {
+          email: string | null
+          id: string | null
+        }
+        Insert: {
+          email?: string | null
+          id?: string | null
+        }
+        Update: {
+          email?: string | null
+          id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_id_fkey"
+            columns: ["id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Functions: {
       create_fts_index: {
@@ -969,6 +1024,19 @@ export interface Database {
         Returns: {
           date: string
           occurrences: number
+        }[]
+      }
+      get_team_stats: {
+        Args: {
+          team_id: string
+        }
+        Returns: {
+          project_id: string
+          project_name: string
+          project_slug: string
+          num_files: number
+          num_file_sections: number
+          num_tokens: number
         }[]
       }
       ivfflathandler: {

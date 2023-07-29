@@ -1,10 +1,8 @@
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
 import { parseISO } from 'date-fns';
 import {
   ArrowDown,
   ArrowUp,
-  MoreHorizontalIcon,
   PanelRightIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
@@ -21,7 +19,7 @@ import Button from '@/components/ui/Button';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
 import { Tag } from '@/components/ui/Tag';
 import { processQueryStats } from '@/lib/api';
-import { formatShortDateTimeInTimeZone } from '@/lib/date';
+import { FixedDateRange, formatShortDateTimeInTimeZone } from '@/lib/date';
 import useInsights from '@/lib/hooks/use-insights';
 import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
@@ -357,6 +355,7 @@ const Insights = () => {
           disabled={team && !canViewInsights(team)}
           range={dateRange}
           setRange={setDateRange}
+          defaultRange={FixedDateRange.PAST_3_MONTHS}
         />
       </div>
       <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-3">

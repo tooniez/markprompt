@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/query-stats",
       "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/weekly-update-email",
+      "schedule": "*/10 * * * *"
     }
   ]
 }
