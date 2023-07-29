@@ -28,6 +28,7 @@ export const storePrompt = async (
   embedding: number[] | undefined,
   noResponseReason: PromptNoResponseReason | undefined,
   references: FileSectionReference[] | undefined,
+  redact: boolean,
 ): Promise<DbQueryStat['id'] | undefined> => {
   const meta = {
     ...(references && references?.length > 0 ? { references } : {}),
@@ -46,6 +47,7 @@ export const storePrompt = async (
           ? { no_response: !!noResponseReason }
           : {}),
         ...(Object.keys(meta).length > 0 ? { meta } : {}),
+        ...(redact ? { processed_state: 'unprocessed' } : {}),
       },
     ])
     .select('id')

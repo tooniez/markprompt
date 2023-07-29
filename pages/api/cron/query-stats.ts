@@ -47,22 +47,6 @@ const estimateQueryTokenCount = (query: QueryStatData) => {
   return approximatedTokenCount(JSON.stringify(query));
 };
 
-const trimQueries = (queries: QueryStatData[], maxTokens: number) => {
-  let tokenCount = 0;
-  const trimmedQueries: QueryStatData[] = [];
-  for (const query of queries) {
-    tokenCount += estimateQueryTokenCount(query);
-
-    if (tokenCount >= maxTokens) {
-      break;
-    }
-
-    trimmedQueries.push(query);
-  }
-
-  return trimmedQueries;
-};
-
 // Ensure that no queries alone are too large for the prompt. If one
 // such query exists.
 
@@ -190,7 +174,7 @@ const processProjectQueryStats = async (
       errored += 1;
       await supabaseAdmin
         .from('query_stats')
-        .update({ processed_state: 'ignored' })
+        .update({ processed_state: 'errored' })
         .eq('id', query.id);
     }
   }

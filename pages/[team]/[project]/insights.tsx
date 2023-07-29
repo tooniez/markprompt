@@ -156,7 +156,7 @@ const Insights = () => {
                 {vote === '1' ? (
                   <ThumbsUpIcon className="h-4 w-4 text-green-600" />
                 ) : vote === '-1' ? (
-                  <ThumbsDownIcon className="h-4 w-4 text-rose-600" />
+                  <ThumbsDownIcon className="h-4 w-4 text-orange-600" />
                 ) : (
                   <></>
                 )}

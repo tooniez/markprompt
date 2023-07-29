@@ -1142,7 +1142,11 @@ export interface Database {
     Enums: {
       membership_type: "viewer" | "admin"
       processed_type: "processed" | "ignored"
-      query_stat_processed_state: "processed" | "ignored" | "unprocessed"
+      query_stat_processed_state:
+        | "processed"
+        | "unprocessed"
+        | "errored"
+        | "skipped"
       source_type: "github" | "motif" | "website" | "file-upload" | "api-upload"
     }
     CompositeTypes: {

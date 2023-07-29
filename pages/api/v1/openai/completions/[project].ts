@@ -119,7 +119,11 @@ const _storePrompt = async (
   errorReason: PromptNoResponseReason | undefined,
   references: FileSectionReference[],
   insightsType: InsightsType | undefined,
+  // If true, only the event will be stored for global counts.
   excludeData: boolean,
+  // If true, the stat will be marked as `unprocessed` and will
+  // be processed to redact sensited info.
+  redact: boolean,
 ): Promise<DbQueryStat['id'] | undefined> => {
   if (excludeData) {
     return storePrompt(
@@ -130,21 +134,24 @@ const _storePrompt = async (
       undefined,
       errorReason,
       undefined,
+      redact,
+    );
+  } else {
+    // Store prompt always.
+    // Store response in >= basic insights.
+    // Store embeddings in >= advanced insights.
+    // Store references in >= basic insights.
+    return storePrompt(
+      supabaseAdmin,
+      projectId,
+      prompt,
+      insightsType ? responseText : undefined,
+      insightsType === 'advanced' ? promptEmbedding : undefined,
+      errorReason,
+      insightsType ? references : undefined,
+      redact,
     );
   }
-  // Store prompt always.
-  // Store response in >= basic insights.
-  // Store embeddings in >= advanced insights.
-  // Store references in >= basic insights.
-  return storePrompt(
-    supabaseAdmin,
-    projectId,
-    prompt,
-    insightsType ? responseText : undefined,
-    insightsType === 'advanced' ? promptEmbedding : undefined,
-    errorReason,
-    insightsType ? references : undefined,
-  );
 };
 
 const buildFullPrompt = (
@@ -248,6 +255,11 @@ export default async function handler(req: NextRequest) {
       excludeFromInsights = true;
     }
 
+    let redact = false;
+    if (isTruthy(params.redact)) {
+      redact = true;
+    }
+
     const { pathname, searchParams } = new URL(req.url);
 
     const lastPathComponent = pathname.split('/').slice(-1)[0];
@@ -337,6 +349,7 @@ export default async function handler(req: NextRequest) {
         [],
         insightsType,
         excludeFromInsights,
+        redact,
       );
 
       const headers = getHeaders([], promptId);
@@ -446,6 +459,7 @@ export default async function handler(req: NextRequest) {
           references,
           insightsType,
           excludeFromInsights,
+          redact,
         );
 
         const headers = getHeaders(references, promptId);
@@ -475,6 +489,7 @@ export default async function handler(req: NextRequest) {
           references,
           insightsType,
           excludeFromInsights,
+          redact,
         );
 
         const headers = getHeaders(references, promptId);
@@ -517,6 +532,7 @@ export default async function handler(req: NextRequest) {
       references,
       insightsType,
       excludeFromInsights,
+      redact,
     );
 
     const readableStream = new ReadableStream({

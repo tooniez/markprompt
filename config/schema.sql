@@ -138,7 +138,7 @@ create table public.prompt_configs (
 );
 comment on table public.prompt_configs is 'Prompt configs.';
 
-create type query_stat_processed_state as enum ('processed', 'ignored', 'unprocessed');
+create type query_stat_processed_state as enum ('processed', 'unprocessed', 'errored', 'skipped');
 
 -- Query stats
 create table public.query_stats (
@@ -153,7 +153,7 @@ create table public.query_stats (
   downvoted          boolean,
   feedback           jsonb,
   processed          boolean not null default false,
-  procesed_state     query_stat_processed_state default 'unprocessed',
+  procesed_state     query_stat_processed_state default 'skipped',
   embedding          vector(1536)
 );
 comment on table public.query_stats is 'Query stats.';

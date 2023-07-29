@@ -49,10 +49,11 @@ export default async function handler(
       .from('query_stats')
       .select('id,created_at,prompt,no_response,feedback')
       .eq('project_id', projectId)
-      .eq('processed_state', 'processed')
+      .or('processed_state.eq.processed,processed_state.eq.skipped')
       .gte('created_at', req.query.from)
       .lte('created_at', req.query.to)
       .not('prompt', 'is', null)
+      .neq('prompt', '')
       .order('created_at', { ascending: false })
       .range(page * limit, (page + 1) * (limit - 1));
 
