@@ -694,7 +694,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
               </div>
               {!isOnboarding && (
                 <Link
-                  href={`/${team?.slug}/${project?.slug}/data`}
+                  href={`/${team?.slug}/${project?.slug}`}
                   className="subtle-underline mt-4 inline-block text-xs text-neutral-500"
                 >
                   Go to data browser

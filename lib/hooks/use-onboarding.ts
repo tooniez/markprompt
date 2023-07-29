@@ -18,7 +18,7 @@ export default function useOnboarding() {
     await mutateUser();
     if (team && project) {
       Router.push({
-        pathname: '/[team]/[project]/data',
+        pathname: '/[team]/[project]',
         query: { team: team.slug, project: project.slug },
       });
     }

@@ -52,7 +52,7 @@ const NewProject = () => {
               setTimeout(() => {
                 showConfetti();
                 router.replace({
-                  pathname: '/[team]/[project]/data',
+                  pathname: '/[team]/[project]',
                   query: { team: team.slug, project: newProject.slug },
                 });
               }, 500);
