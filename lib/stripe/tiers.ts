@@ -11,9 +11,9 @@ type Price = {
 export type PlanDetails = {
   // When a team has not signed up for a tier, these options are
   // enabled by default, e.g. during a testing period.
-  trial?: { expires?: string; details: TierDetails };
-  // These tiers are offered as options to a team, in addition to
-  // the default ones.
+  trial?: Omit<Tier, 'id'> & { expires?: string };
+  // These tiers are displayed in the Plan screen, offered as options
+  // to a team, in addition to the default ones.
   tiers: Tier[];
 };
 
@@ -33,7 +33,13 @@ export type TierDetails = {
 };
 
 export type Tier = {
-  id: 'hobby' | 'starter' | 'pro' | 'placeholder-enterprise' | string;
+  id:
+    | 'hobby'
+    | 'starter'
+    | 'pro'
+    | 'placeholder-enterprise'
+    | 'custom'
+    | string;
   name?: string;
   description?: string;
   items?: string[];
@@ -160,10 +166,52 @@ export const getDefaultTierFromPriceId = (
   return undefined;
 };
 
-const getCustomTier = (teamTierInfo: TeamTierInfo): Tier | undefined => {
+const getCustomSubscribedTier = (
+  teamTierInfo: TeamTierInfo,
+): Tier | undefined => {
   // Return the custom tier that the team has subscribed to. This means
   // there is a valid stripe_price_id which matches with one tier in the
   // list of offered custom tiers for this team.
+  //
+  // A custom tier looks as follows in the plan_details column:
+  //
+  // {
+  //   "tiers": [
+  //     {
+  //       "id": "enterprise",
+  //       "name": "Enterprise",
+  //       "items": [
+  //         "Unlimited content/training",
+  //         ...
+  //       ],
+  //       "price": {
+  //         "monthly": {
+  //           "amount": 600,
+  //           "priceId": <stripe_price_id>
+  //         }
+  //       },
+  //       "details": {
+  //         "quotas": {
+  //           "embeddings": 1000000000,
+  //           "completions": 5000
+  //         },
+  //         "features": {
+  //           "insights": {
+  //             "type": "basic"
+  //           },
+  //           "customPageFetcher": {
+  //             "enabled": false
+  //           }
+  //         },
+  //         "maxProjects": 3,
+  //         "maxTeamMembers": 3
+  //       }
+  //     }
+  //   ]
+  // }
+  //
+  // This allows us to present the tier in the Plan screen, and for
+  // the team to subscribe to is like any other generic plan.
   if (!teamTierInfo.stripe_price_id) {
     return undefined;
   }
@@ -184,10 +232,11 @@ const getProTier = (): Tier => {
 };
 
 export const getTier = (teamTierInfo: TeamTierInfo): Tier => {
-  const customTier = getCustomTier(teamTierInfo);
-  if (customTier) {
-    return customTier;
+  const customSubscribedTier = getCustomSubscribedTier(teamTierInfo);
+  if (customSubscribedTier) {
+    return customSubscribedTier;
   }
+
   if (teamTierInfo.stripe_price_id) {
     const tier = DEFAULT_TIERS.find((t) => {
       return (
@@ -198,10 +247,17 @@ export const getTier = (teamTierInfo: TeamTierInfo): Tier => {
     // If the plan is deprecated, assume it is a pro plan.
     return tier || getProTier();
   }
+
+  const planDetails = teamTierInfo.plan_details as PlanDetails;
+  if (planDetails?.trial) {
+    return { id: 'custom', ...planDetails };
+  }
+
   return DEFAULT_TIERS.find((t) => t.id === 'hobby')!;
 };
 
 export const getTierName = (tier: Tier) => {
+  console.log('tier', JSON.stringify(tier, null, 2));
   // Unnamed tiers / non-default tiers are custom enterprise tiers.
   return tier.name || 'Enterprise';
 };
@@ -216,10 +272,10 @@ const getTierDetails = (teamTierInfo: TeamTierInfo): TierDetails => {
   // Also, a custom tier includes all features of the pro team, so we merge
   // the custom/trial tier details with those of the Pro tier,
   // giving precedence to the former.
-  const customTier = getCustomTier(teamTierInfo);
-  if (customTier?.details) {
+  const customSubscribedTier = getCustomSubscribedTier(teamTierInfo);
+  if (customSubscribedTier?.details) {
     const proTier = getProTier();
-    return deepMerge(proTier.details, customTier.details);
+    return deepMerge(proTier.details, customSubscribedTier.details);
   }
   const tierDetails = getTier(teamTierInfo)?.details || {};
   const trialTier =
@@ -230,8 +286,8 @@ const getTierDetails = (teamTierInfo: TeamTierInfo): TierDetails => {
 const isProOrCustomTier = (teamTierInfo: TeamTierInfo): boolean => {
   // A team is at least Pro if it is on the default Pro plan, or if
   // it is on a custom plan.
-  const customTier = getCustomTier(teamTierInfo);
-  if (customTier) {
+  const customSubscribedTier = getCustomSubscribedTier(teamTierInfo);
+  if (customSubscribedTier) {
     return true;
   }
   const defaultTier = getTier(teamTierInfo);
