@@ -28,6 +28,7 @@ import StepsSection from './sections/Steps';
 import VideoSection from './sections/Video';
 import { SharedHead } from './SharedHead';
 import { AnalyticsExample } from '../examples/analytics';
+import { SearchExample } from '../examples/search';
 import { CernIcon } from '../icons/Cern';
 import { DiscordIcon } from '../icons/Discord';
 import { ListItem } from '../ui/ListItem';
@@ -35,7 +36,6 @@ import { Segment } from '../ui/Segment';
 import { Slash } from '../ui/Slash';
 import { SystemStatusButton } from '../ui/SystemStatusButton';
 import { Tag } from '../ui/Tag';
-import { SearchExample } from '../examples/search';
 
 const PricingCard = ({
   tier,

@@ -350,7 +350,7 @@ const Insights = () => {
       }
       width="2xl"
     >
-      <div className="flex cursor-not-allowed justify-start">
+      <div className="flex justify-start">
         <DateRangePicker
           disabled={team && !canViewInsights(team)}
           range={dateRange}
