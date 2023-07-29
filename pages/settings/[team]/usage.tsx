@@ -190,7 +190,7 @@ const Usage = () => {
             <>
               {numUsedEmbeddingsTokens}/
               {numAllowedEmbeddingsTokens === MAX_EMBEDDINGS_TOKEN_ALLOWANCE ? (
-                <InfinityIcon className="inline-block h-3 w-3" />
+                <InfinityIcon className="inline-block h-4 w-4" />
               ) : (
                 numAllowedEmbeddingsTokens
               )}
@@ -204,7 +204,7 @@ const Usage = () => {
             <>
               {numCompletions}/
               {numAllowedCompletions === MAX_COMPLETIONS_ALLOWANCE ? (
-                <InfinityIcon className="inline-block h-3 w-3" />
+                <InfinityIcon className="inline-block h-4 w-4" />
               ) : (
                 numAllowedCompletions
               )}
