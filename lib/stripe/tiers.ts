@@ -257,7 +257,6 @@ export const getTier = (teamTierInfo: TeamTierInfo): Tier => {
 };
 
 export const getTierName = (tier: Tier) => {
-  console.log('tier', JSON.stringify(tier, null, 2));
   // Unnamed tiers / non-default tiers are custom enterprise tiers.
   return tier.name || 'Enterprise';
 };
