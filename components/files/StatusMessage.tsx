@@ -15,7 +15,10 @@ const getStatusMessage = (
     if (numSelected > 0) {
       return `${pluralize(numSelected, 'file', 'files')} selected`;
     } else {
-      return `${pluralize(numFiles, 'file', 'files')} trained`;
+      if (numFiles >= 1000) {
+        return `1000+ files indexed`;
+      }
+      return `${pluralize(numFiles, 'file', 'files')} indexed`;
     }
   }
 

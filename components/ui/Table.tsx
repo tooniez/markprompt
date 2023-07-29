@@ -94,13 +94,16 @@ TableHead.displayName = 'TableHead';
 
 const TableCell = React.forwardRef<
   HTMLTableCellElement,
-  React.TdHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+  React.TdHTMLAttributes<HTMLTableCellElement> & { noIndent?: boolean }
+>(({ className, noIndent, ...props }, ref) => (
   <td
     ref={ref}
     className={cn(
-      'px-4 py-2 align-middle [&:has([role=checkbox])]:pr-0 [&:has(.prompt)]:w-full',
+      'py-2 pr-4 align-middle [&:has([role=checkbox])]:pr-0 [&:has(.prompt)]:w-full',
       className,
+      {
+        'pl-4': !noIndent,
+      },
     )}
     {...props}
   />

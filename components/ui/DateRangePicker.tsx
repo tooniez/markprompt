@@ -13,7 +13,7 @@ import {
   dateRangeToDateRangeZonedTime,
   dateRangeToFixedRange,
   fixedRangeToDateRangeZonedTime,
-} from '@/lib/hooks/use-insights';
+} from '@/lib/date';
 
 const toLabel = (range: FixedDateRange) => {
   switch (range) {
@@ -27,6 +27,10 @@ const toLabel = (range: FixedDateRange) => {
       return 'Past 3 months';
     case FixedDateRange.PAST_12_MONTHS:
       return 'Past 12 months';
+    case FixedDateRange.MONTH_TO_DATE:
+      return 'Month to date';
+    case FixedDateRange.LAST_MONTH:
+      return 'Last month';
   }
 };
 
@@ -34,16 +38,18 @@ export const DateRangePicker = ({
   className,
   range,
   setRange,
+  defaultRange,
   disabled,
 }: {
   className?: string;
   range?: DateRange;
   setRange?: (range: DateRange | undefined) => void;
+  defaultRange?: FixedDateRange;
   disabled?: boolean;
 }) => {
   const selectedFixedRange = useMemo(() => {
-    return dateRangeToFixedRange(range);
-  }, [range]);
+    return range ? dateRangeToFixedRange(range) : defaultRange;
+  }, [range, defaultRange]);
 
   return (
     <div

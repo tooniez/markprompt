@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { stripIndent } from 'common-tags';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { isPresent } from 'ts-is-present';
 
 import {
   APPROX_CHARS_PER_TOKEN,

@@ -1,118 +1,25 @@
-import {
-  add,
-  isToday,
-  isSameDay,
-  startOfDay,
-  endOfDay,
-  parseISO,
-  formatISO,
-} from 'date-fns';
-import { utcToZonedTime } from 'date-fns-tz';
+import { parseISO, formatISO } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import useSWR from 'swr';
 
 import {
   DateCountHistogramEntry,
-  Project,
   PromptQueryStat,
   ReferenceWithOccurrenceCount,
 } from '@/types/types';
 
 import useProject from './use-project';
 import useTeam from './use-team';
-import { REFERENCE_TIMEZONE, getHistogramBinSize } from '../date';
+import {
+  FixedDateRange,
+  REFERENCE_TIMEZONE,
+  dateRangeToFixedRange,
+  getHistogramBinSize,
+  getStoredRangeOrDefaultZonedTime,
+} from '../date';
 import { canViewInsights } from '../stripe/tiers';
 import { fetcher } from '../utils';
-
-export enum FixedDateRange {
-  TODAY = 0,
-  PAST_7_DAYS = 1,
-  PAST_4_WEEKS = 2,
-  PAST_3_MONTHS = 3,
-  PAST_12_MONTHS = 4,
-}
-
-const getFixedDateRangeStart = (range: FixedDateRange) => {
-  switch (range) {
-    case FixedDateRange.TODAY:
-      return startOfDay(new Date());
-    case FixedDateRange.PAST_7_DAYS:
-      return startOfDay(add(new Date(), { days: -7 }));
-    case FixedDateRange.PAST_4_WEEKS:
-      return startOfDay(add(new Date(), { weeks: -4 }));
-    case FixedDateRange.PAST_3_MONTHS:
-      return startOfDay(add(new Date(), { months: -3 }));
-    case FixedDateRange.PAST_12_MONTHS:
-      return startOfDay(add(new Date(), { months: -12 }));
-  }
-};
-
-export const dateRangeToFixedRange = (
-  range: DateRange | undefined,
-): FixedDateRange | undefined => {
-  if (!range) {
-    return FixedDateRange.PAST_3_MONTHS;
-  }
-
-  const start = range.from;
-  const end = range.to;
-
-  if (!start || !end || !isToday(end)) {
-    return undefined;
-  }
-
-  for (const rangeKey of Object.keys(FixedDateRange)) {
-    if (isNaN(Number(rangeKey))) {
-      const range = FixedDateRange[rangeKey as keyof typeof FixedDateRange];
-      if (isSameDay(start, getFixedDateRangeStart(range))) {
-        return range;
-      }
-    }
-  }
-
-  return FixedDateRange.PAST_3_MONTHS;
-};
-
-export const dateRangeToDateRangeZonedTime = (dateRangeUTC: DateRange) => {
-  return {
-    from:
-      dateRangeUTC.from &&
-      utcToZonedTime(dateRangeUTC.from, REFERENCE_TIMEZONE),
-    to: dateRangeUTC.to && utcToZonedTime(dateRangeUTC.to, REFERENCE_TIMEZONE),
-  };
-};
-
-export const fixedRangeToDateRangeZonedTime = (
-  range: FixedDateRange | undefined,
-): DateRange => {
-  return dateRangeToDateRangeZonedTime({
-    from: getFixedDateRangeStart(
-      typeof range === 'number' && !isNaN(range)
-        ? range
-        : FixedDateRange.PAST_3_MONTHS,
-    ),
-    to: endOfDay(new Date()),
-  });
-};
-
-const getStoredRangeOrDefaultZonedTime = (
-  projectId: Project['id'] | undefined,
-): DateRange => {
-  if (projectId) {
-    const storedFixedRange = localStorage.getItem(
-      `${projectId}:insights:date-range`,
-    );
-    try {
-      if (storedFixedRange) {
-        return fixedRangeToDateRangeZonedTime(parseInt(storedFixedRange));
-      }
-    } catch {
-      // Do nothing
-    }
-  }
-  return fixedRangeToDateRangeZonedTime(FixedDateRange.PAST_3_MONTHS);
-};
 
 export default function useInsights() {
   const { team } = useTeam();
@@ -121,9 +28,15 @@ export default function useInsights() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   useEffect(() => {
-    if (project?.id) {
-      setDateRange(getStoredRangeOrDefaultZonedTime(project.id));
+    if (!project?.id) {
+      return;
     }
+    setDateRange(
+      getStoredRangeOrDefaultZonedTime(
+        `${project.id}:insights:date-range`,
+        FixedDateRange.PAST_3_MONTHS,
+      ),
+    );
   }, [project?.id]);
 
   useEffect(() => {

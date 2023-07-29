@@ -119,6 +119,9 @@ export type PromptQueryHistogram = {
   occurrences: number | null;
 };
 
+export type TeamStats =
+  Database['public']['Functions']['get_team_stats']['Returns'][number];
+
 export type QueryStatsProcessingResponseData = {
   processed?: number;
   errored?: number;
