@@ -181,7 +181,7 @@ textarea {
 }
 
 .gradient-heading {
-  @apply bg-gradient-to-br from-white to-neutral-100/50 bg-clip-text font-bold text-transparent;
+  @apply bg-gradient-to-br from-white to-neutral-100/50 bg-clip-text pb-1 font-bold text-transparent;
 }
 
 .shadow-box {

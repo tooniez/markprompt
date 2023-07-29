@@ -9,7 +9,7 @@ type SystemStatusButtonProps = {
 
 export const SystemStatusButton: FC<SystemStatusButtonProps> = ({ status }) => {
   return (
-    <div className="flex w-min flex-row items-center gap-2 rounded-md border border-neutral-800 px-2 py-1 transition hover:bg-neutral-900">
+    <div className="flex w-min flex-row items-center gap-2 rounded-md border border-neutral-900 px-2 py-1 transition hover:bg-neutral-900">
       <div
         className={cn('h-1.5 w-1.5 rounded-full', {
           'bg-green-500': status === 'operational',

@@ -1,5 +1,7 @@
 import { Application } from '@splinetool/runtime';
 import cn from 'classnames';
+import { ChevronsUpDown, SearchIcon } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { FC, useEffect, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
@@ -30,6 +32,7 @@ import { CernIcon } from '../icons/Cern';
 import { DiscordIcon } from '../icons/Discord';
 import { ListItem } from '../ui/ListItem';
 import { Segment } from '../ui/Segment';
+import { Slash } from '../ui/Slash';
 import { SystemStatusButton } from '../ui/SystemStatusButton';
 import { Tag } from '../ui/Tag';
 
@@ -175,9 +178,9 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
         <div className="animate-slide-up">
           <div className="grid grid-cols-1 gap-8 pb-24 sm:min-h-[calc(100vh-100px)] sm:grid-cols-5">
             <div className="col-span-3 mt-12 flex flex-col justify-center 2xl:mt-0">
-              <Link href="/blog/introducing-website-sources">
+              <Link href="/blog/algolia">
                 <Tag size="base" color="sky">
-                  Introducing website sources →
+                  Introducing Algolia instant search →
                 </Tag>
               </Link>
               <h1 className="gradient-heading mt-6 text-left text-4xl leading-[36px] tracking-[-0.6px] sm:mr-[-50px] sm:text-6xl sm:leading-[64px]">
@@ -239,35 +242,47 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
       </div>
       <VideoSection />
       <StepsSection />
-      <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 pt-24 sm:px-8">
-        <h2 className="gradient-heading mt-64 text-center text-4xl">
+      <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 pt-8 sm:px-8 sm:pt-24">
+        <h2 className="gradient-heading mt-32 text-center text-4xl sm:mt-64">
           <Balancer>Track usage, get feedback, improve content</Balancer>
         </h2>
         <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg text-neutral-500">
           Your users will be asking lots of questions, and will be expecting
-          quality answers. Use Markprompt&apos;s feedback and analytics features
-          to pinpoint shortcomings in your content, and improve your content.
+          quality answers. Use Markprompt&apos;s privacy-enabled feedback and
+          insights features to pinpoint shortcomings in your content, and
+          improve it.
         </p>
-        <div className="relative mt-20 h-[600px] w-full overflow-hidden rounded-lg border border-neutral-900">
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-8">
-            <p className="flex flex-row items-center whitespace-nowrap rounded-full border border-neutral-800 bg-black/80 px-4 py-2 text-lg font-medium text-neutral-300">
-              Coming soon!
+        <div className="relative mt-20 flex w-full flex-col overflow-hidden rounded-lg border border-neutral-900 bg-neutral-1000 sm:h-[660px]">
+          <div className="flex flex-none flex-row items-center justify-start gap-2 border-b border-neutral-900 px-2 py-3 sm:gap-4 sm:px-4">
+            <MarkpromptIcon className="ml-1 h-7 w-7 flex-none text-neutral-300 sm:h-8 sm:w-8" />
+            <Slash size="md" />
+            <p className="text-sm text-neutral-300">Acme</p>
+            <ChevronsUpDown className="h-3 w-3 flex-none text-neutral-500 sm:-ml-2" />
+            <Slash size="md" />
+            <p className="text-sm text-neutral-300">Documentation</p>
+            <ChevronsUpDown className="h-3 w-3 flex-none text-neutral-500 sm:-ml-2" />
+            <div className="flex-grow" />
+            <p className="hidden text-sm text-neutral-300 sm:block">Help</p>
+            <p className="ml-2 hidden text-sm text-neutral-300 sm:block">
+              Docs
             </p>
+            <SearchIcon className="ml-2 hidden h-4 w-4 text-neutral-300 sm:block" />
+            <Image
+              alt="Profile"
+              className="ml-2 h-6 w-6 rounded-full"
+              width={20}
+              height={20}
+              src="/static/images/marie.png"
+            />
           </div>
-          <div className="sticky inset-x-0 top-0 z-10 flex h-12 flex-none flex-row items-center gap-4 border-b border-neutral-900 px-4 py-2">
-            <MarkpromptIcon className="ml-1 h-6 w-6 text-neutral-300" />
-            <p className="text-sm text-neutral-500">Acme Inc</p>
+          <div className="flex flex-none flex-row items-center justify-start gap-4 border-b border-neutral-900 px-4 py-2.5 text-sm font-medium text-neutral-500">
+            <p>Data</p>
+            <p>Playground</p>
+            <p className="text-neutral-100">Insights</p>
+            <p>Settings</p>
           </div>
-          <div className="absolute inset-x-0 top-12 bottom-0 z-0 grid w-full flex-grow grid-cols-4">
-            <div className="hidden h-full flex-col gap-1 border-r border-neutral-900 px-3 py-3 text-sm text-neutral-500 sm:flex">
-              <p className="rounded bg-neutral-900/50 px-2 py-1.5 text-white">
-                Home
-              </p>
-              <p className="px-2 py-1.5">API Keys</p>
-              <p className="px-2 py-1.5">Usage</p>
-              <p className="px-2 py-1.5">Settings</p>
-            </div>
-            <div className="z-20 col-span-4 flex flex-col gap-6 p-8 sm:col-span-3">
+          <div className="z-0 w-full flex-grow">
+            <div className="flex flex-col gap-6 p-4 sm:p-8">
               <AnalyticsExample />
             </div>
           </div>
@@ -333,7 +348,6 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             <Link className="subtle-underline" href="/docs#what-are-tokens">
               Learn more
             </Link>
-            .
           </p>
         </div>
         <div className="flex flex-col items-center">

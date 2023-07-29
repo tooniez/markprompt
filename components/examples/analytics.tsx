@@ -1,7 +1,84 @@
-import { useEffect, useState } from 'react';
+import { ColumnDef } from '@tanstack/react-table';
+import cn from 'classnames';
+import { format, add } from 'date-fns';
+import { CalendarIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 import BarChart from '@/components/charts/bar-chart';
+import { FixedDateRange, formatShortDateTimeInTimeZone } from '@/lib/date';
 import { sampleVisitsData } from '@/lib/utils';
+import {
+  DateCountHistogramEntry,
+  ReferenceWithOccurrenceCount,
+} from '@/types/types';
+
+import { QueriesHistogram } from '../insights/queries-histogram';
+import { TopReferences } from '../insights/top-references';
+import Button from '../ui/Button';
+import { DateRangePicker } from '../ui/DateRangePicker';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../ui/Table';
+import { Tag } from '../ui/Tag';
+
+const sampleTopReferences: ReferenceWithOccurrenceCount[] = [
+  { path: '/docs/getting-started', occurrences: 134 },
+  { path: '/docs/tutorials/react', occurrences: 121 },
+  { path: '/blog/algolia', occurrences: 119 },
+  { path: '/blog', occurrences: 104 },
+  { path: '/docs/articles/cli', occurrences: 97 },
+  { path: '/docs/faq', occurrences: 83 },
+].map((s) => ({ ...s, source_type: 'github', source_data: null }));
+
+type Question = {
+  question: string;
+  unanswered?: boolean;
+  feedback?: '1' | '-1';
+  date: Date;
+};
+
+const sampleQuestions: Question[] = [
+  {
+    question:
+      'How to re-fetch my content from the connected GitHub repository?',
+    feedback: '1' as Question['feedback'],
+  },
+  { question: 'How can I trigger the component in React?' },
+  { question: 'Explain how Acme uses embeddings and completions' },
+  {
+    question: 'Can I have multiple answer components?',
+    unanswered: true,
+    feedback: '-1' as Question['feedback'],
+  },
+  {
+    question: 'Can I use one answer component per prompt?',
+    unanswered: true,
+  },
+  {
+    question: 'Where are the CSS variables located?',
+    feedback: '1' as Question['feedback'],
+  },
+  { question: 'Explain how Acme works as a sequence diagram.' },
+  {
+    question: 'how do i create a custom template',
+    unanswered: true,
+  },
+  { question: 'On which of the API does whitelist domain apply?' },
+].map((q: Omit<Question, 'date'>, i) => {
+  return {
+    ...q,
+    date: add(new Date(), { minutes: -20 * i - 10 * Math.random() }),
+  };
+});
+
+const sampleQueriesHistogram: DateCountHistogramEntry[] = [
+  903, 848, 740, 1003, 1014, 859, 992, 1023,
+].map((c, i) => ({ count: c, date: add(new Date(), { days: -7 + i }) }));
 
 export const AnalyticsExample = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -15,88 +92,120 @@ export const AnalyticsExample = () => {
     return <></>;
   }
 
+  const dateRange = {
+    from: add(new Date(), { days: -7 }),
+    to: new Date(),
+  };
+
   return (
     <>
-      <div>
-        <h3 className="mb-4 font-bold text-neutral-300">Daily queries</h3>
-        <BarChart
-          data={sampleVisitsData}
-          isLoading={false}
-          interval="30d"
-          height={180}
-          countLabel="visits"
-        />
-      </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div>
-          <h3 className="mb-4 font-bold text-neutral-300">Most asked</h3>
-          <div className="flex flex-col gap-1 text-sm text-neutral-600">
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">223</p>
-              <p>What is an RUV?</p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">185</p>
-              <p>When do I need to submit by 83b?</p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">159</p>
-              <p>What are preferred rights?</p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">152</p>
-              <p>What is the difference between a SAFE and an RUV?</p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">152</p>
-              <p>What is the difference between a SAFE and an RUV?</p>
-            </div>
+        <div className="col-span-2">
+          <h3 className="mb-4 text-xl font-bold text-neutral-300">Insights</h3>
+          <div className="pointer-events-none hidden flex-row sm:flex">
+            <Button
+              variant="plain"
+              left
+              light
+              buttonSize="sm"
+              asDropdown
+              squareCorners="right"
+              className="justify-start text-left font-normal"
+            >
+              Past 7 days
+            </Button>
+            <Button
+              variant="plain"
+              left
+              light
+              buttonSize="sm"
+              squareCorners="left"
+              className="justify-start text-left font-normal"
+              Icon={(props) => (
+                <CalendarIcon
+                  {...props}
+                  className={cn(props.className, 'text-neutral-500')}
+                />
+              )}
+            >
+              {format(dateRange.from, 'LLL dd, y')} -{' '}
+              {format(dateRange.to, 'LLL dd, y')}
+            </Button>
           </div>
-        </div>
-        <div>
-          <h3 className="mb-4 font-bold text-neutral-300">
-            Most visited resources
+          <div className="pointer-events-none block sm:hidden">
+            <Button
+              variant="plain"
+              left
+              light
+              buttonSize="sm"
+              asDropdown
+              className="justify-start text-left font-normal"
+            >
+              Past 7 days
+            </Button>
+          </div>
+          <h3 className="mb-4 mt-8 font-bold text-neutral-300">
+            Latest questions
           </h3>
-          <div className="flex flex-col gap-1 text-sm text-neutral-600">
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">99</p>
-              <p>Roll-ups</p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">87</p>
-              <p>Manage your Raise</p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">152</p>
-              <p>Cap Tables</p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">151</p>
-              <p>409A Valuations</p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">133</p>
-              <p>Data Rooms</p>
-            </div>
+          <div className="overflow-x-auto">
+            <Table>
+              <colgroup>
+                <col className="w-[400px] sm:w-[calc(50%-220px)]" />
+                <col className="w-[100px]" />
+                <col className="w-[150px]" />
+                <col className="w-[190px]" />
+              </colgroup>
+              <TableHeader className="text-neutral-300">
+                <TableRow>
+                  <TableHead>Question</TableHead>
+                  <TableHead>Feedback</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sampleQuestions.map((q, i) => {
+                  return (
+                    <TableRow key={`sample-question-${i}`}>
+                      <TableCell className="overflow-hidden truncate text-neutral-300">
+                        {q.question}
+                      </TableCell>
+                      <TableCell>
+                        {q.feedback === '1' ? (
+                          <ThumbsUpIcon className="h-4 w-4 text-green-600" />
+                        ) : q.feedback === '-1' ? (
+                          <ThumbsDownIcon className="h-4 w-4 text-orange-600" />
+                        ) : (
+                          <></>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {q.unanswered ? (
+                          <Tag color="orange">Unanswered</Tag>
+                        ) : (
+                          <Tag color="green">Answered</Tag>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-neutral-500">
+                        {formatShortDateTimeInTimeZone(q.date)}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </div>
         </div>
-
         <div>
-          <h3 className="mb-4 font-bold text-neutral-300">Reported prompts</h3>
-          <div className="flex flex-col gap-1 text-sm text-neutral-600">
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">9</p>
-              <p>How do I send an update?</p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">8</p>
-              <p>What is a SAFE?</p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <p className="w-8 flex-none text-left text-neutral-800">5</p>
-              <p>Where can I see my cap table?</p>
-            </div>
-          </div>
+          <h3 className="mb-4 font-bold text-neutral-300">New questions</h3>
+          <QueriesHistogram
+            dateRange={dateRange}
+            data={sampleQueriesHistogram}
+          />
+          <h3 className="mb-4 mt-8 font-bold text-neutral-300">
+            Most cited sources
+          </h3>
+          <TopReferences topReferences={sampleTopReferences} />
         </div>
       </div>
     </>

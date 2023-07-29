@@ -109,7 +109,7 @@ const Step = ({ title, description, Icon, position, children }: StepProps) => {
         </div>
         <div className="relative flex w-full items-center justify-center">
           <div className="relative z-20">
-            <div className="glow-border glow-border-founded-full glow-border-white h-10 w-10 flex-none rounded-full bg-fuchsia-600 p-3 text-white">
+            <div className="h-10 w-10 flex-none rounded-full bg-fuchsia-600 p-3 text-white">
               <Icon className="h-full w-full" />
             </div>
           </div>
@@ -419,7 +419,7 @@ const StepsSection = () => {
             <div className="absolute top-0 z-20 h-[200px] w-full bg-gradient-to-b from-neutral-1100 to-neutral-1100/0" />
             <div className="absolute right-0 z-20 h-full w-[200px] bg-gradient-to-l from-neutral-1100 to-neutral-1100/0" />
             <AnimatedGlobe className="relative z-10 h-[400px] w-[400px]" />
-            <div className="absolute left-[calc(50%-1px)] bottom-0 z-0 h-[100px] w-1">
+            <div className="absolute left-[calc(50%-2px)] bottom-0 z-0 h-[100px] w-1">
               <LaunchLine
                 height={100}
                 strokeWidth={2}
