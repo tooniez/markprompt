@@ -21,27 +21,6 @@ import {
 import { canViewInsights } from '../stripe/tiers';
 import { fetcher } from '../utils';
 
-// const getStoredRangeOrDefaultZonedTime = (
-//   projectId: Project['id'] | undefined,
-//   defaultRange: FixedDateRange,
-// ): DateRange => {
-//   if (projectId) {
-//     const storedFixedRange = localStorage.getItem(
-//       `${projectId}:insights:date-range`,
-//     );
-//     try {
-//       if (storedFixedRange) {
-//         return fixedRangeToDateRangeZonedTime(
-//           getFixedRangeOrDefault(parseInt(storedFixedRange), defaultRange),
-//         );
-//       }
-//     } catch {
-//       // Do nothing
-//     }
-//   }
-//   return fixedRangeToDateRangeZonedTime(defaultRange);
-// };
-
 export default function useInsights() {
   const { team } = useTeam();
   const { project } = useProject();
