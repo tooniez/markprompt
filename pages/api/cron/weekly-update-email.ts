@@ -53,7 +53,5 @@ export default async function handler(
     .select('email')
     .limit(20);
 
-  console.log('data', JSON.stringify(data, null, 2));
-
   return res.status(200).send({ status: 'ok' });
 }

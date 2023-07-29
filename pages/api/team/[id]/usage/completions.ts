@@ -3,14 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { Database } from '@/types/supabase';
-import { PromptQueryHistogram, Team } from '@/types/types';
+import { Team } from '@/types/types';
 
 type Data =
   | {
       status?: string;
       error?: string;
     }
-  | PromptQueryHistogram[];
+  | { occurrences: number };
 
 const allowedMethods = ['GET'];
 
@@ -41,14 +41,13 @@ export default async function handler(
   const teamId = req.query.id as Team['id'];
 
   if (req.method === 'GET') {
-    const { data: queries, error } = await supabaseAdmin.rpc(
-      'get_team_insights_query_histogram',
+    const { data: occurrences, error } = await supabaseAdmin.rpc(
+      'get_team_num_completions',
       {
         team_id: teamId,
         from_tz: req.query.from as string,
         to_tz: req.query.to as string,
         tz: req.query.tz as string,
-        trunc_interval: (req.query.period as string) || 'day',
       },
     );
 
@@ -56,11 +55,11 @@ export default async function handler(
       return res.status(400).json({ error: error.message });
     }
 
-    if (!queries) {
+    if (!occurrences || occurrences.length === 0) {
       return res.status(404).json({ error: 'No results found.' });
     }
 
-    return res.status(200).json(queries);
+    return res.status(200).json({ occurrences: occurrences[0].occurrences });
   }
 
   return res.status(400).end();

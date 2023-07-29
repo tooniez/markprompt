@@ -1026,6 +1026,30 @@ export interface Database {
           occurrences: number
         }[]
       }
+      get_team_insights_query_histogram: {
+        Args: {
+          team_id: string
+          from_tz: string
+          to_tz: string
+          tz: string
+          trunc_interval: string
+        }
+        Returns: {
+          date: string
+          occurrences: number
+        }[]
+      }
+      get_team_num_completions: {
+        Args: {
+          team_id: string
+          from_tz: string
+          to_tz: string
+          tz: string
+        }
+        Returns: {
+          occurrences: number
+        }[]
+      }
       get_team_stats: {
         Args: {
           team_id: string

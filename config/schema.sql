@@ -376,6 +376,8 @@ $$;
 
 -- Histograms
 
+-- Queries by project
+
 create or replace function get_insights_query_histogram(
   project_id uuid,
   from_tz timestamptz,
@@ -400,6 +402,55 @@ begin
 end;
 $$;
 
+-- Queries by team
+
+create or replace function get_team_insights_query_histogram(
+  team_id uuid,
+  from_tz timestamptz,
+  to_tz timestamptz,
+  tz text,
+  trunc_interval text
+)
+returns table (
+  date timestamp,
+  occurrences bigint
+)
+language plpgsql
+as $$
+begin
+  return query
+  select date_trunc(trunc_interval, created_at at time zone tz) as date, count(*) as occurrences
+  from query_stats
+  join projects on projects.id = query_stats.project_id
+  where projects.team_id = get_team_insights_query_histogram.team_id
+  and created_at >= from_tz
+  and created_at <= to_tz
+  group by date_trunc(trunc_interval, created_at at time zone tz);
+end;
+$$;
+
+create or replace function get_team_num_completions(
+  team_id uuid,
+  from_tz timestamptz,
+  to_tz timestamptz,
+  tz text
+)
+returns table (
+  occurrences bigint
+)
+language plpgsql
+as $$
+begin
+  return query
+  select count(*) as occurrences
+  from query_stats
+  join projects on projects.id = query_stats.project_id
+  where projects.team_id = get_team_num_completions.team_id
+  and created_at >= from_tz
+  and created_at <= to_tz;
+end;
+$$;
+
 -- Usage
 
 create or replace function get_team_stats(
@@ -409,9 +460,9 @@ returns table (
   project_id uuid,
   project_name text,
   project_slug text,
-  num_files int,
-  num_file_sections int,
-  num_token_count int
+  num_files bigint,
+  num_file_sections bigint,
+  num_tokens bigint
 )
 language plpgsql
 as $$
@@ -423,7 +474,7 @@ begin
     projects.slug as project_slug,
     count(distinct files.id) as num_files,
     count(distinct file_sections.id) as num_file_sections,
-    sum(file_sections.token_count) as num_token_count
+    sum(file_sections.token_count) as num_tokens
   from projects
   join sources on projects.id = sources.project_id
   join files on sources.id = files.source_id
