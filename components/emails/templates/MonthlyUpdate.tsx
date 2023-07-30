@@ -65,7 +65,7 @@ export const MonthlyUpdateTemplate: FC<MonthlyUpdateTemplateProps> = ({
       bodyClassName="my-auto mx-auto bg-white p-8 font-sans"
       withHtml={withHtml}
     >
-      <Container className="mx-auto w-full max-w-[720px] bg-white">
+      <Container className="mx-auto w-full max-w-[720px] border-separate  bg-white">
         <Section>
           <Img
             src="https://res.cloudinary.com/djp21wtxm/image/upload/v1689959311/Email_u1tegg.png"

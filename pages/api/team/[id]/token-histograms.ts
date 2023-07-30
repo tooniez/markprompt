@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getProjectCompletionsTokenCount } from '@/lib/tinybird';
 import { Database } from '@/types/supabase';
-import { ProjectUsageHistogram, Team } from '@/types/types';
+import { ProjectUsageHistogram, DbTeam } from '@/types/types';
 
 type Data =
   | {
@@ -32,7 +32,7 @@ export default async function handler(
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const teamId = req.query.id as Team['id'];
+  const teamId = req.query.id as DbTeam['id'];
 
   const { data } = await supabase
     .from('projects')

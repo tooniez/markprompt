@@ -9,13 +9,13 @@ import {
   slugFromNameOrRandom,
 } from '@/lib/utils';
 import { Database } from '@/types/supabase';
-import { Project, Team } from '@/types/types';
+import { Project, DbTeam } from '@/types/types';
 
 import { isProjectSlugAvailable } from '../../slug/is-project-slug-available';
 
 const getAvailableProjectSlug = async (
   supabase: SupabaseClient<Database>,
-  teamId: Team['id'],
+  teamId: DbTeam['id'],
   name: Project['name'],
 ) => {
   let baseSlug: string | undefined = undefined;
@@ -70,7 +70,7 @@ export default async function handler(
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const teamId = req.query.id as Team['id'];
+  const teamId = req.query.id as DbTeam['id'];
 
   if (req.method === 'GET') {
     const { data, error } = await supabase

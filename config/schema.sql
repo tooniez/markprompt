@@ -619,20 +619,20 @@ group by created_at, project_id
 order by created_at;
 
 create view v_users_with_pending_weekly_update_email as
-select id,email
+select id,email,config
 from users
 where config is null
-  or (
-    (
-      config->>'sendWeeklyUpdates' = 'true'
-      or not jsonb_exists(config, 'sendWeeklyUpdates')
-    )
-    and
-    (
-      not jsonb_exists(config, 'lastWeeklyUpdateEmail')
-      or (config->>'lastWeeklyUpdateEmail')::timestamptz <= now() - INTERVAL '1 week'
-    )
-  );
+or (
+  (
+    config->>'sendWeeklyUpdates' = 'true'
+    or not jsonb_exists(config, 'sendWeeklyUpdates')
+  )
+  and
+  (
+    not jsonb_exists(config, 'lastWeeklyUpdateEmail')
+    or (config->>'lastWeeklyUpdateEmail')::timestamptz <= now() - INTERVAL '1 week'
+  )
+);
 
 -- Indexes
 

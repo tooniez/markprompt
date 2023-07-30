@@ -10,7 +10,7 @@ import {
   PromptConfig,
   DbSource,
   SourceType,
-  Team,
+  DbTeam,
   Token,
   QueryStatsProcessingResponseData,
 } from '@/types/types';
@@ -126,7 +126,7 @@ export const setHasCompletedOnboarding = async () => {
 };
 
 export const initUserData = async (): Promise<{
-  team: Team;
+  team: DbTeam;
   project: Project;
 }> => {
   const res = await fetch('/api/user/init', {
@@ -136,7 +136,7 @@ export const initUserData = async (): Promise<{
       accept: 'application/json',
     },
   });
-  return getResponseOrThrow<{ team: Team; project: Project }>(res);
+  return getResponseOrThrow<{ team: DbTeam; project: Project }>(res);
 };
 
 export const createTeam = async (name: string) => {
@@ -149,23 +149,23 @@ export const createTeam = async (name: string) => {
       accept: 'application/json',
     },
   });
-  return getResponseOrThrow<Team>(res);
+  return getResponseOrThrow<DbTeam>(res);
 };
 
 export const updateTeam = async (
-  id: Team['id'],
-  values: Partial<Team>,
-): Promise<Team> => {
+  id: DbTeam['id'],
+  values: Partial<DbTeam>,
+): Promise<DbTeam> => {
   const res = await fetch(`/api/team/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(values),
     headers: { 'Content-Type': 'application/json', accept: 'application/json' },
   });
-  return getResponseOrThrow<Team>(res);
+  return getResponseOrThrow<DbTeam>(res);
 };
 
 export const deleteTeamAndMemberships = async (
-  id: Team['id'],
+  id: DbTeam['id'],
 ): Promise<any> => {
   const res = await fetch(`/api/team/${id}`, {
     method: 'DELETE',
@@ -174,7 +174,7 @@ export const deleteTeamAndMemberships = async (
   return getResponseOrThrow<any>(res);
 };
 
-export const createProject = async (teamId: Team['id'], name: string) => {
+export const createProject = async (teamId: DbTeam['id'], name: string) => {
   const res = await fetch(`/api/team/${teamId}/projects`, {
     method: 'POST',
     body: JSON.stringify({ name }),
@@ -186,7 +186,7 @@ export const createProject = async (teamId: Team['id'], name: string) => {
   return getResponseOrThrow<Project>(res);
 };
 
-export const deleteProject = async (projectId: Team['id']) => {
+export const deleteProject = async (projectId: DbTeam['id']) => {
   fetch(`/api/project/${projectId}`, { method: 'DELETE' });
 };
 
@@ -207,7 +207,7 @@ export const isTeamSlugAvailable = async (slug: string): Promise<boolean> => {
 };
 
 export const isProjectSlugAvailable = async (
-  teamId: Team['id'],
+  teamId: DbTeam['id'],
   slug: string,
 ): Promise<boolean> => {
   const res = await fetch('/api/slug/is-project-slug-available', {
@@ -294,7 +294,7 @@ export const deleteSource = async (
   return getResponseOrThrow<any>(res);
 };
 
-export const cancelSubscription = (teamId: Team['id']) => {
+export const cancelSubscription = (teamId: DbTeam['id']) => {
   return fetch('/api/subscriptions/cancel', {
     method: 'POST',
     body: JSON.stringify({ teamId }),

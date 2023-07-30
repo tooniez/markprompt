@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { Database } from '@/types/supabase';
-import { Team } from '@/types/types';
+import { DbTeam } from '@/types/types';
 
 type Data =
   | {
@@ -38,7 +38,7 @@ export default async function handler(
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const teamId = req.query.id as Team['id'];
+  const teamId = req.query.id as DbTeam['id'];
 
   if (req.method === 'GET') {
     const { data: occurrences, error } = await supabaseAdmin.rpc(

@@ -29,7 +29,7 @@ import {
 } from '@/lib/themes';
 import { pruneEmpty, propsObjectToJSXPropsString } from '@/lib/utils.browser';
 import { getAppOrigin } from '@/lib/utils.edge';
-import { Project, SerializableMarkpromptOptions, Team } from '@/types/types';
+import { Project, SerializableMarkpromptOptions, DbTeam } from '@/types/types';
 
 import { getRootTextSize } from './prose';
 
@@ -291,7 +291,7 @@ export const TestKeyNote = ({
   isOnboarding,
   className,
 }: {
-  team: Team;
+  team: DbTeam;
   project: Project;
   testMode: boolean;
   isOnboarding: boolean;

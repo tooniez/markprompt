@@ -1,4 +1,4 @@
-import { Team } from '@/types/types';
+import { DbTeam } from '@/types/types';
 
 import { roundToLowerOrderDecimal } from '../utils';
 import { deepMerge } from '../utils.edge';
@@ -33,13 +33,7 @@ export type TierDetails = {
 };
 
 export type Tier = {
-  id:
-    | 'hobby'
-    | 'starter'
-    | 'pro'
-    | 'placeholder-enterprise'
-    | 'custom'
-    | string;
+  id: 'hobby' | 'starter' | 'pro' | 'placeholder-enterprise' | 'custom';
   name?: string;
   description?: string;
   items?: string[];
@@ -50,7 +44,7 @@ export type Tier = {
   details?: TierDetails;
 };
 
-export type TeamTierInfo = Pick<Team, 'stripe_price_id' | 'plan_details'>;
+export type TeamTierInfo = Pick<DbTeam, 'stripe_price_id' | 'plan_details'>;
 
 const useTestPriceId = process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production';
 

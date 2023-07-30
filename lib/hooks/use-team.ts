@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import useSWR from 'swr';
 
-import { Team } from '@/types/types';
+import { DbTeam } from '@/types/types';
 
 import useTeams from './use-teams';
 import { fetcher } from '../utils';
@@ -14,7 +14,7 @@ export default function useTeam() {
     data: team,
     mutate,
     error,
-  } = useSWR(teamId ? `/api/team/${teamId}` : null, fetcher<Team>);
+  } = useSWR(teamId ? `/api/team/${teamId}` : null, fetcher<DbTeam>);
 
   const loading = !team && !error;
 

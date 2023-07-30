@@ -57,6 +57,27 @@ begin
 end;
 $$;
 
+create or replace function get_project_num_completions(
+  project_id uuid,
+  from_tz timestamptz,
+  to_tz timestamptz,
+  tz text
+)
+returns table (
+  occurrences bigint
+)
+language plpgsql
+as $$
+begin
+  return query
+  select count(*) as occurrences
+  from query_stats
+  where projects.id = get_team_num_completions.project_id
+  and created_at >= from_tz
+  and created_at <= to_tz;
+end;
+$$;
+
 create or replace function get_team_num_completions(
   team_id uuid,
   from_tz timestamptz,
@@ -78,3 +99,21 @@ begin
   and created_at <= to_tz;
 end;
 $$;
+
+-- Views
+
+create view v_users_with_pending_weekly_update_email as
+select id,email,config
+from users
+where config is null
+or (
+  (
+    config->>'sendWeeklyUpdates' = 'true'
+    or not jsonb_exists(config, 'sendWeeklyUpdates')
+  )
+  and
+  (
+    not jsonb_exists(config, 'lastWeeklyUpdateEmail')
+    or (config->>'lastWeeklyUpdateEmail')::timestamptz <= now() - INTERVAL '1 week'
+  )
+);
