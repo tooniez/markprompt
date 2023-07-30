@@ -80,7 +80,7 @@ const sampleQueriesHistogram: DateCountHistogramEntry[] = [
   903, 848, 740, 1003, 1014, 859, 992, 1023,
 ].map((c, i) => ({ count: c, date: add(new Date(), { days: -7 + i }) }));
 
-export const AnalyticsExample = () => {
+export const InsightsExample = () => {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {

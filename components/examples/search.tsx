@@ -125,10 +125,10 @@ export const SearchExample = () => {
       <div className="absolute inset-2 z-0 overflow-hidden rounded-xl border border-neutral-900">
         <div className="absolute inset-0 z-10 bg-gradient-to-l from-neutral-1100/0 to-neutral-1100" />
         <div className="flex h-12 flex-row justify-end gap-2 border-b border-neutral-900 px-3 py-2">
-          <div className="mr-4 flex items-center text-sm text-neutral-700 opacity-50">
+          <div className="mr-4 hidden items-center text-sm text-neutral-700 opacity-50 sm:flex">
             Docs
           </div>
-          <div className="mr-4 flex items-center text-sm text-neutral-700 opacity-50">
+          <div className="mr-4 hidden items-center text-sm text-neutral-700 opacity-50 sm:flex">
             Contact
           </div>
           <div className="flex flex-row items-center gap-2 rounded-lg border border-neutral-900 bg-neutral-1000 py-1 pl-2 pr-1">
@@ -140,7 +140,7 @@ export const SearchExample = () => {
               /
             </div>
           </div>
-          <div className="flex flex-row items-center gap-2 rounded-lg border border-neutral-900 bg-neutral-1000 py-1 px-2 text-sm font-medium text-neutral-700 opacity-50">
+          <div className="hidden flex-row items-center gap-2 rounded-lg border border-neutral-900 bg-neutral-1000 py-1 px-2 text-sm font-medium text-neutral-700 opacity-50 sm:flex">
             Sign in
           </div>
         </div>

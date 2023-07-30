@@ -27,7 +27,7 @@ import { SystemStatus } from '@/types/types';
 import StepsSection from './sections/Steps';
 import VideoSection from './sections/Video';
 import { SharedHead } from './SharedHead';
-import { AnalyticsExample } from '../examples/analytics';
+import { InsightsExample } from '../examples/insights';
 import { SearchExample } from '../examples/search';
 import { CernIcon } from '../icons/Cern';
 import { DiscordIcon } from '../icons/Discord';
@@ -307,7 +307,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
           </div>
           <div className="z-0 w-full flex-grow">
             <div className="flex flex-col gap-6 p-4 sm:p-8">
-              <AnalyticsExample />
+              <InsightsExample />
             </div>
           </div>
         </div>
