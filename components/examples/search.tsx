@@ -1,5 +1,11 @@
 import cn from 'classnames';
-import { FileTextIcon, HashIcon, SearchIcon, SparklesIcon } from 'lucide-react';
+import {
+  CommandIcon,
+  FileTextIcon,
+  HashIcon,
+  SearchIcon,
+  SparklesIcon,
+} from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
 
 type SearchResult = {
@@ -114,29 +120,55 @@ export const SearchExample = () => {
   }
 
   return (
-    <div className="mt-20 flex w-full max-w-screen-md flex-col overflow-hidden rounded-lg border border-neutral-900 bg-neutral-1000">
-      <div className="relative flex flex-row items-center justify-center gap-4 border-b border-neutral-900 px-4 text-sm">
-        <div className="border-b-2 border-sky-500 px-2 py-2 font-medium text-neutral-100">
-          Search
-        </div>
-        <div className="flex flex-row items-center gap-2 border-b-2 border-transparent px-4 py-1 font-medium text-neutral-500">
-          <SparklesIcon className="h-4 w-4 text-fuchsia-500" />
-          Ask AI
-        </div>
-        <div className="absolute right-2 top-0 bottom-0 flex items-center ">
-          <span className="rounded border border-neutral-900 bg-neutral-1100 px-2 py-1 text-xs font-medium text-neutral-500">
-            Esc
-          </span>
+    <div className="relative flex w-full items-center justify-center px-8 pt-24">
+      <div className="absolute inset-0 z-10 bg-gradient-to-b from-neutral-1100/0 to-neutral-1100" />
+      <div className="absolute inset-2 z-0 overflow-hidden rounded-xl border border-neutral-900">
+        <div className="absolute inset-0 z-10 bg-gradient-to-l from-neutral-1100/0 to-neutral-1100" />
+        <div className="flex h-12 flex-row justify-end gap-2 border-b border-neutral-900 px-3 py-2">
+          <div className="mr-4 flex items-center text-sm text-neutral-700 opacity-50">
+            Docs
+          </div>
+          <div className="mr-4 flex items-center text-sm text-neutral-700 opacity-50">
+            Contact
+          </div>
+          <div className="flex flex-row items-center gap-2 rounded-lg border border-neutral-900 bg-neutral-1000 py-1 pl-2 pr-1">
+            <SearchIcon className="h-4 w-4 text-neutral-700" />
+            <p className="whitespace-nowrap pr-8 text-sm text-neutral-700">
+              Search or ask docs...
+            </p>
+            <div className="flex flex-row items-center gap-1 rounded-md border border-neutral-900 bg-neutral-1100/30 px-2 py-0.5 text-xs text-neutral-700">
+              /
+            </div>
+          </div>
+          <div className="flex flex-row items-center gap-2 rounded-lg border border-neutral-900 bg-neutral-1000 py-1 px-2 text-sm font-medium text-neutral-700 opacity-50">
+            Sign in
+          </div>
         </div>
       </div>
-      <div className="flex flex-row items-center gap-2 border-b border-neutral-900 px-4 py-3 text-sm">
-        <SearchIcon className="h-4 w-4 text-neutral-500" />
-        <p className="text-sm text-neutral-300">Docusaurus</p>
-      </div>
-      <div className="flex flex-col gap-2 py-2">
-        {sampleSearchResults.map((r, i) => (
-          <SearchResultView key={`sample-search-result-${i}`} result={r} />
-        ))}
+      <div className="z-20 flex w-full max-w-screen-md flex-col overflow-hidden rounded-lg border border-neutral-900 bg-neutral-1000">
+        <div className="relative flex flex-row items-center justify-center gap-4 border-b border-neutral-900 px-4 text-sm">
+          <div className="border-b-2 border-sky-500 px-2 py-2 font-medium text-neutral-100">
+            Search
+          </div>
+          <div className="flex flex-row items-center gap-2 border-b-2 border-transparent px-4 py-1 font-medium text-neutral-500">
+            <SparklesIcon className="h-4 w-4 text-fuchsia-500" />
+            Ask AI
+          </div>
+          <div className="absolute right-2 top-0 bottom-0 flex items-center ">
+            <span className="rounded border border-neutral-900 bg-neutral-1100/50 px-2 py-1 text-xs font-medium text-neutral-500">
+              Esc
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-row items-center gap-2 border-b border-neutral-900 px-4 py-3 text-sm">
+          <SearchIcon className="h-4 w-4 text-neutral-500" />
+          <p className="text-sm text-neutral-300">Docusaurus</p>
+        </div>
+        <div className="flex flex-col gap-2 py-2">
+          {sampleSearchResults.map((r, i) => (
+            <SearchResultView key={`sample-search-result-${i}`} result={r} />
+          ))}
+        </div>
       </div>
     </div>
   );

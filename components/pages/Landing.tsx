@@ -245,14 +245,14 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
       <StepsSection />
       <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 pt-8 sm:px-8 sm:pt-24">
         <h2 className="gradient-heading mt-32 text-center text-4xl sm:mt-64">
-          <Balancer>Combine chatbot with search</Balancer>
+          <Balancer>Combine with instant search</Balancer>
         </h2>
         <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg text-neutral-500">
           Bring your chatbot and your instant search together. Because
           sometimes, a quick lookup is more suited than asking a question, and
           vice versa.
         </p>
-        <div className="flex w-full items-center justify-center">
+        <div className="mt-20 flex w-full items-center justify-center">
           <SearchExample />
         </div>
         <div className="mt-8 flex flex-row items-center justify-center gap-2">
