@@ -946,14 +946,17 @@ export interface Database {
       }
       v_users_with_pending_weekly_update_email: {
         Row: {
+          config: Json | null
           email: string | null
           id: string | null
         }
         Insert: {
+          config?: Json | null
           email?: string | null
           id?: string | null
         }
         Update: {
+          config?: Json | null
           email?: string | null
           id?: string | null
         }
@@ -1044,7 +1047,6 @@ export interface Database {
           team_id: string
           from_tz: string
           to_tz: string
-          tz: string
         }
         Returns: {
           occurrences: number

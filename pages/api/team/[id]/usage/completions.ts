@@ -47,7 +47,6 @@ export default async function handler(
         team_id: teamId,
         from_tz: req.query.from as string,
         to_tz: req.query.to as string,
-        tz: req.query.tz as string,
       },
     );
 
