@@ -515,7 +515,7 @@ export const generateFileEmbeddings = async (
     projectId,
   });
 
-  let numRemainingTokensOnPlan = tokenAllowanceInfo.numRemainingTokensOnPlan;
+  const numRemainingTokensOnPlan = tokenAllowanceInfo.numRemainingTokensOnPlan;
 
   for (const section of sections) {
     // Unlike earlier, we keep the sections verbatim during indexing, as we
@@ -542,7 +542,7 @@ export const generateFileEmbeddings = async (
 
       embeddingsTokenCount += embeddingResult.usage?.total_tokens ?? 0;
 
-      if (numRemainingTokensOnPlan - embeddingsTokenCount < 0) {
+      if (embeddingsTokenCount > numRemainingTokensOnPlan) {
         // The file has been created, so delete it to allow for a subsequent
         // processing.
         await revertFileProcessing(supabaseAdmin, fileId);
@@ -562,9 +562,6 @@ export const generateFileEmbeddings = async (
             } to discuss extended usage.`,
           },
         ];
-      } else {
-        numRemainingTokensOnPlan =
-          numRemainingTokensOnPlan - embeddingsTokenCount;
       }
 
       embeddingsData.push({
