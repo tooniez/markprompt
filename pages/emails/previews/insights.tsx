@@ -1,64 +1,49 @@
+import { add, endOfWeek, startOfWeek } from 'date-fns';
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
 import dynamic from 'next/dynamic';
 import { FC, useCallback, useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 import { PreviewWrapper } from '@/components/emails/PreviewWrapper';
+import { sampleUserUsageStats } from '@/lib/samples/data';
 
 // SSR = false to avoid hydration warnings.
 const InsightsEmail = dynamic(() => import('@/components/emails/Insights'), {
   ssr: false,
 });
 
+const referenceDate = add(new Date(), { days: -7 });
+
 export const getStaticProps: GetStaticProps = async () => {
-  const tierId = 'hobby';
   return {
     props: {
-      subject: 'Test subject',
-      preview: 'Preview email text',
-      tierId,
+      stats: sampleUserUsageStats,
     },
     revalidate: 60,
   };
 };
 
 const PreviewPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
-  subject,
-  preview,
-  tierId,
+  stats,
 }) => {
   const [sending, setSending] = useState(false);
   // const _date = parseISO(date);
 
-  const sendBatch = useCallback(async (num = 0, processed = 0) => {
-    // console.debug(`Sending batch ${num}`);
-    // const res = await fetch('/api/emails/send', {
-    //   method: 'POST',
-    //   body: JSON.stringify({
-    //     subject,
-    //     markdown,
-    //     preview,
-    //     templateId,
-    //     emailId: EMAIL_ID,
-    //     date: formatISO(_date),
-    //   }),
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     accept: 'application/json',
-    //   },
-    // });
-    // if (!res.ok) {
-    //   console.error(await res.text());
-    //   toast.error('Error sending emails, see console logs');
-    //   return;
-    // }
-    // const json = await res.json();
-    // console.debug('Response:', JSON.stringify(json, null, 2));
-    // if (json.done) {
-    //   toast.error('Emails have been sent!');
-    // } else {
-    //   await sendBatch(num + 1, processed + (json.emails || []).length);
-    // }
+  const sendBatch = useCallback(async () => {
+    console.log('Sending');
+    const res = await fetch('/api/cron/weekly-update-email?test=1');
+    if (!res.ok) {
+      console.error(await res.text());
+      toast.error('Error sending emails, see console logs');
+      return;
+    }
+    const json = await res.json();
+    console.debug('Response:', JSON.stringify(json, null, 2));
+    toast.error('Email has been sent!');
   }, []);
+
+  const from = startOfWeek(referenceDate);
+  const to = endOfWeek(referenceDate);
 
   return (
     <PreviewWrapper
@@ -70,21 +55,14 @@ const PreviewPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
         setSending(false);
       }}
       sending={sending}
-      InfoPanel={
-        <div
-          className="grid w-full grid-cols-2 gap-y-2 gap-x-4 truncate text-sm"
-          style={{
-            gridTemplateColumns: 'auto 1fr',
-          }}
-        >
-          <div>Subject</div>
-          <div className="font-bold">{subject}</div>
-          <div>Preview</div>
-          <div className="font-bold">{preview}</div>
-        </div>
-      }
     >
-      <InsightsEmail preview={preview} withHtml={false} tierId={tierId} />
+      <InsightsEmail
+        preview="Sample preview text"
+        withHtml={false}
+        stats={stats}
+        from={from}
+        to={to}
+      />
     </PreviewWrapper>
   );
 };

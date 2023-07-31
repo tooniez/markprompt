@@ -16,6 +16,7 @@ const allowedMethods = ['POST'];
 
 const RESERVED_TEAM_SLUGS = [
   'settings',
+  'account',
   'legal',
   'docs',
   'api',
