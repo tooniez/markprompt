@@ -1,6 +1,7 @@
 import {
   ColumnDef,
   ColumnFiltersState,
+  Row,
   SortingState,
   Table as TANTable,
   VisibilityState,
@@ -36,16 +37,19 @@ interface QueriesDataTableProps<TData, TValue> {
   page: number;
   setPage: (page: number) => void;
   hasMorePages: boolean;
+  onRowClick?: (row: Row<TData>) => void;
 }
 
 function DataTable<TData, TValue>({
   table,
   columns,
   bodyOnly,
+  onRowClick,
 }: {
   table: TANTable<TData>;
   columns: ColumnDef<TData, TValue>[];
   bodyOnly?: boolean;
+  onRowClick?: (row: Row<TData>) => void;
 }) {
   return (
     <Table>
@@ -81,6 +85,8 @@ function DataTable<TData, TValue>({
             <TableRow
               key={row.id}
               data-state={row.getIsSelected() && 'selected'}
+              onClick={() => onRowClick?.(row)}
+              className={onRowClick ? 'cursor-pointer' : ''}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
@@ -109,6 +115,7 @@ export function QueriesDataTable<TData, TValue>({
   page,
   setPage,
   hasMorePages,
+  onRowClick,
 }: QueriesDataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -195,7 +202,7 @@ export function QueriesDataTable<TData, TValue>({
               : 'No more questions asked in this time range.'}
           </p>
         ) : (
-          <DataTable table={table} columns={columns} />
+          <DataTable table={table} columns={columns} onRowClick={onRowClick} />
         )}
         {showUpgradeMessage && !loading && (
           <div className="relative mt-2 flex flex-col">

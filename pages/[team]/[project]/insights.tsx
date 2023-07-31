@@ -7,7 +7,7 @@ import {
   ThumbsDownIcon,
   ThumbsUpIcon,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Card } from '@/components/dashboard/Card';
 import QueryStat from '@/components/dialogs/project/QueryStat';
@@ -106,22 +106,9 @@ const Insights = () => {
         },
         cell: ({ row }) => {
           return (
-            <div className="prompt group relative flex w-full">
+            <div className="prompt flex w-full">
               <div className="overflow-hidden truncate text-neutral-300">
                 {row.getValue('prompt')}
-              </div>
-              <div className="absolute right-0 top-0 bottom-0 flex items-center justify-center opacity-0 transition duration-100 group-hover:opacity-100">
-                <Button
-                  buttonSize="xs"
-                  variant="plain"
-                  Icon={PanelRightIcon}
-                  onClick={() => {
-                    setCurrentQueryStatId(row.original.id);
-                    setQueryStatDialogOpen(true);
-                  }}
-                >
-                  Open
-                </Button>
               </div>
             </div>
           );
@@ -369,6 +356,10 @@ const Insights = () => {
               page={page}
               setPage={setPage}
               hasMorePages={hasMorePages}
+              onRowClick={(row) => {
+                setCurrentQueryStatId(row.original.id);
+                setQueryStatDialogOpen(true);
+              }}
             />
           </Card>
         </div>

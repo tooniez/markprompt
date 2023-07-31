@@ -41,7 +41,7 @@ const QueryStatDialog: FC<QueryStatDialogProps> = ({
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Portal>
         <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-        <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[800px] w-[90%] max-w-[700px] flex-col">
+        <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[800px] w-[90%] max-w-[700px] flex-col outline-none">
           <div className="flex-none border-b border-neutral-900 pb-2">
             <Dialog.Title className="dialog-title-xl">
               {queryStat?.prompt && (
