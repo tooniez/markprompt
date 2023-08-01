@@ -238,11 +238,6 @@ export default async function handler(
       .select('id,email,config')
       .eq('email', process.env.TEST_USER_EMAIL_2);
 
-    console.log(
-      'Data for',
-      process.env.TEST_USER_EMAIL_2,
-      JSON.stringify(data, null, 2),
-    );
     if (!data || data.length === 0) {
       return res.status(400).send({ error: 'Test user not found' });
     }
@@ -266,11 +261,6 @@ export default async function handler(
     }
     const stats = await getUserUsageStats(supabaseAdmin, user.id, from, to);
 
-    console.log('stats for', user.email, JSON.stringify(stats));
-    console.log(
-      'teamUsageStats',
-      JSON.stringify(stats.teamUsageStats.length, null, 2),
-    );
     // Do not send email if there are no teams
     if (stats.teamUsageStats.length === 0) {
       continue;
@@ -284,7 +274,6 @@ export default async function handler(
     if (numProjects === 0) {
       continue;
     }
-    console.log('numProjects', JSON.stringify(numProjects, null, 2));
     const numFiles = sum(
       flatten(
         stats.teamUsageStats.map((s) =>
@@ -292,8 +281,6 @@ export default async function handler(
         ),
       ),
     );
-
-    console.log('numFiles', JSON.stringify(numFiles, null, 2));
 
     // Do not send email if there are no files
     if (numFiles === 0) {
