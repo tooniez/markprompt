@@ -68,7 +68,7 @@ type ProjectUsageStats = {
 
 const sanitizeQuestion = (question: string) => {
   // Replace emails and phone numbers with with [REDACTED]
-  return redactEmail(redactPhoneNumbers(question)).replace(/[\r\n]+/g, '');
+  return redactEmail(redactPhoneNumbers(question)).replace(/[\r\n]+/g, ' ');
 };
 
 const getProjectUsageStats = async (
