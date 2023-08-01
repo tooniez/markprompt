@@ -95,7 +95,13 @@ begin
   return query
   select
     count(distinct qs.id) as num_queries,
-    count(case when qs.response is null then qs.id end) as num_unanswered,
+    count(case when
+        qs.no_response = true
+        and qs.prompt is not null
+        and qs.prompt <> ''
+        then qs.id
+      end
+    ) as num_unanswered,
     count(distinct case when qs.feedback ->> 'vote' = '1' then qs.id end) as num_upvotes,
     count(distinct case when qs.feedback ->> 'vote' = '-1' then qs.id end) as num_downvotes
   from
@@ -105,6 +111,10 @@ begin
     p.id = get_project_query_stats.project_id
     and qs.created_at >= from_tz
     and qs.created_at <= to_tz
+    and (
+      qs.processed_state = 'processed'
+      or qs.processed_state = 'skipped'
+    )
   group by p.name, p.slug;
 end;
 $$;
@@ -176,9 +186,11 @@ begin
 end;
 $$;
 
-
 -- Views
 
+-- Since a weekly update email sets the `lastWeeklyUpdateEmail` field
+-- to the beginning of the past week, we should look for entries
+-- where lastWeeklyUpdateEmail is older than 2 weeks.
 create view v_users_with_pending_weekly_update_email as
 select id,email,config
 from users
@@ -191,6 +203,6 @@ or (
   and
   (
     not jsonb_exists(config, 'lastWeeklyUpdateEmail')
-    or (config->>'lastWeeklyUpdateEmail')::timestamptz <= now() - INTERVAL '1 week'
+    or (config->>'lastWeeklyUpdateEmail')::timestamptz <= now() - INTERVAL '2 weeks'
   )
 );

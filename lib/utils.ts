@@ -65,6 +65,11 @@ export function formatNumber(num: number, digits?: number) {
     : '0';
 }
 
+// Formats number as as "1,000,000.12".
+export const formatNumberWithLocale = (num: number) => {
+  return num.toLocaleString('en-US');
+};
+
 export const intervalData = {
   '1h': {
     milliseconds: 3600000,

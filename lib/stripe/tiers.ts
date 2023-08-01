@@ -349,3 +349,7 @@ export const MAX_COMPLETIONS_ALLOWANCE = 1_000_000_000;
 export const isInifiniteEmbeddingsTokensAllowance = (numTokens: number) => {
   return numTokens >= MAX_EMBEDDINGS_TOKEN_ALLOWANCE;
 };
+
+export const isInifiniteCompletionsAllowance = (numCompletions: number) => {
+  return numCompletions >= MAX_COMPLETIONS_ALLOWANCE;
+};

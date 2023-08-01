@@ -216,7 +216,7 @@ const TeamSettingsPage = () => {
                   className="flex-grow truncate text-sm font-normal text-neutral-500"
                   htmlFor="product-updates"
                 >
-                  Send updates
+                  Send weekly updates
                 </label>
                 <Switch.Root
                   className="switch-root"

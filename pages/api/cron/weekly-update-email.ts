@@ -1,10 +1,11 @@
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
-import { add, endOfWeek, formatISO, startOfWeek } from 'date-fns';
+import { add, endOfWeek, format, formatISO, startOfWeek } from 'date-fns';
 import { sum, uniq } from 'lodash-es';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Resend } from 'resend';
 import { isPresent } from 'ts-is-present';
 
+import InsightsEmail from '@/components/emails/Insights';
 import {
   getEmbeddingTokensAllowance,
   getMonthlyCompletionsAllowance,
@@ -12,14 +13,13 @@ import {
   getTierName,
 } from '@/lib/stripe/tiers';
 import { getJoinedTeams, getTeamProjectIds } from '@/lib/supabase';
-import { Database, Json } from '@/types/supabase';
+import { Database } from '@/types/supabase';
 import {
   DbTeam,
   DbUser,
   Project,
   QueryStatsProcessingResponseData,
 } from '@/types/types';
-import InsightsEmail from '@/components/emails/Insights';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -58,6 +58,7 @@ type ProjectUsageStats = {
   numFiles: number;
   numSections: number;
   latestQuestions: string[];
+  unansweredQuestions: string[];
   numQuestionsAsked: number;
   numQuestionsUnanswered: number;
   numQuestionsDownvoted: number;
@@ -77,7 +78,7 @@ const getProjectUsageStats = async (
   const { data: project } = await supabaseAdmin
     .from('projects')
     .select('name,slug')
-    .eq('project_id', projectId)
+    .eq('id', projectId)
     .limit(1)
     .maybeSingle();
 
@@ -103,11 +104,27 @@ const getProjectUsageStats = async (
 
   const { data: queries } = await supabaseAdmin
     .from('query_stats')
+    .select('prompt,id')
+    .eq('project_id', projectId)
+    .or('processed_state.eq.processed,processed_state.eq.skipped')
+    .gte('created_at', fromISO)
+    .lte('created_at', toISO)
+    .not('response', 'is', null)
+    .not('prompt', 'is', null)
+    .neq('prompt', '')
+    .neq('prompt', '[REDACTED]')
+    .not('no_response', 'is', true)
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  const { data: unanswered } = await supabaseAdmin
+    .from('query_stats')
     .select('prompt')
     .eq('project_id', projectId)
     .or('processed_state.eq.processed,processed_state.eq.skipped')
     .gte('created_at', fromISO)
     .lte('created_at', toISO)
+    .eq('no_response', true)
     .not('prompt', 'is', null)
     .neq('prompt', '')
     .neq('prompt', '[REDACTED]')
@@ -122,6 +139,9 @@ const getProjectUsageStats = async (
     numSections: fileStats?.[0]?.num_sections || 0,
     latestQuestions: uniq(
       (queries || []).map((q) => q.prompt).filter(isPresent),
+    ).slice(0, 10),
+    unansweredQuestions: uniq(
+      (unanswered || []).map((q) => q.prompt).filter(isPresent),
     ).slice(0, 10),
     numQuestionsAsked: queryStats?.[0]?.num_queries || 0,
     numQuestionsUnanswered: queryStats?.[0]?.num_unanswered || 0,
@@ -182,7 +202,7 @@ export default async function handler(
     | {
         id: string | null;
         email: string | null;
-        config: Json;
+        config: any;
       }[]
     | null;
 
@@ -191,9 +211,11 @@ export default async function handler(
       .from('users')
       .select('id,email,config')
       .eq('id', process.env.TEST_USER_ID);
+
     if (!data || data.length === 0) {
       return res.status(400).send({ error: 'Test user not found' });
     }
+
     users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
   } else {
     const { data: usersResponse } = await supabaseAdmin
@@ -214,7 +236,6 @@ export default async function handler(
   const to = endOfWeek(referenceDate);
 
   for (const user of users) {
-    console.log('User', user.id);
     if (!user.id || !user.email) {
       continue;
     }
@@ -222,32 +243,54 @@ export default async function handler(
     if (stats.teamUsageStats.length === 0) {
       continue;
     }
+
     const numProjects = sum(
       stats.teamUsageStats.map((s) => s.projectUsageStats.length),
     );
+
     // Do not send email if there are no projects
     if (numProjects === 0) {
       continue;
     }
 
-    const result = await resend.emails.send({
-      from: `${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME!} <${process
-        .env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL!}>`,
-      reply_to: process.env.MARKPROMPT_WEEKLY_UPDATES_REPLY_TO!,
-      to: user.email,
-      subject: 'Markprompt Usage',
-      react: InsightsEmail({
-        preview: 'Sample preview text',
-        withHtml: true,
-        stats,
-        from,
-        to,
-      }),
-    });
+    try {
+      await resend.emails.send({
+        from: `${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME!} <${process
+          .env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL!}>`,
+        reply_to: process.env.MARKPROMPT_WEEKLY_UPDATES_REPLY_TO!,
+        to: user.email,
+        subject: 'Markprompt Weekly Report',
+        react: InsightsEmail({
+          preview: `Markprompt weekly report for ${format(
+            from,
+            'LLL dd',
+          )} - ${format(to, 'LLL dd, y')}`,
+          withHtml: true,
+          stats,
+          from,
+          to,
+        }),
+      });
 
-    console.log('result', JSON.stringify(result, null, 2));
+      // Once the email has been sent, update the `lastWeeklyUpdateEmail`
+      // to the start of the range of the update, i.e. the beginning
+      // of the past week.
+      const { error: updateConfigError } = await supabaseAdmin
+        .from('users')
+        .update({
+          config: {
+            ...user.config,
+            lastWeeklyUpdateEmail: formatISO(from),
+          },
+        })
+        .eq('id', user.id);
 
-    // await updateConfig(user);
+      if (updateConfigError) {
+        console.error(`Error updating user config: ${updateConfigError}`);
+      }
+    } catch (e) {
+      console.error(`Error sending weekly usage email: ${e}`);
+    }
   }
 
   return res.status(200).send({ status: 'ok' });

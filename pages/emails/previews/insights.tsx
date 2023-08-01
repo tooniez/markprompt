@@ -1,4 +1,4 @@
-import { add, endOfWeek, startOfWeek } from 'date-fns';
+import { add, endOfWeek, format, startOfWeek } from 'date-fns';
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
 import dynamic from 'next/dynamic';
 import { FC, useCallback, useState } from 'react';
@@ -27,10 +27,8 @@ const PreviewPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
   stats,
 }) => {
   const [sending, setSending] = useState(false);
-  // const _date = parseISO(date);
 
   const sendBatch = useCallback(async () => {
-    console.log('Sending');
     const res = await fetch('/api/cron/weekly-update-email?test=1');
     if (!res.ok) {
       console.error(await res.text());
@@ -57,7 +55,10 @@ const PreviewPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
       sending={sending}
     >
       <InsightsEmail
-        preview="Sample preview text"
+        preview={`Markprompt weekly report for ${format(
+          from,
+          'LLL dd',
+        )} - ${format(to, 'LLL dd, y')}`}
         withHtml={false}
         stats={stats}
         from={from}
