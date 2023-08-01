@@ -23,6 +23,7 @@ import { UserUsageStats } from '@/pages/api/cron/weekly-update-email';
 
 import { Wrapper } from './templates/Shared';
 import { SocialSection } from './templates/SocialSection';
+import cn from 'classnames';
 
 type InsightsEmailProps = {
   preview: string;
@@ -212,6 +213,15 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
                   {team.projectUsageStats
                     ?.filter((p) => p.numFiles > 0)
                     .map((project, j) => {
+                      const answeredPercent = Math.min(
+                        100,
+                        Math.round(
+                          (100 *
+                            (project.numQuestionsAsked -
+                              project.numQuestionsUnanswered)) /
+                            project.numQuestionsAsked,
+                        ),
+                      );
                       return (
                         <Section
                           key={`team-${i}-project-${j}`}
@@ -254,7 +264,7 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
                                 <Text className="m-0 text-sm font-bold text-neutral-900">
                                   Files
                                 </Text>
-                                <Text className="m-0 mt-2 text-sm text-neutral-600">
+                                <Text className="m-0 mt-2 text-sm text-neutral-700">
                                   {project.numFiles}
                                 </Text>
                               </Column>
@@ -266,7 +276,7 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
                                   <Text className="m-0 text-sm font-bold text-neutral-900">
                                     Questions
                                   </Text>
-                                  <Text className="m-0 mt-2 text-sm text-neutral-600">
+                                  <Text className="m-0 mt-2 text-sm text-neutral-700">
                                     {project.numQuestionsAsked}
                                   </Text>
                                 </Column>
@@ -280,22 +290,24 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
                                   <Text className="m-0 text-sm font-bold text-neutral-900">
                                     Answered
                                   </Text>
-                                  <Text className="m-0 mt-2 text-sm text-neutral-600">
+                                  <Text className="m-0 mt-2 truncate whitespace-nowrap text-sm text-neutral-700">
                                     {project.numQuestionsAsked -
-                                      project.numQuestionsUnanswered}
-                                  </Text>
-                                </Column>
-                              )}
-                              {project.numQuestionsUnanswered > 0 && (
-                                <Column className="p-4">
-                                  <Text className="mx-0 mt-0 mb-2 text-xl">
-                                    🤷‍♀️
-                                  </Text>
-                                  <Text className="m-0 text-sm font-bold text-neutral-900">
-                                    Unanswered
-                                  </Text>
-                                  <Text className="m-0 mt-2 text-sm text-neutral-600">
-                                    {project.numQuestionsUnanswered}
+                                      project.numQuestionsUnanswered}{' '}
+                                    <span
+                                      className={cn(
+                                        'font-semibold text-neutral-500',
+                                        {
+                                          'text-green-600':
+                                            answeredPercent >= 70,
+                                          'text-orange-600':
+                                            answeredPercent >= 50 &&
+                                            answeredPercent < 70,
+                                          'text-red-600': answeredPercent < 50,
+                                        },
+                                      )}
+                                    >
+                                      ({answeredPercent}%)
+                                    </span>
                                   </Text>
                                 </Column>
                               )}
@@ -307,7 +319,7 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
                                   <Text className="m-0 text-sm font-bold text-neutral-900">
                                     Upvoted
                                   </Text>
-                                  <Text className="m-0 mt-2 text-sm text-neutral-600">
+                                  <Text className="m-0 mt-2 text-sm text-neutral-700">
                                     {project.numQuestionsUpvoted}
                                   </Text>
                                 </Column>
@@ -320,7 +332,7 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
                                   <Text className="m-0 text-sm font-bold text-neutral-900">
                                     Downvoted
                                   </Text>
-                                  <Text className="m-0 mt-2 text-sm text-neutral-600">
+                                  <Text className="m-0 mt-2 text-sm text-neutral-700">
                                     {project.numQuestionsDownvoted}
                                   </Text>
                                 </Column>
