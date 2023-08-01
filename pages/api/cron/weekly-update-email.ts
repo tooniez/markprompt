@@ -240,6 +240,8 @@ export default async function handler(
       continue;
     }
     const stats = await getUserUsageStats(supabaseAdmin, user.id, from, to);
+
+    console.log('[EMAIL] Stats', JSON.stringify(stats, null, 2));
     if (stats.teamUsageStats.length === 0) {
       continue;
     }
@@ -259,7 +261,8 @@ export default async function handler(
         from: `${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME!} <${process
           .env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL!}>`,
         reply_to: process.env.MARKPROMPT_WEEKLY_UPDATES_REPLY_TO!,
-        to: user.email,
+        // to: user.email,
+        to: process.env.TEST_USER_EMAIL!,
         subject: 'Markprompt Weekly Report',
         react: InsightsEmail({
           preview: `Markprompt weekly report for ${format(
@@ -276,19 +279,19 @@ export default async function handler(
       // Once the email has been sent, update the `lastWeeklyUpdateEmail`
       // to the start of the range of the update, i.e. the beginning
       // of the past week.
-      const { error: updateConfigError } = await supabaseAdmin
-        .from('users')
-        .update({
-          config: {
-            ...user.config,
-            lastWeeklyUpdateEmail: formatISO(from),
-          },
-        })
-        .eq('id', user.id);
+      // const { error: updateConfigError } = await supabaseAdmin
+      //   .from('users')
+      //   .update({
+      //     config: {
+      //       ...user.config,
+      //       lastWeeklyUpdateEmail: formatISO(from),
+      //     },
+      //   })
+      //   .eq('id', user.id);
 
-      if (updateConfigError) {
-        console.error(`Error updating user config: ${updateConfigError}`);
-      }
+      // if (updateConfigError) {
+      //   console.error(`Error updating user config: ${updateConfigError}`);
+      // }
     } catch (e) {
       console.error(`Error sending weekly usage email: ${e}`);
     }
