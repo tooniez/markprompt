@@ -13,12 +13,11 @@ import { ReactNode, useEffect, useState } from 'react';
 import { SWRConfig } from 'swr';
 
 import { Toaster } from '@/components/ui/Toaster';
-import { MarkpromptPromptWindow } from '@/components/user/ChatWindow';
 import { ManagedAppContext } from '@/lib/context/app';
 import { ManagedConfigContext } from '@/lib/context/config';
 import { ManagedTrainingContext } from '@/lib/context/training';
 import useUser from '@/lib/hooks/use-user';
-import { getAppHost, getDomain } from '@/lib/utils.edge';
+import { getAppHost } from '@/lib/utils.edge';
 
 const inter = Inter({ subsets: ['latin'] });
 

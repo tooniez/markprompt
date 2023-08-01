@@ -12,7 +12,7 @@ import {
   getTierName,
 } from '@/lib/stripe/tiers';
 import { getJoinedTeams, getTeamProjectIds } from '@/lib/supabase';
-import { redactEmail } from '@/lib/utils';
+import { redactEmail, redactPhoneNumbers } from '@/lib/utils';
 import { Database } from '@/types/supabase';
 import {
   DbTeam,
@@ -64,6 +64,11 @@ type ProjectUsageStats = {
   numQuestionsDownvoted: number;
   numQuestionsUpvoted: number;
   mostCitedSources: string[];
+};
+
+const sanitizeQuestion = (question: string) => {
+  // Replace emails and phone numbers with with [REDACTED]
+  return redactEmail(redactPhoneNumbers(question)).replace(/[\r\n]+/g, '');
 };
 
 const getProjectUsageStats = async (
@@ -139,12 +144,12 @@ const getProjectUsageStats = async (
     numSections: fileStats?.[0]?.num_sections || 0,
     latestQuestions: uniq(
       (queries || [])
-        .map((q) => redactEmail(q.prompt || ''))
+        .map((q) => sanitizeQuestion(q.prompt || ''))
         .filter((q) => !isEmpty(q)),
     ).slice(0, 10),
     unansweredQuestions: uniq(
       (unanswered || [])
-        .map((q) => redactEmail(q.prompt || ''))
+        .map((q) => sanitizeQuestion(q.prompt || ''))
         .filter((q) => !isEmpty(q)),
     ).slice(0, 10),
     numQuestionsAsked: queryStats?.[0]?.num_queries || 0,

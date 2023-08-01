@@ -402,17 +402,27 @@ export const isValidDomain = (domain: string) => {
   );
 };
 
-const emailRe =
-  /^[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~](\.?[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
-
 // Reference: https://github.com/manishsaraan/email-validator/blob/master/index.js
 export const isValidEmail = (email: string) => {
-  return emailRe.test(email);
+  return /^[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~](\.?[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/.test(
+    email,
+  );
 };
 
+// Replace email addresses with [REDACTED]
 export const redactEmail = (text: string) => {
-  // Replace email addresses with [REDACTED]
-  return text.replace(emailRe, '[REDACTED]');
+  return text.replace(
+    /[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~](\.?[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+/gi,
+    '[REDACTED]',
+  );
+};
+
+// Replace phone number with [REDACTED]
+export const redactPhoneNumbers = (text: string) => {
+  return text.replace(
+    /(\+?\d{1,2}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g,
+    '[REDACTED]',
+  );
 };
 
 const ALPHABET =
