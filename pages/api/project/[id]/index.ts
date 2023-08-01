@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { Database } from '@/types/supabase';
-import { Project, Team } from '@/types/types';
+import { Project } from '@/types/types';
 
 type Data =
   | {
