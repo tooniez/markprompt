@@ -221,7 +221,7 @@ export default async function handler(
     const { data: usersResponse } = await supabaseAdmin
       .from('v_users_with_pending_weekly_update_email')
       .select('id,email,config')
-      .limit(20);
+      .limit(5);
     users = usersResponse;
   }
 
