@@ -218,11 +218,22 @@ export default async function handler(
 
     users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
   } else {
-    const { data: usersResponse } = await supabaseAdmin
-      .from('v_users_with_pending_weekly_update_email')
+    // const { data: usersResponse } = await supabaseAdmin
+    //   .from('v_users_with_pending_weekly_update_email')
+    //   .select('id,email,config')
+    //   .limit(5);
+    // users = usersResponse;
+
+    const { data } = await supabaseAdmin
+      .from('users')
       .select('id,email,config')
-      .limit(5);
-    users = usersResponse;
+      .eq('id', process.env.TEST_USER_ID);
+
+    if (!data || data.length === 0) {
+      return res.status(400).send({ error: 'Test user not found' });
+    }
+
+    users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
   }
 
   if (!users) {
