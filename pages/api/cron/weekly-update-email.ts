@@ -1,6 +1,6 @@
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { add, endOfWeek, format, formatISO, startOfWeek } from 'date-fns';
-import { sum, uniq } from 'lodash-es';
+import { flatten, sum, uniq } from 'lodash-es';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Resend } from 'resend';
 import { isPresent } from 'ts-is-present';
@@ -252,6 +252,7 @@ export default async function handler(
     }
     const stats = await getUserUsageStats(supabaseAdmin, user.id, from, to);
 
+    // Do not send email if there are no teams
     if (stats.teamUsageStats.length === 0) {
       continue;
     }
@@ -262,6 +263,21 @@ export default async function handler(
 
     // Do not send email if there are no projects
     if (numProjects === 0) {
+      continue;
+    }
+
+    const numFiles = sum(
+      flatten(
+        stats.teamUsageStats.map((s) =>
+          s.projectUsageStats.map((p) => p.numFiles),
+        ),
+      ),
+    );
+
+    console.log('numFiles', JSON.stringify(numFiles, null, 2));
+
+    // Do not send email if there are no files
+    if (numFiles === 0) {
       continue;
     }
 
