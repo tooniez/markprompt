@@ -5,13 +5,12 @@ import { createHash } from 'crypto';
 import { FileReferenceFileData, FileSectionReference } from '@markprompt/core';
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
-import { differenceInDays } from 'date-fns';
-import { formatInTimeZone } from 'date-fns-tz';
 import dayjs from 'dayjs';
-import { ChevronsUp, Globe, Upload } from 'lucide-react';
+import { ChevronsUp, GitBranchIcon, Globe, Upload } from 'lucide-react';
 import { minimatch } from 'minimatch';
 import { customAlphabet } from 'nanoid';
 import pako from 'pako';
+import { JSXElementConstructor } from 'react';
 import tailwindColors from 'tailwindcss/colors';
 import type { Config } from 'unique-names-generator';
 import {
@@ -614,12 +613,14 @@ export const getLabelForSource = (source: Source, inline: boolean) => {
   }
 };
 
-export const getAccessoryLabelForSource = (source: Source) => {
+export const getAccessoryLabelForSource = (
+  source: Source,
+): { label: string; Icon?: JSXElementConstructor<any> } | undefined => {
   switch (source.type) {
     case 'github': {
       const data = source.data as GitHubSourceDataType;
       if (data.branch) {
-        return '#' + data.branch;
+        return { label: data.branch, Icon: GitBranchIcon };
       }
     }
   }

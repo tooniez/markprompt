@@ -102,13 +102,28 @@ type SourceItemProps = {
 const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
   const Icon = getIconForSource(source.type);
   const accessory = getAccessoryLabelForSource(source);
+  let AccessoryTag = <></>;
+  if (accessory) {
+    const { label, Icon } = accessory;
+    if (Icon) {
+      AccessoryTag = (
+        <Tag color="neutral" className="flex flex-row gap-1">
+          <Icon className="h-3 w-3" />
+          {label}
+        </Tag>
+      );
+    } else {
+      AccessoryTag = <Tag color="neutral">{label}</Tag>;
+    }
+  }
+
   return (
     <div className="flex w-full cursor-default flex-row items-center gap-2 text-sm">
       <Icon className="h-4 w-4 flex-none text-neutral-500" />
       <p className="flex-grow overflow-hidden text-neutral-300">
         {getLabelForSource(source, false)}
       </p>
-      {accessory && <Tag color="neutral">{accessory}</Tag>}
+      {AccessoryTag}
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
           <button
