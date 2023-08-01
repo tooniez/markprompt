@@ -53,6 +53,12 @@ const getWarningMessage = (
     ? '∞'
     : formatNumberWithLocale(numAllowedEmbeddings);
 
+  const upgradeMessage =
+    completionsUsagePercent > 100 || embeddingTokensUsagePercent > 100 ? (
+      <> Please upgrade your plan to continue using Markprompt.</>
+    ) : (
+      <></>
+    );
   if (completionsUsagePercent > 0 && embeddingTokensUsagePercent > 0) {
     return (
       <>
@@ -75,6 +81,7 @@ const getWarningMessage = (
           {numAllowedEmbeddingsSymbol}
         </strong>
         ) included in this plan.
+        {upgradeMessage}
       </>
     );
   } else if (embeddingTokensUsagePercent > 0) {
@@ -90,6 +97,7 @@ const getWarningMessage = (
           {numAllowedEmbeddingsSymbol}
         </strong>
         ) included in this plan.
+        {upgradeMessage}
       </>
     );
   }
