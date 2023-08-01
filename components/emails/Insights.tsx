@@ -53,28 +53,46 @@ const getWarningMessage = (
     ? '∞'
     : formatNumberWithLocale(numAllowedEmbeddings);
 
-  return (
-    <>
-      Your team has used{' '}
-      <strong>
-        {formatNumberWithLocale(Math.round(completionsUsagePercent))}%
-      </strong>{' '}
-      of completions (
-      <strong>
-        {formatNumberWithLocale(numUsedCompletions)}/
-        {numAllowedCompletionsSymbol}
-      </strong>
-      ) for this cycle, and{' '}
-      <strong>
-        {formatNumberWithLocale(Math.round(embeddingTokensUsagePercent))}%
-      </strong>{' '}
-      of embeddings (
-      <strong>
-        {formatNumberWithLocale(numUsedEmbeddings)}/{numAllowedEmbeddingsSymbol}
-      </strong>
-      ) included in this plan.
-    </>
-  );
+  if (completionsUsagePercent > 0 && embeddingTokensUsagePercent > 0) {
+    return (
+      <>
+        Your team has used{' '}
+        <strong>
+          {formatNumberWithLocale(Math.round(completionsUsagePercent))}%
+        </strong>{' '}
+        of completions (
+        <strong>
+          {formatNumberWithLocale(numUsedCompletions)}/
+          {numAllowedCompletionsSymbol}
+        </strong>
+        ) for this cycle, and{' '}
+        <strong>
+          {formatNumberWithLocale(Math.round(embeddingTokensUsagePercent))}%
+        </strong>{' '}
+        of embeddings (
+        <strong>
+          {formatNumberWithLocale(numUsedEmbeddings)}/
+          {numAllowedEmbeddingsSymbol}
+        </strong>
+        ) included in this plan.
+      </>
+    );
+  } else if (embeddingTokensUsagePercent > 0) {
+    return (
+      <>
+        Your team has used{' '}
+        <strong>
+          {formatNumberWithLocale(Math.round(embeddingTokensUsagePercent))}%
+        </strong>{' '}
+        of embeddings (
+        <strong>
+          {formatNumberWithLocale(numUsedEmbeddings)}/
+          {numAllowedEmbeddingsSymbol}
+        </strong>
+        ) included in this plan.
+      </>
+    );
+  }
 };
 
 // We create the email component as a standalone component, instead of
