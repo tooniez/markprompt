@@ -264,6 +264,21 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
                                 </Text>
                               </Column>
                             )}
+                            {project.numQuestionsAsked >
+                              project.numQuestionsUnanswered && (
+                              <Column className="p-4">
+                                <Text className="mx-0 mt-0 mb-2 text-xl">
+                                  ✅
+                                </Text>
+                                <Text className="m-0 text-sm font-bold text-neutral-900">
+                                  Answered
+                                </Text>
+                                <Text className="m-0 mt-2 text-sm text-neutral-600">
+                                  {project.numQuestionsAsked -
+                                    project.numQuestionsUnanswered}
+                                </Text>
+                              </Column>
+                            )}
                             {project.numQuestionsUnanswered > 0 && (
                               <Column className="p-4">
                                 <Text className="mx-0 mt-0 mb-2 text-xl">
