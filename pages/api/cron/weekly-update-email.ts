@@ -293,7 +293,7 @@ export default async function handler(
       //   console.error(`Error updating user config: ${updateConfigError}`);
       // }
     } catch (e) {
-      console.error(`Error sending weekly usage email: ${e}`);
+      console.error(`Error sending weekly usage email: ${JSON.stringify(e)}`);
     }
   }
 
