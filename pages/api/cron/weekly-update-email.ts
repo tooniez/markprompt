@@ -254,6 +254,7 @@ export default async function handler(
     }
 
     try {
+      console.info(`[EMAIL] Sending weekly update to ${user.email}`);
       await resend.emails.send({
         from: `${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME!} <${process
           .env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL!}>`,

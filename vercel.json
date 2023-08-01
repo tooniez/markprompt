@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/weekly-update-email",
-      "schedule": "*/2 * * * 1"
+      "schedule": "*/2 * * * 2"
     }
   ]
 }
