@@ -10,6 +10,7 @@ import {
   Section,
   Text,
 } from '@react-email/components';
+import cn from 'classnames';
 import { sum } from 'd3-array';
 import { format } from 'date-fns';
 import { FC } from 'react';
@@ -23,7 +24,6 @@ import { UserUsageStats } from '@/pages/api/cron/weekly-update-email';
 
 import { Wrapper } from './templates/Shared';
 import { SocialSection } from './templates/SocialSection';
-import cn from 'classnames';
 
 type InsightsEmailProps = {
   preview: string;
