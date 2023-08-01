@@ -227,7 +227,7 @@ export default async function handler(
     const { data } = await supabaseAdmin
       .from('users')
       .select('id,email,config')
-      .eq('id', process.env.TEST_USER_EMAIL_2);
+      .eq('email', process.env.TEST_USER_EMAIL_2);
 
     console.log(
       'Data for',
