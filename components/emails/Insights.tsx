@@ -121,7 +121,6 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
             })
             .map((team, i) => {
               // Completions usage
-
               const hasInfiniteCompletions = isInifiniteCompletionsAllowance(
                 team.numMonthlyAllowedCompletions,
               );
@@ -144,7 +143,6 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
                   : 'none';
 
               // Embeddings usage
-
               const hasInfiniteEmbeddings =
                 isInifiniteEmbeddingsTokensAllowance(team.numAllowedEmbeddings);
 

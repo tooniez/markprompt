@@ -198,6 +198,38 @@ const getUserUsageStats = async (
   };
 };
 
+const generateInsightsText = (stats: UserUsageStats) => {
+  const numProjects = sum(
+    stats.teamUsageStats.map((s) => s.projectUsageStats.length),
+  );
+
+  const numFiles = sum(
+    flatten(
+      stats.teamUsageStats.map((s) =>
+        s.projectUsageStats.map((p) => p.numFiles),
+      ),
+    ),
+  );
+
+  const numQuestions = sum(
+    flatten(
+      stats.teamUsageStats.map((s) =>
+        s.projectUsageStats.map((p) => p.numQuestionsAsked),
+      ),
+    ),
+  );
+
+  const numQuestionsUnanswered = sum(
+    flatten(
+      stats.teamUsageStats.map((s) =>
+        s.projectUsageStats.map((p) => p.numQuestionsUnanswered),
+      ),
+    ),
+  );
+
+  return `You are member of ${stats.teamUsageStats.length} teams. You have access to ${numProjects} projects, totalling ${numFiles} files. In the past week, ${numQuestions} questions have been asked, of which ${numQuestionsUnanswered} were unanswered.`;
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
@@ -298,6 +330,7 @@ export default async function handler(
         // to: user.email,
         to: process.env.TEST_USER_EMAIL!,
         subject: 'Markprompt Weekly Report',
+        text: generateInsightsText(stats),
         react: InsightsEmail({
           preview: `Markprompt weekly report for ${format(
             from,
