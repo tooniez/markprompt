@@ -259,22 +259,22 @@ export default async function handler(
 
     users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
   } else {
-    // const { data: usersResponse } = await supabaseAdmin
-    //   .from('v_users_with_pending_weekly_update_email')
-    //   .select('id,email,config')
-    //   .limit(5);
-    // users = usersResponse;
-
-    const { data } = await supabaseAdmin
-      .from('users')
+    const { data: usersResponse } = await supabaseAdmin
+      .from('v_users_with_pending_weekly_update_email')
       .select('id,email,config')
-      .eq('email', process.env.TEST_USER_EMAIL_2);
+      .limit(10);
+    users = usersResponse;
 
-    if (!data || data.length === 0) {
-      return res.status(400).send({ error: 'Test user not found' });
-    }
-
-    users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
+    // const { data } = await supabaseAdmin
+    //   .from('users')
+    //   .select('id,email,config')
+    //   .eq('email', process.env.TEST_USER_EMAIL_2);
+    //
+    // if (!data || data.length === 0) {
+    //   return res.status(400).send({ error: 'Test user not found' });
+    // }
+    //
+    // users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
   }
 
   if (!users) {
@@ -287,25 +287,37 @@ export default async function handler(
   const from = startOfWeek(referenceDate);
   const to = endOfWeek(referenceDate);
 
+  // Once the email has been sent, or if the user was not
+  // elligible (e.g. because there were no files), update the
+  // `lastWeeklyUpdateEmail` to the start of the range of
+  // the update, i.e. the beginning of the past week.
+  const updateConfig = async (user: {
+    id: string | null;
+    email: string | null;
+    config: any;
+  }) => {
+    const { error: updateConfigError } = await supabaseAdmin
+      .from('users')
+      .update({
+        config: {
+          ...user.config,
+          lastWeeklyUpdateEmail: formatISO(from),
+        },
+      })
+      .eq('id', user.id);
+    if (updateConfigError) {
+      console.error(`Error updating user config: ${updateConfigError}`);
+    }
+  };
+
   for (const user of users) {
     if (!user.id || !user.email) {
+      await updateConfig(user);
       continue;
     }
+
     const stats = await getUserUsageStats(supabaseAdmin, user.id, from, to);
 
-    // Do not send email if there are no teams
-    if (stats.teamUsageStats.length === 0) {
-      continue;
-    }
-
-    const numProjects = sum(
-      stats.teamUsageStats.map((s) => s.projectUsageStats.length),
-    );
-
-    // Do not send email if there are no projects
-    if (numProjects === 0) {
-      continue;
-    }
     const numFiles = sum(
       flatten(
         stats.teamUsageStats.map((s) =>
@@ -314,8 +326,9 @@ export default async function handler(
       ),
     );
 
-    // Do not send email if there are no files
+    // Do not send email if there are no teams, projects or files
     if (numFiles === 0) {
+      await updateConfig(user);
       continue;
     }
 
@@ -343,22 +356,7 @@ export default async function handler(
         }),
       });
 
-      // Once the email has been sent, update the `lastWeeklyUpdateEmail`
-      // to the start of the range of the update, i.e. the beginning
-      // of the past week.
-      // const { error: updateConfigError } = await supabaseAdmin
-      //   .from('users')
-      //   .update({
-      //     config: {
-      //       ...user.config,
-      //       lastWeeklyUpdateEmail: formatISO(from),
-      //     },
-      //   })
-      //   .eq('id', user.id);
-
-      // if (updateConfigError) {
-      //   console.error(`Error updating user config: ${updateConfigError}`);
-      // }
+      await updateConfig(user);
     } catch (e) {
       console.error(`Error sending weekly usage email: ${JSON.stringify(e)}`);
     }
