@@ -445,9 +445,6 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
         <Hr className="mt-8 border-neutral-200" />
         <Section className="mt-6">
           <Text className="text-xs text-neutral-500">
-            Motif Land Inc, 2261 Market Street #4059, San Francisco CA, 94114
-          </Text>
-          <Text className="text-xs text-neutral-500">
             You are receiving this email because you signed up at{' '}
             <Link
               className="text-neutral-500 underline"
@@ -461,8 +458,20 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
               href="https://markprompt.com"
             >
               account settings
+            </Link>{' '}
+            or via{' '}
+            <Link
+              href="{{{RESEND_UNSUBSCRIBE_URL}}}"
+              className="text-neutral-500 underline"
+            >
+              this link
             </Link>
             .
+          </Text>
+        </Section>
+        <Section>
+          <Text className="text-xs text-neutral-500">
+            Motif Land Inc, 2261 Market Street #4059, San Francisco CA, 94114
           </Text>
         </Section>
       </Container>

@@ -340,8 +340,7 @@ export default async function handler(
         from: `${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME!} <${process
           .env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL!}>`,
         reply_to: process.env.MARKPROMPT_WEEKLY_UPDATES_REPLY_TO!,
-        // to: user.email,
-        to: process.env.TEST_USER_EMAIL!,
+        to: user.email,
         subject: 'Markprompt Weekly Report',
         text: generateInsightsText(stats),
         react: InsightsEmail({
@@ -355,6 +354,8 @@ export default async function handler(
           to,
         }),
       });
+
+      console.debug('Weekly update email sent to', user.email);
 
       await updateConfig(user);
     } catch (e) {
