@@ -204,169 +204,179 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
                     </Section>
                   )}
                 </Section>
-                {team.projectUsageStats?.map((project, j) => {
-                  return (
-                    <Section
-                      key={`team-${i}-project-${j}`}
-                      className="mt-4 mb-4 border-separate overflow-hidden rounded-lg border border-solid"
-                      style={{
-                        background: 'rgb(245, 244, 245)',
-                        borderColor: 'rgb(229, 229, 229)',
-                        padding: '24px 24px',
-                      }}
-                    >
-                      <Row>
-                        <Column>
-                          <Heading className="overflow-hidden truncate whitespace-nowrap text-base font-bold text-neutral-900">
-                            {project.name}
-                          </Heading>
-                        </Column>
-                        <Column align="right">
-                          <Button
-                            pX={10}
-                            pY={10}
-                            className="flex-none rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white no-underline"
-                            href={`https://markprompt.com/${team.slug}/${project.slug}`}
-                          >
-                            View in dashboard
-                          </Button>
-                        </Column>
-                      </Row>
+                {team.projectUsageStats
+                  ?.filter((p) => p.numFiles > 0)
+                  .map((project, j) => {
+                    return (
                       <Section
-                        className="mt-6 border-separate rounded-md border border-solid p-2"
+                        key={`team-${i}-project-${j}`}
+                        className="mt-4 mb-4 border-separate overflow-hidden rounded-lg border border-solid"
                         style={{
-                          background: 'rgb(250, 250, 250)',
+                          background: 'rgb(245, 244, 245)',
                           borderColor: 'rgb(229, 229, 229)',
+                          padding: '24px 24px',
                         }}
                       >
                         <Row>
-                          <Column className="p-4">
-                            <Text className="mx-0 mt-0 mb-2 text-xl">📄</Text>
-                            <Text className="m-0 text-sm font-bold text-neutral-900">
-                              Files
-                            </Text>
-                            <Text className="m-0 mt-2 text-sm text-neutral-600">
-                              {project.numFiles}
-                            </Text>
+                          <Column>
+                            <Heading className="overflow-hidden truncate whitespace-nowrap text-base font-bold text-neutral-900">
+                              {project.name}
+                            </Heading>
                           </Column>
-                          {project.numQuestionsAsked > 0 && (
-                            <Column className="p-4">
-                              <Text className="mx-0 mt-0 mb-2 text-xl">💬</Text>
-                              <Text className="m-0 text-sm font-bold text-neutral-900">
-                                Questions
-                              </Text>
-                              <Text className="m-0 mt-2 text-sm text-neutral-600">
-                                {project.numQuestionsAsked}
-                              </Text>
-                            </Column>
-                          )}
-                          {project.numQuestionsUnanswered > 0 && (
-                            <Column className="p-4">
-                              <Text className="mx-0 mt-0 mb-2 text-xl">🤷‍♀️</Text>
-                              <Text className="m-0 text-sm font-bold text-neutral-900">
-                                Unanswered
-                              </Text>
-                              <Text className="m-0 mt-2 text-sm text-neutral-600">
-                                {project.numQuestionsUnanswered}
-                              </Text>
-                            </Column>
-                          )}
-                          {project.numQuestionsUpvoted > 0 && (
-                            <Column className="px-4">
-                              <Text className="mx-0 mt-0 mb-2 text-xl">👍</Text>
-                              <Text className="m-0 text-sm font-bold text-neutral-900">
-                                Upvoted
-                              </Text>
-                              <Text className="m-0 mt-2 text-sm text-neutral-600">
-                                {project.numQuestionsUpvoted}
-                              </Text>
-                            </Column>
-                          )}
-                          {project.numQuestionsDownvoted > 0 && (
-                            <Column className="px-4">
-                              <Text className="mx-0 mt-0 mb-2 text-xl">👎</Text>
-                              <Text className="m-0 text-sm font-bold text-neutral-900">
-                                Downvoted
-                              </Text>
-                              <Text className="m-0 mt-2 text-sm text-neutral-600">
-                                {project.numQuestionsDownvoted}
-                              </Text>
-                            </Column>
-                          )}
+                          <Column align="right">
+                            <Button
+                              pX={10}
+                              pY={10}
+                              className="flex-none rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white no-underline"
+                              href={`https://markprompt.com/${team.slug}/${project.slug}`}
+                            >
+                              View in dashboard
+                            </Button>
+                          </Column>
                         </Row>
+                        <Section
+                          className="mt-6 border-separate rounded-md border border-solid p-2"
+                          style={{
+                            background: 'rgb(250, 250, 250)',
+                            borderColor: 'rgb(229, 229, 229)',
+                          }}
+                        >
+                          <Row>
+                            <Column className="p-4">
+                              <Text className="mx-0 mt-0 mb-2 text-xl">📄</Text>
+                              <Text className="m-0 text-sm font-bold text-neutral-900">
+                                Files
+                              </Text>
+                              <Text className="m-0 mt-2 text-sm text-neutral-600">
+                                {project.numFiles}
+                              </Text>
+                            </Column>
+                            {project.numQuestionsAsked > 0 && (
+                              <Column className="p-4">
+                                <Text className="mx-0 mt-0 mb-2 text-xl">
+                                  💬
+                                </Text>
+                                <Text className="m-0 text-sm font-bold text-neutral-900">
+                                  Questions
+                                </Text>
+                                <Text className="m-0 mt-2 text-sm text-neutral-600">
+                                  {project.numQuestionsAsked}
+                                </Text>
+                              </Column>
+                            )}
+                            {project.numQuestionsUnanswered > 0 && (
+                              <Column className="p-4">
+                                <Text className="mx-0 mt-0 mb-2 text-xl">
+                                  🤷‍♀️
+                                </Text>
+                                <Text className="m-0 text-sm font-bold text-neutral-900">
+                                  Unanswered
+                                </Text>
+                                <Text className="m-0 mt-2 text-sm text-neutral-600">
+                                  {project.numQuestionsUnanswered}
+                                </Text>
+                              </Column>
+                            )}
+                            {project.numQuestionsUpvoted > 0 && (
+                              <Column className="px-4">
+                                <Text className="mx-0 mt-0 mb-2 text-xl">
+                                  👍
+                                </Text>
+                                <Text className="m-0 text-sm font-bold text-neutral-900">
+                                  Upvoted
+                                </Text>
+                                <Text className="m-0 mt-2 text-sm text-neutral-600">
+                                  {project.numQuestionsUpvoted}
+                                </Text>
+                              </Column>
+                            )}
+                            {project.numQuestionsDownvoted > 0 && (
+                              <Column className="px-4">
+                                <Text className="mx-0 mt-0 mb-2 text-xl">
+                                  👎
+                                </Text>
+                                <Text className="m-0 text-sm font-bold text-neutral-900">
+                                  Downvoted
+                                </Text>
+                                <Text className="m-0 mt-2 text-sm text-neutral-600">
+                                  {project.numQuestionsDownvoted}
+                                </Text>
+                              </Column>
+                            )}
+                          </Row>
+                        </Section>
+                        {project.latestQuestions?.length > 0 && (
+                          <>
+                            <Heading className="mt-8 mb-4 w-min truncate whitespace-nowrap text-sm font-bold text-neutral-900">
+                              Recent questions{' '}
+                              <Link
+                                className="ml-2 text-sm font-normal text-violet-700 underline"
+                                href={`https://markprompt.com/${team.slug}/${project.slug}/insights`}
+                              >
+                                See all
+                              </Link>
+                            </Heading>
+                            {project.latestQuestions.map((question, k) => {
+                              return (
+                                <Text
+                                  key={`team-${i}-project-${j}-question-${k}`}
+                                  className="mb-0 mt-2 w-full max-w-[640px] overflow-hidden truncate whitespace-nowrap  text-sm text-neutral-900"
+                                >
+                                  • {question}
+                                </Text>
+                              );
+                            })}
+                          </>
+                        )}
+                        {project.unansweredQuestions?.length > 0 && (
+                          <>
+                            <Heading className="mt-8 mb-4 w-min truncate whitespace-nowrap text-sm font-bold text-neutral-900">
+                              Latest unanswered questions{' '}
+                              <Link
+                                className="ml-2 text-sm font-normal text-violet-700 underline"
+                                href={`https://markprompt.com/${team.slug}/${project.slug}/insights`}
+                              >
+                                See all
+                              </Link>
+                            </Heading>
+                            {project.unansweredQuestions.map((question, k) => {
+                              return (
+                                <Text
+                                  key={`team-${i}-project-${j}-question-${k}`}
+                                  className="mb-0 mt-2 w-full max-w-[640px] overflow-hidden truncate whitespace-nowrap  text-sm text-neutral-900"
+                                >
+                                  • {question}
+                                </Text>
+                              );
+                            })}
+                          </>
+                        )}
+                        {project.mostCitedSources?.length > 0 && (
+                          <>
+                            <Heading className="mt-6 mb-4 w-min truncate whitespace-nowrap text-sm font-bold text-neutral-900">
+                              Most cited sources{' '}
+                              <Link
+                                className="ml-2 text-sm font-normal text-violet-700 underline"
+                                href={`https://markprompt.com/${team.slug}/${project.slug}/insights`}
+                              >
+                                See all
+                              </Link>
+                            </Heading>
+                            {project.mostCitedSources.map((source, k) => {
+                              return (
+                                <Text
+                                  key={`team-${i}-project-${j}-question-${k}`}
+                                  className="mb-0 mt-2 w-full max-w-[640px] overflow-hidden truncate whitespace-nowrap text-sm text-neutral-900"
+                                >
+                                  • {source}
+                                </Text>
+                              );
+                            })}
+                          </>
+                        )}
                       </Section>
-                      {project.latestQuestions?.length > 0 && (
-                        <>
-                          <Heading className="mt-8 mb-4 w-min truncate whitespace-nowrap text-sm font-bold text-neutral-900">
-                            Recent questions{' '}
-                            <Link
-                              className="ml-2 text-sm font-normal text-violet-700 underline"
-                              href={`https://markprompt.com/${team.slug}/${project.slug}/insights`}
-                            >
-                              See all
-                            </Link>
-                          </Heading>
-                          {project.latestQuestions.map((question, k) => {
-                            return (
-                              <Text
-                                key={`team-${i}-project-${j}-question-${k}`}
-                                className="mb-0 mt-2 w-full max-w-[640px] overflow-hidden truncate text-sm  text-neutral-900"
-                              >
-                                • {question}
-                              </Text>
-                            );
-                          })}
-                        </>
-                      )}
-                      {project.unansweredQuestions?.length > 0 && (
-                        <>
-                          <Heading className="mt-8 mb-4 w-min truncate whitespace-nowrap text-sm font-bold text-neutral-900">
-                            Latest unanswered questions{' '}
-                            <Link
-                              className="ml-2 text-sm font-normal text-violet-700 underline"
-                              href={`https://markprompt.com/${team.slug}/${project.slug}/insights`}
-                            >
-                              See all
-                            </Link>
-                          </Heading>
-                          {project.unansweredQuestions.map((question, k) => {
-                            return (
-                              <Text
-                                key={`team-${i}-project-${j}-question-${k}`}
-                                className="mb-0 mt-2 w-full max-w-[640px] overflow-hidden truncate text-sm  text-neutral-900"
-                              >
-                                • {question}
-                              </Text>
-                            );
-                          })}
-                        </>
-                      )}
-                      {project.mostCitedSources?.length > 0 && (
-                        <>
-                          <Heading className="mt-6 mb-4 w-min truncate whitespace-nowrap text-sm font-bold text-neutral-900">
-                            Most cited sources{' '}
-                            <Link
-                              className="ml-2 text-sm font-normal text-violet-700 underline"
-                              href={`https://markprompt.com/${team.slug}/${project.slug}/insights`}
-                            >
-                              See all
-                            </Link>
-                          </Heading>
-                          {project.mostCitedSources.map((source, k) => {
-                            return (
-                              <Text
-                                key={`team-${i}-project-${j}-question-${k}`}
-                                className="mb-0 mt-2 w-full max-w-[640px] overflow-hidden truncate text-sm text-neutral-900 "
-                              >
-                                • {source}
-                              </Text>
-                            );
-                          })}
-                        </>
-                      )}
-                    </Section>
-                  );
-                })}
+                    );
+                  })}
               </Section>
             );
           })
