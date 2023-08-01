@@ -1,9 +1,8 @@
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { add, endOfWeek, format, formatISO, startOfWeek } from 'date-fns';
-import { flatten, sum, uniq } from 'lodash-es';
+import { flatten, isEmpty, sum, uniq } from 'lodash-es';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Resend } from 'resend';
-import { isPresent } from 'ts-is-present';
 
 import InsightsEmail from '@/components/emails/Insights';
 import {
@@ -13,6 +12,7 @@ import {
   getTierName,
 } from '@/lib/stripe/tiers';
 import { getJoinedTeams, getTeamProjectIds } from '@/lib/supabase';
+import { redactEmail } from '@/lib/utils';
 import { Database } from '@/types/supabase';
 import {
   DbTeam,
@@ -138,10 +138,14 @@ const getProjectUsageStats = async (
     numFiles: fileStats?.[0]?.num_files || 0,
     numSections: fileStats?.[0]?.num_sections || 0,
     latestQuestions: uniq(
-      (queries || []).map((q) => q.prompt).filter(isPresent),
+      (queries || [])
+        .map((q) => redactEmail(q.prompt || ''))
+        .filter((q) => !isEmpty(q)),
     ).slice(0, 10),
     unansweredQuestions: uniq(
-      (unanswered || []).map((q) => q.prompt).filter(isPresent),
+      (unanswered || [])
+        .map((q) => redactEmail(q.prompt || ''))
+        .filter((q) => !isEmpty(q)),
     ).slice(0, 10),
     numQuestionsAsked: queryStats?.[0]?.num_queries || 0,
     numQuestionsUnanswered: queryStats?.[0]?.num_unanswered || 0,

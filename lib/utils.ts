@@ -402,12 +402,17 @@ export const isValidDomain = (domain: string) => {
   );
 };
 
+const emailRe =
+  /^[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~](\.?[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+
 // Reference: https://github.com/manishsaraan/email-validator/blob/master/index.js
 export const isValidEmail = (email: string) => {
-  const re =
-    /^[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~](\.?[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+  return emailRe.test(email);
+};
 
-  return re.test(email);
+export const redactEmail = (text: string) => {
+  // Replace email addresses with [REDACTED]
+  return text.replace(emailRe, '[REDACTED]');
 };
 
 const ALPHABET =
