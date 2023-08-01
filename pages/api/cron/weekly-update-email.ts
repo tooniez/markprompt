@@ -241,7 +241,6 @@ export default async function handler(
     }
     const stats = await getUserUsageStats(supabaseAdmin, user.id, from, to);
 
-    console.log('[EMAIL] Stats', JSON.stringify(stats, null, 2));
     if (stats.teamUsageStats.length === 0) {
       continue;
     }
@@ -256,7 +255,9 @@ export default async function handler(
     }
 
     try {
-      console.info(`[EMAIL] Sending weekly update to ${user.email}`);
+      console.info(
+        `[EMAIL] Sending weekly update to ${user.email} from ${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME}`,
+      );
       await resend.emails.send({
         from: `${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME!} <${process
           .env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL!}>`,
