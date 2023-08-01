@@ -3,14 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { Database } from '@/types/supabase';
-import { Team } from '@/types/types';
+import { DbTeam } from '@/types/types';
 
 type Data =
   | {
       status?: string;
       error?: string;
     }
-  | Team;
+  | DbTeam;
 
 const allowedMethods = ['GET', 'PATCH', 'DELETE'];
 

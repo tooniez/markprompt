@@ -1029,6 +1029,45 @@ export interface Database {
           occurrences: number
         }[]
       }
+      get_most_cited_references_stats: {
+        Args: {
+          project_id: string
+          from_tz: string
+          to_tz: string
+          max_results: number
+        }
+        Returns: {
+          full_path: string
+          path: string
+          slug: string
+          title: string
+          heading: string
+          occurrences: number
+        }[]
+      }
+      get_project_file_stats: {
+        Args: {
+          project_id: string
+        }
+        Returns: {
+          num_files: number
+          num_sections: number
+          num_tokens: number
+        }[]
+      }
+      get_project_query_stats: {
+        Args: {
+          project_id: string
+          from_tz: string
+          to_tz: string
+        }
+        Returns: {
+          num_queries: number
+          num_unanswered: number
+          num_upvotes: number
+          num_downvotes: number
+        }[]
+      }
       get_team_insights_query_histogram: {
         Args: {
           team_id: string

@@ -10,7 +10,7 @@ import {
   slugFromEmail,
 } from '@/lib/utils';
 import { Database } from '@/types/supabase';
-import { Project, Team } from '@/types/types';
+import { Project, DbTeam } from '@/types/types';
 
 import { getAvailableTeamSlug } from '../slug/generate-team-slug';
 
@@ -19,7 +19,7 @@ type Data =
       status?: string;
       error?: string;
     }
-  | { team: Team; project: Project };
+  | { team: DbTeam; project: Project };
 
 const allowedMethods = ['POST'];
 

@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 
-import { Team } from '@/types/types';
+import { DbTeam } from '@/types/types';
 
 import useUser from './use-user';
 import { fetcher } from '../utils';
@@ -11,7 +11,7 @@ export default function useTeams() {
     data: teams,
     mutate,
     error,
-  } = useSWR(user?.id ? '/api/teams' : null, fetcher<Team[]>);
+  } = useSWR(user?.id ? '/api/teams' : null, fetcher<DbTeam[]>);
 
   const loading = !teams && !error;
 

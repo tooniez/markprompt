@@ -2,8 +2,9 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { getJoinedTeams } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
-import { Team } from '@/types/types';
+import { DbTeam } from '@/types/types';
 
 import { getAvailableTeamSlug } from '../slug/generate-team-slug';
 
@@ -12,8 +13,8 @@ type Data =
       status?: string;
       error?: string;
     }
-  | Team[]
-  | Team;
+  | DbTeam[]
+  | DbTeam;
 
 const allowedMethods = ['GET', 'POST'];
 
@@ -41,18 +42,13 @@ export default async function handler(
   }
 
   if (req.method === 'GET') {
-    const { data, error } = await supabase
-      .from('memberships')
-      .select('user_id, teams (*)')
-      .match({ user_id: session.user.id });
-
-    if (error) {
-      console.error('Error getting team:', error.message);
-      return res.status(400).json({ error: error.message });
+    try {
+      const teams = await getJoinedTeams(supabase, session.user.id);
+      return res.status(200).json(teams);
+    } catch (error) {
+      console.error('Error getting team:', (error as any).message);
+      return res.status(400).json({ error: (error as any).message });
     }
-
-    const teams = (data?.map((d) => d.teams) || []) as Team[];
-    return res.status(200).json(teams);
   } else if (req.method === 'POST') {
     const { candidateSlug, isPersonal, ...rest } = req.body;
     const slug = await getAvailableTeamSlug(supabase, candidateSlug);

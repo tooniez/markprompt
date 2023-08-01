@@ -4,7 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { MIN_SLUG_LENGTH } from '@/lib/constants';
 import { Database } from '@/types/supabase';
-import { Team } from '@/types/types';
+import { DbTeam } from '@/types/types';
 
 type Data =
   | {
@@ -17,7 +17,7 @@ const allowedMethods = ['POST'];
 
 export const isProjectSlugAvailable = async (
   supabase: SupabaseClient<Database>,
-  teamId: Team['id'],
+  teamId: DbTeam['id'],
   slug: string,
 ) => {
   if (!slug || slug.trim().length < MIN_SLUG_LENGTH) {

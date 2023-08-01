@@ -71,7 +71,7 @@ export const geLLMInfoFromModel = (model: OpenAIModelIdWithType): LLMInfo => {
 };
 
 export type DbUser = Database['public']['Tables']['users']['Row'];
-export type Team = Database['public']['Tables']['teams']['Row'];
+export type DbTeam = Database['public']['Tables']['teams']['Row'];
 export type Project = Database['public']['Tables']['projects']['Row'];
 export type Token = Database['public']['Tables']['tokens']['Row'];
 export type Domain = Database['public']['Tables']['domains']['Row'];

@@ -10,7 +10,7 @@ import {
   Project,
   DbSource,
   SourceType,
-  Team,
+  DbTeam,
   WebsiteSourceDataType,
 } from '@/types/types';
 
@@ -210,7 +210,7 @@ export const getChecksums = async (
 export const getProjectTeam = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
-): Promise<Team | undefined> => {
+): Promise<DbTeam | undefined> => {
   const { data: projectData } = await supabase
     .from('projects')
     .select('team_id')
@@ -232,7 +232,7 @@ export const getProjectTeam = async (
 
 export const getTeamUsageInfoByTeamOrProject = async (
   supabase: SupabaseClient<Database>,
-  teamOrProjectId: { teamId?: Team['id']; projectId?: Project['id'] },
+  teamOrProjectId: { teamId?: DbTeam['id']; projectId?: Project['id'] },
 ): Promise<{
   stripe_price_id: string | null;
   team_token_count: number;
@@ -276,7 +276,7 @@ export const getTeamUsageInfoByTeamOrProject = async (
 
 export const getTokenAllowanceInfo = async (
   supabase: SupabaseClient<Database>,
-  teamOrProjectId: { teamId?: Team['id']; projectId?: Project['id'] },
+  teamOrProjectId: { teamId?: DbTeam['id']; projectId?: Project['id'] },
 ): Promise<{
   numRemainingTokensOnPlan: number;
   usedTokens: number;
@@ -293,4 +293,36 @@ export const getTokenAllowanceInfo = async (
   });
   const numRemainingTokensOnPlan = Math.max(0, tokenAllowance - usedTokens);
   return { numRemainingTokensOnPlan, usedTokens, tokenAllowance };
+};
+
+export const getJoinedTeams = async (
+  supabase: SupabaseClient<Database>,
+  userId: DbUser['id'],
+): Promise<DbTeam[]> => {
+  const { data, error } = await supabase
+    .from('memberships')
+    .select('user_id, teams (*)')
+    .match({ user_id: userId });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data?.map((d) => d.teams) || []) as DbTeam[];
+};
+
+export const getTeamProjectIds = async (
+  supabase: SupabaseClient<Database>,
+  teamId: DbTeam['id'],
+): Promise<Project['id'][]> => {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('id')
+    .match({ team_id: teamId });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data?.map((d) => d.id) || []) as DbTeam['id'][];
 };
