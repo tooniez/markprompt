@@ -229,6 +229,11 @@ export default async function handler(
       .select('id,email,config')
       .eq('id', process.env.TEST_USER_EMAIL_2);
 
+    console.log(
+      'Data for',
+      process.env.TEST_USER_EMAIL_2,
+      JSON.stringify(data, null, 2),
+    );
     if (!data || data.length === 0) {
       return res.status(400).send({ error: 'Test user not found' });
     }
