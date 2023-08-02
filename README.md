@@ -32,7 +32,7 @@ Markprompt is built on top of the following stack:
 - [Upstash](https://upstash.com/) - Redis and rate limiting
 - [Typescript](https://www.typescriptlang.org/) - language
 - [Tailwind](https://tailwindcss.com/) - CSS
-- [Stripe](https://stripe.com/) - payments
+- [Stripe](https://stripe.com/) - payments.
 
 ## Using the React and Web components
 
