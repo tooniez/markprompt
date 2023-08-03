@@ -352,7 +352,7 @@ const processFileData = (
       fileSectionsData = processMarkdown(file.content, true, markpromptConfig);
     } catch (e) {
       // Some repos use the .md extension for Markdoc, and this
-      // would break if parsed as MDX, so attempt with Markoc
+      // would break if parsed as Markdown (using MDX), so attempt with Markoc
       // parsing here.
       fileSectionsData = processMarkdoc(file.content, markpromptConfig);
     }

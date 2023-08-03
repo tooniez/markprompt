@@ -296,19 +296,26 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       try {
         await Promise.all(
           Array.from(Array(numFiles).keys()).map((index) => {
-            return limit(() =>
-              _generateEmbeddingForFile(
-                index,
-                checksums || [],
-                sourceId,
-                sourceType,
-                numFiles,
-                forceRetrain,
-                getFilePath,
-                getFileNameContent,
-                onFileProcessed,
-              ),
-            );
+            return limit(() => {
+              try {
+                _generateEmbeddingForFile(
+                  index,
+                  checksums || [],
+                  sourceId,
+                  sourceType,
+                  numFiles,
+                  forceRetrain,
+                  getFilePath,
+                  getFileNameContent,
+                  onFileProcessed,
+                );
+              } catch (e) {
+                const path = getFilePath(index);
+                console.error(
+                  `Error processing file at path ${path}: ${JSON.stringify(e)}`,
+                );
+              }
+            });
           }),
         );
       } catch (e) {

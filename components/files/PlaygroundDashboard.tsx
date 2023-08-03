@@ -330,7 +330,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   const { team } = useTeam();
   const { project } = useProject();
   const { files, mutate: mutateFiles, loading: loadingFiles } = useFiles();
-  const { didCompleteFirstQuery, setDidCompleteFirstQuery } = useAppContext();
+  const { didCompleteFirstQuery } = useAppContext();
   const {
     sources,
     mutate: mutateSources,
