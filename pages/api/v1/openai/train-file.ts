@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { generateFileEmbeddings } from '@/lib/generate-embeddings';
+import { generateFileEmbeddingsAndSaveFile } from '@/lib/generate-embeddings';
 import {
   checkEmbeddingsRateLimits,
   getEmbeddingsRateLimitResponse,
@@ -81,7 +81,7 @@ export default async function handler(
     projectId,
   );
 
-  const errors = await generateFileEmbeddings(
+  const errors = await generateFileEmbeddingsAndSaveFile(
     supabaseAdmin,
     projectId,
     sourceId,

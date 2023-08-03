@@ -96,6 +96,8 @@ create table public.files (
   path        text not null,
   meta        jsonb,
   checksum    text,
+  raw_content text,
+  token_count int,
   source_id   uuid references public.sources on delete cascade not null,
   updated_at  timestamp with time zone default timezone('utc'::text, now()) not null
 );

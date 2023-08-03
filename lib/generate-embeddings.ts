@@ -416,11 +416,19 @@ const createFile = async (
   path: string,
   meta: any,
   checksum: string,
+  rawContent: string,
 ): Promise<DbFile['id'] | undefined> => {
   const { error, data } = await supabase
     .from('files')
     .insert([
-      { source_id: sourceId, project_id: _projectId, path, meta, checksum },
+      {
+        source_id: sourceId,
+        project_id: _projectId,
+        path,
+        meta,
+        checksum,
+        raw_content: rawContent,
+      },
     ])
     .select('id')
     .limit(1)
@@ -446,7 +454,7 @@ export type EmbeddingsError = {
   message: string;
 };
 
-export const generateFileEmbeddings = async (
+export const generateFileEmbeddingsAndSaveFile = async (
   supabaseAdmin: SupabaseClient,
   projectId: Project['id'],
   sourceId: DbSource['id'],
@@ -477,7 +485,7 @@ export const generateFileEmbeddings = async (
       .filter('file_id', 'eq', fileId);
     await supabaseAdmin
       .from('files')
-      .update({ meta, checksum })
+      .update({ meta, checksum, raw_content: file.content })
       .eq('id', fileId);
   } else {
     fileId = await createFile(
@@ -487,6 +495,7 @@ export const generateFileEmbeddings = async (
       file.path,
       meta,
       checksum,
+      file.content,
     );
   }
 
@@ -617,6 +626,11 @@ export const generateFileEmbeddings = async (
   if (errors?.length > 0) {
     await revertFileProcessing(supabaseAdmin, fileId);
   }
+
+  await supabaseAdmin
+    .from('files')
+    .update({ token_count: embeddingsTokenCount })
+    .eq('id', fileId);
 
   return errors;
 };

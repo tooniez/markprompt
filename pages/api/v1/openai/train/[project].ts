@@ -6,7 +6,7 @@ import { isPresent } from 'ts-is-present';
 
 import {
   EmbeddingsError,
-  generateFileEmbeddings,
+  generateFileEmbeddingsAndSaveFile,
 } from '@/lib/generate-embeddings';
 import {
   checkEmbeddingsRateLimits,
@@ -277,7 +277,7 @@ export default async function handler(
       return;
     }
 
-    const errors = await generateFileEmbeddings(
+    const errors = await generateFileEmbeddingsAndSaveFile(
       supabaseAdmin,
       projectId,
       sourceId,
