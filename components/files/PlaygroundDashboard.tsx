@@ -675,9 +675,9 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                       <p className="flex-grow overflow-hidden text-xs text-sky-400">
                         {getLabelForSource(source, false)}
                       </p>
-                      {accessory && (
+                      {accessory?.label && (
                         <p className="ml-4 overflow-hidden text-xs text-sky-700">
-                          {accessory}
+                          {accessory.label}
                         </p>
                       )}
                       <button
