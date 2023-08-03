@@ -296,9 +296,9 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       try {
         await Promise.all(
           Array.from(Array(numFiles).keys()).map((index) => {
-            return limit(() => {
+            return limit(async () => {
               try {
-                _generateEmbeddingForFile(
+                await _generateEmbeddingForFile(
                   index,
                   checksums || [],
                   sourceId,
