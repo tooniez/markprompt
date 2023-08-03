@@ -26,6 +26,7 @@ import { isPresent } from 'ts-is-present';
 
 import ConfirmDialog from '@/components/dialogs/Confirm';
 import { RemoveSourceDialog } from '@/components/dialogs/sources/RemoveSource';
+import EditorDialog from '@/components/files/EditorDialog';
 import { FileDnd } from '@/components/files/FileDnd';
 import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
@@ -51,7 +52,7 @@ import {
   isUrl,
   pluralize,
 } from '@/lib/utils';
-import { DbSource } from '@/types/types';
+import { DbFile, DbSource } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
@@ -192,8 +193,13 @@ const Data = () => {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'path', desc: false },
   ]);
+  const [openFileId, setOpenFileId] = useState<DbFile['id'] | undefined>(
+    undefined,
+  );
+  const [editorOpen, setEditorOpen] = useState<boolean>(false);
 
   const columnHelper = createColumnHelper<{
+    id: DbFile['id'];
     path: string;
     source_id: string;
     updated_at: string;
@@ -227,9 +233,10 @@ const Data = () => {
       columnHelper.accessor(
         (row) => {
           return {
-            sourceId: row.source_id,
+            fileId: row.id,
             path: row.path,
             title: row.meta?.title,
+            sourceId: row.source_id,
           };
         },
         {
@@ -240,10 +247,20 @@ const Data = () => {
             // Ensure compat with previously trained data, where we don't
             // extract the title in the meta. Note that title might be
             // non-string values as well.
-            if (value?.title && isString(value.title)) {
-              return value.title;
+            if (!value?.title || !isString(value.title)) {
+              return getNameForPath(sources, value.sourceId, value.path);
             }
-            return getNameForPath(sources, value.sourceId, value.path);
+            return (
+              <button
+                className="outline-none"
+                onClick={() => {
+                  setOpenFileId(value.fileId);
+                  setEditorOpen(true);
+                }}
+              >
+                {value.title}
+              </button>
+            );
           },
           footer: (info) => info.column.id,
           sortingFn: (rowA, rowB, columnId) => {
@@ -671,6 +688,11 @@ const Data = () => {
           />
         )}
       </Dialog.Root>
+      <EditorDialog
+        fileId={openFileId}
+        open={editorOpen}
+        setOpen={setEditorOpen}
+      />
     </ProjectSettingsLayout>
   );
 };
