@@ -366,10 +366,14 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   const { finishOnboarding } = useOnboarding();
 
   const startTraining = useCallback(async () => {
+    let i = 0;
     await trainAllSources(
       forceRetrain,
       () => {
-        // Do nothing
+        if (i++ % 10 === 0) {
+          // Only mutate every 10 files
+          mutateFiles();
+        }
       },
       (errorMessage: string) => {
         toast.error(errorMessage);

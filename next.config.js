@@ -28,6 +28,15 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.cloudinary.com' },
     ],
   },
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/{{lowerCase kebabCase member}}',
+      skipDefaultConversion: true,
+    },
+    'date-fns': {
+      transform: 'date-fns/{{member}}',
+    },
+  },
   async headers() {
     return [{ source: '/(.*)', headers: corsHeaders }];
   },

@@ -139,9 +139,10 @@
     "unist-builder": "^3.0.1",
     "unist-util-filter": "^4.0.1",
     "unist-util-visit": "^4.1.2",
-    "unzipper": "^0.10.11",
+    "unzipper": "^0.10.14",
     "use-debounce": "^9.0.3",
-    "utility-types": "^3.10.0"
+    "utility-types": "^3.10.0",
+    "web-streams-node": "^0.4.0"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.9",

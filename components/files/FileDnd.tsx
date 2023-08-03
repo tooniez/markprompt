@@ -25,7 +25,7 @@ type FileDndProps = {
   className?: string;
 };
 
-export const FileDnd: FC<FileDndProps> = ({
+const FileDnd: FC<FileDndProps> = ({
   isOnEmptyStateDataPanel,
   forceRetrain,
   onTrainingComplete,
@@ -249,3 +249,5 @@ export const FileDnd: FC<FileDndProps> = ({
     </div>
   );
 };
+
+export default FileDnd;

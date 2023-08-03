@@ -24,9 +24,6 @@ import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
-import ConfirmDialog from '@/components/dialogs/Confirm';
-import { RemoveSourceDialog } from '@/components/dialogs/sources/RemoveSource';
-import { FileDnd } from '@/components/files/FileDnd';
 import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import * as GitHub from '@/components/icons/GitHub';
@@ -78,6 +75,21 @@ const FilesAddSourceDialog = dynamic(
 );
 
 const EditorDialog = dynamic(() => import('@/components/files/EditorDialog'), {
+  loading: () => Loading,
+});
+
+const ConfirmDialog = dynamic(() => import('@/components/dialogs/Confirm'), {
+  loading: () => Loading,
+});
+
+const RemoveSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/RemoveSource'),
+  {
+    loading: () => Loading,
+  },
+);
+
+const FileDnd = dynamic(() => import('@/components/files/FileDnd'), {
   loading: () => Loading,
 });
 
@@ -260,16 +272,16 @@ const Data = () => {
             return (
               <button
                 className="w-full overflow-hidden truncate text-left outline-none"
-                onClick={() => {
-                  if (!value.tokenCount) {
-                    toast.success(
-                      'To view the file content, retrain with the "force retrain" setting on.',
-                    );
-                    return;
-                  }
-                  setOpenFileId(value.fileId);
-                  setEditorOpen(true);
-                }}
+                // onClick={() => {
+                //   if (!value.tokenCount) {
+                //     toast.success(
+                //       'To view the file content, retrain with the "force retrain" setting on.',
+                //     );
+                //     return;
+                //   }
+                //   setOpenFileId(value.fileId);
+                //   setEditorOpen(true);
+                // }}
               >
                 {title}
               </button>
@@ -469,11 +481,16 @@ const Data = () => {
                 variant="cta"
                 buttonSize="sm"
                 onClick={async () => {
+                  let i = 0;
                   track('start training');
                   await trainAllSources(
                     forceRetrain,
                     () => {
-                      mutateFiles();
+                      if (i++ % 10 === 0) {
+                        console.log('Mutating', i);
+                        // Only mutate every 10 files
+                        mutateFiles();
+                      }
                     },
                     (message: string) => {
                       toast.error(message);
