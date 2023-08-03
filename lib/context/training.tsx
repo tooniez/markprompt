@@ -150,7 +150,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       getFileNameContent: (
         index: number,
       ) => Promise<{ name: string; content: string } | undefined>,
-      onFileProcessed?: () => void,
+      onFileProcessed?: (path: string) => void,
     ) => {
       if (stopFlag.current) {
         return;
@@ -243,7 +243,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               },
             },
           );
-          onFileProcessed?.();
+          onFileProcessed?.(path);
           setState({ state: 'idle' });
           throw e;
         } else {
@@ -261,7 +261,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         }
       }
 
-      onFileProcessed?.();
+      onFileProcessed?.(path);
     },
     [config.exclude, config.include],
   );
@@ -276,7 +276,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       getFileNameContent: (
         index: number,
       ) => Promise<{ name: string; content: string } | undefined>,
-      onFileProcessed?: () => void,
+      onFileProcessed?: (path: string) => void,
     ) => {
       if (!project?.id) {
         return;
@@ -364,9 +364,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 const content = fileData[i].content;
                 return { name, content };
               },
-              () => {
-                onFileProcessed();
-              },
+              onFileProcessed,
             );
           } catch (e) {
             const ownerAndRepo = getGitHubOwnerRepoString(data.url);
@@ -396,9 +394,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 const content = await getMotifFileContent(filesMetadata[i].id);
                 return { name, content };
               },
-              () => {
-                onFileProcessed();
-              },
+              onFileProcessed,
             );
           } catch (e) {
             onError(
@@ -436,9 +432,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                   processedContent.push(content);
                   return { name, content };
                 },
-                () => {
-                  onFileProcessed();
-                },
+                onFileProcessed,
               );
               return processedContent;
             };
