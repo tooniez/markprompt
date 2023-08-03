@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import useSWR from 'swr';
 
 import { DbFile } from '@/types/types';
@@ -5,18 +6,22 @@ import { DbFile } from '@/types/types';
 import useProject from './use-project';
 import { fetcher } from '../utils';
 
-export default function useFiles() {
+export default function useFile() {
+  const router = useRouter();
   const { project } = useProject();
+
   const {
-    data: files,
+    data: file,
     mutate,
     error,
   } = useSWR(
-    project?.id ? `/api/project/${project.id}/files` : null,
+    project?.id && router.query?.fileId
+      ? `/api/project/${project.id}/files/${router.query?.fileId}`
+      : null,
     fetcher<DbFile[]>,
   );
 
-  const loading = !files && !error;
+  const loading = !file && !error;
 
-  return { files, loading, mutate };
+  return { file, loading, mutate };
 }

@@ -54,7 +54,7 @@ const QueryStatDialog: FC<QueryStatDialogProps> = ({
           <div className="flex h-full w-full flex-grow flex-col gap-4 overflow-y-auto p-6">
             {loading ? (
               <div className="relative">
-                <SkeletonTable loading={true} />
+                <SkeletonTable onDark loading={true} />
               </div>
             ) : !queryStat ? (
               <p className="text-sm text-neutral-500">
