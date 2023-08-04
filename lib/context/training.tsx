@@ -248,7 +248,9 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           throw e;
         } else {
           // Otherwise, just show a notification and continue
-          console.error(`Error processing ${file?.name}: ${JSON.stringify(e)}`);
+          console.error(
+            `Error processing file ${file?.path}: ${JSON.stringify(e)}`,
+          );
           toast.error(
             `Error processing file ${nameAndContent?.name}: ${JSON.stringify(
               e,
@@ -256,7 +258,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           );
           setErrors((errors) => [
             ...errors,
-            `Error processing ${file?.name}: ${JSON.stringify(e)}`,
+            `Error processing file ${file?.path}: ${JSON.stringify(e)}`,
           ]);
         }
       }
@@ -314,7 +316,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               } catch (e) {
                 const path = getFilePath(index);
                 console.error(
-                  `Error processing file at path ${path}: ${JSON.stringify(e)}`,
+                  `Error processing file ${path}: ${JSON.stringify(e)}`,
                 );
               }
             });
@@ -421,6 +423,11 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 async (i) => {
                   const url = urls[i];
                   const name = getNameFromUrlOrPath(url);
+                  console.info(
+                    'Fetching page content',
+                    useCustomPageFetcher,
+                    url,
+                  );
                   const content = await fetchPageContent(
                     url,
                     false,

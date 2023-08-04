@@ -39,8 +39,7 @@ export default async function handler(
 
   try {
     const immediate = req.body.immediate as boolean;
-    // const useCustomPageFetcher = req.body.useCustomPageFetcher as boolean;
-    const useCustomPageFetcher = true;
+    const useCustomPageFetcher = req.body.useCustomPageFetcher as boolean;
 
     // For simple page fetching, like a sitemap with no hydration,
     // use a plain fetch approach.
