@@ -150,7 +150,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       getFileNameContent: (
         index: number,
       ) => Promise<{ name: string; content: string } | undefined>,
-      onFileProcessed?: () => void,
+      onFileProcessed?: (path: string) => void,
     ) => {
       if (stopFlag.current) {
         return;
@@ -243,12 +243,14 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               },
             },
           );
-          onFileProcessed?.();
+          onFileProcessed?.(path);
           setState({ state: 'idle' });
           throw e;
         } else {
           // Otherwise, just show a notification and continue
-          console.error(`Error processing ${file?.name}: ${JSON.stringify(e)}`);
+          console.error(
+            `Error processing file ${file?.path}: ${JSON.stringify(e)}`,
+          );
           toast.error(
             `Error processing file ${nameAndContent?.name}: ${JSON.stringify(
               e,
@@ -256,12 +258,12 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           );
           setErrors((errors) => [
             ...errors,
-            `Error processing ${file?.name}: ${JSON.stringify(e)}`,
+            `Error processing file ${file?.path}: ${JSON.stringify(e)}`,
           ]);
         }
       }
 
-      onFileProcessed?.();
+      onFileProcessed?.(path);
     },
     [config.exclude, config.include],
   );
@@ -276,7 +278,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       getFileNameContent: (
         index: number,
       ) => Promise<{ name: string; content: string } | undefined>,
-      onFileProcessed?: () => void,
+      onFileProcessed?: (path: string) => void,
     ) => {
       if (!project?.id) {
         return;
@@ -314,7 +316,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               } catch (e) {
                 const path = getFilePath(index);
                 console.error(
-                  `Error processing file at path ${path}: ${JSON.stringify(e)}`,
+                  `Error processing file ${path}: ${JSON.stringify(e)}`,
                 );
               }
             });
@@ -364,9 +366,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 const content = fileData[i].content;
                 return { name, content };
               },
-              () => {
-                onFileProcessed();
-              },
+              onFileProcessed,
             );
           } catch (e) {
             const ownerAndRepo = getGitHubOwnerRepoString(data.url);
@@ -396,9 +396,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 const content = await getMotifFileContent(filesMetadata[i].id);
                 return { name, content };
               },
-              () => {
-                onFileProcessed();
-              },
+              onFileProcessed,
             );
           } catch (e) {
             onError(
@@ -425,6 +423,11 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                 async (i) => {
                   const url = urls[i];
                   const name = getNameFromUrlOrPath(url);
+                  console.info(
+                    'Fetching page content',
+                    useCustomPageFetcher,
+                    url,
+                  );
                   const content = await fetchPageContent(
                     url,
                     false,
@@ -436,9 +439,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                   processedContent.push(content);
                   return { name, content };
                 },
-                () => {
-                  onFileProcessed();
-                },
+                onFileProcessed,
               );
               return processedContent;
             };

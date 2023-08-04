@@ -492,6 +492,7 @@ export const generateFileEmbeddingsAndSaveFile = async (
       .update({ meta, checksum, raw_content: file.content })
       .eq('id', fileId);
   } else {
+    console.log('[EMBEDDING] Create file at path', file.path);
     fileId = await createFile(
       supabaseAdmin,
       projectId,
@@ -601,6 +602,7 @@ export const generateFileEmbeddingsAndSaveFile = async (
   const { error } = await supabaseAdmin
     .from('file_sections')
     .insert(embeddingsData);
+  console.log('[EMBEDDING] Saving sections', embeddingsData.length);
 
   if (error) {
     console.error(
@@ -616,6 +618,10 @@ export const generateFileEmbeddingsAndSaveFile = async (
     for (const data of embeddingsData) {
       await supabaseAdmin.from('file_sections').insert([data]);
     }
+    console.log(
+      '[EMBEDDING] Saving sections individually',
+      embeddingsData.length,
+    );
   }
 
   if (!byoOpenAIKey) {

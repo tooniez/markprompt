@@ -90,8 +90,8 @@ export default async function handler(
     markpromptConfig,
   );
 
-  if (errors) {
-    console.error('Errors in trainfile', JSON.stringify(errors, null, 2));
+  if (errors?.length > 0) {
+    console.error('Errors in train-file', JSON.stringify(errors, null, 2));
   }
 
   const quotaExceededError = errors.find(
