@@ -1,10 +1,8 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import {
-  getJWT,
-  getOrRefreshAccessToken,
-} from '@/lib/integrations/github.node';
+import { getOrRefreshAccessToken } from '@/lib/integrations/github.edge';
+import { getJWT } from '@/lib/integrations/github.node';
 import { Database } from '@/types/supabase';
 
 type Data =
@@ -25,7 +23,10 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
-  const supabase = createServerSupabaseClient<Database>({ req, res });
+  const supabase = createServerSupabaseClient<Database>({
+    req,
+    res,
+  });
   const {
     data: { session },
   } = await supabase.auth.getSession();

@@ -162,7 +162,7 @@ export function QueriesDataTable<TData, TValue>({
               }
               className="max-w-sm"
             />
-            <SkeletonPanel loading={loading} />
+            <SkeletonPanel onDark loading={loading} />
           </div>
         )}
         {/* <DropdownMenu.Root>
@@ -193,7 +193,7 @@ export function QueriesDataTable<TData, TValue>({
         </DropdownMenu.Root> */}
       </div>
       <div className="relative flex min-h-[320px] flex-col rounded-md">
-        <SkeletonTable loading={loading} />
+        <SkeletonTable onDark loading={loading} />
 
         {!loading && data?.length === 0 ? (
           <p className="mt-2 text-sm text-neutral-500">
@@ -255,7 +255,7 @@ export function QueriesDataTable<TData, TValue>({
       </div>
       <div className="py-4">
         <div className="relative flex items-center justify-end">
-          <SkeletonPanel loading={loading} />
+          <SkeletonPanel onDark loading={loading} />
           {/* <div className="flex-1 text-sm text-neutral-500">
             {table.getFilteredSelectedRowModel().rows.length} of{' '}
             {table.getFilteredRowModel().rows.length} row(s) selected. Insights

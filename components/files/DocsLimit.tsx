@@ -5,7 +5,7 @@ import useUsage from '@/lib/hooks/use-usage';
 
 import Button from '../ui/Button';
 
-export const DocsLimit = () => {
+const DocsLimit = () => {
   const { numTokensPerTeamRemainingAllowance } = useUsage();
 
   return (
@@ -33,3 +33,5 @@ export const DocsLimit = () => {
     </div>
   );
 };
+
+export default DocsLimit;

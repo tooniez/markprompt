@@ -107,7 +107,7 @@ export const QueriesHistogram: FC<QueriesHistogramProps> = ({
 
   return (
     <div className="relative flex h-[200px] flex-col gap-2">
-      <SkeletonTable loading={loading} />
+      <SkeletonTable onDark loading={loading} />
       {data?.length > 0 && (
         <BarChart data={chartData} height={180} interval="7d" />
       )}

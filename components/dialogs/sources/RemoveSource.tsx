@@ -15,7 +15,7 @@ type RemoveSourceDialogProps = {
   onComplete: () => void;
 };
 
-export const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
+const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
   projectId,
   source,
   onComplete,
@@ -56,3 +56,5 @@ export const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
     />
   );
 };
+
+export default RemoveSourceDialog;

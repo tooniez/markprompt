@@ -132,7 +132,9 @@ export interface Database {
           meta: Json | null
           path: string
           project_id: string | null
+          raw_content: string | null
           source_id: string | null
+          token_count: number | null
           updated_at: string
         }
         Insert: {
@@ -141,7 +143,9 @@ export interface Database {
           meta?: Json | null
           path: string
           project_id?: string | null
+          raw_content?: string | null
           source_id?: string | null
+          token_count?: number | null
           updated_at?: string
         }
         Update: {
@@ -150,7 +154,9 @@ export interface Database {
           meta?: Json | null
           path?: string
           project_id?: string | null
+          raw_content?: string | null
           source_id?: string | null
+          token_count?: number | null
           updated_at?: string
         }
         Relationships: [

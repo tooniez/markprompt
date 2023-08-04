@@ -26,7 +26,7 @@ type ModelConfiguratorProps = {
   className?: string;
 };
 
-export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
+const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
   const { team } = useTeam();
   const { markpromptOptions, setMarkpromptOptions, restoreModelDefaults } =
     useConfigContext();
@@ -244,3 +244,5 @@ export const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
     </div>
   );
 };
+
+export default ModelConfigurator;

@@ -28,8 +28,10 @@ import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '../events';
 import useProject from '../hooks/use-project';
 import useSources from '../hooks/use-sources';
 import useTeam from '../hooks/use-team';
-import { getMarkpromptPathFromGitHubArchivePath } from '../integrations/github';
-import { getGitHubFiles } from '../integrations/github.node';
+import {
+  getGitHubFiles,
+  getMarkpromptPathFromGitHubArchivePath,
+} from '../integrations/github';
 import {
   getMotifFileContent,
   getMotifPublicFileMetadata,
@@ -332,6 +334,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       source: DbSource,
       forceRetrain: boolean,
       onFileProcessed: () => void,
+      onMessage: (message: string) => void,
       onError: (message: string) => void,
     ) => {
       switch (source.type) {
@@ -344,6 +347,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               data.branch,
               config.include || [],
               config.exclude || [],
+              onMessage,
             );
             console.info(
               `Done fetching GitHub archive. Now processing ${fileData.length} files...`,
@@ -505,7 +509,15 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
     ) => {
       setState({ state: 'fetching_data' });
       for (const source of sources) {
-        await _trainSource(source, forceRetrain, onFileProcessed, onError);
+        await _trainSource(
+          source,
+          forceRetrain,
+          onFileProcessed,
+          (message) => {
+            console.info(message);
+          },
+          onError,
+        );
       }
       setState({ state: 'idle' });
     },

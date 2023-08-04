@@ -24,9 +24,6 @@ import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
-import ConfirmDialog from '@/components/dialogs/Confirm';
-import { RemoveSourceDialog } from '@/components/dialogs/sources/RemoveSource';
-import { FileDnd } from '@/components/files/FileDnd';
 import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import * as GitHub from '@/components/icons/GitHub';
@@ -51,7 +48,7 @@ import {
   isUrl,
   pluralize,
 } from '@/lib/utils';
-import { DbSource } from '@/types/types';
+import { DbFile, DbSource } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
@@ -76,6 +73,25 @@ const FilesAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Files'),
   { loading: () => Loading },
 );
+
+const EditorDialog = dynamic(() => import('@/components/files/EditorDialog'), {
+  loading: () => Loading,
+});
+
+const ConfirmDialog = dynamic(() => import('@/components/dialogs/Confirm'), {
+  loading: () => Loading,
+});
+
+const RemoveSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/RemoveSource'),
+  {
+    loading: () => Loading,
+  },
+);
+
+const FileDnd = dynamic(() => import('@/components/files/FileDnd'), {
+  loading: () => Loading,
+});
 
 const getBasePath = (pathWithFile: string) => {
   if (isUrl(pathWithFile)) {
@@ -192,12 +208,18 @@ const Data = () => {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'path', desc: false },
   ]);
+  const [openFileId, setOpenFileId] = useState<DbFile['id'] | undefined>(
+    undefined,
+  );
+  const [editorOpen, setEditorOpen] = useState<boolean>(false);
 
   const columnHelper = createColumnHelper<{
+    id: DbFile['id'];
     path: string;
     source_id: string;
     updated_at: string;
     meta: any;
+    token_count: number | undefined;
   }>();
 
   const columns: any = useMemo(
@@ -227,9 +249,11 @@ const Data = () => {
       columnHelper.accessor(
         (row) => {
           return {
-            sourceId: row.source_id,
+            fileId: row.id,
             path: row.path,
             title: row.meta?.title,
+            sourceId: row.source_id,
+            tokenCount: row.token_count,
           };
         },
         {
@@ -238,12 +262,30 @@ const Data = () => {
           cell: (info) => {
             const value = info.getValue();
             // Ensure compat with previously trained data, where we don't
-            // extract the title in the meta. Note that title might be
-            // non-string values as well.
-            if (value?.title && isString(value.title)) {
-              return value.title;
-            }
-            return getNameForPath(sources, value.sourceId, value.path);
+            // extract the title in the meta. Note that the title might be
+            // a non-string value as well, e.g. in the case of an html
+            // component.
+            const title =
+              value?.title && isString(value.title)
+                ? value.title
+                : getNameForPath(sources, value.sourceId, value.path);
+            return (
+              <button
+                className="w-full overflow-hidden truncate text-left outline-none"
+                // onClick={() => {
+                //   if (!value.tokenCount) {
+                //     toast.success(
+                //       'To view the file content, retrain with the "force retrain" setting on.',
+                //     );
+                //     return;
+                //   }
+                //   setOpenFileId(value.fileId);
+                //   setEditorOpen(true);
+                // }}
+              >
+                {title}
+              </button>
+            );
           },
           footer: (info) => info.column.id,
           sortingFn: (rowA, rowB, columnId) => {
@@ -439,11 +481,16 @@ const Data = () => {
                 variant="cta"
                 buttonSize="sm"
                 onClick={async () => {
+                  let i = 0;
                   track('start training');
                   await trainAllSources(
                     forceRetrain,
                     () => {
-                      mutateFiles();
+                      if (i++ % 10 === 0) {
+                        console.log('Mutating', i);
+                        // Only mutate every 10 files
+                        mutateFiles();
+                      }
                     },
                     (message: string) => {
                       toast.error(message);
@@ -671,6 +718,15 @@ const Data = () => {
           />
         )}
       </Dialog.Root>
+      <EditorDialog
+        fileId={openFileId}
+        open={editorOpen}
+        setOpen={(open) => {
+          if (!open) {
+            setEditorOpen(false);
+          }
+        }}
+      />
     </ProjectSettingsLayout>
   );
 };

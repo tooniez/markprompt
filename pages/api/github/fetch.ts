@@ -3,9 +3,9 @@ import JSZip from 'jszip';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Octokit } from 'octokit';
 
-import { getMarkpromptPathFromGitHubArchivePath } from '@/lib/integrations/github';
-import { getOrRefreshAccessToken } from '@/lib/integrations/github.node';
-import { compress, shouldIncludeFileWithPath } from '@/lib/utils';
+import { getOrRefreshAccessToken } from '@/lib/integrations/github.edge';
+import { extractRepoContentFromZip } from '@/lib/integrations/github.node';
+import { compress } from '@/lib/utils';
 import { Database } from '@/types/supabase';
 import { OAuthToken, PathContentData } from '@/types/types';
 
@@ -19,49 +19,6 @@ type Data =
 const allowedMethods = ['POST'];
 
 const PAYLOAD_MAX_SIZE_BYTES = 4_000_000;
-
-const extractFromZip = async (
-  zipFiles: typeof JSZip.files,
-  offset = 0,
-  includeGlobs: string[],
-  excludeGlobs: string[],
-): Promise<PathContentData[]> => {
-  const mdFileData: PathContentData[] = [];
-
-  // Remove all non-md files here, we don't want to carry an
-  // entire repo over the wire. We sort the keys, as I am not
-  // sure that two subsequent calls to download a zip archive
-  // from GitHub always produces that same file structure.
-  const relativePaths = Object.keys(zipFiles)
-    .sort()
-    .filter((p) => {
-      // Ignore files with unsupported extensions and files in dot
-      // folders, like .github.
-      const pathWithoutRepoId = getMarkpromptPathFromGitHubArchivePath(p);
-      return shouldIncludeFileWithPath(
-        pathWithoutRepoId,
-        includeGlobs,
-        excludeGlobs,
-        false,
-      );
-    });
-
-  for (let i = offset; i < relativePaths.length; i++) {
-    const relativePath = relativePaths[i];
-
-    // In a GitHub archive, the file tree is contained in a top-level
-    // parent folder named `<repo>-<branch>`. We don't want to have
-    // references to this folder in the exposed file tree.
-    let path = relativePath.split('/').slice(1).join('/');
-    if (!path.startsWith('/')) {
-      path = '/' + path;
-    }
-    const content = await zipFiles[relativePath].async('text');
-    mdFileData.push({ path, content });
-  }
-
-  return mdFileData;
-};
 
 const getCompressedPayloadUntilLimit = (files: PathContentData[]) => {
   const filesToSend: PathContentData[] = [];
@@ -138,6 +95,9 @@ export default async function handler(
 
   const branchToFetch = req.body.branch || 'main';
   try {
+    console.info(
+      `Trying to fetch main branch of ${req.body.owner}/${req.body.repo}...`,
+    );
     // Fetch branch. If none is specified, fetch main branch.
     githubRes = await fetchRepo(
       req.body.owner,
@@ -170,7 +130,7 @@ export default async function handler(
   if (githubRes?.status !== 200) {
     return res.status(404).json({
       error:
-        'Failed to download repository. Make sure the main or master branch is accessible.',
+        'Failed to download repository. Make sure the "main" or "master" branch is accessible, or specify a branch explicitly.',
     });
   }
 
@@ -182,7 +142,7 @@ export default async function handler(
 
   // First, we load all the files, taking into account the start
   // offset if provided.
-  const files = await extractFromZip(
+  const files = await extractRepoContentFromZip(
     zip.files,
     req.body.offset ?? 0,
     req.body.includeGlobs,

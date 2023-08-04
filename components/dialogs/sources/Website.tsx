@@ -8,11 +8,11 @@ import {
   FormikErrors,
   FormikValues,
 } from 'formik';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ChangeEvent, FC, ReactNode, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
-import { DocsLimit } from '@/components/files/DocsLimit';
 import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
@@ -27,6 +27,12 @@ import { isWebsiteAccessible } from '@/lib/integrations/website';
 import { isCustomPageFetcherEnabled } from '@/lib/stripe/tiers';
 import { getLabelForSource, toNormalizedUrl } from '@/lib/utils';
 import { Project } from '@/types/types';
+
+const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
+
+const DocsLimit = dynamic(() => import('@/components/files/DocsLimit'), {
+  loading: () => Loading,
+});
 
 const _addSource = async (
   projectId: Project['id'],

@@ -3,14 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { Database } from '@/types/supabase';
-import { DbFile, Project } from '@/types/types';
+import { DbFileWithoutContent, Project } from '@/types/types';
 
 type Data =
   | {
       status?: string;
       error?: string;
     }
-  | DbFile[];
+  | DbFileWithoutContent[];
 
 const allowedMethods = ['GET', 'DELETE'];
 
@@ -47,7 +47,9 @@ export default async function handler(
     // like a bug in Supabase.
     const { data: files, error } = await supabase
       .from('files')
-      .select('*, sources!inner (project_id)')
+      .select(
+        'id,path,meta,project_id,updated_at,source_id,checksum,token_count, sources!inner (project_id)',
+      )
       .eq('sources.project_id', projectId);
 
     if (error) {

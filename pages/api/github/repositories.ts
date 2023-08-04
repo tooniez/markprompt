@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getOrRefreshAccessToken } from '@/lib/integrations/github.node';
+import { getOrRefreshAccessToken } from '@/lib/integrations/github.edge';
 import { Database } from '@/types/supabase';
 import { GitHubRepository } from '@/types/types';
 

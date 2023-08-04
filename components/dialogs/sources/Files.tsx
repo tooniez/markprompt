@@ -1,10 +1,19 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import dynamic from 'next/dynamic';
 import { ReactNode, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
-import { DocsLimit } from '@/components/files/DocsLimit';
-import { FileDnd } from '@/components/files/FileDnd';
 import useUsage from '@/lib/hooks/use-usage';
+
+const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
+
+const FileDnd = dynamic(() => import('@/components/files/FileDnd'), {
+  loading: () => Loading,
+});
+
+const DocsLimit = dynamic(() => import('@/components/files/DocsLimit'), {
+  loading: () => Loading,
+});
 
 const FilesAddSourceDialog = ({
   onDidAddSource,

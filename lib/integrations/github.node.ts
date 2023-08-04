@@ -1,14 +1,12 @@
-import { SupabaseClient, User } from '@supabase/supabase-js';
 import { sign } from 'jsonwebtoken';
+import JSZip from 'jszip';
 import { Octokit } from 'octokit';
 import { isPresent } from 'ts-is-present';
 
-import { Database } from '@/types/supabase';
-import { ApiError, FileData, OAuthToken, PathContentData } from '@/types/types';
+import { PathContentData } from '@/types/types';
 
+import { getMarkpromptPathFromGitHubArchivePath } from './github';
 import {
-  decompress,
-  getFileType,
   getNameFromPath,
   parseGitHubURL,
   shouldIncludeFileWithPath,
@@ -126,161 +124,6 @@ export const getRepositoryMDFilesInfo = async (
   return mdFileUrls;
 };
 
-const paginatedFetchRepo = async (
-  owner: string,
-  repo: string,
-  branch: string | undefined,
-  offset: number,
-  includeGlobs: string[],
-  excludeGlobs: string[],
-): Promise<{ files: PathContentData[]; capped?: boolean }> => {
-  const res = await fetch('/api/github/fetch', {
-    method: 'POST',
-    body: JSON.stringify({
-      owner,
-      repo,
-      branch,
-      offset,
-      includeGlobs,
-      excludeGlobs,
-    }),
-    headers: { 'Content-Type': 'application/json' },
-  });
-  if (!res.ok) {
-    throw new ApiError(res.status, (await res.json()).error);
-  }
-  const ab = await res.arrayBuffer();
-  return JSON.parse(decompress(Buffer.from(ab)));
-};
-
-export const getGitHubFiles = async (
-  url: string,
-  branch: string | undefined,
-  includeGlobs: string[],
-  excludeGlobs: string[],
-): Promise<FileData[]> => {
-  const info = parseGitHubURL(url);
-  if (!info?.owner && !info?.repo) {
-    return [];
-  }
-
-  let data = await paginatedFetchRepo(
-    info.owner,
-    info.repo,
-    branch,
-    0,
-    includeGlobs,
-    excludeGlobs,
-  );
-
-  let allFilesData = data.files;
-
-  while (data.capped) {
-    data = await paginatedFetchRepo(
-      info.owner,
-      info.repo,
-      branch,
-      allFilesData.length,
-      includeGlobs,
-      excludeGlobs,
-    );
-    allFilesData = [...allFilesData, ...data.files];
-  }
-
-  return allFilesData.map((fileData) => {
-    const name = getNameFromPath(fileData.path);
-    const fileType = getFileType(name);
-    return {
-      ...fileData,
-      fileType,
-      name: getNameFromPath(fileData.path),
-    };
-  });
-};
-
-export const getOrRefreshAccessToken = async (
-  userId: User['id'],
-  supabase: SupabaseClient<Database>,
-): Promise<OAuthToken | undefined> => {
-  if (!process.env.NEXT_PUBLIC_GITHUB_APP_CLIENT_ID) {
-    throw new ApiError(400, 'Invalid GitHub client id.');
-  }
-
-  const { data, error } = await supabase
-    .from('user_access_tokens')
-    .select('*')
-    .match({ user_id: userId, provider: 'github' })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.error('Error retrieving access token:', error.message);
-    throw new ApiError(400, 'Unable to retrieve access token.');
-  }
-
-  if (!data || !data.refresh_token_expires || !data.expires) {
-    return undefined;
-  }
-
-  const now = Date.now();
-  if (data.refresh_token_expires < now || !data.refresh_token) {
-    throw new ApiError(400, 'Refresh token has expired. Please sign in again.');
-  }
-
-  if (data.expires >= now) {
-    return data;
-  }
-
-  const res = await fetch('https://github.com/login/oauth/access_token', {
-    method: 'POST',
-    body: JSON.stringify({
-      client_id: process.env.NEXT_PUBLIC_GITHUB_APP_CLIENT_ID,
-      client_secret: process.env.GITHUB_APP_CLIENT_SECRET,
-      grant_type: 'refresh_token',
-      refresh_token: data.refresh_token,
-    }),
-    headers: {
-      'Content-Type': 'application/json',
-      accept: 'application/json',
-    },
-  });
-
-  if (!res.ok) {
-    throw new ApiError(
-      500,
-      'Could not refresh access token. Please sign in again',
-    );
-  }
-
-  const accessTokenInfo = await res.json();
-
-  const { data: refreshedData, error: refreshError } = await supabase
-    .from('user_access_tokens')
-    .update({
-      access_token: accessTokenInfo.access_token,
-      expires: now + accessTokenInfo.expires_in * 1000,
-      refresh_token: accessTokenInfo.refresh_token,
-      refresh_token_expires:
-        now + accessTokenInfo.refresh_token_expires_in * 1000,
-      scope: accessTokenInfo.scope,
-    })
-    .eq('id', data.id)
-    .select('*')
-    .order('id', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (refreshError) {
-    console.error('Error saving updated token:', refreshError.message);
-  }
-
-  if (refreshedData) {
-    return refreshedData;
-  }
-
-  return undefined;
-};
-
 export const getJWT = () => {
   if (!process.env.GITHUB_PRIVATE_KEY) {
     throw new Error('Missing GitHub private key');
@@ -295,4 +138,47 @@ export const getJWT = () => {
   return sign(payload, process.env.GITHUB_PRIVATE_KEY, {
     algorithm: 'RS256',
   });
+};
+
+export const extractRepoContentFromZip = async (
+  zipFiles: typeof JSZip.files,
+  offset = 0,
+  includeGlobs: string[],
+  excludeGlobs: string[],
+): Promise<PathContentData[]> => {
+  const mdFileData: PathContentData[] = [];
+
+  // Remove all non-md files here, we don't want to carry an
+  // entire repo over the wire. We sort the keys, as I am not
+  // sure that two subsequent calls to download a zip archive
+  // from GitHub always produces that same file structure.
+  const relativePaths = Object.keys(zipFiles)
+    .sort()
+    .filter((p) => {
+      // Ignore files with unsupported extensions and files in dot
+      // folders, like .github.
+      const pathWithoutRepoId = getMarkpromptPathFromGitHubArchivePath(p);
+      return shouldIncludeFileWithPath(
+        pathWithoutRepoId,
+        includeGlobs,
+        excludeGlobs,
+        false,
+      );
+    });
+
+  for (let i = offset; i < relativePaths.length; i++) {
+    const relativePath = relativePaths[i];
+
+    // In a GitHub archive, the file tree is contained in a top-level
+    // parent folder named `<repo>-<branch>`. We don't want to have
+    // references to this folder in the exposed file tree.
+    let path = relativePath.split('/').slice(1).join('/');
+    if (!path.startsWith('/')) {
+      path = '/' + path;
+    }
+    const content = await zipFiles[relativePath].async('text');
+    mdFileData.push({ path, content });
+  }
+
+  return mdFileData;
 };
