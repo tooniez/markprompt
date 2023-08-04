@@ -162,7 +162,9 @@ const processMarkdown = (
   }
 
   if (!tree) {
-    return undefined;
+    // Sometimes, only metadata is included and content is empty,
+    // which is fine.
+    return { sections: [], meta, leadFileHeading: undefined };
   }
 
   // Remove all JSX and expressions from MDX
@@ -181,7 +183,9 @@ const processMarkdown = (
   );
 
   if (!mdTree) {
-    return undefined;
+    // Sometimes, only metadata is included and content is empty,
+    // which is fine.
+    return { sections: [], meta, leadFileHeading: undefined };
   }
 
   const sectionTrees = splitTreeBy(mdTree, (node) => node.type === 'heading');

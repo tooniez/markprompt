@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+import { isPresent } from 'ts-is-present';
 
 import { ApiError, FileData, PathContentData } from '@/types/types';
 
@@ -84,13 +85,20 @@ export const getGitHubFiles = async (
     onMessage,
   );
 
-  return data.map((fileData) => {
-    const name = getNameFromPath(fileData.path);
-    const fileType = getFileType(name);
-    return {
-      ...fileData,
-      fileType,
-      name: getNameFromPath(fileData.path),
-    };
-  });
+  return data
+    .map((fileData) => {
+      const name = getNameFromPath(fileData.path);
+      const fileType = getFileType(name);
+      // GitHub archives also include folders, which
+      // we omit here.
+      if (fileData.path?.endsWith('/')) {
+        return undefined;
+      }
+      return {
+        ...fileData,
+        fileType,
+        name: getNameFromPath(fileData.path),
+      };
+    })
+    .filter(isPresent);
 };
