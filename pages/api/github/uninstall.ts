@@ -1,4 +1,4 @@
-import * as authHelpersNextjs from '@supabase/auth-helpers-nextjs';
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getOrRefreshAccessToken } from '@/lib/integrations/github.edge';
@@ -23,7 +23,7 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
-  const supabase = authHelpersNextjs.createServerSupabaseClient<Database>({
+  const supabase = createServerSupabaseClient<Database>({
     req,
     res,
   });
