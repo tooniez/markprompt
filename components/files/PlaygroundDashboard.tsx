@@ -48,13 +48,7 @@ import {
 import { getApiUrl } from '@/lib/utils.edge';
 import { DbSource, SourceType } from '@/types/types';
 
-import StatusMessage from './StatusMessage';
 import { UpgradeNote } from './UpgradeNote';
-import GetCode from '../dialogs/project/GetCode';
-import Share from '../dialogs/project/Share';
-import { RemoveSourceDialog } from '../dialogs/sources/RemoveSource';
-import { ModelConfigurator } from '../files/ModelConfigurator';
-import { UIConfigurator } from '../files/UIConfigurator';
 import { GitHubIcon } from '../icons/GitHub';
 import { MotifIcon } from '../icons/Motif';
 import { SpinnerIcon } from '../icons/Spinner';
@@ -62,32 +56,51 @@ import Button from '../ui/Button';
 import { InfoTooltip } from '../ui/InfoTooltip';
 import { PulseDot } from '../ui/PulseDot';
 
+const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
+
+const StatusMessage = dynamic(() => import('./StatusMessage'), {
+  loading: () => Loading,
+});
+
+const Share = dynamic(() => import('../dialogs/project/Share'), {
+  loading: () => Loading,
+});
+
+const GetCode = dynamic(() => import('../dialogs/project/GetCode'), {
+  loading: () => Loading,
+});
+
+const UIConfigurator = dynamic(() => import('../files/UIConfigurator'), {
+  loading: () => Loading,
+});
+
+const ModelConfigurator = dynamic(() => import('../files/ModelConfigurator'), {
+  loading: () => Loading,
+});
+
+const RemoveSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/RemoveSource'),
+  { loading: () => Loading },
+);
+
 const WebsiteAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Website'),
-  {
-    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
-  },
+  { loading: () => Loading },
 );
 
 const GitHubAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/GitHub'),
-  {
-    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
-  },
+  { loading: () => Loading },
 );
 
 const MotifAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Motif'),
-  {
-    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
-  },
+  { loading: () => Loading },
 );
 
 const FilesAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Files'),
-  {
-    loading: () => <p className="p-4 text-sm text-neutral-500">Loading...</p>,
-  },
+  { loading: () => Loading },
 );
 
 export const Row = ({

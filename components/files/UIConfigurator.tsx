@@ -41,7 +41,7 @@ type UIConfiguratorProps = {
   className?: string;
 };
 
-export const UIConfigurator: FC<UIConfiguratorProps> = () => {
+const UIConfigurator: FC<UIConfiguratorProps> = () => {
   const { team } = useTeam();
   const {
     markpromptOptions,
@@ -421,3 +421,5 @@ export const UIConfigurator: FC<UIConfiguratorProps> = () => {
     </div>
   );
 };
+
+export default UIConfigurator;

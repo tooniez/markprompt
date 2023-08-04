@@ -11,11 +11,11 @@ import {
 } from 'formik';
 import { groupBy } from 'lodash-es';
 import { Package2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { FC, ReactNode, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
-import { DocsLimit } from '@/components/files/DocsLimit';
 import { GitHubIcon } from '@/components/icons/GitHub';
 import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
@@ -33,6 +33,12 @@ import { isGitHubRepoAccessible } from '@/lib/integrations/github.node';
 import { setGitHubAuthState } from '@/lib/supabase';
 import { getLabelForSource } from '@/lib/utils';
 import { GitHubRepository, Project } from '@/types/types';
+
+const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
+
+const DocsLimit = dynamic(() => import('@/components/files/DocsLimit'), {
+  loading: () => Loading,
+});
 
 const _addSource = async (
   projectId: Project['id'],
