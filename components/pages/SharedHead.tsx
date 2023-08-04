@@ -20,14 +20,16 @@ export const SharedHead: FC<SharedHeadProps> = ({
       <meta
         name="description"
         content={
-          description || 'Enterprise-grade AI prompts for your website and docs'
+          description ||
+          'Expert tools and APIs to maintain technical content at scale, powered by AI'
         }
         key="desc"
       />
       <meta
         property="og:description"
         content={
-          description || 'Enterprise-grade AI prompts for your website and docs'
+          description ||
+          'Expert tools and APIs to maintain technical content at scale, powered by AI'
         }
       />
 
@@ -43,7 +45,8 @@ export const SharedHead: FC<SharedHeadProps> = ({
       <meta
         name="twitter:description"
         content={
-          description || 'Enterprise-grade AI prompts for your website and docs'
+          description ||
+          'Expert tools and APIs to maintain technical content at scale, powered by AI'
         }
       />
       <meta name="twitter:image" content={_ogImage} />
