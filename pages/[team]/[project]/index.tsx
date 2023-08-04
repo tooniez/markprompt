@@ -487,7 +487,6 @@ const Data = () => {
                     forceRetrain,
                     () => {
                       if (i++ % 10 === 0) {
-                        console.log('Mutating', i);
                         // Only mutate every 10 files
                         mutateFiles();
                       }
