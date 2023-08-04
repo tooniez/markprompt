@@ -6,6 +6,7 @@ import { FileReferenceFileData, FileSectionReference } from '@markprompt/core';
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
 import dayjs from 'dayjs';
+import { isString } from 'lodash-es';
 import { ChevronsUp, GitBranchIcon, Globe, Upload } from 'lucide-react';
 import { minimatch } from 'minimatch';
 import { customAlphabet } from 'nanoid';
@@ -24,6 +25,8 @@ import { GitHubIcon } from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
 import {
   DateCountHistogramEntry,
+  DbFileWithoutContent,
+  DbSource,
   FileSectionHeading,
   FileSectionMeta,
   FileType,
@@ -1096,4 +1099,26 @@ const toQueryString = (params: { [key: string]: string }) => {
 
 export const formatUrl = (url: string, params: { [key: string]: string }) => {
   return url + '?' + toQueryString(params);
+};
+
+export const getNameForPath = (
+  sources: DbSource[],
+  sourceId: DbSource['id'],
+  path: string,
+) => {
+  const source = sources.find((s) => s.id === sourceId);
+  if (!source) {
+    return path;
+  }
+  return getFileNameForSourceAtPath(source, path);
+};
+
+export const getFileTitle = (
+  file: Pick<DbFileWithoutContent, 'meta' | 'source_id' | 'path'>,
+  sources: DbSource[],
+) => {
+  const metaTitle = (file.meta as any)?.title;
+  return metaTitle && isString(metaTitle)
+    ? metaTitle
+    : getNameForPath(sources, file.source_id || '', file.path);
 };
