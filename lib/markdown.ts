@@ -10,7 +10,8 @@ import { unified } from 'unified';
 import { u } from 'unist-builder';
 import { filter } from 'unist-util-filter';
 
-import { extractFrontmatter, getFileType, inferFileTitle } from '@/lib/utils';
+import { getFileType, inferFileTitle } from '@/lib/utils';
+import { extractFrontmatter } from '@/lib/utils.non-edge';
 import { FileSectionData, FileSectionsData } from '@/types/types';
 
 import { htmlToMarkdown } from './converters/html-to-markdown';

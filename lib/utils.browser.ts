@@ -1,7 +1,6 @@
 // Browser-dependent utilities. Cannot run on edge runtimes.
 import { stringify } from 'json5';
 import {
-  cloneDeep,
   filter,
   isArray,
   isEmpty,
@@ -11,9 +10,7 @@ import {
   isUndefined,
   map,
   mapValues,
-  omit,
   pickBy,
-  unset,
 } from 'lodash-es';
 
 import { Json } from '@/types/supabase';

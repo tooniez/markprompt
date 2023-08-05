@@ -6,8 +6,6 @@ import { FileReferenceFileData, FileSectionReference } from '@markprompt/core';
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
 import dayjs from 'dayjs';
-import grayMatter from 'gray-matter';
-import yaml from 'js-yaml';
 import { isString } from 'lodash-es';
 import { ChevronsUp, GitBranchIcon, Globe, Upload } from 'lucide-react';
 import { minimatch } from 'minimatch';
@@ -1134,20 +1132,4 @@ export const getFileTitle = (
   return metaTitle && isString(metaTitle)
     ? metaTitle
     : getNameForPath(sources, file.source_id || '', file.path);
-};
-
-export const extractFrontmatter = (
-  source: string,
-): { [key: string]: string } => {
-  try {
-    const matter = grayMatter(source, {})?.matter;
-    if (matter) {
-      return yaml.load(matter, {
-        schema: yaml.JSON_SCHEMA,
-      }) as { [key: string]: string };
-    }
-  } catch {
-    // Do nothing
-  }
-  return {};
 };
