@@ -35,7 +35,7 @@ import {
   getEmbeddingTokensAllowance,
   getMonthlyCompletionsAllowance,
 } from '@/lib/stripe/tiers';
-import { fetcher } from '@/lib/utils';
+import { fetcher, formatUrl } from '@/lib/utils';
 import { DateCountHistogramEntry, TeamStats } from '@/types/types';
 
 dayjs.extend(duration);
@@ -45,7 +45,7 @@ const UsageCard = ({
   subtitle,
   percentage,
 }: {
-  title: string;
+  title: ReactNode | string;
   subtitle: ReactNode | string;
   percentage: number;
 }) => {
@@ -77,7 +77,7 @@ const UsageCard = ({
               />
             </Progress.Root>
           </div>
-          <p className="text-sm text-neutral-500">{subtitle}</p>
+          <p className="text-sm text-neutral-400">{subtitle}</p>
         </div>
       </div>
     </div>
@@ -123,9 +123,11 @@ const Usage = () => {
 
   const { data: numCompletionsResponse } = useSWR(
     team?.id && fromISO && toISO
-      ? `/api/team/${team.id}/usage/completions?from=${formatISO(
-          startOfMonth(new Date()),
-        )}&to=${formatISO(endOfDay(new Date()))}&tz=${REFERENCE_TIMEZONE}`
+      ? formatUrl(`/api/team/${team.id}/usage/completions`, {
+          from: formatISO(startOfMonth(new Date())),
+          to: formatISO(endOfDay(new Date())),
+          tz: REFERENCE_TIMEZONE,
+        })
       : null,
     fetcher<{ occurrences: number }>,
   );
@@ -133,11 +135,12 @@ const Usage = () => {
   const { data: queriesHistogramResponse, error: queriesHistogramError } =
     useSWR(
       team?.id && fromISO && toISO
-        ? `/api/team/${
-            team.id
-          }/usage/queries-histogram?from=${fromISO}&to=${toISO}&tz=${REFERENCE_TIMEZONE}&period=${getHistogramBinSize(
-            dateRange,
-          )}`
+        ? formatUrl(`/api/team/${team.id}/usage/queries-histogram`, {
+            from: fromISO,
+            to: toISO,
+            tz: REFERENCE_TIMEZONE,
+            period: getHistogramBinSize(dateRange),
+          })
         : null,
       fetcher<{ date: string; occurrences: number }[]>,
     );
@@ -199,7 +202,14 @@ const Usage = () => {
           percentage={embeddingsTokensPercentage}
         />
         <UsageCard
-          title="Completions"
+          title={
+            <>
+              Completions{' '}
+              <span className="text-sm font-normal text-neutral-500">
+                (month to date)
+              </span>
+            </>
+          }
           subtitle={
             <>
               {numCompletions}/

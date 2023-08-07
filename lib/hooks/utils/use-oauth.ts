@@ -3,22 +3,12 @@ import { useCallback, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
 import { deleteUserAccessToken } from '@/lib/supabase';
-import { fetcher } from '@/lib/utils';
+import { fetcher, formatUrl } from '@/lib/utils';
 import { OAuthProvider, OAuthToken } from '@/types/types';
 
 import useUser from '../use-user';
 
 type TokenState = 'no_token' | 'expired' | 'valid';
-
-const toQueryString = (params: { [key: string]: string }) => {
-  return Object.keys(params)
-    .map((k) => `${k}=${encodeURIComponent(params[k])}`)
-    .join('&');
-};
-
-const toUrl = (url: string, params: { [key: string]: string }) => {
-  return url + '?' + toQueryString(params);
-};
 
 const getOAuthUrl = (
   provider: OAuthProvider,
@@ -36,7 +26,7 @@ const getOAuthUrl = (
         process.env.NODE_ENV === 'production'
           ? 'markprompt'
           : 'markprompt-local';
-      return toUrl(
+      return formatUrl(
         `https://github.com/apps/${appId}/installations/new`,
         params,
       );

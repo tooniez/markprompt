@@ -1087,3 +1087,13 @@ export const isMacLike = () => {
   const platform = getPlatform();
   return platform.indexOf('mac') === 0 || platform === 'iPhone';
 };
+
+const toQueryString = (params: { [key: string]: string }) => {
+  return Object.keys(params)
+    .map((k) => `${k}=${encodeURIComponent(params[k])}`)
+    .join('&');
+};
+
+export const formatUrl = (url: string, params: { [key: string]: string }) => {
+  return url + '?' + toQueryString(params);
+};

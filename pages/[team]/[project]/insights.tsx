@@ -1,13 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { parseISO } from 'date-fns';
-import {
-  ArrowDown,
-  ArrowUp,
-  PanelRightIcon,
-  ThumbsDownIcon,
-  ThumbsUpIcon,
-} from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowDown, ArrowUp, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Card } from '@/components/dashboard/Card';
 import QueryStat from '@/components/dialogs/project/QueryStat';

@@ -19,7 +19,7 @@ import {
   getStoredRangeOrDefaultZonedTime,
 } from '../date';
 import { canViewInsights } from '../stripe/tiers';
-import { fetcher } from '../utils';
+import { fetcher, formatUrl } from '../utils';
 
 export default function useInsights() {
   const { team } = useTeam();
@@ -64,18 +64,23 @@ export default function useInsights() {
     error: queriesError,
   } = useSWR(
     project?.id && fromISO && toISO
-      ? `/api/project/${project.id}/insights/queries?page=${page}&from=${fromISO}&to=${toISO}&limit=${limit}`
+      ? formatUrl(`/api/project/${project.id}/insights/queries`, {
+          page: `${page || 0}`,
+          from: fromISO,
+          to: toISO,
+          limit: `${limit || 20}`,
+        })
       : null,
     fetcher<{ queries: PromptQueryStat[] }>,
   );
 
   const { data: topReferences, error: topReferencesError } = useSWR(
     project?.id && fromISO && toISO
-      ? `/api/project/${
-          project.id
-        }/insights/references?from=${fromISO}&to=${toISO}&limit=${
-          team && canViewInsights(team) ? 20 : 2
-        }`
+      ? formatUrl(`/api/project/${project.id}/insights/references`, {
+          from: fromISO,
+          to: toISO,
+          limit: `${team && canViewInsights(team) ? 20 : 2}`,
+        })
       : null,
     fetcher<ReferenceWithOccurrenceCount[]>,
   );
@@ -88,11 +93,12 @@ export default function useInsights() {
   const { data: queriesHistogramResponse, error: queriesHistogramError } =
     useSWR(
       project?.id && fromISO && toISO
-        ? `/api/project/${
-            project.id
-          }/insights/queries-histogram?from=${fromISO}&to=${toISO}&tz=${REFERENCE_TIMEZONE}&period=${getHistogramBinSize(
-            dateRange,
-          )}`
+        ? formatUrl(`/api/project/${project.id}/insights/queries-histogram`, {
+            from: fromISO,
+            to: toISO,
+            tz: `${REFERENCE_TIMEZONE}`,
+            period: `${getHistogramBinSize(dateRange)}`,
+          })
         : null,
       fetcher<{ date: string; occurrences: number }[]>,
     );

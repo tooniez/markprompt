@@ -1,12 +1,9 @@
-import { ColumnDef } from '@tanstack/react-table';
 import cn from 'classnames';
 import { format, add } from 'date-fns';
 import { CalendarIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import BarChart from '@/components/charts/bar-chart';
-import { FixedDateRange, formatShortDateTimeInTimeZone } from '@/lib/date';
-import { sampleVisitsData } from '@/lib/utils';
+import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import {
   DateCountHistogramEntry,
   ReferenceWithOccurrenceCount,
@@ -15,7 +12,6 @@ import {
 import { QueriesHistogram } from '../insights/queries-histogram';
 import { TopReferences } from '../insights/top-references';
 import Button from '../ui/Button';
-import { DateRangePicker } from '../ui/DateRangePicker';
 import {
   Table,
   TableBody,
