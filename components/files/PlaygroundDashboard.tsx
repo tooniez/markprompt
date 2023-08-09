@@ -342,7 +342,11 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
 }) => {
   const { team } = useTeam();
   const { project } = useProject();
-  const { files, mutate: mutateFiles, loading: loadingFiles } = useFiles();
+  const {
+    paginatedFiles,
+    mutate: mutateFiles,
+    loading: loadingFiles,
+  } = useFiles();
   const { didCompleteFirstQuery } = useAppContext();
   const {
     sources,
@@ -414,7 +418,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   );
 
   const hasConnectedSources = sources && sources.length > 0;
-  const isTrained = files && files.length > 0;
+  const isTrained = paginatedFiles && paginatedFiles.length > 0;
   const isLoading = loadingSources || loadingFiles;
   const isTraining = trainingState.state !== 'idle';
 
@@ -580,7 +584,14 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       },
       '*',
     );
-  }, [files, isPlaygroundLoaded, project, theme, isDark, markpromptOptions]);
+  }, [
+    paginatedFiles,
+    isPlaygroundLoaded,
+    project,
+    theme,
+    isDark,
+    markpromptOptions,
+  ]);
 
   return (
     <div className="absolute inset-0 grid grid-cols-1 sm:grid-cols-4">
@@ -732,7 +743,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
           {trainingState.state !== 'idle' && (
             <StatusMessage
               trainingState={trainingState}
-              numFiles={files?.length || 0}
+              numFiles={paginatedFiles?.length || 0}
               numSelected={0}
             />
           )}
@@ -928,7 +939,8 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       </div>
       <div
         className={cn('relative h-full transition', {
-          'pointer-events-none opacity-30': !files || files.length === 0,
+          'pointer-events-none opacity-30':
+            !paginatedFiles || paginatedFiles.length === 0,
         })}
       >
         <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto pb-24">

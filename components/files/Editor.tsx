@@ -102,6 +102,7 @@ export const Editor: FC<EditorProps> = ({ fileId }) => {
         <div className="text-sm text-neutral-300">{SourceItem}</div>
         <div className="text-sm text-neutral-300">{file.path}</div>
       </div>
+      {/*
       {supportsFrontmatter(getFileType(filename)) &&
         file?.meta &&
         Object.keys(file.meta).length > 0 && (
@@ -124,8 +125,8 @@ export const Editor: FC<EditorProps> = ({ fileId }) => {
               );
             })}
           </div>
-        )}
-      <div className="mt-8">
+        )} */}
+      <div className="mt-8 pb-24">
         <MarkdownContainer markdown={markdownContent} />
       </div>
     </div>

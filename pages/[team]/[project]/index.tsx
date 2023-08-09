@@ -175,7 +175,11 @@ const hasNonFileSources = (sources: DbSource[]) => {
 const Data = () => {
   const { team } = useTeam();
   const { project } = useProject();
-  const { files, mutate: mutateFiles, loading: loadingFiles } = useFiles();
+  const {
+    paginatedFiles,
+    mutate: mutateFiles,
+    loading: loadingFiles,
+  } = useFiles();
   const { sources } = useSources();
   const {
     stopGeneratingEmbeddings,
@@ -323,7 +327,7 @@ const Data = () => {
   );
 
   const table = useReactTable({
-    data: files || [],
+    data: paginatedFiles || [],
     columns,
     state: { rowSelection, sorting },
     enableRowSelection: true,
@@ -335,7 +339,7 @@ const Data = () => {
   });
 
   const numSelected = Object.values(rowSelection).filter(Boolean).length;
-  const hasFiles = files && files.length > 0;
+  const hasFiles = paginatedFiles && paginatedFiles.length > 0;
   const canTrain = hasFiles || hasNonFileSources(sources);
   const canAddMoreContent = numTokensPerTeamRemainingAllowance > 0;
 
@@ -349,7 +353,7 @@ const Data = () => {
           <StatusMessage
             trainingState={trainingState}
             isDeleting={isDeleting}
-            numFiles={files?.length || 0}
+            numFiles={paginatedFiles?.length || 0}
             numSelected={numSelected}
             playgroundPath={`/${team?.slug}/${project?.slug}/playground`}
           />
@@ -394,7 +398,7 @@ const Data = () => {
                   setIsDeleting(true);
                   await deleteFiles(project.id, fileIds);
                   await mutateFiles(
-                    files?.filter((f) => !fileIds.includes(f.id)),
+                    paginatedFiles?.filter((f) => !fileIds.includes(f.id)),
                   );
                   await mutateFileStats();
                   setRowSelection([]);

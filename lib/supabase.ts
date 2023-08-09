@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { PostgrestError } from '@supabase/supabase-js';
+import { PostgrestError, User } from '@supabase/supabase-js';
 
 import { Database, Json } from '@/types/supabase';
 import {
@@ -325,4 +325,12 @@ export const getTeamProjectIds = async (
   }
 
   return (data?.map((d) => d.id) || []) as DbTeam['id'][];
+};
+
+export const hasUserAccessToProject = async (
+  supabase: SupabaseClient<Database>,
+  userId: User['id'],
+  projectId: Project['id'],
+): Promise<boolean> => {
+  return false;
 };

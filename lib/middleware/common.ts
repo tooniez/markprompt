@@ -1,13 +1,26 @@
-import { SupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { NextApiRequest } from 'next';
+import {
+  SupabaseClient,
+  User,
+  createServerSupabaseClient,
+} from '@supabase/auth-helpers-nextjs';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { Database } from '@/types/supabase';
 import { ApiError, Project } from '@/types/types';
 
 import { get, getProjectIdByKey, setWithExpiration } from '../redis';
+import { hasUserAccessToProject } from '../supabase';
 import { isSKTestKey, truncateMiddle } from '../utils';
 import { isAppHost } from '../utils.edge';
+
+export interface Session {
+  user: {
+    email?: string | null;
+    id?: string | null;
+    name?: string | null;
+  };
+}
 
 export const noTokenResponse = new NextResponse(
   JSON.stringify({
@@ -154,3 +167,64 @@ export const checkWhitelistedDomainIfProjectKey = async (
     }
   }
 };
+
+interface NextApiHandler<T> {
+  (
+    req: NextApiRequest,
+    res: NextApiResponse<T>,
+  ): Promise<NextApiResponse<T> | void>;
+}
+
+type RequestAccessCondition = (
+  req: NextApiRequest,
+  supabase: SupabaseClient<Database>,
+  user: User,
+) => Promise<boolean>;
+
+const withAuthorizedConditionalAccess = async <T>(
+  req: NextApiRequest,
+  res: NextApiResponse<T>,
+  allowedMethods: string[],
+  handler: NextApiHandler<T>,
+  condition: RequestAccessCondition,
+) => {
+  if (!req.method || !allowedMethods.includes(req.method)) {
+    res.setHeader('Allow', allowedMethods);
+    return res
+      .status(405)
+      .json({ error: `Method ${req.method} Not Allowed` } as T);
+  }
+
+  const supabase = createServerSupabaseClient<Database>({ req, res });
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user) {
+    return res.status(401).json({ error: 'Unauthorized' } as T);
+  }
+
+  if (!condition(req, supabase, session.user)) {
+    return res.status(401).json({ error: 'Unauthorized' } as T);
+  }
+
+  return handler(req, res);
+};
+
+export const withProjectAccess =
+  <T>(allowedMethods: string[], handler: NextApiHandler<T>) =>
+  async (req: NextApiRequest, res: NextApiResponse) => {
+    return withAuthorizedConditionalAccess(
+      req,
+      res,
+      allowedMethods,
+      handler,
+      (req, supabase, user) => {
+        return hasUserAccessToProject(
+          supabase,
+          user.id,
+          req.query.id as Project['id'],
+        );
+      },
+    );
+  };
