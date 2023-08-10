@@ -49,7 +49,6 @@ export const MarkdownContainer: FC<MarkdownContainerProps> = ({
   markdown,
   components,
 }) => {
-  console.log('markdown', JSON.stringify(markdown, null, 2));
   return (
     <div className="markdown-container prose prose-sm prose-invert max-w-full">
       <ReactMarkdown

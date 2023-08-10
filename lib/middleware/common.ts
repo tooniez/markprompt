@@ -204,7 +204,7 @@ const withAuthorizedConditionalAccess = async <T>(
     return res.status(401).json({ error: 'Unauthorized' } as T);
   }
 
-  if (!condition(req, supabase, session.user)) {
+  if (!(await condition(req, supabase, session.user))) {
     return res.status(401).json({ error: 'Unauthorized' } as T);
   }
 
@@ -219,7 +219,7 @@ export const withProjectAccess =
       res,
       allowedMethods,
       handler,
-      (req, supabase, user) => {
+      async (req, supabase, user) => {
         return hasUserAccessToProject(
           supabase,
           user.id,
