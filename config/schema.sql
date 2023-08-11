@@ -620,6 +620,32 @@ begin
 end;
 $$;
 
+-- Check if user has access to a project, i.e. if user is a member of the
+-- project's team
+
+create or replace function is_project_accessible_to_user(
+  user_id uuid,
+  project_id uuid
+)
+returns table (
+  has_access boolean
+)
+language plpgsql
+as $$
+begin
+  return query
+  select
+    case when exists (
+      select 1
+      from projects p
+      inner join teams t on p.team_id = t.id
+      inner join memberships m on t.id = m.team_id
+      where p.id = is_project_accessible_to_user.project_id
+      and m.user_id = is_project_accessible_to_user.user_id
+    ) then true else false end as has_access;
+end;
+$$;
+
 -- Triggers
 
 -- This trigger automatically creates a user entry when a new user signs up
@@ -749,6 +775,7 @@ or (
 -- Indexes
 
 create index idx_files_source_id on files(source_id);
+create index idx_files_path on files(path);
 create index idx_sources_project_id on sources(project_id);
 create index idx_file_sections_file_id on file_sections(file_id);
 create index idx_projects_team_id on projects(team_id);

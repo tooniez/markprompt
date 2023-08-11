@@ -39,6 +39,35 @@ a {
   @apply border-b border-dotted border-neutral-700 font-medium no-underline;
 }
 
+.prose :where(hr):not(:where([class~='not-prose'] *)) {
+  @apply border-neutral-900;
+}
+
+.prose :where(blockquote):not(:where([class~='not-prose'] *)) {
+  @apply border-neutral-800;
+}
+
+.prose :where(ul > li):not(:where([class~='not-prose'] *))::marker {
+  @apply text-neutral-700;
+}
+
+.prose-sm :where(pre):not(:where([class~='not-prose'] *)) {
+  @apply rounded-md border border-neutral-900 p-3 text-xs;
+}
+
+/*
+ * To investigate: ReactMarkdown generates a <pre> within a <pre>
+ * when using the custom {code} component mapping. We only want
+ * to apply the border and padding styles to the outer <pre>.
+ */
+.prose-sm :where(pre):not(:where([class~='not-prose'] *)) pre {
+  @apply m-0 border-0 !important;
+}
+
+.markdown-container a {
+  @apply text-neutral-100 !important;
+}
+
 h1,
 h2,
 h3,

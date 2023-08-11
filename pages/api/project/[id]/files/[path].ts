@@ -3,14 +3,14 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { withProjectAccess } from '@/lib/middleware/common';
 import { Database } from '@/types/supabase';
-import { DbQueryStat, PromptQueryStatFull } from '@/types/types';
+import { DbFile } from '@/types/types';
 
 type Data =
   | {
       status?: string;
       error?: string;
     }
-  | PromptQueryStatFull;
+  | DbFile;
 
 const allowedMethods = ['GET'];
 
@@ -20,33 +20,23 @@ export default withProjectAccess(
     const supabase = createServerSupabaseClient<Database>({ req, res });
 
     if (req.method === 'GET') {
-      const id = req.query.sid as DbQueryStat['id'];
+      const path = req.query.path as string;
+
       const { data, error } = await supabase
-        .from('query_stats')
-        .select(
-          'id,created_at,prompt,response,no_response,feedback,meta,processed_state',
-        )
-        .eq('id', id)
+        .from('files')
+        .select('*')
+        .eq('path', path)
         .limit(1)
         .maybeSingle();
 
-      if (
-        !(
-          data?.processed_state === 'processed' ||
-          data?.processed_state === 'skipped'
-        )
-      ) {
-        return res.status(404).json({ error: 'No matching query stat found.' });
-      }
-
       if (error) {
-        console.error('Error fetching query stat:', error.message);
+        console.error('Error fetching file:', error.message);
         return res.status(400).json({ error: error.message });
       }
 
       if (!data) {
-        console.error('Query stat not found');
-        return res.status(404).json({ error: 'No matching query stat found.' });
+        console.error('File not found');
+        return res.status(404).json({ error: `File ${path} not found.` });
       }
 
       return res.status(200).json(data);

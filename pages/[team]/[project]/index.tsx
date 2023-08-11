@@ -17,7 +17,6 @@ import cn from 'classnames';
 import dayjs from 'dayjs';
 // Cf. https://github.com/iamkun/dayjs/issues/297#issuecomment-1202327426
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { isString } from 'lodash-es';
 import { MoreHorizontal, Globe, Upload, SettingsIcon } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { FC, useMemo, useState } from 'react';
@@ -31,6 +30,7 @@ import { MotifIcon } from '@/components/icons/Motif';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Button from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { SkeletonTable } from '@/components/ui/Skeletons';
 import { Tag } from '@/components/ui/Tag';
 import { deleteFiles } from '@/lib/api';
 import { useTrainingContext } from '@/lib/context/training';
@@ -41,13 +41,14 @@ import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import {
   getAccessoryLabelForSource,
-  getFileNameForSourceAtPath,
   getIconForSource,
   getLabelForSource,
   getUrlPath,
   isUrl,
   pluralize,
 } from '@/lib/utils';
+import { getNameForPath } from '@/lib/utils.nodeps';
+import { getFileTitle } from '@/lib/utils.non-edge';
 import { DbFile, DbSource } from '@/types/types';
 
 dayjs.extend(relativeTime);
@@ -172,22 +173,18 @@ const hasNonFileSources = (sources: DbSource[]) => {
   );
 };
 
-const getNameForPath = (
-  sources: DbSource[],
-  sourceId: DbSource['id'],
-  path: string,
-) => {
-  const source = sources.find((s) => s.id === sourceId);
-  if (!source) {
-    return path;
-  }
-  return getFileNameForSourceAtPath(source, path);
-};
-
 const Data = () => {
   const { team } = useTeam();
   const { project } = useProject();
-  const { files, mutate: mutateFiles, loading: loadingFiles } = useFiles();
+  const {
+    paginatedFiles,
+    numFiles,
+    mutate: mutateFiles,
+    loading: loadingFiles,
+    page,
+    setPage,
+    hasMorePages,
+  } = useFiles();
   const { sources } = useSources();
   const {
     stopGeneratingEmbeddings,
@@ -208,7 +205,7 @@ const Data = () => {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'path', desc: false },
   ]);
-  const [openFileId, setOpenFileId] = useState<DbFile['id'] | undefined>(
+  const [openFilePath, setOpenFilePath] = useState<string | undefined>(
     undefined,
   );
   const [editorOpen, setEditorOpen] = useState<boolean>(false);
@@ -246,59 +243,45 @@ const Data = () => {
         },
         footer: (info) => info.column.id,
       }),
-      columnHelper.accessor(
-        (row) => {
-          return {
-            fileId: row.id,
-            path: row.path,
-            title: row.meta?.title,
-            sourceId: row.source_id,
-            tokenCount: row.token_count,
-          };
+      columnHelper.accessor((row) => row, {
+        id: 'name',
+        header: () => <span>Name</span>,
+        cell: (info) => {
+          const value = info.getValue();
+          // Ensure compat with previously trained data, where we don't
+          // extract the title in the meta. Note that the title might be
+          // a non-string value as well, e.g. in the case of an html
+          // component.
+          const title = getFileTitle(value, sources);
+          return (
+            <button
+              className="w-full overflow-hidden truncate text-left outline-none"
+              onClick={() => {
+                if (!value.token_count) {
+                  toast.success(
+                    'To view the file content, retrain with the "force retrain" setting on.',
+                  );
+                  return;
+                }
+                setOpenFilePath(value.path);
+                setEditorOpen(true);
+              }}
+            >
+              {title}
+            </button>
+          );
         },
-        {
-          id: 'name',
-          header: () => <span>Name</span>,
-          cell: (info) => {
-            const value = info.getValue();
-            // Ensure compat with previously trained data, where we don't
-            // extract the title in the meta. Note that the title might be
-            // a non-string value as well, e.g. in the case of an html
-            // component.
-            const title =
-              value?.title && isString(value.title)
-                ? value.title
-                : getNameForPath(sources, value.sourceId, value.path);
-            return (
-              <button
-                className="w-full overflow-hidden truncate text-left outline-none"
-                // onClick={() => {
-                //   if (!value.tokenCount) {
-                //     toast.success(
-                //       'To view the file content, retrain with the "force retrain" setting on.',
-                //     );
-                //     return;
-                //   }
-                //   setOpenFileId(value.fileId);
-                //   setEditorOpen(true);
-                // }}
-              >
-                {title}
-              </button>
-            );
-          },
-          footer: (info) => info.column.id,
-          sortingFn: (rowA, rowB, columnId) => {
-            const valueA: { sourceId: DbSource['id']; path: string } =
-              rowA.getValue(columnId);
-            const valueB: { sourceId: DbSource['id']; path: string } =
-              rowB.getValue(columnId);
-            const nameA = getNameForPath(sources, valueA.sourceId, valueA.path);
-            const nameB = getNameForPath(sources, valueB.sourceId, valueB.path);
-            return nameA.localeCompare(nameB);
-          },
+        footer: (info) => info.column.id,
+        sortingFn: (rowA, rowB, columnId) => {
+          const valueA: { sourceId: DbSource['id']; path: string } =
+            rowA.getValue(columnId);
+          const valueB: { sourceId: DbSource['id']; path: string } =
+            rowB.getValue(columnId);
+          const nameA = getNameForPath(sources, valueA.sourceId, valueA.path);
+          const nameB = getNameForPath(sources, valueB.sourceId, valueB.path);
+          return nameA.localeCompare(nameB);
         },
-      ),
+      }),
       columnHelper.accessor((row) => row.path, {
         id: 'path',
         header: () => <span>Path</span>,
@@ -349,7 +332,7 @@ const Data = () => {
   );
 
   const table = useReactTable({
-    data: files || [],
+    data: paginatedFiles || [],
     columns,
     state: { rowSelection, sorting },
     enableRowSelection: true,
@@ -361,7 +344,7 @@ const Data = () => {
   });
 
   const numSelected = Object.values(rowSelection).filter(Boolean).length;
-  const hasFiles = files && files.length > 0;
+  const hasFiles = paginatedFiles && paginatedFiles.length > 0;
   const canTrain = hasFiles || hasNonFileSources(sources);
   const canAddMoreContent = numTokensPerTeamRemainingAllowance > 0;
 
@@ -375,7 +358,7 @@ const Data = () => {
           <StatusMessage
             trainingState={trainingState}
             isDeleting={isDeleting}
-            numFiles={files?.length || 0}
+            numFiles={numFiles || 0}
             numSelected={numSelected}
             playgroundPath={`/${team?.slug}/${project?.slug}/playground`}
           />
@@ -420,7 +403,7 @@ const Data = () => {
                   setIsDeleting(true);
                   await deleteFiles(project.id, fileIds);
                   await mutateFiles(
-                    files?.filter((f) => !fileIds.includes(f.id)),
+                    paginatedFiles?.filter((f) => !fileIds.includes(f.id)),
                   );
                   await mutateFileStats();
                   setRowSelection([]);
@@ -597,21 +580,28 @@ const Data = () => {
             </FilesAddSourceDialog>
           </div>
         </div>
-        {!loadingFiles && !hasFiles && (
-          <div className="h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100 sm:col-span-3">
-            <FileDnd
-              isOnEmptyStateDataPanel
-              forceRetrain={forceRetrain}
-              onTrainingComplete={() => {
-                toast.success('Processing complete.', {
-                  id: 'processing-complete',
-                });
-              }}
-            />
-          </div>
-        )}
-        {hasFiles && (
-          <div className="sm:col-span-3">
+        <div className="sm:col-span-3">
+          {loadingFiles && (
+            <div className="relative min-h-[200px]">
+              <SkeletonTable onDark loading />
+            </div>
+          )}
+
+          {!loadingFiles && !hasFiles && (
+            <div className="h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100">
+              <FileDnd
+                isOnEmptyStateDataPanel
+                forceRetrain={forceRetrain}
+                onTrainingComplete={() => {
+                  toast.success('Processing complete.', {
+                    id: 'processing-complete',
+                  });
+                }}
+              />
+            </div>
+          )}
+
+          {!loadingFiles && hasFiles && (
             <table className="w-full max-w-full table-fixed border-collapse">
               <colgroup>
                 <col className="w-[32px]" />
@@ -702,8 +692,26 @@ const Data = () => {
                 })}
               </tbody>
             </table>
+          )}
+          <div className="flex flex-row gap-2 py-4">
+            <Button
+              variant="plain"
+              buttonSize="xs"
+              onClick={() => setPage(page - 1)}
+              disabled={page === 0 || loadingFiles}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="plain"
+              buttonSize="xs"
+              onClick={() => setPage(page + 1)}
+              disabled={!hasMorePages || loadingFiles}
+            >
+              Next
+            </Button>
           </div>
-        )}
+        </div>
       </div>
       <Dialog.Root
         open={!!sourceToRemove}
@@ -718,7 +726,7 @@ const Data = () => {
         )}
       </Dialog.Root>
       <EditorDialog
-        fileId={openFileId}
+        filePath={openFilePath}
         open={editorOpen}
         setOpen={(open) => {
           if (!open) {

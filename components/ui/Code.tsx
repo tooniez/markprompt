@@ -21,8 +21,7 @@ export const Code: FC<CodeProps> = ({
   return (
     <div className={className}>
       <Highlight {...defaultProps} code={code} language={language}>
-        {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          //  style={style}
+        {({ className, tokens, getLineProps, getTokenProps }) => (
           <pre
             className={`${className} ${
               !noPreWrap ? 'whitespace-pre-wrap' : ''

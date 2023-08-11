@@ -59,7 +59,7 @@ export default function useInsights() {
   const limit = team && canViewInsights(team) ? 20 : 3;
 
   const {
-    data,
+    data: queries,
     mutate: mutateQueries,
     error: queriesError,
   } = useSWR(
@@ -115,7 +115,7 @@ export default function useInsights() {
   }, [queriesHistogramResponse]);
 
   return {
-    queries: data?.queries,
+    queries: queries?.queries,
     topReferences,
     queriesHistogram,
     dateRange,
@@ -123,9 +123,11 @@ export default function useInsights() {
     page,
     setPage,
     mutateQueries,
-    loadingQueries: !data?.queries && !queriesError,
-    loadingTopReferences: !topReferences && !topReferencesError,
-    loadingQueriesHistogram: !queriesHistogram && !queriesHistogramError,
-    hasMorePages: data?.queries?.length === limit,
+    loadingQueries: !project?.id || (!queries?.queries && !queriesError),
+    loadingTopReferences:
+      !project?.id || (!topReferences && !topReferencesError),
+    loadingQueriesHistogram:
+      !project?.id || (!queriesHistogram && !queriesHistogramError),
+    hasMorePages: queries?.queries?.length === limit,
   };
 }

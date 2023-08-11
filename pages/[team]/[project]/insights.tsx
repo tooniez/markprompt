@@ -1,10 +1,10 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { parseISO } from 'date-fns';
 import { ArrowDown, ArrowUp, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Card } from '@/components/dashboard/Card';
-import QueryStat from '@/components/dialogs/project/QueryStat';
 import { QueriesDataTable } from '@/components/insights/queries/table';
 import { QueriesHistogram } from '@/components/insights/queries-histogram';
 import { TopReferences } from '@/components/insights/top-references';
@@ -20,6 +20,15 @@ import useTeam from '@/lib/hooks/use-team';
 import { canViewInsights, getAccessibleInsightsType } from '@/lib/stripe/tiers';
 import { useDebouncedState } from '@/lib/utils.react';
 import { DbQueryStat, PromptQueryStat } from '@/types/types';
+
+const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
+
+const QueryStat = dynamic(
+  () => import('@/components/dialogs/project/QueryStat'),
+  {
+    loading: () => Loading,
+  },
+);
 
 export const PromptStatusTag = ({ noResponse }: { noResponse: boolean }) => {
   return (
@@ -374,7 +383,7 @@ const Insights = () => {
             }
           >
             {!loadingQueriesHistogram &&
-            (!queriesHistogram || queriesHistogram?.length === 0) ? (
+            (queriesHistogram || []).length === 0 ? (
               <p className="mt-2 text-sm text-neutral-500">
                 No questions asked in this time range.
               </p>
@@ -387,7 +396,7 @@ const Insights = () => {
             )}
           </Card>
           <Card title="Most cited sources">
-            {!loadingTopReferences && topReferences?.length === 0 ? (
+            {!loadingTopReferences && (topReferences || []).length === 0 ? (
               <p className="mt-2 text-sm text-neutral-500">
                 No references cited in this time range.
               </p>
