@@ -20,19 +20,12 @@ export default withProjectAccess(
     const supabase = createServerSupabaseClient<Database>({ req, res });
 
     if (req.method === 'GET') {
-      let fileId = undefined;
-      try {
-        fileId = parseInt(req.query.fileId as string) as DbFile['id'];
-      } catch {
-        return res
-          .status(400)
-          .json({ error: 'Please provide a valid file id.' });
-      }
+      const path = req.query.path as string;
 
       const { data, error } = await supabase
         .from('files')
         .select('*')
-        .eq('id', fileId)
+        .eq('path', path)
         .limit(1)
         .maybeSingle();
 
@@ -43,7 +36,7 @@ export default withProjectAccess(
 
       if (!data) {
         console.error('File not found');
-        return res.status(404).json({ error: `File ${fileId} not found.` });
+        return res.status(404).json({ error: `File ${path} not found.` });
       }
 
       return res.status(200).json(data);

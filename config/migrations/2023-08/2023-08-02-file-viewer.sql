@@ -4,6 +4,8 @@ add column raw_content text;
 alter table files
 add column token_count int;
 
+create index idx_files_path on files(path);
+
 create or replace function is_project_accessible_to_user(
   user_id uuid,
   project_id uuid

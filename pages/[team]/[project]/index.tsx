@@ -200,7 +200,7 @@ const Data = () => {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'path', desc: false },
   ]);
-  const [openFileId, setOpenFileId] = useState<DbFile['id'] | undefined>(
+  const [openFilePath, setOpenFilePath] = useState<string | undefined>(
     undefined,
   );
   const [editorOpen, setEditorOpen] = useState<boolean>(false);
@@ -258,7 +258,7 @@ const Data = () => {
                   );
                   return;
                 }
-                setOpenFileId(value.id);
+                setOpenFilePath(value.path);
                 setEditorOpen(true);
               }}
             >
@@ -696,7 +696,7 @@ const Data = () => {
         )}
       </Dialog.Root>
       <EditorDialog
-        fileId={openFileId}
+        filePath={openFilePath}
         open={editorOpen}
         setOpen={(open) => {
           if (!open) {

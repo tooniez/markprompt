@@ -12,7 +12,7 @@ import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
 import { fetcher } from '@/lib/utils';
 import { PromptStatusTag } from '@/pages/[team]/[project]/insights';
-import { DbFile, DbQueryStat, PromptQueryStatFull } from '@/types/types';
+import { DbQueryStat, PromptQueryStatFull } from '@/types/types';
 
 const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
 
@@ -38,9 +38,9 @@ const QueryStatDialog: FC<QueryStatDialogProps> = ({
       : null,
     fetcher<PromptQueryStatFull | undefined>,
   );
-  const [openFileId, setOpenFileId] = useState<DbFile['id'] | undefined>(
-    undefined,
-  );
+  const [openFileData, setOpenFileData] = useState<
+    { path: string; sectionSlug?: string | undefined } | undefined
+  >(undefined);
   const [editorOpen, setEditorOpen] = useState<boolean>(false);
 
   const loading = !queryStat && !error;
@@ -119,13 +119,10 @@ const QueryStatDialog: FC<QueryStatDialogProps> = ({
                             className="rounded-md border border-neutral-900 bg-neutral-1100 py-1 px-2 text-sm font-medium text-neutral-300"
                             key={`reference-${f.file?.path}-${f.meta?.leadHeading?.slug}-${i}`}
                             onClick={() => {
-                              // if (!value.token_count) {
-                              //   toast.success(
-                              //     'To view the file content, retrain with the "force retrain" setting on.',
-                              //   );
-                              //   return;
-                              // }
-                              // setOpenFileId(value.id);
+                              setOpenFileData({
+                                path: f.file.path,
+                                sectionSlug: f.meta?.leadHeading?.slug,
+                              });
                               setEditorOpen(true);
                             }}
                           >
@@ -144,7 +141,8 @@ const QueryStatDialog: FC<QueryStatDialogProps> = ({
         </Dialog.Content>
       </Dialog.Portal>
       <EditorDialog
-        fileId={openFileId}
+        filePath={openFileData?.path}
+        highlightSectionSlug={openFileData?.sectionSlug}
         open={editorOpen}
         setOpen={(open) => {
           if (!open) {

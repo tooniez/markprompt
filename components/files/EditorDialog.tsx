@@ -7,12 +7,18 @@ import { DbFile } from '@/types/types';
 import { Editor } from './Editor';
 
 type EditorDialogProps = {
-  fileId?: DbFile['id'];
+  filePath?: string;
+  highlightSectionSlug?: string;
   open: boolean;
   setOpen: (open: boolean) => void;
 };
 
-const EditorDialog: FC<EditorDialogProps> = ({ fileId, open, setOpen }) => {
+const EditorDialog: FC<EditorDialogProps> = ({
+  filePath,
+  highlightSectionSlug,
+  open,
+  setOpen,
+}) => {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Portal>
@@ -28,7 +34,10 @@ const EditorDialog: FC<EditorDialogProps> = ({ fileId, open, setOpen }) => {
           </button>
           <div className="overflow-y-auto">
             <div className="mx-auto flex w-full max-w-screen-md p-8">
-              <Editor fileId={fileId} />
+              <Editor
+                filePath={filePath}
+                highlightSectionSlug={highlightSectionSlug}
+              />
             </div>
           </div>
         </Dialog.Content>

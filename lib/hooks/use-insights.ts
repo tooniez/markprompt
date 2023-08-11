@@ -123,17 +123,11 @@ export default function useInsights() {
     page,
     setPage,
     mutateQueries,
-    loadingQueries: !!(project?.id && !queries?.queries && !queriesError),
-    loadingTopReferences: !!(
-      project?.id &&
-      !topReferences &&
-      !topReferencesError
-    ),
-    loadingQueriesHistogram: !!(
-      project?.id &&
-      !queriesHistogram &&
-      !queriesHistogramError
-    ),
+    loadingQueries: !project?.id || (!queries?.queries && !queriesError),
+    loadingTopReferences:
+      !project?.id || (!topReferences && !topReferencesError),
+    loadingQueriesHistogram:
+      !project?.id || (!queriesHistogram && !queriesHistogramError),
     hasMorePages: queries?.queries?.length === limit,
   };
 }

@@ -301,7 +301,6 @@ export const getResponseOrThrow = async <T>(res: Response): Promise<T> => {
       error.name = json.name;
       error.status = res.status;
       error.info = json;
-      console.log('THROW 1', JSON.stringify(error, null, 2));
       throw error;
     } else {
       throw new Error('An unexpected error occurred');

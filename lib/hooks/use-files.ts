@@ -23,8 +23,6 @@ export default function useFiles() {
     fetcher<DbFileWithoutContent[]>,
   );
 
-  console.log('paginatedFiles', JSON.stringify(paginatedFiles, null, 2));
-
   const loading = !paginatedFiles && !error;
 
   return { paginatedFiles, loading, mutate, page, setPage };

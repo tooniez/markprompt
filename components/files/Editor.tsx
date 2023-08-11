@@ -26,15 +26,18 @@ import { SkeletonTable } from '../ui/Skeletons';
 dayjs.extend(localizedFormat);
 
 type EditorProps = {
-  fileId?: DbFile['id'];
+  filePath?: string;
+  highlightSectionSlug?: string;
 };
 
-export const Editor: FC<EditorProps> = ({ fileId }) => {
+export const Editor: FC<EditorProps> = ({ filePath }) => {
   const { project } = useProject();
   const { sources } = useSources();
 
   const { data: file, error } = useSWR(
-    project?.id && fileId ? `/api/project/${project.id}/files/${fileId}` : null,
+    project?.id && filePath
+      ? `/api/project/${project.id}/files/${encodeURIComponent(filePath)}`
+      : null,
     fetcher<DbFile>,
   );
 
@@ -82,7 +85,8 @@ export const Editor: FC<EditorProps> = ({ fileId }) => {
   if (!file) {
     return (
       <div className="flex flex-col items-center gap-2 p-4 text-sm text-neutral-300">
-        File not accessible
+        The file is not accessible. Please retrain your data, and make sure to
+        enable &ldquo;force retrain&rdquo;.
       </div>
     );
   }
