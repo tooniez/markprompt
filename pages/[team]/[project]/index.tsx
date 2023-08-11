@@ -177,6 +177,7 @@ const Data = () => {
   const { project } = useProject();
   const {
     paginatedFiles,
+    count: numFiles,
     mutate: mutateFiles,
     loading: loadingFiles,
   } = useFiles();
@@ -353,7 +354,7 @@ const Data = () => {
           <StatusMessage
             trainingState={trainingState}
             isDeleting={isDeleting}
-            numFiles={paginatedFiles?.length || 0}
+            numFiles={numFiles || 0}
             numSelected={numSelected}
             playgroundPath={`/${team?.slug}/${project?.slug}/playground`}
           />

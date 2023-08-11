@@ -344,6 +344,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   const { project } = useProject();
   const {
     paginatedFiles,
+    count: numFiles,
     mutate: mutateFiles,
     loading: loadingFiles,
   } = useFiles();
@@ -743,7 +744,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
           {trainingState.state !== 'idle' && (
             <StatusMessage
               trainingState={trainingState}
-              numFiles={paginatedFiles?.length || 0}
+              numFiles={numFiles || 0}
               numSelected={0}
             />
           )}

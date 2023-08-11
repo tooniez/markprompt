@@ -9,6 +9,7 @@ import { fetcher, formatUrl } from '../utils';
 export default function useFiles() {
   const { project } = useProject();
   const [page, setPage] = useState(0);
+
   const {
     data: paginatedFiles,
     mutate,
@@ -23,7 +24,19 @@ export default function useFiles() {
     fetcher<DbFileWithoutContent[]>,
   );
 
+  const { data: countData } = useSWR(
+    project?.id ? `/api/project/${project.id}/files/count` : null,
+    fetcher<{ count: number }>,
+  );
+
   const loading = !paginatedFiles && !error;
 
-  return { paginatedFiles, loading, mutate, page, setPage };
+  return {
+    paginatedFiles,
+    count: countData?.count || 0,
+    loading,
+    mutate,
+    page,
+    setPage,
+  };
 }
