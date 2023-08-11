@@ -9,6 +9,7 @@ import { fetcher, formatUrl } from '../utils';
 export default function useFiles() {
   const { project } = useProject();
   const [page, setPage] = useState(0);
+  const pageSize = 50;
 
   const {
     data: paginatedFiles,
@@ -17,7 +18,7 @@ export default function useFiles() {
   } = useSWR(
     project?.id
       ? formatUrl(`/api/project/${project.id}/files`, {
-          limit: `${50}`,
+          limit: `${pageSize}`,
           page: `${page || 0}`,
         })
       : null,
@@ -30,13 +31,17 @@ export default function useFiles() {
   );
 
   const loading = !paginatedFiles && !error;
+  const numFiles = countData?.count || 0;
+  const hasMorePages = (page + 1) * pageSize < numFiles;
 
   return {
     paginatedFiles,
-    count: countData?.count || 0,
+    numFiles,
     loading,
     mutate,
     page,
+    pageSize,
+    hasMorePages,
     setPage,
   };
 }

@@ -30,6 +30,7 @@ import { MotifIcon } from '@/components/icons/Motif';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Button from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { SkeletonTable } from '@/components/ui/Skeletons';
 import { Tag } from '@/components/ui/Tag';
 import { deleteFiles } from '@/lib/api';
 import { useTrainingContext } from '@/lib/context/training';
@@ -177,9 +178,12 @@ const Data = () => {
   const { project } = useProject();
   const {
     paginatedFiles,
-    count: numFiles,
+    numFiles,
     mutate: mutateFiles,
     loading: loadingFiles,
+    page,
+    setPage,
+    hasMorePages,
   } = useFiles();
   const { sources } = useSources();
   const {
@@ -576,21 +580,28 @@ const Data = () => {
             </FilesAddSourceDialog>
           </div>
         </div>
-        {!loadingFiles && !hasFiles && (
-          <div className="h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100 sm:col-span-3">
-            <FileDnd
-              isOnEmptyStateDataPanel
-              forceRetrain={forceRetrain}
-              onTrainingComplete={() => {
-                toast.success('Processing complete.', {
-                  id: 'processing-complete',
-                });
-              }}
-            />
-          </div>
-        )}
-        {hasFiles && (
-          <div className="sm:col-span-3">
+        <div className="sm:col-span-3">
+          {loadingFiles && (
+            <div className="relative min-h-[200px]">
+              <SkeletonTable onDark loading />
+            </div>
+          )}
+
+          {!loadingFiles && !hasFiles && (
+            <div className="h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100">
+              <FileDnd
+                isOnEmptyStateDataPanel
+                forceRetrain={forceRetrain}
+                onTrainingComplete={() => {
+                  toast.success('Processing complete.', {
+                    id: 'processing-complete',
+                  });
+                }}
+              />
+            </div>
+          )}
+
+          {!loadingFiles && hasFiles && (
             <table className="w-full max-w-full table-fixed border-collapse">
               <colgroup>
                 <col className="w-[32px]" />
@@ -681,8 +692,26 @@ const Data = () => {
                 })}
               </tbody>
             </table>
+          )}
+          <div className="flex flex-row gap-2 py-4">
+            <Button
+              variant="plain"
+              buttonSize="xs"
+              onClick={() => setPage(page - 1)}
+              disabled={page === 0 || loadingFiles}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="plain"
+              buttonSize="xs"
+              onClick={() => setPage(page + 1)}
+              disabled={!hasMorePages || loadingFiles}
+            >
+              Next
+            </Button>
           </div>
-        )}
+        </div>
       </div>
       <Dialog.Root
         open={!!sourceToRemove}

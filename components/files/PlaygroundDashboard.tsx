@@ -344,7 +344,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   const { project } = useProject();
   const {
     paginatedFiles,
-    count: numFiles,
+    numFiles,
     mutate: mutateFiles,
     loading: loadingFiles,
   } = useFiles();
