@@ -383,7 +383,7 @@ const Insights = () => {
             }
           >
             {!loadingQueriesHistogram &&
-            (!queriesHistogram || queriesHistogram?.length === 0) ? (
+            (queriesHistogram || []).length === 0 ? (
               <p className="mt-2 text-sm text-neutral-500">
                 No questions asked in this time range.
               </p>
@@ -396,7 +396,7 @@ const Insights = () => {
             )}
           </Card>
           <Card title="Most cited sources">
-            {!loadingTopReferences && topReferences?.length === 0 ? (
+            {!loadingTopReferences && (topReferences || []).length === 0 ? (
               <p className="mt-2 text-sm text-neutral-500">
                 No references cited in this time range.
               </p>

@@ -282,6 +282,7 @@ export const pluralize = (value: number, singular: string, plural: string) => {
 
 interface SWRError extends Error {
   status: number;
+  info: any;
 }
 
 export const fetcher = async <T = any>(
@@ -297,8 +298,10 @@ export const getResponseOrThrow = async <T>(res: Response): Promise<T> => {
     const json = await res.json();
     if (json.error) {
       const error = new Error(json.error) as SWRError;
-      error.status = res.status;
       error.name = json.name;
+      error.status = res.status;
+      error.info = json;
+      console.log('THROW 1', JSON.stringify(error, null, 2));
       throw error;
     } else {
       throw new Error('An unexpected error occurred');

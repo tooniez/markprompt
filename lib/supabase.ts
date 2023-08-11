@@ -332,5 +332,12 @@ export const hasUserAccessToProject = async (
   userId: User['id'],
   projectId: Project['id'],
 ): Promise<boolean> => {
-  return false;
+  const response = await supabase
+    .rpc('is_project_accessible_to_user', {
+      user_id: userId,
+      project_id: projectId,
+    })
+    .limit(1)
+    .maybeSingle();
+  return !!response.data?.has_access;
 };

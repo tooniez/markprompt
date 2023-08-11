@@ -1110,6 +1110,15 @@ export interface Database {
           num_tokens: number
         }[]
       }
+      is_project_accessible_to_user: {
+        Args: {
+          user_id: string
+          project_id: string
+        }
+        Returns: {
+          has_access: boolean
+        }[]
+      }
       ivfflathandler: {
         Args: {
           "": unknown
