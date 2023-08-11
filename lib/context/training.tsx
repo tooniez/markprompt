@@ -47,7 +47,6 @@ import {
   completeHrefWithBaseUrl,
   createChecksum,
   getGitHubOwnerRepoString,
-  getNameFromUrlOrPath,
   isHrefFromBaseUrl,
   pluralize,
   removeTrailingSlashQueryParamsAndHash,
@@ -56,6 +55,7 @@ import {
   toNormalizedUrl,
   truncate,
 } from '../utils';
+import { getNameFromUrlOrPath } from '../utils.nodeps';
 
 type IdleState = { state: 'idle' };
 type FetchingDataState = { state: 'fetching_data' };

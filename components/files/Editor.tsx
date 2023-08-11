@@ -9,15 +9,9 @@ import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import { convertToMarkdown } from '@/lib/markdown';
-import {
-  fetcher,
-  getFileTitle,
-  getIconForSource,
-  getLabelForSource,
-  getFileNameForSourceAtPath,
-  getFileType,
-  supportsFrontmatter,
-} from '@/lib/utils';
+import { fetcher, getIconForSource, getLabelForSource } from '@/lib/utils';
+import { getFileNameForSourceAtPath } from '@/lib/utils.nodeps';
+import { getFileTitle } from '@/lib/utils.non-edge';
 import { DbFile } from '@/types/types';
 
 import { MarkdownContainer } from '../emails/templates/MarkdownContainer';

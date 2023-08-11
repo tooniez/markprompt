@@ -6,7 +6,6 @@ import { FileReferenceFileData, FileSectionReference } from '@markprompt/core';
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
 import dayjs from 'dayjs';
-import { isString } from 'lodash-es';
 import { ChevronsUp, GitBranchIcon, Globe, Upload } from 'lucide-react';
 import { minimatch } from 'minimatch';
 import { customAlphabet } from 'nanoid';
@@ -25,7 +24,6 @@ import { GitHubIcon } from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
 import {
   DateCountHistogramEntry,
-  DbFileWithoutContent,
   DbSource,
   FileSectionHeading,
   FileSectionMeta,
@@ -643,33 +641,6 @@ export const getAccessoryLabelForSource = (
   return undefined;
 };
 
-export const getFileNameForSourceAtPath = (source: Source, path: string) => {
-  switch (source.type) {
-    case 'website': {
-      // Handles e.g. index.html when last path component is empty
-      return getNameFromUrlOrPath(path);
-    }
-    default:
-      return path.split('/').slice(-1)[0];
-  }
-};
-
-export const getNameFromUrlOrPath = (url: string) => {
-  // When processing a text file, the type of a file (md, mdoc, html, etc)
-  // is determined by the file name, specifically by its extension. In
-  // the case where we are parsing websites, the URL of the page might
-  // not contain the HTML extension, we nevertheless consider it as an
-  // HTML file.
-  const baseName = url.split('/').slice(-1)[0];
-  if (/\.html$/.test(baseName)) {
-    return baseName;
-  } else if (baseName.length > 0) {
-    return `${baseName}.html`;
-  } else {
-    return 'index.html';
-  }
-};
-
 export const toNormalizedOrigin = (
   url: string,
   useInsecureSchema?: boolean,
@@ -1112,26 +1083,4 @@ const toQueryString = (params: { [key: string]: string }) => {
 
 export const formatUrl = (url: string, params: { [key: string]: string }) => {
   return url + '?' + toQueryString(params);
-};
-
-export const getNameForPath = (
-  sources: DbSource[],
-  sourceId: DbSource['id'],
-  path: string,
-) => {
-  const source = sources.find((s) => s.id === sourceId);
-  if (!source) {
-    return path;
-  }
-  return getFileNameForSourceAtPath(source, path);
-};
-
-export const getFileTitle = (
-  file: Pick<DbFileWithoutContent, 'meta' | 'source_id' | 'path'>,
-  sources: DbSource[],
-) => {
-  const metaTitle = (file.meta as any)?.title;
-  return metaTitle && isString(metaTitle)
-    ? metaTitle
-    : getNameForPath(sources, file.source_id || '', file.path);
 };

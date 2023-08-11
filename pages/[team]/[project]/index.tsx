@@ -40,14 +40,14 @@ import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import {
   getAccessoryLabelForSource,
-  getFileTitle,
   getIconForSource,
   getLabelForSource,
-  getNameForPath,
   getUrlPath,
   isUrl,
   pluralize,
 } from '@/lib/utils';
+import { getNameForPath } from '@/lib/utils.nodeps';
+import { getFileTitle } from '@/lib/utils.non-edge';
 import { DbFile, DbSource } from '@/types/types';
 
 dayjs.extend(relativeTime);
