@@ -265,16 +265,16 @@ export default async function handler(
       .limit(10);
     users = usersResponse;
 
-    // For testing purposes:
+    // // For testing purposes:
     // const { data } = await supabaseAdmin
     //   .from('users')
     //   .select('id,email,config')
     //   .eq('email', process.env.TEST_USER_EMAIL_2);
-    //
+
     // if (!data || data.length === 0) {
     //   return res.status(400).send({ error: 'Test user not found' });
     // }
-    //
+
     // users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
   }
 
@@ -337,7 +337,7 @@ export default async function handler(
 
     try {
       console.info(
-        `[EMAIL] Sending weekly update to ${user.email} from ${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME}`,
+        `[EMAIL] Sending weekly update to ${user.email} from ${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME} <${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL}>`,
       );
       await resend.emails.send({
         from: `${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME!} <${process

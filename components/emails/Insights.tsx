@@ -116,7 +116,7 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
   return (
     <Wrapper
       preview={preview}
-      bodyClassName="my-auto mx-auto bg-white font-sans"
+      bodyClassName="py-8 my-auto mx-auto bg-white font-sans"
       withHtml={withHtml}
     >
       <Container className="mx-auto w-full max-w-[720px] border-separate">
