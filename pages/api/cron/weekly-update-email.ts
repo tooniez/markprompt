@@ -265,6 +265,7 @@ export default async function handler(
       .limit(10);
     users = usersResponse;
 
+    // For testing purposes:
     // const { data } = await supabaseAdmin
     //   .from('users')
     //   .select('id,email,config')
@@ -312,9 +313,12 @@ export default async function handler(
 
   for (const user of users) {
     if (!user.id || !user.email) {
-      await updateConfig(user);
       continue;
     }
+
+    // Immediately update the config, to ensure no race condition on next
+    // cron job execution.
+    await updateConfig(user);
 
     const stats = await getUserUsageStats(supabaseAdmin, user.id, from, to);
 
@@ -328,7 +332,6 @@ export default async function handler(
 
     // Do not send email if there are no teams, projects or files
     if (numFiles === 0) {
-      await updateConfig(user);
       continue;
     }
 
@@ -356,8 +359,6 @@ export default async function handler(
       });
 
       console.debug('Weekly update email sent to', user.email);
-
-      await updateConfig(user);
     } catch (e) {
       console.error(`Error sending weekly usage email: ${JSON.stringify(e)}`);
     }
