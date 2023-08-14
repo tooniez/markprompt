@@ -265,15 +265,16 @@ export default async function handler(
       .limit(10);
     users = usersResponse;
 
+    // // For testing purposes:
     // const { data } = await supabaseAdmin
     //   .from('users')
     //   .select('id,email,config')
     //   .eq('email', process.env.TEST_USER_EMAIL_2);
-    //
+
     // if (!data || data.length === 0) {
     //   return res.status(400).send({ error: 'Test user not found' });
     // }
-    //
+
     // users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
   }
 
@@ -312,9 +313,12 @@ export default async function handler(
 
   for (const user of users) {
     if (!user.id || !user.email) {
-      await updateConfig(user);
       continue;
     }
+
+    // Immediately update the config, to ensure no race condition on next
+    // cron job execution.
+    await updateConfig(user);
 
     const stats = await getUserUsageStats(supabaseAdmin, user.id, from, to);
 
@@ -328,20 +332,18 @@ export default async function handler(
 
     // Do not send email if there are no teams, projects or files
     if (numFiles === 0) {
-      await updateConfig(user);
       continue;
     }
 
     try {
       console.info(
-        `[EMAIL] Sending weekly update to ${user.email} from ${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME}`,
+        `[EMAIL] Sending weekly update to ${user.email} from ${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME} <${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL}>`,
       );
       await resend.emails.send({
         from: `${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME!} <${process
           .env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL!}>`,
         reply_to: process.env.MARKPROMPT_WEEKLY_UPDATES_REPLY_TO!,
-        // to: user.email,
-        to: process.env.TEST_USER_EMAIL!,
+        to: user.email,
         subject: 'Markprompt Weekly Report',
         text: generateInsightsText(stats),
         react: InsightsEmail({
@@ -356,7 +358,7 @@ export default async function handler(
         }),
       });
 
-      await updateConfig(user);
+      console.debug('Weekly update email sent to', user.email);
     } catch (e) {
       console.error(`Error sending weekly usage email: ${JSON.stringify(e)}`);
     }
