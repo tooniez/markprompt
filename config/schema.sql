@@ -771,7 +771,6 @@ or (
   )
 );
 
-
 -- Indexes
 
 create index idx_files_source_id on files(source_id);
