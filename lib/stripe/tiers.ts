@@ -125,6 +125,11 @@ export const DEFAULT_TIERS: Tier[] = [
         completions: 1000,
         embeddings: 600_000,
       },
+      features: {
+        insights: {
+          type: 'basic',
+        },
+      },
     },
   },
 ];
