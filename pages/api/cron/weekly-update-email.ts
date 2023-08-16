@@ -259,23 +259,23 @@ export default async function handler(
 
     users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
   } else {
-    const { data: usersResponse } = await supabaseAdmin
-      .from('v_users_with_pending_weekly_update_email')
-      .select('id,email,config')
-      .limit(10);
-    users = usersResponse;
-
-    // // For testing purposes:
-    // const { data } = await supabaseAdmin
-    //   .from('users')
+    // const { data: usersResponse } = await supabaseAdmin
+    //   .from('v_users_with_pending_weekly_update_email')
     //   .select('id,email,config')
-    //   .eq('email', process.env.TEST_USER_EMAIL_2);
+    //   .limit(10);
+    // users = usersResponse;
 
-    // if (!data || data.length === 0) {
-    //   return res.status(400).send({ error: 'Test user not found' });
-    // }
+    // For testing purposes:
+    const { data } = await supabaseAdmin
+      .from('users')
+      .select('id,email,config')
+      .eq('email', process.env.TEST_USER_EMAIL_2);
 
-    // users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
+    if (!data || data.length === 0) {
+      return res.status(400).send({ error: 'Test user not found' });
+    }
+
+    users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
   }
 
   if (!users) {
