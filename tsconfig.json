@@ -19,6 +19,7 @@
       "@/*": ["./*"],
       "flexsearch": ["./node_modules/@types/flexsearch"]
     },
+    "types": ["@testing-library/jest-dom"],
     "plugins": [
       {
         "name": "next"

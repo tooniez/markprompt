@@ -1,6 +1,8 @@
+import matchers from '@testing-library/jest-dom/matchers';
 import { cleanup } from '@testing-library/react';
-import { afterEach, beforeAll } from 'vitest';
-import 'vitest-dom/extend-expect';
+import { afterEach, beforeAll, expect } from 'vitest';
+
+expect.extend(matchers);
 
 beforeAll(() => {
   // this is a good place to add 'polyfills' for the browser environment where jsdom doesn't include them
