@@ -138,7 +138,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
   const stopFlag = useRef(false);
   const useCustomPageFetcher = !!(team && isCustomPageFetcherEnabled(team));
 
-  const _generateEmbeddingForFile = useCallback(
+  const generateEmbeddingForFile = useCallback(
     async (
       index: number,
       checksums: { path: any; checksum: any }[],
@@ -169,6 +169,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           sourceType === 'website',
         )
       ) {
+        console.info('Ignoring', path);
         return;
       }
 
@@ -302,7 +303,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           Array.from(Array(numFiles).keys()).map((index) => {
             return limit(async () => {
               try {
-                await _generateEmbeddingForFile(
+                await generateEmbeddingForFile(
                   index,
                   checksums || [],
                   sourceId,
@@ -328,7 +329,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
       setState({ state: 'idle' });
     },
-    [project?.id, supabase, _generateEmbeddingForFile],
+    [project?.id, supabase, generateEmbeddingForFile],
   );
 
   const _trainSource = useCallback(

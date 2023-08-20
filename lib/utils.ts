@@ -547,8 +547,21 @@ export const shouldIncludeFileWithPath = (
     return false;
   }
 
-  if (matchesGlobs(path, includeGlobs)) {
-    return !matchesGlobs(path, excludeGlobs);
+  const pathVariants = [path];
+
+  if (isWebsiteSource) {
+    // For websites, paths may or may not come with a trailing slash.
+    // Both are equivalent as URLs, so a given glob pattern should be
+    // checked against both.
+    if (path.endsWith('/')) {
+      pathVariants.push(path.replace(/\/+$/, ''));
+    } else {
+      pathVariants.push(path + '/');
+    }
+  }
+
+  if (pathVariants.some((p) => matchesGlobs(p, includeGlobs))) {
+    return !pathVariants.some((p) => matchesGlobs(p, excludeGlobs));
   }
 
   return false;
