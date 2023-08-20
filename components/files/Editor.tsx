@@ -9,13 +9,21 @@ import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import { convertToMarkdown } from '@/lib/markdown';
-import { fetcher, getIconForSource, getLabelForSource } from '@/lib/utils';
+import {
+  fetcher,
+  getDisplayPathForPath,
+  getFullURLForPath,
+  getIconForSource,
+  getLabelForSource,
+  getURLForSource,
+} from '@/lib/utils';
 import { getFileNameForSourceAtPath } from '@/lib/utils.nodeps';
 import { getFileTitle } from '@/lib/utils.non-edge';
 import { DbFile } from '@/types/types';
 
 import { MarkdownContainer } from '../emails/templates/MarkdownContainer';
 import { SkeletonTable } from '../ui/Skeletons';
+import Link from 'next/link';
 
 dayjs.extend(localizedFormat);
 
@@ -46,12 +54,26 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
       return <></>;
     }
     const Icon = getIconForSource(source.type);
+    const label = getLabelForSource(source, false);
+    const url = getURLForSource(source);
+
     return (
       <div className="flex flex-row items-center gap-2">
         <Icon className="h-4 w-4 flex-none text-neutral-500" />
-        <p className="flex-grow overflow-hidden truncate text-neutral-300">
-          {getLabelForSource(source, false)}
-        </p>
+        <div className="flex-grow overflow-hidden truncate text-neutral-300">
+          {url ? (
+            <Link
+              href={url}
+              className="subtle-underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {label}
+            </Link>
+          ) : (
+            <p>{label}</p>
+          )}
+        </div>
       </div>
     );
   }, [source]);
@@ -76,7 +98,7 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
     );
   }
 
-  if (!file) {
+  if (!file || !source) {
     return (
       <div className="flex flex-col items-center gap-2 p-4 text-sm text-neutral-300">
         The file is not accessible. Please retrain your data, and make sure to
@@ -85,20 +107,38 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
     );
   }
 
+  const displayPath = getDisplayPathForPath(source, file.path);
+  const pathUrl = getFullURLForPath(source, file.path);
+
   return (
     <div className="mx-auto flex max-w-screen-md flex-col gap-2">
       <h1 className="mt-12 text-3xl font-bold text-neutral-100">
         {getFileTitle(file, sources)}
       </h1>
-      <div className="mt-8 grid grid-cols-3 gap-2 border-b border-neutral-900 pb-4">
+      <div className="mt-8 grid grid-cols-3 gap-4 border-b border-neutral-900 pb-4">
         <div className="text-sm text-neutral-500">Synced</div>
         <div className="text-sm text-neutral-500">Source</div>
         <div className="text-sm text-neutral-500">Path</div>
         <div className="text-sm text-neutral-300">
           {formatShortDateTimeInTimeZone(parseISO(file.updated_at))}
         </div>
-        <div className="text-sm text-neutral-300">{SourceItem}</div>
-        <div className="text-sm text-neutral-300">{file.path}</div>
+        <div className="overflow-hidden truncate whitespace-nowrap text-sm text-neutral-300">
+          {SourceItem}
+        </div>
+        <div className="overflow-hidden truncate whitespace-nowrap text-sm text-neutral-300">
+          {pathUrl ? (
+            <Link
+              href={pathUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="subtle-underline"
+            >
+              {displayPath}
+            </Link>
+          ) : (
+            <>{displayPath}</>
+          )}
+        </div>
       </div>
       {/*
       {supportsFrontmatter(getFileType(filename)) &&

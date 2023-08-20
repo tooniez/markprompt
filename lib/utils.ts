@@ -640,6 +640,56 @@ export const getLabelForSource = (source: Source, inline: boolean) => {
   }
 };
 
+export const getURLForSource = (source: Source) => {
+  switch (source.type) {
+    case 'github': {
+      const data = source.data as GitHubSourceDataType;
+      const baseUrl = data.url;
+      if (data.branch) {
+        return baseUrl + '/tree/' + data.branch;
+      }
+      return baseUrl;
+    }
+    case 'motif': {
+      const data = source.data as MotifSourceDataType;
+      return `https://${data.projectDomain}.motif.land`;
+    }
+    case 'website': {
+      const data = source.data as WebsiteSourceDataType;
+      return toNormalizedUrl(data.url);
+    }
+    default:
+      return undefined;
+  }
+};
+
+export const getFullURLForPath = (source: Source, path: string) => {
+  switch (source.type) {
+    case 'github': {
+      const data = source.data as GitHubSourceDataType;
+      return `${data.url}/blob/${data.branch || 'main'}/${path}`;
+    }
+    case 'website': {
+      return toNormalizedUrl(path);
+    }
+    default:
+      return undefined;
+  }
+};
+
+// Given a path, show its display version. For most sources, this is just
+// the path, but for instance for website sources, the path is the full
+// URL, and the display path is the path without the origin.
+export const getDisplayPathForPath = (source: Source, path: string) => {
+  switch (source.type) {
+    case 'website': {
+      return getUrlPath(toNormalizedUrl(path));
+    }
+    default:
+      return path;
+  }
+};
+
 export const getAccessoryLabelForSource = (
   source: Source,
 ): { label: string; Icon?: JSXElementConstructor<any> } | undefined => {
