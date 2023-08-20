@@ -10,7 +10,6 @@ import { AngeListIcon } from '@/components/icons/AngelList';
 import { CalIcon } from '@/components/icons/Cal';
 import { GitHubIcon } from '@/components/icons/GitHub';
 import { MarkpromptIcon } from '@/components/icons/Markprompt';
-import { ReploIcon } from '@/components/icons/Replo';
 import { TwitterIcon } from '@/components/icons/Twitter';
 import LandingNavbar from '@/components/layouts/LandingNavbar';
 import { Blurs } from '@/components/ui/Blurs';
@@ -221,7 +220,6 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
                 <AngeListIcon className="mt-1 w-[76px] text-neutral-500 sm:w-[92px]" />
                 <CernIcon className="w-[60px] text-neutral-500 sm:w-[72px]" />
                 <CalIcon className="w-[72px] text-neutral-500 sm:w-[90px]" />
-                <ReploIcon className="w-[72px] text-neutral-500 sm:w-[90px]" />
               </div>
             </div>
             <div className="z-0 col-span-2 hidden h-full sm:block">
