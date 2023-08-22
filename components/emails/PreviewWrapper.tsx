@@ -29,16 +29,23 @@ export const PreviewWrapper: FC<PreviewWrapperProps> = ({
       <SharedHead title={title} />
       <div className="relative flex min-h-screen w-full justify-center overflow-y-auto px-8 pt-8 pb-[200px]">
         <div className="fixed inset-0 z-0 bg-neutral-900" />
-        <div className="z-10 w-full max-w-screen-lg overflow-hidden rounded-md bg-neutral-50 px-20 py-8 shadow-xl">
+        <div className="z-10 w-full max-w-screen-lg overflow-hidden rounded-md bg-neutral-900 px-20 py-8 shadow-xl">
           <div
             className={cn(
-              'mx-auto border border-dashed border-neutral-200 bg-white p-0 text-neutral-900',
+              'mx-auto rounded-md border-neutral-200 bg-white p-8 text-neutral-900',
               {
                 'max-w-[480px]': width === 'xs',
-                'max-w-screen-sm': width === 'sm',
+                'max-w-screen-md': width === 'sm',
               },
             )}
           >
+            <div className="mb-9 flex flex-row gap-2 text-sm">
+              <span className="flex-none text-neutral-500">From:</span>
+              <span className="flex-grow font-medium">
+                markprompt@weeklyupdate.markprompt.com
+              </span>
+              <span className="flex-none text-neutral-500">4:20 PM</span>
+            </div>
             {children}
           </div>
         </div>
