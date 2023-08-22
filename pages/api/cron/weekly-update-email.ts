@@ -239,6 +239,8 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
+  console.log('In here');
+
   let users:
     | {
         id: string | null;
@@ -258,24 +260,25 @@ export default async function handler(
     }
 
     users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
-  } else {
-    // const { data: usersResponse } = await supabaseAdmin
-    //   .from('v_users_with_pending_weekly_update_email')
-    //   .select('id,email,config')
-    //   .limit(10);
-    // users = usersResponse;
-
-    // For testing purposes:
+  } else if (req.query.user) {
     const { data } = await supabaseAdmin
       .from('users')
       .select('id,email,config')
-      .eq('email', process.env.TEST_USER_EMAIL_2);
+      .eq('email', req.query.user);
 
     if (!data || data.length === 0) {
-      return res.status(400).send({ error: 'Test user not found' });
+      return res
+        .status(400)
+        .send({ error: `User ${req.query.user} not found` });
     }
 
     users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
+  } else {
+    const { data: usersResponse } = await supabaseAdmin
+      .from('v_users_with_pending_weekly_update_email')
+      .select('id,email,config')
+      .limit(10);
+    users = usersResponse;
   }
 
   if (!users) {
@@ -312,7 +315,8 @@ export default async function handler(
   };
 
   for (const user of users) {
-    if (!user.id || !user.email) {
+    const recipientEmail = (req.query.user as string) || user.email;
+    if (!user.id || !recipientEmail) {
       continue;
     }
 
@@ -337,13 +341,15 @@ export default async function handler(
 
     try {
       console.info(
-        `[EMAIL] Sending weekly update to ${user.email} from ${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME} <${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL}>`,
+        `[EMAIL] Sending weekly update for ${user.email} to ${recipientEmail} from ${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME} <${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL}>`,
       );
       await resend.emails.send({
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         from: `${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME!} <${process
           .env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL!}>`,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         reply_to: process.env.MARKPROMPT_WEEKLY_UPDATES_REPLY_TO!,
-        to: user.email,
+        to: recipientEmail,
         subject: 'Markprompt Weekly Report',
         text: generateInsightsText(stats),
         react: InsightsEmail({
@@ -358,7 +364,7 @@ export default async function handler(
         }),
       });
 
-      console.debug('Weekly update email sent to', user.email);
+      console.debug('Weekly update email sent to', recipientEmail);
     } catch (e) {
       console.error(`Error sending weekly usage email: ${JSON.stringify(e)}`);
     }
