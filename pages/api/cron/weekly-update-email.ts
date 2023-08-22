@@ -239,8 +239,6 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
-  console.log('In here');
-
   let users:
     | {
         id: string | null;
