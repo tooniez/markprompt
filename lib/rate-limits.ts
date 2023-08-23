@@ -97,6 +97,13 @@ export const checkSearchRateLimits = async (identifier: RateLimitIdType) => {
   return { result, ...getResetTime(result) };
 };
 
+export const checkInsightsRateLimits = async (identifier: RateLimitIdType) => {
+  // For now, impose a hard limit of 100 queries per second
+  // per project. Later, make this configurable.
+  const result = await getRateLimit(rateLimitTypeToKey(identifier), 100, '1 s');
+  return { result, ...getResetTime(result) };
+};
+
 export const checkEmailRateLimits = async (ip: string) => {
   // Impose a hard limit of 100 emails per minute.
   const result = await getRateLimit(

@@ -132,7 +132,7 @@ export default async function SearchMiddleware(req: NextRequest) {
     );
   }
 
-  // We pass the search query string as part of the rewritten response.
+  // We pass the query string as part of the rewritten response.
   // This is the only way I found to pass along GET query params to the
   // API handler function.
   return NextResponse.rewrite(

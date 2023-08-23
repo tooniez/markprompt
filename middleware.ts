@@ -4,6 +4,7 @@ import AppMiddleware from './lib/middleware/app';
 import CompletionsMiddleware from './lib/middleware/completions';
 import EmailMiddleware from './lib/middleware/email';
 import EmbedMiddleware from './lib/middleware/embed';
+import InsightsMiddleware from './lib/middleware/insights';
 import SearchMiddleware from './lib/middleware/search';
 import MatchSectionsMiddleware from './lib/middleware/sections';
 import TrainMiddleware from './lib/middleware/train';
@@ -31,6 +32,14 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
   }
 
   const path = req.nextUrl.pathname;
+
+  // Make sure that /api/v1 routes cannot be accessed directly:
+  // we need to go through middleware to check auth tokens,
+  // whitelisted domains etc.
+  if (path?.startsWith('/api/v1')) {
+    return new Response('Not found', { status: 404 });
+  }
+
   if (hostname === getAppHost()) {
     if (path?.startsWith('/emails')) {
       return EmailMiddleware(req);
@@ -51,6 +60,8 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
       return MatchSectionsMiddleware(req);
     } else if (path?.startsWith('/v1/search')) {
       return SearchMiddleware(req);
+    } else if (path?.startsWith('/v1/insights')) {
+      return InsightsMiddleware(req);
     } else if (path?.startsWith('/v1/feedback')) {
       return NextResponse.rewrite(new URL('/api/v1/feedback', req.url));
     }
