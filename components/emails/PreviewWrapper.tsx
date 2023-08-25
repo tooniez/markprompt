@@ -8,6 +8,7 @@ type PreviewWrapperProps = {
   title: string;
   width?: 'xs' | 'sm';
   sending: boolean;
+  includeEmailHeader?: boolean;
   onSendClick: () => void;
   InfoPanel?: ReactNode;
   children: ReactNode;
@@ -20,6 +21,7 @@ export const PreviewWrapper: FC<PreviewWrapperProps> = ({
   title,
   width = 'xs',
   sending,
+  includeEmailHeader,
   onSendClick,
   InfoPanel,
   children,
@@ -39,13 +41,15 @@ export const PreviewWrapper: FC<PreviewWrapperProps> = ({
               },
             )}
           >
-            <div className="mb-9 flex flex-row gap-2 text-sm">
-              <span className="flex-none text-neutral-500">From:</span>
-              <span className="flex-grow font-medium">
-                markprompt@weeklyupdate.markprompt.com
-              </span>
-              <span className="flex-none text-neutral-500">4:20 PM</span>
-            </div>
+            {includeEmailHeader && (
+              <div className="mb-9 flex flex-row gap-2 text-sm">
+                <span className="flex-none text-neutral-500">From:</span>
+                <span className="flex-grow font-medium">
+                  markprompt@weeklyupdate.markprompt.com
+                </span>
+                <span className="flex-none text-neutral-500">4:20 PM</span>
+              </div>
+            )}
             {children}
           </div>
         </div>

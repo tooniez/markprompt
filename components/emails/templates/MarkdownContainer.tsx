@@ -19,8 +19,8 @@ export const MarkdownEmailContainer: FC<MarkdownContainerProps> = ({
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        p: (props) => <Text {...props} />,
-        a: (props) => <Link {...props} />,
+        p: (props) => <Text className="text-sm" {...props} />,
+        a: (props) => <Link className="text-sm" {...props} />,
         h1: (props) => (
           <Heading as="h1" className="mb-4 text-xl font-bold" {...props} />
         ),
@@ -37,6 +37,11 @@ export const MarkdownEmailContainer: FC<MarkdownContainerProps> = ({
             src={props.src as string}
           />
         ),
+        li: (props) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { ordered, ...rest } = props;
+          return <li className="text-sm leading-relaxed" {...rest} />;
+        },
         ...components,
       }}
     >

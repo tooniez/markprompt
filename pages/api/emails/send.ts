@@ -24,6 +24,8 @@ type Data = {
 
 const allowedMethods = ['POST'];
 
+// In practice, this should always be set to true, so that we can send
+// emails from localhost.
 const RUN_AGAINST_PROD = true;
 
 const SUPABASE_ADMIN_NEXT_PUBLIC_SUPABASE_URL = RUN_AGAINST_PROD
@@ -104,13 +106,25 @@ export default async function handler(
     return res.status(400).json({ error: 'Please provide an emailId.' });
   }
 
-  const { data } = await productionSupabaseAdmin
-    .from('users')
-    .select('id,email')
-    .not('last_email_id', 'eq', req.body.emailId)
-    .limit(10);
+  let users: { id: string; email: string }[] = [];
 
-  const users = data || [];
+  if (req.body.test) {
+    const { data } = await productionSupabaseAdmin
+      .from('users')
+      .select('id,email')
+      .eq('email', process.env.TEST_NEWSLETTER_EMAIL_RECIPIENT)
+      .limit(1);
+    users = data || [];
+  } else {
+    const { data } = await productionSupabaseAdmin
+      .from('users')
+      .select('id,email')
+      .not('last_email_id', 'eq', req.body.emailId)
+      .limit(10);
+
+    users = data || [];
+  }
+
   if (users.length === 0) {
     return res.status(200).json({ done: true });
   }
@@ -138,14 +152,22 @@ export default async function handler(
   const successUsers: Pick<DbUser, 'id' | 'email'>[] = [];
   const errorUsers: Pick<DbUser, 'id' | 'email'>[] = [];
 
-  const limit = pLimit(10);
+  const limit = pLimit(Math.min(10, users.length));
 
   try {
     await Promise.all(
       users.map((user) => {
         return limit(async () => {
           try {
-            await sendEmail(req.body.subject, user.email, text, react);
+            const result = await sendEmail(
+              req.body.subject,
+              user.email,
+              text,
+              react,
+            );
+            if ((result as any)?.message?.includes('unsubscribe')) {
+              console.info(user.email, '-', JSON.stringify(result, null, 2));
+            }
 
             successUsers.push(user);
 
@@ -168,5 +190,6 @@ export default async function handler(
   res.status(200).json({
     sent: successUsers.map((u) => u.email),
     errored: errorUsers.map((u) => u.email),
+    ...(req.body.test ? { done: true } : {}),
   });
 }
