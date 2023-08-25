@@ -48,9 +48,30 @@ import {
   Project,
 } from '@/types/types';
 
+// todo: replace with type from @markprompt/core
+interface ChatMessage {
+  content: string;
+  role: 'user' | 'assistant';
+}
+
 export const config = {
   runtime: 'edge',
 };
+
+function isChatMessages(data: unknown): data is ChatMessage[] {
+  if (!data) return false;
+  if (!Array.isArray(data)) return false;
+  return data.every((d) => {
+    return (
+      typeof d === 'object' &&
+      d !== null &&
+      'content' in d &&
+      typeof d.content === 'string' &&
+      'role' in d &&
+      (d.role === 'user' || d.role === 'assistant')
+    );
+  });
+}
 
 const isIDontKnowResponse = (
   responseText: string,
@@ -60,7 +81,7 @@ const isIDontKnowResponse = (
 };
 
 const getPayload = (
-  prompt: string,
+  messages: ChatMessage[],
   model: OpenAIModelIdWithType,
   temperature: number,
   topP: number,
@@ -83,7 +104,7 @@ const getPayload = (
     case 'chat_completions': {
       return {
         ...payload,
-        messages: [{ role: 'user', content: prompt }],
+        messages,
       };
     }
     default: {
@@ -189,7 +210,7 @@ const buildFullPrompt = (
   return stripIndent(_template);
 };
 
-const isFalsy = (param: any) => {
+const isFalsy = (param: unknown): param is false => {
   if (typeof param === 'string') {
     return param === 'false' || param === '0';
   } else if (typeof param === 'number') {
@@ -199,7 +220,7 @@ const isFalsy = (param: any) => {
   }
 };
 
-const isTruthy = (param: any) => {
+const isTruthy = (param: unknown): param is true => {
   if (typeof param === 'string') {
     return param === 'true' || param === '1';
   } else if (typeof param === 'number') {
@@ -239,7 +260,8 @@ export default async function handler(req: NextRequest) {
   try {
     let params = await req.json();
 
-    const prompt = (params.prompt as string)?.substring(0, MAX_PROMPT_LENGTH);
+    const messages = params.messages;
+
     const iDontKnowMessage =
       (params.i_dont_know_message as string) || // v1
       (params.iDontKnowMessage as string) || // v0
@@ -267,7 +289,7 @@ export default async function handler(req: NextRequest) {
     // TODO: need to investigate the difference between a request
     // from the dashboard (2nd case here) and a request from
     // an external origin (1st case here).
-    if (lastPathComponent === 'completions') {
+    if (lastPathComponent === 'chat') {
       projectIdParam = searchParams.get('project');
     } else {
       projectIdParam = pathname.split('/').slice(-1)[0];
@@ -278,9 +300,14 @@ export default async function handler(req: NextRequest) {
       return new Response('Project not found', { status: 400 });
     }
 
-    if (!prompt) {
-      console.error(`[COMPLETIONS] [${projectIdParam}] No prompt provided`);
-      return new Response('No prompt provided', { status: 400 });
+    if (!isChatMessages(messages)) {
+      console.error(
+        `[COMPLETIONS] [${projectIdParam}] No messages or malformatted messages provided.`,
+      );
+
+      return new Response('No messages or malformatted messages provided.', {
+        status: 400,
+      });
     }
 
     const projectId = projectIdParam as Project['id'];
@@ -296,6 +323,7 @@ export default async function handler(req: NextRequest) {
       return new Response('Too many requests', { status: 429 });
     }
 
+    // todo: add support for messages to insights
     let insightsType: InsightsType | undefined = 'advanced';
     if (!isRequestFromMarkprompt(req.headers.get('origin'))) {
       // Custom model configurations are part of the Pro and Enterprise plans
@@ -320,7 +348,9 @@ export default async function handler(req: NextRequest) {
       projectId,
     );
 
-    const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
+    const sanitizedQuery = messages[messages.length - 1].content
+      .trim()
+      .replace('\n', ' ');
 
     const sectionsTs = Date.now();
 
@@ -329,7 +359,7 @@ export default async function handler(req: NextRequest) {
     try {
       const sectionsResponse = await getMatchingSections(
         sanitizedQuery,
-        prompt,
+        messages[messages.length - 1].content,
         params.sectionsMatchThreshold,
         params.sectionsMatchCount,
         projectId,
@@ -342,7 +372,7 @@ export default async function handler(req: NextRequest) {
     } catch (e) {
       const promptId = await _storePrompt(
         projectId,
-        prompt,
+        messages[messages.length - 1].content,
         undefined,
         promptEmbedding,
         'no_sections',
@@ -380,6 +410,8 @@ export default async function handler(req: NextRequest) {
 
     let numTokens = 0;
     let contextText = '';
+
+    // todo: should we create references for each message?
     const references: FileSectionReference[] = [];
 
     for (const section of fileSections) {
@@ -417,17 +449,25 @@ export default async function handler(req: NextRequest) {
       !!params.doNotInjectPrompt,
     );
 
+    const messagesWithFullPrompt = [...messages] satisfies ChatMessage[];
+    messagesWithFullPrompt.splice(messagesWithFullPrompt.length - 1, 1, {
+      role: 'user',
+      content: fullPrompt,
+    });
+
     const payload = getPayload(
-      fullPrompt,
+      messagesWithFullPrompt,
       modelInfo.model,
-      params.temperature || 0.1,
-      params.topP || 1,
-      params.frequencyPenalty || 0,
-      params.presencePenalty || 0,
-      params.maxTokens || 500,
+      params.temperature ?? 0.1,
+      params.topP ?? 1,
+      params.frequencyPenalty ?? 0,
+      params.presencePenalty ?? 0,
+      params.maxTokens ?? 500,
       stream,
     );
     const url = getCompletionsUrl(modelInfo.model);
+
+    console.log(url, payload);
 
     const res = await fetch(url, {
       headers: {
@@ -452,7 +492,7 @@ export default async function handler(req: NextRequest) {
         const message = await res.text();
         const promptId = await _storePrompt(
           projectId,
-          prompt,
+          messages[messages.length - 1].content,
           undefined,
           promptEmbedding,
           'api_error',
@@ -482,7 +522,7 @@ export default async function handler(req: NextRequest) {
         const idk = isIDontKnowResponse(text, iDontKnowMessage);
         const promptId = await _storePrompt(
           projectId,
-          prompt,
+          messages[messages.length - 1].content,
           text,
           promptEmbedding,
           idk ? 'idk' : undefined,
@@ -525,7 +565,7 @@ export default async function handler(req: NextRequest) {
     // once it is done.
     const promptId = await _storePrompt(
       projectId,
-      prompt,
+      messages[messages.length - 1].content,
       '',
       promptEmbedding,
       undefined,
@@ -575,9 +615,13 @@ export default async function handler(req: NextRequest) {
 
         const parser = createParser(onParse);
 
-        for await (const chunk of res.body as any) {
+        // @ts-expect-error - Type 'ReadableStream<Uint8Array>' is not an array type or a string type.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        for await (const chunk of res.body!) {
           parser.feed(decoder.decode(chunk));
         }
+
+        console.log({ responseText });
 
         // Estimate the number of tokens used by this request.
         // TODO: GPT3Tokenizer is slow, especially on large text. Use the

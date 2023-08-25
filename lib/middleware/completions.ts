@@ -127,10 +127,20 @@ export default async function CompletionsMiddleware(req: NextRequest) {
     }
   }
 
+  console.log({ projectId });
+
   if (!projectId) {
     return new Response(
       'No project found matching the provided key or authorization token.',
       { status: 401 },
+    );
+  }
+
+  const path = req.nextUrl.pathname;
+
+  if (path.startsWith('/v1/chat')) {
+    return NextResponse.rewrite(
+      new URL(`/api/v1/openai/chat/${projectId}`, req.url),
     );
   }
 

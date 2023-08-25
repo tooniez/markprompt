@@ -4,7 +4,7 @@ import {
 } from '@markprompt/core';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { backOff } from 'exponential-backoff';
-import { CreateEmbeddingResponse } from 'openai';
+import { CreateEmbeddingResponse, ErrorResponse } from 'openai';
 
 import { Database } from '@/types/supabase';
 import {
@@ -93,11 +93,25 @@ export const getMatchingSections = async (
     byoOpenAIKey,
   );
 
+  if ('error' in moderationResponse) {
+    console.error(
+      `[${source.toUpperCase()}] [CREATE-EMBEDDING] [${projectId}] - Error moderating content for prompt '${verbatimPrompt}': ${
+        moderationResponse.error
+      }`,
+    );
+    throw new ApiError(
+      400,
+      `Content moderation failed: ${moderationResponse.error.message}`,
+    );
+  }
+
   if (moderationResponse?.results?.[0]?.flagged) {
     throw new ApiError(400, 'Flagged content');
   }
 
-  let embeddingResult: CreateEmbeddingResponse | any | undefined = undefined;
+  let embeddingResult: CreateEmbeddingResponse | ErrorResponse | undefined =
+    undefined;
+
   try {
     // Retry with exponential backoff in case of error. Typical cause is
     // too_many_requests.
@@ -110,7 +124,7 @@ export const getMatchingSections = async (
       },
     );
 
-    if (embeddingResult.error) {
+    if ('error' in embeddingResult) {
       throw new ApiError(400, embeddingResult.error.message);
     }
 
