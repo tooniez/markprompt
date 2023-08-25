@@ -12,7 +12,6 @@ import {
 } from './common';
 import { checkSearchRateLimits } from '../rate-limits';
 import { getAuthorizationToken, truncateMiddle } from '../utils';
-// import { removeSchema } from '../utils.edge';
 
 // Admin access to Supabase, bypassing RLS.
 const supabaseAdmin = createClient<Database>(
