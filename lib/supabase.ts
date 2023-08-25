@@ -341,3 +341,24 @@ export const hasUserAccessToProject = async (
     .maybeSingle();
   return !!response.data?.has_access;
 };
+
+export const getQueryStats = async (
+  supabase: SupabaseClient<Database>,
+  projectId: Project['id'],
+  fromISO: string,
+  toISO: string,
+  limit: number,
+  page: number,
+) => {
+  return supabase
+    .from('query_stats')
+    .select('id,created_at,prompt,no_response,feedback')
+    .eq('project_id', projectId)
+    .or('processed_state.eq.processed,processed_state.eq.skipped')
+    .gte('created_at', fromISO)
+    .lte('created_at', toISO)
+    .not('prompt', 'is', null)
+    .neq('prompt', '')
+    .order('created_at', { ascending: false })
+    .range(page * limit, (page + 1) * (limit - 1));
+};

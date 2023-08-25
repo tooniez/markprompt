@@ -12,7 +12,6 @@ import {
 } from './common';
 import { checkSearchRateLimits } from '../rate-limits';
 import { getAuthorizationToken, truncateMiddle } from '../utils';
-// import { removeSchema } from '../utils.edge';
 
 // Admin access to Supabase, bypassing RLS.
 const supabaseAdmin = createClient<Database>(
@@ -132,7 +131,7 @@ export default async function SearchMiddleware(req: NextRequest) {
     );
   }
 
-  // We pass the search query string as part of the rewritten response.
+  // We pass the query string as part of the rewritten response.
   // This is the only way I found to pass along GET query params to the
   // API handler function.
   return NextResponse.rewrite(
