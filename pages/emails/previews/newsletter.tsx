@@ -10,7 +10,7 @@ import { toast } from 'react-hot-toast';
 
 import { PreviewWrapper } from '@/components/emails/PreviewWrapper';
 
-const EMAIL_ID = '2023-07-24-algolia';
+const EMAIL_ID = '2023-08-25-insights';
 const EMAIL_FOLDER = 'resources/newsletters';
 
 // SSR = false to avoid hydration warnings.
@@ -88,6 +88,7 @@ const PreviewPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
   return (
     <PreviewWrapper
       title="Insights Email Preview"
+      width="sm"
       onSendClick={async () => {
         setSending(true);
         await sendBatch();
