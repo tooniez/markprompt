@@ -467,8 +467,6 @@ export default async function handler(req: NextRequest) {
     );
     const url = getCompletionsUrl(modelInfo.model);
 
-    console.log(url, payload);
-
     const res = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
@@ -620,8 +618,6 @@ export default async function handler(req: NextRequest) {
         for await (const chunk of res.body!) {
           parser.feed(decoder.decode(chunk));
         }
-
-        console.log({ responseText });
 
         // Estimate the number of tokens used by this request.
         // TODO: GPT3Tokenizer is slow, especially on large text. Use the

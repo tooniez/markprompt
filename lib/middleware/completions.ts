@@ -127,8 +127,6 @@ export default async function CompletionsMiddleware(req: NextRequest) {
     }
   }
 
-  console.log({ projectId });
-
   if (!projectId) {
     return new Response(
       'No project found matching the provided key or authorization token.',
