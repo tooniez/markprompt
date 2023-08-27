@@ -32,7 +32,7 @@ const EditorDialog: FC<EditorDialogProps> = ({
           >
             <X className="h-4 w-4 text-neutral-500" />
           </button>
-          <div className="overflow-y-auto">
+          <div className="h-full overflow-y-auto">
             <div className="mx-auto flex w-full max-w-screen-md p-8">
               <Editor
                 filePath={filePath}
