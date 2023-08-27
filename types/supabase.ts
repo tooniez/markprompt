@@ -387,6 +387,7 @@ export interface Database {
             | null
           project_id: string
           prompt: string | null
+          prompt_encrypted: string | null
           reference_paths: string[] | null
           response: string | null
           upvoted: boolean | null
@@ -405,6 +406,7 @@ export interface Database {
             | null
           project_id: string
           prompt?: string | null
+          prompt_encrypted?: string | null
           reference_paths?: string[] | null
           response?: string | null
           upvoted?: boolean | null
@@ -423,6 +425,7 @@ export interface Database {
             | null
           project_id?: string
           prompt?: string | null
+          prompt_encrypted?: string | null
           reference_paths?: string[] | null
           response?: string | null
           upvoted?: boolean | null
@@ -716,6 +719,94 @@ export interface Database {
       }
     }
     Views: {
+      decrypted_query_stats: {
+        Row: {
+          created_at: string | null
+          decrypted_prompt_encrypted: string | null
+          downvoted: boolean | null
+          embedding: string | null
+          feedback: Json | null
+          id: string | null
+          meta: Json | null
+          no_response: boolean | null
+          processed: boolean | null
+          processed_state:
+            | Database["public"]["Enums"]["query_stat_processed_state"]
+            | null
+          project_id: string | null
+          prompt: string | null
+          prompt_encrypted: string | null
+          reference_paths: string[] | null
+          response: string | null
+          upvoted: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          decrypted_prompt_encrypted?: never
+          downvoted?: boolean | null
+          embedding?: string | null
+          feedback?: Json | null
+          id?: string | null
+          meta?: Json | null
+          no_response?: boolean | null
+          processed?: boolean | null
+          processed_state?:
+            | Database["public"]["Enums"]["query_stat_processed_state"]
+            | null
+          project_id?: string | null
+          prompt?: string | null
+          prompt_encrypted?: string | null
+          reference_paths?: string[] | null
+          response?: string | null
+          upvoted?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          decrypted_prompt_encrypted?: never
+          downvoted?: boolean | null
+          embedding?: string | null
+          feedback?: Json | null
+          id?: string | null
+          meta?: Json | null
+          no_response?: boolean | null
+          processed?: boolean | null
+          processed_state?:
+            | Database["public"]["Enums"]["query_stat_processed_state"]
+            | null
+          project_id?: string | null
+          prompt?: string | null
+          prompt_encrypted?: string | null
+          reference_paths?: string[] | null
+          response?: string | null
+          upvoted?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
+      }
       v_distinct_unprocessed_query_stats_project_ids: {
         Row: {
           min_created_at: string | null

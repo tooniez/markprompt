@@ -30,7 +30,7 @@ export default withProjectAccess(
     if (req.method === 'GET') {
       const limit = Math.min(safeParseInt(req.query.limit as string, 50), 50);
       const page = safeParseInt(req.query.page as string, 0);
-      const { data: queries, error } = await getQueryStats(
+      const { queries, error } = await getQueryStats(
         supabaseAdmin,
         projectId,
         req.query.from as string,
