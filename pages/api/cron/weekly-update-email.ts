@@ -313,7 +313,7 @@ export default async function handler(
   };
 
   for (const user of users) {
-    const recipientEmail = (req.query.user as string) || user.email;
+    const recipientEmail = (req.query.recipient as string) || user.email;
     if (!user.id || !recipientEmail) {
       continue;
     }
