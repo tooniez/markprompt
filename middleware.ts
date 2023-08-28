@@ -33,19 +33,19 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
 
   const path = req.nextUrl.pathname;
 
-  // Make sure that /api/v1 routes cannot be accessed directly:
-  // we need to go through middleware to check auth tokens,
-  // whitelisted domains etc.
-  if (path?.startsWith('/api/v1')) {
-    return new Response('Not found', { status: 404 });
-  }
-
   if (hostname === getAppHost()) {
     if (path?.startsWith('/emails')) {
       return EmailMiddleware(req);
     } else {
       return AppMiddleware(req);
     }
+  }
+
+  // If the hostname is not the app host, make sure that /api/v1
+  // routes cannot be accessed directly: we need to go through middleware
+  // to check auth tokens, whitelisted domains etc.
+  if (path?.startsWith('/api/v1')) {
+    return new Response('Not found', { status: 404 });
   }
 
   if (hostname === 'api.markprompt.com' || hostname === 'api.localhost:3000') {
