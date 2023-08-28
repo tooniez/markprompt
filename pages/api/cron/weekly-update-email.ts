@@ -12,7 +12,11 @@ import {
   getTierName,
 } from '@/lib/stripe/tiers';
 import { getJoinedTeams, getTeamProjectIds } from '@/lib/supabase';
-import { redactEmail, redactPhoneNumbers } from '@/lib/utils';
+import {
+  getAuthorizationToken,
+  redactEmail,
+  redactPhoneNumbers,
+} from '@/lib/utils';
 import { Database } from '@/types/supabase';
 import {
   DbTeam,
@@ -258,16 +262,21 @@ export default async function handler(
     }
 
     users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
-  } else if (req.query.user) {
+  } else if (req.query.testuser) {
+    const token = getAuthorizationToken(req.headers.authorization);
+    if (token !== process.env.MARKPROMPT_API_TOKEN) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
     const { data } = await supabaseAdmin
       .from('users')
       .select('id,email,config')
-      .eq('email', req.query.user);
+      .eq('email', req.query.testuser);
 
     if (!data || data.length === 0) {
       return res
         .status(400)
-        .send({ error: `User ${req.query.user} not found` });
+        .send({ error: `User ${req.query.testuser} not found` });
     }
 
     users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
@@ -313,7 +322,12 @@ export default async function handler(
   };
 
   for (const user of users) {
-    const recipientEmail = (req.query.recipient as string) || user.email;
+    // If this is a test user, force recipient to be the test newsletter
+    // email recipient.
+    const recipientEmail = req.query.testuser
+      ? process.env.TEST_NEWSLETTER_EMAIL_RECIPIENT!
+      : user.email;
+
     if (!user.id || !recipientEmail) {
       continue;
     }
