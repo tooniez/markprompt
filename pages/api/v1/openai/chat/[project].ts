@@ -18,7 +18,6 @@ import { modelConfigFields } from '@/lib/config';
 import {
   CONTEXT_TOKENS_CUTOFF,
   I_DONT_KNOW,
-  MAX_PROMPT_LENGTH,
   STREAM_SEPARATOR,
 } from '@/lib/constants';
 import { track } from '@/lib/posthog';
