@@ -12,6 +12,7 @@ import {
   SourceType,
   DbTeam,
   WebsiteSourceDataType,
+  PromptQueryStat,
 } from '@/types/types';
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
@@ -349,8 +350,27 @@ export const getQueryStats = async (
   toISO: string,
   limit: number,
   page: number,
-) => {
-  return supabase
+): Promise<{
+  error: PostgrestError | null;
+  queries: PromptQueryStat[] | null;
+}> => {
+  let ts = Date.now();
+  const { data, error } = await supabase
+    .from('decrypted_query_stats')
+    .select('id,created_at,decrypted_prompt,no_response,feedback')
+    .eq('project_id', projectId)
+    .or('processed_state.eq.processed,processed_state.eq.skipped')
+    .gte('created_at', fromISO)
+    .lte('created_at', toISO)
+    .not('decrypted_prompt', 'is', null)
+    .neq('decrypted_prompt', '')
+    .order('created_at', { ascending: false })
+    .range(page * limit, (page + 1) * (limit - 1));
+
+  console.log('[ENCRYPTION] Encrypted took', Date.now() - ts);
+
+  ts = Date.now();
+  await supabase
     .from('query_stats')
     .select('id,created_at,prompt,no_response,feedback')
     .eq('project_id', projectId)
@@ -361,4 +381,17 @@ export const getQueryStats = async (
     .neq('prompt', '')
     .order('created_at', { ascending: false })
     .range(page * limit, (page + 1) * (limit - 1));
+
+  console.log('[ENCRYPTION] Decrypted took', Date.now() - ts);
+
+  if (error) {
+    return { error, queries: null };
+  }
+
+  const queries = (data || []).map((q) => {
+    const { decrypted_prompt, ...rest } = q;
+    return { ...rest, prompt: decrypted_prompt } as PromptQueryStat;
+  });
+
+  return { queries, error: null };
 };

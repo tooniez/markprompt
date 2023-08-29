@@ -112,8 +112,8 @@ const getProjectUsageStats = async (
   });
 
   const { data: queries } = await supabaseAdmin
-    .from('query_stats')
-    .select('prompt,id')
+    .from('decrypted_query_stats')
+    .select('decrypted_prompt,id')
     .eq('project_id', projectId)
     .or('processed_state.eq.processed,processed_state.eq.skipped')
     .gte('created_at', fromISO)
@@ -127,8 +127,8 @@ const getProjectUsageStats = async (
     .limit(20);
 
   const { data: unanswered } = await supabaseAdmin
-    .from('query_stats')
-    .select('prompt')
+    .from('decrypted_query_stats')
+    .select('decrypted_prompt')
     .eq('project_id', projectId)
     .or('processed_state.eq.processed,processed_state.eq.skipped')
     .gte('created_at', fromISO)
@@ -148,12 +148,12 @@ const getProjectUsageStats = async (
     numSections: fileStats?.[0]?.num_sections || 0,
     latestQuestions: uniq(
       (queries || [])
-        .map((q) => sanitizeQuestion(q.prompt || ''))
+        .map((q) => sanitizeQuestion(q.decrypted_prompt || ''))
         .filter((q) => !isEmpty(q)),
     ).slice(0, 10),
     unansweredQuestions: uniq(
       (unanswered || [])
-        .map((q) => sanitizeQuestion(q.prompt || ''))
+        .map((q) => sanitizeQuestion(q.decrypted_prompt || ''))
         .filter((q) => !isEmpty(q)),
     ).slice(0, 10),
     numQuestionsAsked: queryStats?.[0]?.num_queries || 0,

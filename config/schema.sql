@@ -666,6 +666,11 @@ create trigger trigger_update_file_sections_cf_project_id
   for each row
   execute function update_file_sections_cf_project_id();
 
+create trigger query_stats_encrypt_secret_trigger_prompt_encrypted before insert
+or
+update of prompt_encrypted on query_stats for each row
+execute function query_stats_encrypt_secret_prompt_encrypted ();
+
 -- Views
 
 create view v_team_project_usage_info as
@@ -1186,3 +1191,7 @@ create policy "Users can delete query stats associated to projects they have acc
       where memberships.user_id = auth.uid()
     )
   );
+
+-- Privileges
+
+grant execute on function pgsodium.crypto_aead_det_decrypt (bytea, bytea, uuid, bytea) to authenticated;

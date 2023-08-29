@@ -262,8 +262,7 @@ export function QueriesDataTable<TData, TValue>({
             are generated once a day. Sensitive information is redacted.
           </div> */}
           <div className="flex-1 text-xs text-neutral-500">
-            Insights are generated every hour. Sensitive information is
-            redacted. Dates are shown in {REFERENCE_TIMEZONE} time.
+            Dates are shown in {REFERENCE_TIMEZONE} time.
           </div>
         </div>
       </div>

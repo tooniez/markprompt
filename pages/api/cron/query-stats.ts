@@ -8,11 +8,7 @@ import {
 } from '@/lib/constants';
 import { getProjectConfigData } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
-import {
-  approximatedTokenCount,
-  getCompletionsResponseText,
-  getCompletionsUrl,
-} from '@/lib/utils';
+import { getCompletionsResponseText, getCompletionsUrl } from '@/lib/utils';
 import { safeParseInt } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import {
@@ -38,13 +34,9 @@ const supabaseAdmin = createClient<Database>(
 );
 
 type QueryStatData = {
-  id: string;
-  prompt: string | null;
-  response: string | null;
-};
-
-const estimateQueryTokenCount = (query: QueryStatData) => {
-  return approximatedTokenCount(JSON.stringify(query));
+  id: string | null;
+  decrypted_prompt: string | null;
+  decrypted_response: string | null;
 };
 
 // Ensure that no queries alone are too large for the prompt. If one
@@ -134,8 +126,8 @@ const processProjectQueryStats = async (
 }> => {
   const { data: queries }: { data: QueryStatData[] | null } =
     await supabaseAdmin
-      .from('query_stats')
-      .select('id,prompt,response,processed_state')
+      .from('decrypted_query_stats')
+      .select('id,decrypted_prompt,decrypted_response,processed_state')
       .eq('project_id', projectId)
       .eq('processed_state', 'unprocessed')
       .order('created_at', { ascending: false })
@@ -151,14 +143,21 @@ const processProjectQueryStats = async (
   // We just go until we time out.
   for (const query of queries) {
     try {
-      if (!query.prompt) {
+      if (!query.decrypted_prompt) {
         throw new Error('No prompt in query.');
       }
 
-      const redactedPrompt = await redactSensitiveInfo(projectId, query.prompt);
+      const redactedPrompt = await redactSensitiveInfo(
+        projectId,
+        query.decrypted_prompt,
+      );
+
       let redactedResponse: string | undefined = undefined;
-      if (query.response) {
-        redactedResponse = await redactSensitiveInfo(projectId, query.response);
+      if (query.decrypted_response) {
+        redactedResponse = await redactSensitiveInfo(
+          projectId,
+          query.decrypted_response,
+        );
       }
 
       await supabaseAdmin

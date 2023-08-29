@@ -348,7 +348,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     mutate: mutateFiles,
     loading: loadingFiles,
   } = useFiles();
-  const { didCompleteFirstQuery } = useAppContext();
+  const { didCompleteFirstQuery, setDidCompleteFirstQuery } = useAppContext();
   const {
     sources,
     mutate: mutateSources,
@@ -440,6 +440,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     if (!isTrained && hasConnectedSources) {
       return "Great! Now hit 'Process sources'";
     }
+
     if (isTrained && !didCompleteFirstQuery) {
       return 'Now ask a question to your content';
     }
@@ -930,6 +931,9 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                       setTimeout(() => {
                         setPlaygroundLoaded(true);
                       }, 100);
+                      setTimeout(() => {
+                        setDidCompleteFirstQuery(true);
+                      }, 5000);
                     }}
                   />
                 </div>
