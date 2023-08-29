@@ -354,7 +354,6 @@ export const getQueryStats = async (
   error: PostgrestError | null;
   queries: PromptQueryStat[] | null;
 }> => {
-  let ts = Date.now();
   const { data, error } = await supabase
     .from('decrypted_query_stats')
     .select('id,created_at,decrypted_prompt,no_response,feedback')
@@ -367,9 +366,6 @@ export const getQueryStats = async (
     .order('created_at', { ascending: false })
     .range(page * limit, (page + 1) * (limit - 1));
 
-  console.log('[ENCRYPTION] Encrypted took', Date.now() - ts);
-
-  ts = Date.now();
   await supabase
     .from('query_stats')
     .select('id,created_at,prompt,no_response,feedback')
@@ -381,8 +377,6 @@ export const getQueryStats = async (
     .neq('prompt', '')
     .order('created_at', { ascending: false })
     .range(page * limit, (page + 1) * (limit - 1));
-
-  console.log('[ENCRYPTION] Decrypted took', Date.now() - ts);
 
   if (error) {
     return { error, queries: null };
