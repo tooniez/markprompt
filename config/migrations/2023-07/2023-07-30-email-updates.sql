@@ -191,18 +191,23 @@ $$;
 -- Since a weekly update email sets the `lastWeeklyUpdateEmail` field
 -- to the beginning of the past week, we should look for entries
 -- where lastWeeklyUpdateEmail is older than 2 weeks.
+drop view v_users_with_pending_weekly_update_email;
 create view v_users_with_pending_weekly_update_email as
-select id,email,config
-from users
-where config is null
-or (
-  (
-    config->>'sendWeeklyUpdates' = 'true'
-    or not jsonb_exists(config, 'sendWeeklyUpdates')
+select u.id as id,email,config,t.stripe_price_id,t.plan_details
+from users u
+JOIN memberships m ON u.id = m.user_id
+JOIN teams t ON m.team_id = t.id
+where (
+  u.config is null
+  or (
+    (
+      u.config->>'sendWeeklyUpdates' = 'true'
+      or not jsonb_exists(u.config, 'sendWeeklyUpdates')
+    )
+    and
+    (
+      not jsonb_exists(u.config, 'lastWeeklyUpdateEmail')
+      or (u.config->>'lastWeeklyUpdateEmail')::timestamptz <= now() - INTERVAL '2 weeks'
+    )
   )
-  and
-  (
-    not jsonb_exists(config, 'lastWeeklyUpdateEmail')
-    or (config->>'lastWeeklyUpdateEmail')::timestamptz <= now() - INTERVAL '2 weeks'
-  )
-);
+) and (t.stripe_price_id is not null or t.plan_details is not null);

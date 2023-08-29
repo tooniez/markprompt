@@ -352,9 +352,6 @@ export default async function handler(
     }
 
     try {
-      console.info(
-        `[EMAIL] Sending weekly update for ${user.email} to ${recipientEmail} from ${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME} <${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_EMAIL}>`,
-      );
       await resend.emails.send({
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         from: `${process.env.MARKPROMPT_WEEKLY_UPDATES_SENDER_NAME!} <${process
@@ -376,9 +373,11 @@ export default async function handler(
         }),
       });
 
-      console.debug('Weekly update email sent to', recipientEmail);
+      console.debug('[EMAIL] Weekly update email sent to', recipientEmail);
     } catch (e) {
-      console.error(`Error sending weekly usage email: ${JSON.stringify(e)}`);
+      console.error(
+        `[EMAIL] Error sending weekly usage email: ${JSON.stringify(e)}`,
+      );
     }
   }
 
