@@ -357,17 +357,17 @@ export const getQueryStats = async (
   let ts = Date.now();
   const { data, error } = await supabase
     .from('decrypted_query_stats')
-    .select('id,created_at,decrypted_prompt_encrypted,no_response,feedback')
+    .select('id,created_at,decrypted_prompt,no_response,feedback')
     .eq('project_id', projectId)
     .or('processed_state.eq.processed,processed_state.eq.skipped')
     .gte('created_at', fromISO)
     .lte('created_at', toISO)
-    .not('decrypted_prompt_encrypted', 'is', null)
-    .neq('decrypted_prompt_encrypted', '')
+    .not('decrypted_prompt', 'is', null)
+    .neq('decrypted_prompt', '')
     .order('created_at', { ascending: false })
     .range(page * limit, (page + 1) * (limit - 1));
 
-  console.log('Encrypted took', Date.now() - ts);
+  console.log('[ENCRYPTION] Encrypted took', Date.now() - ts);
 
   ts = Date.now();
   await supabase
@@ -382,15 +382,15 @@ export const getQueryStats = async (
     .order('created_at', { ascending: false })
     .range(page * limit, (page + 1) * (limit - 1));
 
-  console.log('Decrypted took', Date.now() - ts);
+  console.log('[ENCRYPTION] Decrypted took', Date.now() - ts);
 
   if (error) {
     return { error, queries: null };
   }
 
   const queries = (data || []).map((q) => {
-    const { decrypted_prompt_encrypted, ...rest } = q;
-    return { ...rest, prompt: decrypted_prompt_encrypted } as PromptQueryStat;
+    const { decrypted_prompt, ...rest } = q;
+    return { ...rest, prompt: decrypted_prompt } as PromptQueryStat;
   });
 
   return { queries, error: null };

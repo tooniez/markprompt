@@ -22,19 +22,17 @@ export default withProjectAccess(
     if (req.method === 'GET') {
       const id = req.query.sid as DbQueryStat['id'];
       const { data, error } = await supabase
-        .from('query_stats')
+        .from('decrypted_query_stats')
         .select(
-          'id,created_at,prompt,response,no_response,feedback,meta,processed_state',
+          'id,created_at,decrypted_prompt,decrypted_response,no_response,feedback,meta,processed_state',
         )
         .eq('id', id)
         .limit(1)
         .maybeSingle();
 
       if (
-        !(
-          data?.processed_state === 'processed' ||
-          data?.processed_state === 'skipped'
-        )
+        data?.processed_state !== 'processed' &&
+        data?.processed_state !== 'skipped'
       ) {
         return res.status(404).json({ error: 'No matching query stat found.' });
       }
@@ -44,12 +42,17 @@ export default withProjectAccess(
         return res.status(400).json({ error: error.message });
       }
 
-      if (!data) {
+      if (!data?.id) {
         console.error('Query stat not found');
         return res.status(404).json({ error: 'No matching query stat found.' });
       }
 
-      return res.status(200).json(data);
+      const { decrypted_prompt, decrypted_response, ...rest } = data;
+      return res.status(200).json({
+        ...rest,
+        prompt: decrypted_prompt,
+        response: decrypted_response,
+      } as PromptQueryStatFull);
     }
 
     return res.status(400).end();

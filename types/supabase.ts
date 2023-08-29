@@ -390,6 +390,7 @@ export interface Database {
           prompt_encrypted: string | null
           reference_paths: string[] | null
           response: string | null
+          response_clear: string | null
           upvoted: boolean | null
         }
         Insert: {
@@ -409,6 +410,7 @@ export interface Database {
           prompt_encrypted?: string | null
           reference_paths?: string[] | null
           response?: string | null
+          response_clear?: string | null
           upvoted?: boolean | null
         }
         Update: {
@@ -428,6 +430,7 @@ export interface Database {
           prompt_encrypted?: string | null
           reference_paths?: string[] | null
           response?: string | null
+          response_clear?: string | null
           upvoted?: boolean | null
         }
         Relationships: [
@@ -722,7 +725,9 @@ export interface Database {
       decrypted_query_stats: {
         Row: {
           created_at: string | null
+          decrypted_prompt: string | null
           decrypted_prompt_encrypted: string | null
+          decrypted_response: string | null
           downvoted: boolean | null
           embedding: string | null
           feedback: Json | null
@@ -738,11 +743,14 @@ export interface Database {
           prompt_encrypted: string | null
           reference_paths: string[] | null
           response: string | null
+          response_clear: string | null
           upvoted: boolean | null
         }
         Insert: {
           created_at?: string | null
+          decrypted_prompt?: never
           decrypted_prompt_encrypted?: never
+          decrypted_response?: never
           downvoted?: boolean | null
           embedding?: string | null
           feedback?: Json | null
@@ -758,11 +766,14 @@ export interface Database {
           prompt_encrypted?: string | null
           reference_paths?: string[] | null
           response?: string | null
+          response_clear?: string | null
           upvoted?: boolean | null
         }
         Update: {
           created_at?: string | null
+          decrypted_prompt?: never
           decrypted_prompt_encrypted?: never
+          decrypted_response?: never
           downvoted?: boolean | null
           embedding?: string | null
           feedback?: Json | null
@@ -778,6 +789,7 @@ export interface Database {
           prompt_encrypted?: string | null
           reference_paths?: string[] | null
           response?: string | null
+          response_clear?: string | null
           upvoted?: boolean | null
         }
         Relationships: [
@@ -1046,16 +1058,8 @@ export interface Database {
           config: Json | null
           email: string | null
           id: string | null
-        }
-        Insert: {
-          config?: Json | null
-          email?: string | null
-          id?: string | null
-        }
-        Update: {
-          config?: Json | null
-          email?: string | null
-          id?: string | null
+          plan_details: Json | null
+          stripe_price_id: string | null
         }
         Relationships: [
           {
