@@ -1,7 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { Database } from '@/types/supabase';
 import { ApiError, Project } from '@/types/types';
 
 import {
@@ -11,13 +9,11 @@ import {
   noTokenOrProjectKeyResponse,
 } from './common';
 import { checkSearchRateLimits } from '../rate-limits';
+import { createServiceRoleSupabaseClient } from '../supabase';
 import { getAuthorizationToken, truncateMiddle } from '../utils';
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 export default async function SearchMiddleware(req: NextRequest) {
   const mts: any[] = [];

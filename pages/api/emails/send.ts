@@ -43,6 +43,7 @@ const getProductionSupabaseAdminLocally = () => {
   return createClient<Database>(
     SUPABASE_ADMIN_NEXT_PUBLIC_SUPABASE_URL || '',
     SUPABASE_ADMIN_SERVICE_ROLE_KEY || '',
+    { auth: { persistSession: true } },
   );
 };
 

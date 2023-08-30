@@ -1,5 +1,4 @@
 import { SubmitPromptOptions } from '@markprompt/core';
-import { createClient } from '@supabase/supabase-js';
 import cn from 'classnames';
 import { Moon } from 'lucide-react';
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
@@ -8,9 +7,9 @@ import { FC } from 'react';
 import { LegacyPlayground } from '@/components/files/LegacyPlayground';
 import { SharedHead } from '@/components/pages/SharedHead';
 import { useLocalStorage } from '@/lib/hooks/utils/use-localstorage';
+import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import { Theme } from '@/lib/themes';
 import { getNameFromPath, removeFileExtension } from '@/lib/utils';
-import { Database } from '@/types/supabase';
 
 type PromptConfig = {
   theme: Theme;
@@ -30,10 +29,7 @@ export const getStaticPaths = async () => {
 };
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const shareKey = params?.key;

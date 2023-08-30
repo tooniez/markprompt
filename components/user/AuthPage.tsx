@@ -1,4 +1,4 @@
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useSession } from '@supabase/auth-helpers-react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeMinimal } from '@supabase/auth-ui-shared';
 import { MessagesSquare } from 'lucide-react';
@@ -9,6 +9,7 @@ import { MarkpromptIcon } from '@/components/icons/Markprompt';
 import Button from '@/components/ui/Button';
 import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import useUser from '@/lib/hooks/use-user';
+import { getPublicAnonSupabase } from '@/lib/supabase';
 import { getAppOrigin } from '@/lib/utils.edge';
 
 import { ContactWindow } from './ChatWindow';
@@ -17,9 +18,10 @@ type AuthPageProps = {
   type: 'signin' | 'signup';
 };
 
+const supabase = getPublicAnonSupabase();
+
 const AuthPage: FC<AuthPageProps> = ({ type }) => {
   const session = useSession();
-  const supabase = useSupabaseClient();
   const { signOut } = useUser();
 
   return (
@@ -38,9 +40,7 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
               onlyThirdPartyProviders
               socialLayout="vertical"
               providers={['github', 'google', 'azure']}
-              providerScopes={{
-                azure: 'email,offline_access',
-              }}
+              providerScopes={{ azure: 'email' }}
               supabaseClient={supabase}
               appearance={{ theme: ThemeMinimal }}
               theme="default"

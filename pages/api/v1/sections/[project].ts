@@ -1,5 +1,4 @@
 import { FileSectionReference, Source } from '@markprompt/core';
-import { createClient } from '@supabase/supabase-js';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 import { getMatchingSections } from '@/lib/completions';
@@ -7,10 +6,13 @@ import { getRequesterIp } from '@/lib/middleware/common';
 import { track } from '@/lib/posthog';
 import { checkSectionsRateLimits } from '@/lib/rate-limits';
 import { canAccessSectionsAPI } from '@/lib/stripe/tiers';
-import { getBYOOpenAIKey, getTeamTierInfo } from '@/lib/supabase';
+import {
+  createServiceRoleSupabaseClient,
+  getBYOOpenAIKey,
+  getTeamTierInfo,
+} from '@/lib/supabase';
 import { buildSectionReferenceFromMatchResult } from '@/lib/utils';
 import { isRequestFromMarkprompt } from '@/lib/utils.edge';
-import { Database } from '@/types/supabase';
 import {
   ApiError,
   FileSectionMatchResult,
@@ -19,10 +21,7 @@ import {
 } from '@/types/types';
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 type LegacySectionData = {
   path: string;

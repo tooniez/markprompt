@@ -1,4 +1,4 @@
-import { SupabaseClient, createClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { add, endOfWeek, format, formatISO, startOfWeek } from 'date-fns';
 import { flatten, isEmpty, sum, uniq } from 'lodash-es';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -11,7 +11,11 @@ import {
   getTier,
   getTierName,
 } from '@/lib/stripe/tiers';
-import { getJoinedTeams, getTeamProjectIds } from '@/lib/supabase';
+import {
+  createServiceRoleSupabaseClient,
+  getJoinedTeams,
+  getTeamProjectIds,
+} from '@/lib/supabase';
 import {
   getAuthorizationToken,
   redactEmail,
@@ -37,10 +41,7 @@ type Data =
 const allowedMethods = ['GET'];
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 export type UserUsageStats = {
   teamUsageStats: TeamUsageStats[];

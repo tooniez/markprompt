@@ -1,7 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { Database } from '@/types/supabase';
 import { Project } from '@/types/types';
 
 import {
@@ -10,13 +8,11 @@ import {
   noTokenResponse,
 } from './common';
 import { checkInsightsRateLimits } from '../rate-limits';
+import { createServiceRoleSupabaseClient } from '../supabase';
 import { getAuthorizationToken, truncateMiddle } from '../utils';
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 export default async function InsightsMiddleware(req: NextRequest) {
   const token = getAuthorizationToken(req.headers.get('Authorization'));

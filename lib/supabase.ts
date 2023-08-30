@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { PostgrestError, User } from '@supabase/supabase-js';
+import { PostgrestError, User, createClient } from '@supabase/supabase-js';
 
 import { Database, Json } from '@/types/supabase';
 import {
@@ -388,4 +388,24 @@ export const getQueryStats = async (
   });
 
   return { queries, error: null };
+};
+
+export const getPublicAnonSupabase = () => {
+  return createClient<Database>(
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false } },
+  );
+};
+
+export const createServiceRoleSupabaseClient = () => {
+  return createClient<Database>(
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } },
+  );
 };

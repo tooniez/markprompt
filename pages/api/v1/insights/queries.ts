@@ -1,16 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-import { getQueryStats } from '@/lib/supabase';
+import { createServiceRoleSupabaseClient, getQueryStats } from '@/lib/supabase';
 import { safeParseInt } from '@/lib/utils.edge';
-import { Database } from '@/types/supabase';
 import { PromptQueryStat } from '@/types/types';
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 type Data =
   | {

@@ -1,11 +1,11 @@
 import { SearchResult, Source } from '@markprompt/core';
-import { createClient } from '@supabase/supabase-js';
 import FlexSearch from 'flexsearch';
 import { uniq } from 'lodash-es';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { isPresent } from 'ts-is-present';
 
 import { track } from '@/lib/posthog';
+import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import {
   buildFileReferenceFromMatchResult,
   buildSectionReferenceFromMatchResult,
@@ -19,10 +19,7 @@ import { FileSectionMeta } from '@/types/types';
 const MAX_SEARCH_RESULTS = 20;
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 type FTSFileSectionContentResult =
   Database['public']['Functions']['fts_file_section_content']['Returns'][number];

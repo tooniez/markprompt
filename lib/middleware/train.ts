@@ -1,8 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { track } from '@/lib/posthog';
-import { Database } from '@/types/supabase';
 
 import {
   getProjectIdFromToken,
@@ -10,13 +8,11 @@ import {
   noTokenResponse,
 } from './common';
 import { checkEmbeddingsRateLimits } from '../rate-limits';
+import { createServiceRoleSupabaseClient } from '../supabase';
 import { getAuthorizationToken, truncateMiddle } from '../utils';
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 export default async function TrainMiddleware(req: NextRequest) {
   // Requests to api.markprompt.com/v1/train come exclusively from external

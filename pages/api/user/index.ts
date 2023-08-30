@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 import { DbUser } from '@/types/types';
 
@@ -14,10 +14,7 @@ type Data =
 
 const allowedMethods = ['GET', 'POST', 'PATCH', 'DELETE'];
 
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 export default async function handler(
   req: NextApiRequest,

@@ -1,4 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
 import { stripIndent } from 'common-tags';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
@@ -6,11 +5,13 @@ import {
   APPROX_CHARS_PER_TOKEN,
   CONTEXT_TOKENS_CUTOFF_GPT_3_5_TURBO,
 } from '@/lib/constants';
-import { getProjectConfigData } from '@/lib/supabase';
+import {
+  createServiceRoleSupabaseClient,
+  getProjectConfigData,
+} from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import { getCompletionsResponseText, getCompletionsUrl } from '@/lib/utils';
 import { safeParseInt } from '@/lib/utils.edge';
-import { Database } from '@/types/supabase';
 import {
   OpenAIModelIdWithType,
   Project,
@@ -28,10 +29,7 @@ type Data =
 const allowedMethods = ['GET'];
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 type QueryStatData = {
   id: string | null;

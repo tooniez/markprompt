@@ -1,9 +1,7 @@
-import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { withProjectAccess } from '@/lib/middleware/common';
-import { Database } from '@/types/supabase';
+import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import { Project, PromptQueryHistogram } from '@/types/types';
 
 type Data =
@@ -16,10 +14,7 @@ type Data =
 const allowedMethods = ['GET'];
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 export default withProjectAccess(
   allowedMethods,

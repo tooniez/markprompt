@@ -1,5 +1,4 @@
 import { FileSectionReference } from '@markprompt/core';
-import { createClient } from '@supabase/supabase-js';
 import { stripIndent } from 'common-tags';
 import {
   createParser,
@@ -29,7 +28,11 @@ import {
   getAccessibleInsightsType,
   InsightsType,
 } from '@/lib/stripe/tiers';
-import { getProjectConfigData, getTeamTierInfo } from '@/lib/supabase';
+import {
+  createServiceRoleSupabaseClient,
+  getProjectConfigData,
+  getTeamTierInfo,
+} from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
 import {
   buildSectionReferenceFromMatchResult,
@@ -38,7 +41,6 @@ import {
   stringToLLMInfo,
 } from '@/lib/utils';
 import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
-import { Database } from '@/types/supabase';
 import {
   ApiError,
   DbQueryStat,
@@ -104,10 +106,7 @@ const getChunkText = (response: any, model: OpenAIModelIdWithType) => {
 };
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 const allowedMethods = ['POST'];
 

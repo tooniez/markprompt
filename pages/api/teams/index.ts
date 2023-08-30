@@ -1,8 +1,10 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getJoinedTeams } from '@/lib/supabase';
+import {
+  createServiceRoleSupabaseClient,
+  getJoinedTeams,
+} from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 import { DbTeam } from '@/types/types';
 
@@ -18,10 +20,7 @@ type Data =
 
 const allowedMethods = ['GET', 'POST'];
 
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 export default async function handler(
   req: NextApiRequest,

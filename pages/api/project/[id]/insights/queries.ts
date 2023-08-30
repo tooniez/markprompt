@@ -1,10 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { withProjectAccess } from '@/lib/middleware/common';
-import { getQueryStats } from '@/lib/supabase';
+import { createServiceRoleSupabaseClient, getQueryStats } from '@/lib/supabase';
 import { safeParseInt } from '@/lib/utils.edge';
-import { Database } from '@/types/supabase';
 import { Project, PromptQueryStat } from '@/types/types';
 
 type Data =
@@ -17,10 +15,7 @@ type Data =
 const allowedMethods = ['GET'];
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-);
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 export default withProjectAccess(
   allowedMethods,
