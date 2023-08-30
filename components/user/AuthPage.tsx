@@ -38,6 +38,9 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
               onlyThirdPartyProviders
               socialLayout="vertical"
               providers={['github', 'google', 'azure']}
+              providerScopes={{
+                azure: 'email,offline_access',
+              }}
               supabaseClient={supabase}
               appearance={{ theme: ThemeMinimal }}
               theme="default"

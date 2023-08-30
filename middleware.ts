@@ -27,6 +27,10 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
     return NextResponse.next();
   }
 
+  if (req.nextUrl.pathname.startsWith('/.well-known/')) {
+    return NextResponse.next();
+  }
+
   if (req.nextUrl.pathname.startsWith('/embed/')) {
     return EmbedMiddleware(req);
   }
