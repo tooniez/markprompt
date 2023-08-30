@@ -205,3 +205,5 @@ export type SerializableMarkpromptOptions = Omit<
     serializedGetHref?: string;
   };
 };
+
+export type OpenAIErrorResponse = any;

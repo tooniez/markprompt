@@ -50,7 +50,7 @@ import {
 // todo: replace with type from @markprompt/core
 interface ChatMessage {
   content: string;
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
 }
 
 export const config = {
@@ -208,6 +208,22 @@ const buildFullPrompt = (
 
   return stripIndent(_template);
 };
+const buildSystemMessage = (
+  systemPromptTemplate: string,
+  contextSections: string,
+  iDontKnowMessage: string,
+  doNotInjectContext = false,
+) => {
+  if (doNotInjectContext) {
+    return systemPromptTemplate;
+  }
+
+  return stripIndent(
+    `${systemPromptTemplate}\n\nYou are helpful, and provide answers to questions outputted in Markdown format.\n\nBelow are a set of of context sections which might contain valuable information to answer the question. It is in the form of sections preceded by a section id. If you are unsure and the answer is not explicitly written in the provided sections, say "${
+      iDontKnowMessage || "I don't know"
+    }". You should not mention that the answer is based on this context.\n\n---\n${contextSections}\n---`,
+  );
+};
 
 const isFalsy = (param: unknown): param is false => {
   if (typeof param === 'string') {
@@ -347,9 +363,13 @@ export default async function handler(req: NextRequest) {
       projectId,
     );
 
-    const sanitizedQuery = messages[messages.length - 1].content
-      .trim()
-      .replace('\n', ' ');
+    const lastMessage = messages[messages.length - 1].content;
+    const sanitizedQuery = lastMessage.trim().replace('\n', ' ');
+
+    const pastUserMessages = messages
+      .slice(0, -1)
+      .filter((m) => m.role === 'user')
+      .map((m) => m.content);
 
     const sectionsTs = Date.now();
 
@@ -358,7 +378,7 @@ export default async function handler(req: NextRequest) {
     try {
       const sectionsResponse = await getMatchingSections(
         sanitizedQuery,
-        messages[messages.length - 1].content,
+        lastMessage,
         params.sectionsMatchThreshold,
         params.sectionsMatchCount,
         projectId,
@@ -368,10 +388,37 @@ export default async function handler(req: NextRequest) {
       );
       fileSections = sectionsResponse.fileSections;
       promptEmbedding = sectionsResponse.promptEmbedding;
+
+      if (pastUserMessages.length > 0) {
+        // Find context sections for past messages
+        const combinedMessage = pastUserMessages.join('\n\n');
+        const sanitizedCombinedMessage = combinedMessage
+          .trim()
+          .replace('\n', ' ');
+        const sectionsResponse = await getMatchingSections(
+          sanitizedCombinedMessage,
+          sanitizedCombinedMessage,
+          params.sectionsMatchThreshold,
+          10,
+          projectId,
+          byoOpenAIKey,
+          'completions',
+          supabaseAdmin,
+        );
+        for (const section of sectionsResponse.fileSections) {
+          if (
+            !fileSections.some((s) => {
+              return s.file_sections_content === section.file_sections_content;
+            })
+          ) {
+            fileSections.push(section);
+          }
+        }
+      }
     } catch (e) {
       const promptId = await _storePrompt(
         projectId,
-        messages[messages.length - 1].content,
+        lastMessage,
         undefined,
         promptEmbedding,
         'no_sections',
@@ -436,26 +483,23 @@ export default async function handler(req: NextRequest) {
 
     const referencePaths = references.map((r) => r.file.path);
 
-    const fullPrompt = buildFullPrompt(
+    const systemMessage = buildSystemMessage(
       (params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE.template!,
       contextText,
-      sanitizedQuery,
       iDontKnowMessage,
-      params.contextTag || '{{CONTEXT}}',
-      params.promptTag || '{{PROMPT}}',
-      params.idkTag || '{{I_DONT_KNOW}}',
       !!params.doNotInjectContext,
-      !!params.doNotInjectPrompt,
     );
 
-    const messagesWithFullPrompt = [...messages] satisfies ChatMessage[];
-    messagesWithFullPrompt.splice(messagesWithFullPrompt.length - 1, 1, {
-      role: 'user',
-      content: fullPrompt,
-    });
+    const messagesWithSystemMessage = [
+      {
+        role: 'system',
+        content: systemMessage,
+      },
+      ...messages,
+    ] satisfies ChatMessage[];
 
     const payload = getPayload(
-      messagesWithFullPrompt,
+      messagesWithSystemMessage,
       modelInfo.model,
       params.temperature ?? 0.1,
       params.topP ?? 1,
@@ -466,6 +510,7 @@ export default async function handler(req: NextRequest) {
     );
     const url = getCompletionsUrl(modelInfo.model);
 
+    console.log('payload', JSON.stringify(payload, null, 2));
     const res = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
@@ -478,10 +523,8 @@ export default async function handler(req: NextRequest) {
     });
 
     const debugInfo = {
-      fullPrompt,
-      ts: {
-        sections: sectionsDelta,
-      },
+      systemMessage,
+      ts: { sections: sectionsDelta },
     };
 
     if (!stream) {
@@ -489,7 +532,7 @@ export default async function handler(req: NextRequest) {
         const message = await res.text();
         const promptId = await _storePrompt(
           projectId,
-          messages[messages.length - 1].content,
+          lastMessage,
           undefined,
           promptEmbedding,
           'api_error',
@@ -519,7 +562,7 @@ export default async function handler(req: NextRequest) {
         const idk = isIDontKnowResponse(text, iDontKnowMessage);
         const promptId = await _storePrompt(
           projectId,
-          messages[messages.length - 1].content,
+          lastMessage,
           text,
           promptEmbedding,
           idk ? 'idk' : undefined,
@@ -562,7 +605,7 @@ export default async function handler(req: NextRequest) {
     // once it is done.
     const promptId = await _storePrompt(
       projectId,
-      messages[messages.length - 1].content,
+      lastMessage,
       '',
       promptEmbedding,
       undefined,
@@ -624,7 +667,9 @@ export default async function handler(req: NextRequest) {
         // const tokenizer = new GPT3Tokenizer({ type: 'gpt3' });
         // const allTextEncoded = tokenizer.encode(allText);
         // const tokenCount = allTextEncoded.text.length;
-        const allText = fullPrompt + responseText;
+        const allText =
+          messagesWithSystemMessage.map((m) => m.content).join('\n') +
+          responseText;
         const estimatedTokenCount = Math.round(allText.length / 4);
 
         if (!byoOpenAIKey) {

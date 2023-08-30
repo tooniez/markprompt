@@ -2,11 +2,9 @@
 // Make sure no Node.js APIs are called/imported transitively.
 
 import { OpenAIEmbeddingsModelId } from '@markprompt/core';
-import {
-  CreateEmbeddingResponse,
-  CreateModerationResponse,
-  ErrorResponse,
-} from 'openai';
+import { CreateEmbeddingResponse, CreateModerationResponse } from 'openai';
+
+import { OpenAIErrorResponse } from '@/types/types';
 
 export interface OpenAIStreamPayload {
   model: string;
@@ -23,7 +21,7 @@ export interface OpenAIStreamPayload {
 export const createModeration = async (
   input: string,
   byoOpenAIKey: string | undefined,
-): Promise<CreateModerationResponse | ErrorResponse> => {
+): Promise<CreateModerationResponse | OpenAIErrorResponse> => {
   return fetch('https://api.openai.com/v1/moderations', {
     headers: {
       'Content-Type': 'application/json',
@@ -38,7 +36,7 @@ export const createEmbedding = async (
   input: string,
   byoOpenAIKey: string | undefined,
   modelId: OpenAIEmbeddingsModelId,
-): Promise<CreateEmbeddingResponse | ErrorResponse> => {
+): Promise<CreateEmbeddingResponse | OpenAIErrorResponse> => {
   return await fetch('https://api.openai.com/v1/embeddings', {
     headers: {
       'Content-Type': 'application/json',

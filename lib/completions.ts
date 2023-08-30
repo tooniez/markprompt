@@ -4,13 +4,14 @@ import {
 } from '@markprompt/core';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { backOff } from 'exponential-backoff';
-import { CreateEmbeddingResponse, ErrorResponse } from 'openai';
+import { CreateEmbeddingResponse } from 'openai';
 
 import { Database } from '@/types/supabase';
 import {
   ApiError,
   DbQueryStat,
   FileSectionMatchResult,
+  OpenAIErrorResponse,
   Project,
 } from '@/types/types';
 
@@ -109,8 +110,10 @@ export const getMatchingSections = async (
     throw new ApiError(400, 'Flagged content');
   }
 
-  let embeddingResult: CreateEmbeddingResponse | ErrorResponse | undefined =
-    undefined;
+  let embeddingResult:
+    | CreateEmbeddingResponse
+    | OpenAIErrorResponse
+    | undefined = undefined;
 
   try {
     // Retry with exponential backoff in case of error. Typical cause is
