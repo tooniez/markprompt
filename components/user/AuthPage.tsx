@@ -37,7 +37,7 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
               redirectTo={getAppOrigin() + '/'}
               onlyThirdPartyProviders
               socialLayout="vertical"
-              providers={['github', 'google']}
+              providers={['github', 'google', 'azure']}
               supabaseClient={supabase}
               appearance={{ theme: ThemeMinimal }}
               theme="default"
