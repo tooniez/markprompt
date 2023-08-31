@@ -1,7 +1,7 @@
 import { DbTeam } from '@/types/types';
 
-import { roundToLowerOrderDecimal } from '../utils';
 import { deepMerge } from '../utils.edge';
+import { roundToLowerOrderDecimal } from '../utils.nodeps';
 
 type Price = {
   amount: number;

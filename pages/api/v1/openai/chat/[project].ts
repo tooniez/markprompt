@@ -9,9 +9,9 @@ import {
 import type { NextRequest } from 'next/server';
 
 import {
+  getHeaders,
   getMatchingSections,
-  PromptNoResponseReason,
-  storePrompt,
+  storePromptOrPlaceholder,
   updatePrompt,
 } from '@/lib/completions';
 import { modelConfigFields } from '@/lib/config';
@@ -37,6 +37,7 @@ import {
   stringToLLMInfo,
 } from '@/lib/utils';
 import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
+import { isFalsyQueryParam, isTruthyQueryParam } from '@/lib/utils.nodeps';
 import { Database } from '@/types/supabase';
 import {
   ApiError,
@@ -131,83 +132,6 @@ const supabaseAdmin = createClient<Database>(
 
 const allowedMethods = ['POST'];
 
-const _storePrompt = async (
-  projectId: Project['id'],
-  prompt: string,
-  responseText: string | undefined,
-  promptEmbedding: number[] | undefined,
-  errorReason: PromptNoResponseReason | undefined,
-  references: FileSectionReference[],
-  insightsType: InsightsType | undefined,
-  // If true, only the event will be stored for global counts.
-  excludeData: boolean,
-  // If true, the stat will be marked as `unprocessed` and will
-  // be processed to redact sensited info.
-  redact: boolean,
-): Promise<DbQueryStat['id'] | undefined> => {
-  if (excludeData) {
-    return storePrompt(
-      supabaseAdmin,
-      projectId,
-      undefined,
-      undefined,
-      undefined,
-      errorReason,
-      undefined,
-      redact,
-    );
-  } else {
-    // Store prompt always.
-    // Store response in >= basic insights.
-    // Store embeddings in >= advanced insights.
-    // Store references in >= basic insights.
-    return storePrompt(
-      supabaseAdmin,
-      projectId,
-      prompt,
-      insightsType ? responseText : undefined,
-      insightsType === 'advanced' ? promptEmbedding : undefined,
-      errorReason,
-      insightsType ? references : undefined,
-      redact,
-    );
-  }
-};
-
-const buildFullPrompt = (
-  template: string,
-  context: string,
-  prompt: string,
-  iDontKnowMessage: string,
-  contextTemplateKeyword: string,
-  promptTemplateKeyword: string,
-  iDontKnowTemplateKeyword: string,
-  // If the template does not contain the {{CONTEXT}} keyword, we inject
-  // the context by default. This can be prevented by setting the
-  // `doNotInjectContext` variable to true.
-  doNotInjectContext = false,
-  // Same with query
-  doNotInjectPrompt = false,
-) => {
-  let _template = template.replace(
-    iDontKnowTemplateKeyword,
-    iDontKnowMessage || I_DONT_KNOW,
-  );
-
-  if (template.includes(contextTemplateKeyword)) {
-    _template = _template.replace(contextTemplateKeyword, context);
-  } else if (!doNotInjectContext) {
-    _template = `Here is some context which might contain valuable information to answer the question. It is in the form of sections preceded by a section id:\n\n---\n\n${context}\n\n---\n\n${_template}`;
-  }
-
-  if (template.includes(promptTemplateKeyword)) {
-    _template = _template.replace(promptTemplateKeyword, prompt);
-  } else if (!doNotInjectPrompt) {
-    _template = `${_template}\n\nPrompt: ${prompt}\n`;
-  }
-
-  return stripIndent(_template);
-};
 const buildSystemMessage = (
   systemPromptTemplate: string,
   contextSections: string,
@@ -219,47 +143,10 @@ const buildSystemMessage = (
   }
 
   return stripIndent(
-    `${systemPromptTemplate}\n\nYou are helpful, and provide answers to questions outputted in Markdown format.\n\nBelow are a set of of context sections which might contain valuable information to answer the question. It is in the form of sections preceded by a section id. If you are unsure and the answer is not explicitly written in the provided sections, say "${
+    `${systemPromptTemplate}\n\nBelow is a set of context sections which may contain valuable information to answer the question. It is in the form of sections preceded by a section id. If you are unsure and the answer is not explicitly written in the provided sections, say "${
       iDontKnowMessage || "I don't know"
     }". You should not mention that the answer is based on this context.\n\n---\n${contextSections}\n---`,
   );
-};
-
-const isFalsy = (param: unknown): param is false => {
-  if (typeof param === 'string') {
-    return param === 'false' || param === '0';
-  } else if (typeof param === 'number') {
-    return param === 0;
-  } else {
-    return param === false;
-  }
-};
-
-const isTruthy = (param: unknown): param is true => {
-  if (typeof param === 'string') {
-    return param === 'true' || param === '1';
-  } else if (typeof param === 'number') {
-    return param === 1;
-  } else {
-    return param === true;
-  }
-};
-
-const getHeaders = (
-  references: FileSectionReference[],
-  promptId: DbQueryStat['id'] | undefined = undefined,
-) => {
-  // Headers cannot include non-UTF-8 characters, so make sure any strings
-  // we pass in the headers are properly encoded before sending.
-  const headers = new Headers();
-  const headerEncoder = new TextEncoder();
-  const encodedHeaderData = headerEncoder
-    .encode(JSON.stringify({ references, promptId }))
-    .toString();
-
-  headers.append('Content-Type', 'application/json');
-  headers.append('x-markprompt-data', encodedHeaderData);
-  return headers;
 };
 
 export default async function handler(req: NextRequest) {
@@ -283,17 +170,17 @@ export default async function handler(req: NextRequest) {
       I_DONT_KNOW;
 
     let stream = true;
-    if (isFalsy(params.stream)) {
+    if (isFalsyQueryParam(params.stream)) {
       stream = false;
     }
 
     let excludeFromInsights = false;
-    if (isTruthy(params.excludeFromInsights)) {
+    if (isTruthyQueryParam(params.excludeFromInsights)) {
       excludeFromInsights = true;
     }
 
     let redact = false;
-    if (isTruthy(params.redact)) {
+    if (isTruthyQueryParam(params.redact)) {
       redact = true;
     }
 
@@ -416,7 +303,8 @@ export default async function handler(req: NextRequest) {
         }
       }
     } catch (e) {
-      const promptId = await _storePrompt(
+      const promptId = await storePromptOrPlaceholder(
+        supabaseAdmin,
         projectId,
         lastMessage,
         undefined,
@@ -530,7 +418,8 @@ export default async function handler(req: NextRequest) {
     if (!stream) {
       if (!res.ok) {
         const message = await res.text();
-        const promptId = await _storePrompt(
+        const promptId = await storePromptOrPlaceholder(
+          supabaseAdmin,
           projectId,
           lastMessage,
           undefined,
@@ -560,7 +449,8 @@ export default async function handler(req: NextRequest) {
         );
         const text = getCompletionsResponseText(json, modelInfo.model);
         const idk = isIDontKnowResponse(text, iDontKnowMessage);
-        const promptId = await _storePrompt(
+        const promptId = await storePromptOrPlaceholder(
+          supabaseAdmin,
           projectId,
           lastMessage,
           text,
@@ -603,7 +493,8 @@ export default async function handler(req: NextRequest) {
     // the prompt id needs to be sent in the header, which is done immediately.
     // We keep the prompt id and update the prompt with the generated response
     // once it is done.
-    const promptId = await _storePrompt(
+    const promptId = await storePromptOrPlaceholder(
+      supabaseAdmin,
       projectId,
       lastMessage,
       '',

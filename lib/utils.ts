@@ -900,18 +900,6 @@ export const objectEquals = (object: any, otherObject: any) => {
   return true;
 };
 
-export const roundToLowerOrderDecimal = (n: number) => {
-  const order = Math.pow(10, Math.round(Math.log10(n)));
-  const roundedNumber = Math.round(n / order) * order;
-  return roundedNumber;
-};
-
-// Fast approximate token count. We use a slightly smaller value
-// to ensure we stay within boundaries.
-export const approximatedTokenCount = (text: string) => {
-  return Math.round(text.length / APPROX_CHARS_PER_TOKEN);
-};
-
 // Modified version of https://github.com/stiang/remove-markdown, which
 // also removes JS import statements, and Markdoc tags.
 export const stripMarkdown = (md: string, options?: any) => {
