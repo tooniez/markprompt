@@ -208,7 +208,7 @@ export default async function handler(req: NextRequest) {
 
     const projectId = projectIdParam as Project['id'];
 
-    // Apply rate limits, in additional to middleware rate limits.
+    // Apply completions rate limits, in addition to middleware rate limits.
     const rateLimitResult = await checkCompletionsRateLimits({
       value: projectId,
       type: 'projectId',
