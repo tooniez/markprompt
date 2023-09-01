@@ -1,8 +1,13 @@
 // IMPORTANT: this code needs to be able to run on the Vercel edge runtime.
 // Make sure no Node.js APIs are called/imported transitively.
 
-import { OpenAIEmbeddingsModelId } from '@markprompt/core';
+import {
+  OpenAIChatCompletionsModelId,
+  OpenAIEmbeddingsModelId,
+} from '@markprompt/core';
 import { CreateEmbeddingResponse, CreateModerationResponse } from 'openai';
+
+import { OpenAIErrorResponse } from '@/types/types';
 
 export interface OpenAIStreamPayload {
   model: string;
@@ -19,7 +24,7 @@ export interface OpenAIStreamPayload {
 export const createModeration = async (
   input: string,
   byoOpenAIKey: string | undefined,
-): Promise<CreateModerationResponse> => {
+): Promise<CreateModerationResponse | OpenAIErrorResponse> => {
   return fetch('https://api.openai.com/v1/moderations', {
     headers: {
       'Content-Type': 'application/json',
@@ -34,7 +39,7 @@ export const createEmbedding = async (
   input: string,
   byoOpenAIKey: string | undefined,
   modelId: OpenAIEmbeddingsModelId,
-): Promise<CreateEmbeddingResponse> => {
+): Promise<CreateEmbeddingResponse | OpenAIErrorResponse> => {
   return await fetch('https://api.openai.com/v1/embeddings', {
     headers: {
       'Content-Type': 'application/json',
@@ -46,4 +51,15 @@ export const createEmbedding = async (
       input: input.trim().replaceAll('\n', ' '),
     }),
   }).then((r) => r.json());
+};
+
+export const getChatCompletionModelMaxTokenCount = (
+  modelId: OpenAIChatCompletionsModelId,
+) => {
+  switch (modelId) {
+    case 'gpt-3.5-turbo':
+      return 4097;
+    case 'gpt-4':
+      return 8192;
+  }
 };

@@ -492,12 +492,16 @@ export const stringToLLMInfo = (model?: string): LLMInfo => {
 export const getCompletionsUrl = (model: OpenAIModelIdWithType) => {
   switch (model.type) {
     case 'chat_completions': {
-      return 'https://api.openai.com/v1/chat/completions';
+      return getChatCompletionsUrl();
     }
     default: {
       return 'https://api.openai.com/v1/completions';
     }
   }
+};
+
+export const getChatCompletionsUrl = () => {
+  return 'https://api.openai.com/v1/chat/completions';
 };
 
 export const getCompletionsResponseText = (
@@ -506,12 +510,16 @@ export const getCompletionsResponseText = (
 ): string => {
   switch (model.type) {
     case 'chat_completions': {
-      return response.choices[0].message.content;
+      return getChatCompletionsResponseText(response);
     }
     default: {
       return response.choices[0].text;
     }
   }
+};
+
+export const getChatCompletionsResponseText = (response: any): string => {
+  return response.choices[0].message.content;
 };
 
 export const matchesGlobs = (path: string, globs: string[]) => {
@@ -898,18 +906,6 @@ export const objectEquals = (object: any, otherObject: any) => {
   }
 
   return true;
-};
-
-export const roundToLowerOrderDecimal = (n: number) => {
-  const order = Math.pow(10, Math.round(Math.log10(n)));
-  const roundedNumber = Math.round(n / order) * order;
-  return roundedNumber;
-};
-
-// Fast approximate token count. We use a slightly smaller value
-// to ensure we stay within boundaries.
-export const approximatedTokenCount = (text: string) => {
-  return Math.round(text.length / APPROX_CHARS_PER_TOKEN);
 };
 
 // Modified version of https://github.com/stiang/remove-markdown, which

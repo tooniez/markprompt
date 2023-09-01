@@ -134,6 +134,14 @@ export default async function CompletionsMiddleware(req: NextRequest) {
     );
   }
 
+  const path = req.nextUrl.pathname;
+
+  if (path.startsWith('/v1/chat')) {
+    return NextResponse.rewrite(
+      new URL(`/api/v1/openai/chat/${projectId}`, req.url),
+    );
+  }
+
   return NextResponse.rewrite(
     new URL(`/api/v1/openai/completions/${projectId}`, req.url),
   );

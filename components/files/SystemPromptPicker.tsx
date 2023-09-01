@@ -7,31 +7,31 @@ import { DEFAULT_SYSTEM_PROMPT, predefinedSystemPrompts } from '@/lib/prompt';
 
 import { SelectItem } from '../ui/Select';
 
-type TemplatePickerProps = {
+type SystemPromptPickerProps = {
   className?: string;
 };
 
-export const TemplatePicker: FC<TemplatePickerProps> = () => {
+export const SystemPromptPicker: FC<SystemPromptPickerProps> = () => {
   const { markpromptOptions, setMarkpromptOptions } = useConfigContext();
 
-  const selectedTemplateName = useMemo(() => {
+  const selectedSystemPromptName = useMemo(() => {
     return predefinedSystemPrompts.find((t) => {
-      return t.template === markpromptOptions.prompt?.promptTemplate;
+      return t.template === markpromptOptions.prompt?.systemPrompt;
     })?.name;
-  }, [markpromptOptions?.prompt?.promptTemplate]);
+  }, [markpromptOptions?.prompt?.systemPrompt]);
 
   return (
     <Select.Root
-      value={selectedTemplateName || 'Custom'}
+      value={selectedSystemPromptName || 'Custom'}
       onValueChange={(value) => {
-        const promptTemplate =
+        const systemPrompt =
           predefinedSystemPrompts.find((t) => t.name === value)?.template ||
           DEFAULT_SYSTEM_PROMPT.template;
         setMarkpromptOptions({
           ...markpromptOptions,
           prompt: {
             ...markpromptOptions.prompt,
-            promptTemplate,
+            systemPrompt,
           },
         });
       }}
@@ -54,7 +54,7 @@ export const TemplatePicker: FC<TemplatePickerProps> = () => {
           </Select.ScrollUpButton>
           <Select.Viewport>
             <Select.Group>
-              {!selectedTemplateName && (
+              {!selectedSystemPromptName && (
                 <SelectItem value="Custom">Custom</SelectItem>
               )}
               {predefinedSystemPrompts?.map((prompt) => {

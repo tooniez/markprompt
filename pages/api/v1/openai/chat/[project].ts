@@ -1,4 +1,8 @@
-import { FileSectionReference } from '@markprompt/core';
+import {
+  FileSectionReference,
+  OpenAIChatCompletionsModelId,
+} from '@markprompt/core';
+import { createClient } from '@supabase/supabase-js';
 import { stripIndent } from 'common-tags';
 import {
   createParser,
@@ -14,12 +18,8 @@ import {
   updatePrompt,
 } from '@/lib/completions';
 import { modelConfigFields } from '@/lib/config';
-import {
-  CONTEXT_TOKENS_CUTOFF,
-  I_DONT_KNOW,
-  MAX_PROMPT_LENGTH,
-  STREAM_SEPARATOR,
-} from '@/lib/constants';
+import { I_DONT_KNOW, STREAM_SEPARATOR } from '@/lib/constants';
+import { getChatCompletionModelMaxTokenCount } from '@/lib/openai.edge';
 import { track } from '@/lib/posthog';
 import { DEFAULT_SYSTEM_PROMPT } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
@@ -28,16 +28,11 @@ import {
   getAccessibleInsightsType,
   InsightsType,
 } from '@/lib/stripe/tiers';
-import {
-  createServiceRoleSupabaseClient,
-  getProjectConfigData,
-  getTeamTierInfo,
-} from '@/lib/supabase';
-import { recordProjectTokenCount } from '@/lib/tinybird';
+import { getProjectConfigData, getTeamTierInfo } from '@/lib/supabase';
 import {
   buildSectionReferenceFromMatchResult,
-  getCompletionsResponseText,
-  getCompletionsUrl,
+  getChatCompletionsResponseText,
+  getChatCompletionsUrl,
   stringToLLMInfo,
 } from '@/lib/utils';
 import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
@@ -46,18 +41,39 @@ import {
   isFalsyQueryParam,
   isTruthyQueryParam,
 } from '@/lib/utils.nodeps';
+import { Database } from '@/types/supabase';
 import {
   ApiError,
-  DbQueryStat,
   FileSectionMatchResult,
   FileSectionMeta,
   OpenAIModelIdWithType,
   Project,
 } from '@/types/types';
 
+// todo: replace with type from @markprompt/core
+interface ChatMessage {
+  content: string;
+  role: 'user' | 'assistant' | 'system';
+}
+
 export const config = {
   runtime: 'edge',
 };
+
+function isChatMessages(data: unknown): data is ChatMessage[] {
+  if (!data) return false;
+  if (!Array.isArray(data)) return false;
+  return data.every((d) => {
+    return (
+      typeof d === 'object' &&
+      d !== null &&
+      'content' in d &&
+      typeof d.content === 'string' &&
+      'role' in d &&
+      (d.role === 'user' || d.role === 'assistant')
+    );
+  });
+}
 
 const isIDontKnowResponse = (
   responseText: string,
@@ -66,9 +82,18 @@ const isIDontKnowResponse = (
   return !responseText || responseText.endsWith(iDontKnowMessage);
 };
 
-const getPayload = (
-  prompt: string,
+const getSupportedChatModelValueOrFallback = (
   model: OpenAIModelIdWithType,
+): OpenAIChatCompletionsModelId => {
+  if (model.value !== 'gpt-3.5-turbo' && model.value !== 'gpt-4') {
+    return 'gpt-3.5-turbo';
+  }
+  return model.value;
+};
+
+const getPayload = (
+  messages: ChatMessage[],
+  modelId: OpenAIChatCompletionsModelId,
   temperature: number,
   topP: number,
   frequencyPenalty: number,
@@ -76,8 +101,8 @@ const getPayload = (
   maxTokens: number,
   stream: boolean,
 ) => {
-  const payload = {
-    model: model.value,
+  return {
+    model: modelId,
     temperature,
     top_p: topP,
     frequency_penalty: frequencyPenalty,
@@ -85,69 +110,37 @@ const getPayload = (
     max_tokens: maxTokens,
     stream,
     n: 1,
+    messages,
   };
-  switch (model.type) {
-    case 'chat_completions': {
-      return {
-        ...payload,
-        messages: [{ role: 'user', content: prompt }],
-      };
-    }
-    default: {
-      return { ...payload, prompt };
-    }
-  }
 };
 
-const getChunkText = (response: any, model: OpenAIModelIdWithType) => {
-  switch (model.type) {
-    case 'chat_completions': {
-      return response.choices[0].delta.content;
-    }
-    default: {
-      return response.choices[0].text;
-    }
-  }
+const getChunkText = (response: any) => {
+  return response.choices[0].delta.content;
 };
 
 // Admin access to Supabase, bypassing RLS.
-const supabaseAdmin = createServiceRoleSupabaseClient();
+const supabaseAdmin = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+);
 
 const allowedMethods = ['POST'];
 
-const buildFullPrompt = (
-  template: string,
-  context: string,
-  prompt: string,
+const buildSystemMessage = (
+  systemPromptTemplate: string,
+  contextSections: string,
   iDontKnowMessage: string,
-  contextTemplateKeyword: string,
-  promptTemplateKeyword: string,
-  iDontKnowTemplateKeyword: string,
-  // If the template does not contain the {{CONTEXT}} keyword, we inject
-  // the context by default. This can be prevented by setting the
-  // `doNotInjectContext` variable to true.
   doNotInjectContext = false,
-  // Same with query
-  doNotInjectPrompt = false,
 ) => {
-  let _template = template.replace(
-    iDontKnowTemplateKeyword,
-    iDontKnowMessage || I_DONT_KNOW,
+  if (doNotInjectContext) {
+    return systemPromptTemplate;
+  }
+
+  return stripIndent(
+    `${systemPromptTemplate}\n\nBelow is a set of context sections which may contain valuable information to answer the question. It is in the form of sections preceded by a section id. If you are unsure and the answer is not explicitly written in the provided sections, say "${
+      iDontKnowMessage || "I don't know"
+    }". You should not mention that the answer is based on this context.\n\n---\n${contextSections}\n---`,
   );
-
-  if (template.includes(contextTemplateKeyword)) {
-    _template = _template.replace(contextTemplateKeyword, context);
-  } else if (!doNotInjectContext) {
-    _template = `Here is some context which might contain valuable information to answer the question. It is in the form of sections preceded by a section id:\n\n---\n\n${context}\n\n---\n\n${_template}`;
-  }
-
-  if (template.includes(promptTemplateKeyword)) {
-    _template = _template.replace(promptTemplateKeyword, prompt);
-  } else if (!doNotInjectPrompt) {
-    _template = `${_template}\n\nPrompt: ${prompt}\n`;
-  }
-
-  return stripIndent(_template);
 };
 
 export default async function handler(req: NextRequest) {
@@ -163,7 +156,8 @@ export default async function handler(req: NextRequest) {
   try {
     let params = await req.json();
 
-    const prompt = (params.prompt as string)?.substring(0, MAX_PROMPT_LENGTH);
+    const messages = params.messages;
+
     const iDontKnowMessage =
       (params.i_dont_know_message as string) || // v1
       (params.iDontKnowMessage as string) || // v0
@@ -191,7 +185,7 @@ export default async function handler(req: NextRequest) {
     // TODO: need to investigate the difference between a request
     // from the dashboard (2nd case here) and a request from
     // an external origin (1st case here).
-    if (lastPathComponent === 'completions') {
+    if (lastPathComponent === 'chat') {
       projectIdParam = searchParams.get('project');
     } else {
       projectIdParam = pathname.split('/').slice(-1)[0];
@@ -202,14 +196,19 @@ export default async function handler(req: NextRequest) {
       return new Response('Project not found', { status: 400 });
     }
 
-    if (!prompt) {
-      console.error(`[COMPLETIONS] [${projectIdParam}] No prompt provided`);
-      return new Response('No prompt provided', { status: 400 });
+    if (!isChatMessages(messages)) {
+      console.error(
+        `[COMPLETIONS] [${projectIdParam}] No messages or malformatted messages provided.`,
+      );
+
+      return new Response('No messages or malformatted messages provided.', {
+        status: 400,
+      });
     }
 
     const projectId = projectIdParam as Project['id'];
 
-    // Apply rate limits, in additional to middleware rate limits.
+    // Apply completions rate limits, in addition to middleware rate limits.
     const rateLimitResult = await checkCompletionsRateLimits({
       value: projectId,
       type: 'projectId',
@@ -220,6 +219,7 @@ export default async function handler(req: NextRequest) {
       return new Response('Too many requests', { status: 429 });
     }
 
+    // todo: add support for messages to insights
     let insightsType: InsightsType | undefined = 'advanced';
     if (!isRequestFromMarkprompt(req.headers.get('origin'))) {
       // Custom model configurations are part of the Pro and Enterprise plans
@@ -237,14 +237,22 @@ export default async function handler(req: NextRequest) {
       insightsType = teamTierInfo && getAccessibleInsightsType(teamTierInfo);
     }
 
-    const modelInfo = stringToLLMInfo(params?.model);
+    const modelId = getSupportedChatModelValueOrFallback(
+      stringToLLMInfo(params?.model).model,
+    );
 
     const { byoOpenAIKey } = await getProjectConfigData(
       supabaseAdmin,
       projectId,
     );
 
-    const sanitizedQuery = prompt.trim().replaceAll('\n', ' ');
+    const lastMessage = messages[messages.length - 1].content;
+    const sanitizedQuery = lastMessage.trim().replace('\n', ' ');
+
+    const pastUserMessages = messages
+      .slice(0, -1)
+      .filter((m) => m.role === 'user')
+      .map((m) => m.content);
 
     const sectionsTs = Date.now();
 
@@ -253,7 +261,7 @@ export default async function handler(req: NextRequest) {
     try {
       const sectionsResponse = await getMatchingSections(
         sanitizedQuery,
-        prompt,
+        lastMessage,
         params.sectionsMatchThreshold,
         params.sectionsMatchCount,
         projectId,
@@ -263,11 +271,39 @@ export default async function handler(req: NextRequest) {
       );
       fileSections = sectionsResponse.fileSections;
       promptEmbedding = sectionsResponse.promptEmbedding;
+
+      if (pastUserMessages.length > 0) {
+        // Find context sections for past messages
+        const combinedMessage = pastUserMessages.join('\n\n');
+        const sanitizedCombinedMessage = combinedMessage
+          .trim()
+          .replace('\n', ' ');
+        const sectionsResponse = await getMatchingSections(
+          sanitizedCombinedMessage,
+          sanitizedCombinedMessage,
+          params.sectionsMatchThreshold,
+          5,
+          projectId,
+          byoOpenAIKey,
+          'completions',
+          supabaseAdmin,
+        );
+        for (const section of sectionsResponse.fileSections) {
+          // Make sure not to include redundant sections
+          if (
+            !fileSections.some((s) => {
+              return s.file_sections_content === section.file_sections_content;
+            })
+          ) {
+            fileSections.push(section);
+          }
+        }
+      }
     } catch (e) {
       const promptId = await storePromptOrPlaceholder(
         supabaseAdmin,
         projectId,
-        prompt,
+        lastMessage,
         undefined,
         promptEmbedding,
         'no_sections',
@@ -305,12 +341,27 @@ export default async function handler(req: NextRequest) {
 
     let numTokens = 0;
     let contextText = '';
+
+    // todo: should we create references for each message?
     const references: FileSectionReference[] = [];
+    const systemPrompt =
+      (params.systemPrompt as string) || DEFAULT_SYSTEM_PROMPT.template!;
+
+    const approxMessagesTokens =
+      approximatedTokenCount(systemPrompt) +
+      messages.reduce((acc, m) => acc + approximatedTokenCount(m.content), 0);
+
+    const maxTokensWithBuffer =
+      0.9 * getChatCompletionModelMaxTokenCount(modelId);
+    const maxCompletionTokens = (params.maxTokens ?? 500) as number;
 
     for (const section of fileSections) {
       numTokens += section.file_sections_token_count;
 
-      if (numTokens >= CONTEXT_TOKENS_CUTOFF) {
+      if (
+        approxMessagesTokens + maxCompletionTokens + numTokens >=
+        maxTokensWithBuffer
+      ) {
         break;
       }
 
@@ -330,29 +381,40 @@ export default async function handler(req: NextRequest) {
 
     const referencePaths = references.map((r) => r.file.path);
 
-    const fullPrompt = buildFullPrompt(
-      (params.systemPrompt as string) || DEFAULT_SYSTEM_PROMPT.template!,
+    const fullSystemMessage = buildSystemMessage(
+      systemPrompt,
       contextText,
-      sanitizedQuery,
       iDontKnowMessage,
-      params.contextTag || '{{CONTEXT}}',
-      params.promptTag || '{{PROMPT}}',
-      params.idkTag || '{{I_DONT_KNOW}}',
       !!params.doNotInjectContext,
-      !!params.doNotInjectPrompt,
     );
 
+    const messagesWithSystemMessage = [
+      {
+        role: 'system',
+        content: fullSystemMessage,
+      },
+      ...messages,
+    ] satisfies ChatMessage[];
+
     const payload = getPayload(
-      fullPrompt,
-      modelInfo.model,
-      params.temperature || 0.1,
-      params.topP || 1,
-      params.frequencyPenalty || 0,
-      params.presencePenalty || 0,
-      params.maxTokens || 500,
+      messagesWithSystemMessage,
+      modelId,
+      params.temperature ?? 0.1,
+      params.topP ?? 1,
+      params.frequencyPenalty ?? 0,
+      params.presencePenalty ?? 0,
+      maxCompletionTokens,
       stream,
     );
-    const url = getCompletionsUrl(modelInfo.model);
+
+    // console.log(
+    //   'Input tokens',
+    //   approximatedTokenCount(
+    //     messagesWithSystemMessage.map((m) => m.content).join('\n'),
+    //   ),
+    // );
+
+    const url = getChatCompletionsUrl();
 
     const res = await fetch(url, {
       headers: {
@@ -366,10 +428,8 @@ export default async function handler(req: NextRequest) {
     });
 
     const debugInfo = {
-      fullPrompt,
-      ts: {
-        sections: sectionsDelta,
-      },
+      fullSystemMessage,
+      ts: { sections: sectionsDelta },
     };
 
     if (!stream) {
@@ -378,7 +438,7 @@ export default async function handler(req: NextRequest) {
         const promptId = await storePromptOrPlaceholder(
           supabaseAdmin,
           projectId,
-          prompt,
+          lastMessage,
           undefined,
           promptEmbedding,
           'api_error',
@@ -397,19 +457,20 @@ export default async function handler(req: NextRequest) {
       } else {
         const json = await res.json();
         // TODO: track token count
-        const tokenCount = safeParseInt(json.usage.total_tokens, 0);
-        await recordProjectTokenCount(
-          projectId,
-          modelInfo,
-          tokenCount,
-          'completions',
-        );
-        const text = getCompletionsResponseText(json, modelInfo.model);
+        // const tokenCount = safeParseInt(json.usage.total_tokens, 0);
+        // console.log('json', JSON.stringify(json, null, 2));
+        // await recordProjectTokenCount(
+        //   projectId,
+        //   modelWithType,
+        //   tokenCount,
+        //   'completions',
+        // );
+        const text = getChatCompletionsResponseText(json);
         const idk = isIDontKnowResponse(text, iDontKnowMessage);
         const promptId = await storePromptOrPlaceholder(
           supabaseAdmin,
           projectId,
-          prompt,
+          lastMessage,
           text,
           promptEmbedding,
           idk ? 'idk' : undefined,
@@ -453,7 +514,7 @@ export default async function handler(req: NextRequest) {
     const promptId = await storePromptOrPlaceholder(
       supabaseAdmin,
       projectId,
-      prompt,
+      lastMessage,
       '',
       promptEmbedding,
       undefined,
@@ -484,7 +545,7 @@ export default async function handler(req: NextRequest) {
                 didSendHeader = true;
               }
               const json = JSON.parse(data);
-              const text = getChunkText(json, modelInfo.model);
+              const text = getChunkText(json);
               if (text?.length > 0) {
                 responseText += text;
               }
@@ -503,7 +564,9 @@ export default async function handler(req: NextRequest) {
 
         const parser = createParser(onParse);
 
-        for await (const chunk of res.body as any) {
+        // @ts-expect-error - Type 'ReadableStream<Uint8Array>' is not an array type or a string type.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        for await (const chunk of res.body!) {
           parser.feed(decoder.decode(chunk));
         }
 
@@ -513,17 +576,21 @@ export default async function handler(req: NextRequest) {
         // const tokenizer = new GPT3Tokenizer({ type: 'gpt3' });
         // const allTextEncoded = tokenizer.encode(allText);
         // const tokenCount = allTextEncoded.text.length;
-        const allText = fullPrompt + responseText;
-        const estimatedTokenCount = approximatedTokenCount(allText);
 
-        if (!byoOpenAIKey) {
-          await recordProjectTokenCount(
-            projectId,
-            modelInfo,
-            estimatedTokenCount,
-            'completions',
-          );
-        }
+        // TODO: track token count
+        // const allText =
+        //   messagesWithSystemMessage.map((m) => m.content).join('\n') +
+        //   responseText;
+        // const estimatedTokenCount = Math.round(allText.length / 4);
+
+        // if (!byoOpenAIKey) {
+        //   await recordProjectTokenCount(
+        //     projectId,
+        //     modelWithType,
+        //     estimatedTokenCount,
+        //     'completions',
+        //   );
+        // }
 
         if (promptId) {
           const idk = isIDontKnowResponse(responseText, iDontKnowMessage);

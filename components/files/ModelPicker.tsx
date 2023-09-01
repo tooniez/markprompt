@@ -54,15 +54,6 @@ export const ModelPicker: FC<ModelPickerProps> = () => {
                 );
               })}
             </Select.Group>
-            <Select.Group>
-              {SUPPORTED_MODELS.completions.map((m) => {
-                return (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                );
-              })}
-            </Select.Group>
           </Select.Viewport>
           <Select.ScrollDownButton className="flex items-center justify-center p-2">
             <ChevronDown className="h-4 w-4" />

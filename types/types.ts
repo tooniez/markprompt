@@ -195,8 +195,13 @@ export type FileSectionsData = {
 // the code snippets accordingly.
 export type SerializableMarkpromptOptions = Omit<
   MarkpromptOptions,
-  'references' | 'search'
+  'prompt' | 'references' | 'search'
 > & {
+  prompt?: MarkpromptOptions['prompt'] & {
+    // TODO: remove after `systemPrompt` is part of the released library
+    systemPrompt?: string;
+  };
+} & {
   references?: MarkpromptOptions['references'] & {
     serializedGetHref?: string;
     serializedGetLabel?: string;
@@ -205,3 +210,5 @@ export type SerializableMarkpromptOptions = Omit<
     serializedGetHref?: string;
   };
 };
+
+export type OpenAIErrorResponse = any;

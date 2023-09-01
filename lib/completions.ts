@@ -11,16 +11,18 @@ import {
   ApiError,
   DbQueryStat,
   FileSectionMatchResult,
+  OpenAIErrorResponse,
   Project,
 } from '@/types/types';
 
 import { createEmbedding, createModeration } from './openai.edge';
+import { InsightsType } from './stripe/tiers';
 import { recordProjectTokenCount } from './tinybird';
 import { stringToLLMInfo } from './utils';
 
 export type PromptNoResponseReason = 'no_sections' | 'idk' | 'api_error';
 
-export const storePrompt = async (
+const storePrompt = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
   prompt: string | undefined,
@@ -93,11 +95,27 @@ export const getMatchingSections = async (
     byoOpenAIKey,
   );
 
+  if ('error' in moderationResponse) {
+    console.error(
+      `[${source.toUpperCase()}] [CREATE-EMBEDDING] [${projectId}] - Error moderating content for prompt '${verbatimPrompt}': ${
+        moderationResponse.error
+      }`,
+    );
+    throw new ApiError(
+      400,
+      `Content moderation failed: ${moderationResponse.error.message}`,
+    );
+  }
+
   if (moderationResponse?.results?.[0]?.flagged) {
     throw new ApiError(400, 'Flagged content');
   }
 
-  let embeddingResult: CreateEmbeddingResponse | any | undefined = undefined;
+  let embeddingResult:
+    | CreateEmbeddingResponse
+    | OpenAIErrorResponse
+    | undefined = undefined;
+
   try {
     // Retry with exponential backoff in case of error. Typical cause is
     // too_many_requests.
@@ -110,7 +128,7 @@ export const getMatchingSections = async (
       },
     );
 
-    if (embeddingResult.error) {
+    if ('error' in embeddingResult) {
       throw new ApiError(400, embeddingResult.error.message);
     }
 
@@ -179,4 +197,65 @@ export const getMatchingSections = async (
   }
 
   return { fileSections, promptEmbedding };
+};
+
+export const getHeaders = (
+  references: FileSectionReference[],
+  promptId: DbQueryStat['id'] | undefined = undefined,
+) => {
+  // Headers cannot include non-UTF-8 characters, so make sure any strings
+  // we pass in the headers are properly encoded before sending.
+  const headers = new Headers();
+  const headerEncoder = new TextEncoder();
+  const encodedHeaderData = headerEncoder
+    .encode(JSON.stringify({ references, promptId }))
+    .toString();
+
+  headers.append('Content-Type', 'application/json');
+  headers.append('x-markprompt-data', encodedHeaderData);
+  return headers;
+};
+
+export const storePromptOrPlaceholder = async (
+  supabase: SupabaseClient<Database>,
+  projectId: Project['id'],
+  prompt: string,
+  responseText: string | undefined,
+  promptEmbedding: number[] | undefined,
+  errorReason: PromptNoResponseReason | undefined,
+  references: FileSectionReference[],
+  insightsType: InsightsType | undefined,
+  // If true, only the event will be stored for global counts.
+  excludeData: boolean,
+  // If true, the stat will be marked as `unprocessed` and will
+  // be processed to redact sensited info.
+  redact: boolean,
+): Promise<DbQueryStat['id'] | undefined> => {
+  if (excludeData) {
+    return storePrompt(
+      supabase,
+      projectId,
+      undefined,
+      undefined,
+      undefined,
+      errorReason,
+      undefined,
+      redact,
+    );
+  } else {
+    // Store prompt always.
+    // Store response in >= basic insights.
+    // Store embeddings in >= advanced insights.
+    // Store references in >= basic insights.
+    return storePrompt(
+      supabase,
+      projectId,
+      prompt,
+      insightsType ? responseText : undefined,
+      insightsType === 'advanced' ? promptEmbedding : undefined,
+      errorReason,
+      insightsType ? references : undefined,
+      redact,
+    );
+  }
 };

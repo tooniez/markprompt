@@ -15,7 +15,7 @@ import {
   videoTag,
 } from '@/components/layouts/MarkdocLayout';
 
-import { DEFAULT_PROMPT_TEMPLATE } from './prompt';
+import { DEFAULT_SYSTEM_PROMPT } from './prompt';
 
 export const getMarkdocStaticProps = async (pageId: string) => {
   const res = await fetch(`https://api.motif.land/v1/exports/raw/${pageId}`);
@@ -36,7 +36,7 @@ export const getMarkdocStaticProps = async (pageId: string) => {
       ...iconTags,
     },
     variables: {
-      defaultPromptTemplate: DEFAULT_PROMPT_TEMPLATE.template,
+      defaultPromptTemplate: DEFAULT_SYSTEM_PROMPT.template,
     },
   };
 

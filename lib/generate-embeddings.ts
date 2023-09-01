@@ -304,6 +304,11 @@ export const generateFileEmbeddingsAndSaveFile = async (
         },
       );
 
+      if ('error' in embeddingResult) {
+        await revertFileProcessing(supabaseAdmin, fileId);
+        throw embeddingResult.error;
+      }
+
       embeddingsTokenCount += embeddingResult.usage?.total_tokens ?? 0;
 
       if (embeddingsTokenCount > numRemainingTokensOnPlan) {
