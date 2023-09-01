@@ -26,6 +26,7 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.googleusercontent.com' },
       { protocol: 'https', hostname: '**.githubusercontent.com' },
       { protocol: 'https', hostname: '**.cloudinary.com' },
+      { protocol: 'https', hostname: '**.slack-edge.com' },
     ],
   },
   modularizeImports: {
