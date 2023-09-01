@@ -102,7 +102,7 @@ export const DEFAULT_TIERS: Tier[] = [
     items: [
       '600K tokens* (≈ 500 documents)',
       '1000 GPT-4 completions per month',
-      'Prompt templates',
+      'Custom system prompts',
       'Model customization',
       'Basic insights',
     ],

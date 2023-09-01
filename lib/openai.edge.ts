@@ -1,7 +1,10 @@
 // IMPORTANT: this code needs to be able to run on the Vercel edge runtime.
 // Make sure no Node.js APIs are called/imported transitively.
 
-import { OpenAIEmbeddingsModelId } from '@markprompt/core';
+import {
+  OpenAIChatCompletionsModelId,
+  OpenAIEmbeddingsModelId,
+} from '@markprompt/core';
 import { CreateEmbeddingResponse, CreateModerationResponse } from 'openai';
 
 import { OpenAIErrorResponse } from '@/types/types';
@@ -48,4 +51,15 @@ export const createEmbedding = async (
       input: input.trim().replaceAll('\n', ' '),
     }),
   }).then((r) => r.json());
+};
+
+export const getChatCompletionModelMaxTokenCount = (
+  modelId: OpenAIChatCompletionsModelId,
+) => {
+  switch (modelId) {
+    case 'gpt-3.5-turbo':
+      return 4097;
+    case 'gpt-4':
+      return 8192;
+  }
 };

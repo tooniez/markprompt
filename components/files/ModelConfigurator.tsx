@@ -14,7 +14,7 @@ import { canConfigureModel } from '@/lib/stripe/tiers';
 
 import { ModelPicker } from './ModelPicker';
 import { Row } from './PlaygroundDashboard';
-import { TemplatePicker } from './TemplatePicker';
+import { SystemPromptPicker } from './SystemPromptPicker';
 import { UpgradeNote } from './UpgradeNote';
 import { AccordionContent, AccordionTrigger } from '../ui/Accordion';
 import Button, { ButtonOrLinkWrapper } from '../ui/Button';
@@ -62,7 +62,7 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
       <Row
         label={
           <div className="flex flex-row items-center gap-2">
-            Prompt template
+            System prompt
             {!_canConfigureModel && (
               <ButtonOrLinkWrapper
                 className="mr-1 flex flex-none items-center rounded-full"
@@ -76,18 +76,18 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
           </div>
         }
       >
-        <TemplatePicker />
+        <SystemPromptPicker />
       </Row>
       <div className="mt-1 flex w-full flex-col">
         <NoAutoTextArea
-          value={markpromptOptions.prompt?.promptTemplate}
-          className="h-[400px] w-full"
+          value={markpromptOptions.prompt?.systemPrompt}
+          className="h-[200px] w-full"
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             setMarkpromptOptions({
               ...markpromptOptions,
               prompt: {
                 ...markpromptOptions.prompt,
-                promptTemplate: event.target.value,
+                systemPrompt: event.target.value,
               },
             });
           }}
@@ -99,7 +99,9 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
           className="button-ring mt-4 mb-4 flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
         >
           <Info className="h-4 w-4 text-neutral-300" />
-          <span className="subtle-underline">Learn more about templates</span>
+          <span className="subtle-underline">
+            Learn more about system prompts
+          </span>
         </Link>
       </div>
       <Accordion.Root className="mt-2 w-full" type="single" collapsible>

@@ -21,7 +21,7 @@ import {
   STREAM_SEPARATOR,
 } from '@/lib/constants';
 import { track } from '@/lib/posthog';
-import { DEFAULT_PROMPT_TEMPLATE } from '@/lib/prompt';
+import { DEFAULT_SYSTEM_PROMPT } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import {
   canUseCustomModelConfig,
@@ -41,7 +41,11 @@ import {
   stringToLLMInfo,
 } from '@/lib/utils';
 import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
-import { isFalsyQueryParam, isTruthyQueryParam } from '@/lib/utils.nodeps';
+import {
+  approximatedTokenCount,
+  isFalsyQueryParam,
+  isTruthyQueryParam,
+} from '@/lib/utils.nodeps';
 import {
   ApiError,
   DbQueryStat,
@@ -327,7 +331,7 @@ export default async function handler(req: NextRequest) {
     const referencePaths = references.map((r) => r.file.path);
 
     const fullPrompt = buildFullPrompt(
-      (params.promptTemplate as string) || DEFAULT_PROMPT_TEMPLATE.template!,
+      (params.systemPrompt as string) || DEFAULT_SYSTEM_PROMPT.template!,
       contextText,
       sanitizedQuery,
       iDontKnowMessage,
@@ -510,7 +514,7 @@ export default async function handler(req: NextRequest) {
         // const allTextEncoded = tokenizer.encode(allText);
         // const tokenCount = allTextEncoded.text.length;
         const allText = fullPrompt + responseText;
-        const estimatedTokenCount = Math.round(allText.length / 4);
+        const estimatedTokenCount = approximatedTokenCount(allText);
 
         if (!byoOpenAIKey) {
           await recordProjectTokenCount(
