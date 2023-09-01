@@ -37,7 +37,7 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
             <Auth
               view={type === 'signup' ? 'sign_up' : 'sign_in'}
               redirectTo={getAppOrigin() + '/'}
-              onlyThirdPartyProviders
+              magicLink
               socialLayout="vertical"
               providers={['github', 'google', 'azure', 'slack']}
               providerScopes={{ azure: 'email' }}
