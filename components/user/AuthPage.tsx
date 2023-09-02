@@ -64,6 +64,7 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
               className="w-full"
               variant="bordered"
               href="/login/email"
+              asLink
             >
               Continue with email
             </Button>
