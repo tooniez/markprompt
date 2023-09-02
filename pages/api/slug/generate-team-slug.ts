@@ -3,6 +3,7 @@ import { SupabaseClient } from '@supabase/auth-helpers-react';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { MIN_SLUG_LENGTH } from '@/lib/constants';
+import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 
 type Data =
@@ -26,7 +27,7 @@ const RESERVED_TEAM_SLUGS = [
 ];
 
 export const isTeamSlugAvailable = async (
-  supabase: SupabaseClient<Database>,
+  supabaseWithServiceRole: SupabaseClient<Database>,
   slug: string,
 ) => {
   if (
@@ -36,27 +37,38 @@ export const isTeamSlugAvailable = async (
   ) {
     return false;
   }
-  const { count } = await supabase
+
+  const { count } = await supabaseWithServiceRole
     .from('teams')
     .select('slug', { count: 'exact' })
     .eq('slug', slug);
+
   return count === 0;
 };
 
 export const getAvailableTeamSlug = async (
-  supabase: SupabaseClient<Database>,
+  supabaseWithServiceRole: SupabaseClient<Database>,
   baseSlug: string,
 ) => {
   let candidateSlug = baseSlug;
   let attempt = 0;
-  let isAvailable = await isTeamSlugAvailable(supabase, candidateSlug);
+  let isAvailable = await isTeamSlugAvailable(
+    supabaseWithServiceRole,
+    candidateSlug,
+  );
   while (!isAvailable) {
-    isAvailable = await isTeamSlugAvailable(supabase, candidateSlug);
     attempt++;
     candidateSlug = `${baseSlug}-${attempt}`;
+    isAvailable = await isTeamSlugAvailable(
+      supabaseWithServiceRole,
+      candidateSlug,
+    );
   }
   return candidateSlug;
 };
+
+// Admin access to Supabase, bypassing RLS.
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 export default async function handler(
   req: NextApiRequest,
@@ -77,7 +89,7 @@ export default async function handler(
   }
 
   const candidate = req.body.candidate;
-  const slug = await getAvailableTeamSlug(supabase, candidate);
+  const slug = await getAvailableTeamSlug(supabaseAdmin, candidate);
 
   return res.status(200).json(slug);
 }

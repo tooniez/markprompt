@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 
 import { isTeamSlugAvailable } from './generate-team-slug';
@@ -13,6 +14,9 @@ type Data =
   | boolean;
 
 const allowedMethods = ['POST'];
+
+// Admin access to Supabase, bypassing RLS.
+const supabaseAdmin = createServiceRoleSupabaseClient();
 
 export default async function handler(
   req: NextApiRequest,
@@ -32,7 +36,7 @@ export default async function handler(
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const isAvailable = await isTeamSlugAvailable(supabase, req.body.slug);
+  const isAvailable = await isTeamSlugAvailable(supabaseAdmin, req.body.slug);
 
   return res.status(200).json(isAvailable);
 }

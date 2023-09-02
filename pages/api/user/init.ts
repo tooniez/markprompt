@@ -44,7 +44,7 @@ export default async function handler(
   }
 
   // Check if personal team already exists
-  let { data: team } = await supabase
+  let { data: team } = await supabaseAdmin
     .from('teams')
     .select('id')
     .match({ created_by: session.user.id, is_personal: true })
@@ -73,7 +73,10 @@ export default async function handler(
       candidateSlug = generateRandomSlug();
     }
 
-    const slug = await getAvailableTeamSlug(supabase, candidateSlug);
+    // Important to use Supabase with service role key here, as we
+    // need to read the team table for existing teams with the slug,
+    // and this team might not be accessible to the user of this session.
+    const slug = await getAvailableTeamSlug(supabaseAdmin, candidateSlug);
 
     // We must use the admin database here, because RLS prevents a
     // user from selecting a team before they have been added as

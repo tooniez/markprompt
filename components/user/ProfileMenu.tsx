@@ -35,7 +35,13 @@ const ProfileMenu = () => {
               src={session?.user?.user_metadata?.avatar_url}
             />
           ) : (
-            <div className="h-5 w-5 rounded-full bg-neutral-700" />
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-700 text-xs font-medium text-neutral-300">
+              {(
+                user?.full_name?.charAt(0) ||
+                user?.email?.charAt(0) ||
+                '?'
+              ).toUpperCase()}
+            </div>
           )}
         </button>
       </DropdownMenu.Trigger>

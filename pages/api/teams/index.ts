@@ -50,7 +50,7 @@ export default async function handler(
     }
   } else if (req.method === 'POST') {
     const { candidateSlug, isPersonal, ...rest } = req.body;
-    const slug = await getAvailableTeamSlug(supabase, candidateSlug);
+    const slug = await getAvailableTeamSlug(supabaseAdmin, candidateSlug);
 
     // We must use the admin database here, because RLS prevents a
     // user from selecting a team before they have been added as
