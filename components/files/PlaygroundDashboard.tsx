@@ -595,13 +595,6 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     markpromptOptions,
   ]);
 
-  console.log(
-    'isOnboarding',
-    isOnboarding,
-    'isPlaygroundVisible',
-    isPlaygroundVisible,
-  );
-
   return (
     <div className="absolute inset-0 grid grid-cols-1 sm:grid-cols-4">
       <div className="relative h-full">
