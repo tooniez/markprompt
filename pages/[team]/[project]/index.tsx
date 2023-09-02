@@ -28,6 +28,7 @@ import { UpgradeNote } from '@/components/files/UpgradeNote';
 import * as GitHub from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
+import Onboarding from '@/components/onboarding/Onboarding';
 import Button from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { SkeletonTable } from '@/components/ui/Skeletons';
@@ -39,6 +40,7 @@ import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
+import useUser from '@/lib/hooks/use-user';
 import {
   getAccessoryLabelForSource,
   getIconForSource,
@@ -174,6 +176,7 @@ const hasNonFileSources = (sources: DbSource[]) => {
 };
 
 const Data = () => {
+  const { user, loading: loadingUser } = useUser();
   const { team } = useTeam();
   const { project } = useProject();
   const {
@@ -347,6 +350,10 @@ const Data = () => {
   const hasFiles = paginatedFiles && paginatedFiles.length > 0;
   const canTrain = hasFiles || hasNonFileSources(sources);
   const canAddMoreContent = numTokensPerTeamRemainingAllowance > 0;
+
+  if (!loadingUser && !user?.has_completed_onboarding) {
+    return <Onboarding />;
+  }
 
   return (
     <ProjectSettingsLayout

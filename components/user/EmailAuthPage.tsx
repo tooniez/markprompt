@@ -1,26 +1,21 @@
 import { useSession } from '@supabase/auth-helpers-react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeMinimal } from '@supabase/auth-ui-shared';
-import { Mail, MessagesSquare } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { FC } from 'react';
 
 import { MarkpromptIcon } from '@/components/icons/Markprompt';
 import Button from '@/components/ui/Button';
-import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import useUser from '@/lib/hooks/use-user';
 import { getPublicAnonSupabase } from '@/lib/supabase';
 import { getAppOrigin } from '@/lib/utils.edge';
 
 import { ContactWindow } from './ChatWindow';
 
-type AuthPageProps = {
-  type: 'signin' | 'signup';
-};
-
 const supabase = getPublicAnonSupabase();
 
-const AuthPage: FC<AuthPageProps> = ({ type }) => {
+const EmailAuthPage: FC = () => {
   const session = useSession();
   const { signOut } = useUser();
 
@@ -35,12 +30,10 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
         <>
           <div className="mx-auto mt-16 max-w-sm">
             <Auth
-              view={type === 'signup' ? 'sign_up' : 'sign_in'}
+              view="magic_link"
               redirectTo={getAppOrigin() + '/'}
-              onlyThirdPartyProviders
-              socialLayout="vertical"
-              providers={['github', 'google', 'azure']}
-              providerScopes={{ azure: 'email' }}
+              magicLink
+              providers={[]}
               showLinks={false}
               otpType="magiclink"
               supabaseClient={supabase}
@@ -59,27 +52,12 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
                 },
               }}
             />
-            <Button
-              Icon={Mail}
-              className="w-full"
-              variant="bordered"
-              href="/login/email"
+            <Link
+              className="mt-8 flex items-center justify-center gap-2 text-center text-sm text-neutral-300"
+              href="/login"
             >
-              Continue with email
-            </Button>
-            <p className="mt-16 mb-4 text-center text-sm text-neutral-500">
-              Have a custom company use case?
-            </p>
-            <Button
-              Icon={MessagesSquare}
-              className="w-full"
-              variant="bordered"
-              onClick={() => {
-                emitter.emit(EVENT_OPEN_CONTACT);
-              }}
-            >
-              Get enterprise assistance
-            </Button>
+              <ArrowLeft className="h-4 w-4" /> Other login options
+            </Link>
           </div>
 
           <p className="mt-12 text-center text-sm text-neutral-500">
@@ -110,4 +88,4 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
   );
 };
 
-export default AuthPage;
+export default EmailAuthPage;
