@@ -931,9 +931,9 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                       setTimeout(() => {
                         setPlaygroundLoaded(true);
                       }, 100);
-                      setTimeout(() => {
-                        setDidCompleteFirstQuery(true);
-                      }, 5000);
+                      // setTimeout(() => {
+                      //   setDidCompleteFirstQuery(true);
+                      // }, 5000);
                     }}
                   />
                 </div>
