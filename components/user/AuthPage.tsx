@@ -59,14 +59,14 @@ const AuthPage: FC<AuthPageProps> = ({ type }) => {
                 },
               }}
             />
-            {/* <Button
+            <Button
               Icon={Mail}
               className="w-full"
               variant="bordered"
               href="/login/email"
             >
               Continue with email
-            </Button> */}
+            </Button>
             <p className="mt-16 mb-4 text-center text-sm text-neutral-500">
               Have a custom company use case?
             </p>
