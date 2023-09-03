@@ -8,19 +8,12 @@ export const XIcon: FC<XIconProps> = ({ className }) => {
   return (
     <svg
       className={className}
-      viewBox="0 0 16 16"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
+      viewBox="0 0 24 24"
+      fill="currentColor"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
-        d="M0.5 0.5H5.75L9.48421 5.71053L14 0.5H16L10.3895 6.97368L16.5 15.5H11.25L7.51579 10.2895L3 15.5H1L6.61053 9.02632L0.5 0.5ZM12.0204 14L3.42043 2H4.97957L13.5796 14H12.0204Z"
-        fill="currentColor"
-      ></path>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
     </svg>
   );
 };
