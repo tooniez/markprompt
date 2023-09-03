@@ -400,7 +400,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             <Link href="/legal/terms">Terms</Link>
             <Link href="/legal/privacy">Privacy</Link>
             <a
-              href="https://github.com/orgs/motifland/projects/3"
+              href="https://github.com/orgs/motifland/projects/3/views/3"
               rel="noreferrer"
               target="_blank"
             >
