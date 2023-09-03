@@ -10,7 +10,7 @@ import { AngeListIcon } from '@/components/icons/AngelList';
 import { CalIcon } from '@/components/icons/Cal';
 import { GitHubIcon } from '@/components/icons/GitHub';
 import { MarkpromptIcon } from '@/components/icons/Markprompt';
-import { TwitterIcon } from '@/components/icons/Twitter';
+import { XIcon } from '@/components/icons/X';
 import LandingNavbar from '@/components/layouts/LandingNavbar';
 import { Blurs } from '@/components/ui/Blurs';
 import Button from '@/components/ui/Button';
@@ -418,10 +418,10 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             </a>
             <a
               className="transition hover:text-neutral-500"
-              href="https://twitter.com/markprompt"
-              aria-label="Markprompt on Twitter"
+              href="https://x.com/markprompt"
+              aria-label="Markprompt on X"
             >
-              <TwitterIcon className="h-5 w-5" />
+              <XIcon className="h-5 w-5" />
             </a>
             <a
               className="transition hover:text-neutral-500"

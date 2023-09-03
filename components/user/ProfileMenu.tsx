@@ -85,11 +85,11 @@ const ProfileMenu = () => {
           <DropdownMenu.Item asChild>
             <a
               className="dropdown-menu-item dropdown-menu-item-noindent block"
-              href="https://twitter.com/markprompt"
+              href="https://x.com/markprompt"
               target="_blank"
               rel="noreferrer"
             >
-              Twitter
+              X
             </a>
           </DropdownMenu.Item>
           <DropdownMenu.Item asChild>

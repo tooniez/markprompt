@@ -9,8 +9,8 @@ Markprompt is a platform for building GPT-powered prompts. It takes Markdown, Ma
 <br />
 
 <p align="center">
-  <a href="https://twitter.com/markprompt">
-    <img alt="Twitter" src="https://img.shields.io/twitter/follow/markprompt?style=flat&label=%40markprompt&logo=twitter&color=0bf&logoColor=fff" />
+  <a href="https://x.com/markprompt">
+    <img alt="X" src="https://img.shields.io/twitter/follow/markprompt?style=flat&label=%40markprompt&logo=twitter&color=0bf&logoColor=fff" />
   </a>
   <a aria-label="NPM version" href="https://www.npmjs.com/package/markprompt">
     <img alt="NPM version" src="https://badgen.net/npm/v/markprompt">
@@ -52,7 +52,7 @@ Markprompt keeps the data as long as you need to query it. If you remove a file 
 
 ## Community
 
-- [Twitter](https://twitter.com/markprompt)
+- [X](https://x.com/markprompt)
 - [Discord](https://discord.gg/MBMh4apz6X)
 
 ## License

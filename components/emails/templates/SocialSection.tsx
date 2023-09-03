@@ -53,9 +53,9 @@ export const SocialSection: FC<SocialSectionProps> = ({
         <Row>
           <Column align="left">
             <SocialCard
-              name="Twitter"
-              cta="Follow on Twitter"
-              href="https://twitter.com/markprompt"
+              name="X"
+              cta="Follow on X"
+              href="https://x.com/markprompt"
               icon="https://res.cloudinary.com/djp21wtxm/image/upload/v1689902910/Twitter_ibapjo.png"
             />
           </Column>
