@@ -399,6 +399,13 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             <SystemStatusButton status={status} />
             <Link href="/legal/terms">Terms</Link>
             <Link href="/legal/privacy">Privacy</Link>
+            <a
+              href="https://github.com/orgs/motifland/projects/3"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Roadmap
+            </a>
           </div>
           <div className="hidden flex-row items-baseline justify-center gap-1 text-center text-sm text-neutral-500 lg:flex"></div>
           <div className="mr-0 flex flex-row items-center justify-center gap-4 text-neutral-700 sm:mr-8 sm:justify-end md:mr-12 xl:mr-0">
