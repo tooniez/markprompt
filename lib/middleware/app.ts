@@ -3,6 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { matchesGlobs } from '../utils';
 
+export const PUBLIC_NON_ROUTED_API_PATHS = [
+  '/api/oauth',
+  '/api/subscriptions/webhook',
+  '/api/support/contact',
+];
+
 const UNAUTHED_PATHS = [
   '/',
   '/home',
@@ -11,13 +17,13 @@ const UNAUTHED_PATHS = [
   '/blog/**/*',
   '/login',
   '/login/email',
+  '/login/confirm',
   '/signup',
   '/resources/**/*',
   '/legal/**/*',
-  '/api/subscriptions/webhook',
-  '/api/support/contact',
   '/s/*',
   '/embed/*',
+  ...PUBLIC_NON_ROUTED_API_PATHS,
 ];
 
 export default async function AppMiddleware(req: NextRequest) {

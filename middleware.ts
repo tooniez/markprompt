@@ -1,6 +1,8 @@
 import { NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 
-import AppMiddleware from './lib/middleware/app';
+import AppMiddleware, {
+  PUBLIC_NON_ROUTED_API_PATHS,
+} from './lib/middleware/app';
 import CompletionsMiddleware from './lib/middleware/completions';
 import EmailMiddleware from './lib/middleware/email';
 import EmbedMiddleware from './lib/middleware/embed';
@@ -23,7 +25,11 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
     return new Response('ok', { status: 200 });
   }
 
-  if (req.nextUrl.pathname.startsWith('/api/oauth/')) {
+  if (
+    PUBLIC_NON_ROUTED_API_PATHS.some((path) =>
+      req.nextUrl.pathname.startsWith(path),
+    )
+  ) {
     return NextResponse.next();
   }
 
