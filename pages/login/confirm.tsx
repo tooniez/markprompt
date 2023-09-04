@@ -45,34 +45,3 @@ const ConfirmLogin = () => {
 };
 
 export default ConfirmLogin;
-
-// export default EmailLogin;
-
-// import Head from 'next/head';
-// import { useRouter } from 'next/router';
-// import { useEffect } from 'react';
-
-// const ConfirmLogin = () => {
-//   const router = useRouter();
-
-//   useEffect(() => {
-//     if (!router.query?.confirmation_url) {
-//       return;
-//     }
-//     window.location.href = router.query.confirmation_url as string;
-//     // console.log('IN HERE', router.query.confirmation_url);
-//     // router.push(router.query.confirmation_url as string);
-//   }, [router]);
-
-//   return (
-//     <>
-//       <Head>
-//         <title>Markprompt</title>
-//       </Head>
-
-//       <p className="p-8 text-center text-sm text-neutral-500">Signing in...</p>
-//     </>
-//   );
-// };
-
-// export default ConfirmLogin;
