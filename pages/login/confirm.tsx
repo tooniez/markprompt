@@ -20,7 +20,7 @@ const ConfirmLogin = () => {
           </Link>
         </div>
         <div className="mx-auto mt-16 max-w-sm pb-2">
-          {!router.query?.confirmation_url ? (
+          {!router.query?.token ? (
             <p className="text-center text-sm text-neutral-500">
               Invalid login
             </p>
@@ -32,7 +32,10 @@ const ConfirmLogin = () => {
               <Button
                 className="w-full"
                 variant="plain"
-                href={router.query.confirmation_url as string}
+                href={`${process.env
+                  .NEXT_PUBLIC_SUPABASE_URL!}/auth/v1/verify?token=${
+                  router.query.token as string
+                }&type=magiclink&redirect_to=https://markprompt.com/`}
               >
                 Confirm sign in
               </Button>
