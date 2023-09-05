@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { MarkpromptIcon } from '@/components/icons/Markprompt';
 import Button from '@/components/ui/Button';
 
-const AcceptInvitationLogin = () => {
+const AcceptInvitation = () => {
   const router = useRouter();
 
   return (
@@ -47,4 +47,4 @@ const AcceptInvitationLogin = () => {
   );
 };
 
-export default AcceptInvitationLogin;
+export default AcceptInvitation;
