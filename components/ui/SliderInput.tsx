@@ -35,9 +35,10 @@ export const SliderInput: FC<SliderInputProps> = ({
           value={value}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             try {
-              setValue?.(
-                Math.max(min, Math.min(max, parseInt(e.target.value))),
-              );
+              const value = parseInt(e.target.value);
+              if (!isNaN(value)) {
+                setValue?.(Math.max(min, Math.min(max, value)));
+              }
             } catch {
               //
             }

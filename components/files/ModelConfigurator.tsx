@@ -81,7 +81,7 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
       <div className="mt-1 flex w-full flex-col">
         <NoAutoTextArea
           value={markpromptOptions.prompt?.systemPrompt}
-          className="h-[120px] w-full"
+          className="h-[220px] w-full"
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             setMarkpromptOptions({
               ...markpromptOptions,

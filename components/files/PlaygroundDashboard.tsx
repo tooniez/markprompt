@@ -563,6 +563,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       },
       chat: {
         ...markpromptOptions.chat,
+        enabled: true,
         apiUrl: getApiUrl('chat', false),
       },
       trigger: { floating: true },

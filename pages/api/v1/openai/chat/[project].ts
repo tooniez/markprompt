@@ -491,7 +491,10 @@ export default async function handler(req: NextRequest) {
         const headers = getHeaders(references, conversationId, promptId);
 
         return new Response(
-          `Unable to retrieve completions response: ${message}`,
+          JSON.stringify({
+            message: `Unable to retrieve completions response: ${message}`,
+            debugInfo,
+          }),
           { status: 400, headers },
         );
       } else {

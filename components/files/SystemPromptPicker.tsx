@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { FC, useMemo } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
-import { predefinedSystemPrompts } from '@/lib/prompt';
+import { DEFAULT_SYSTEM_PROMPT, predefinedSystemPrompts } from '@/lib/prompt';
 
 import { SelectItem } from '../ui/Select';
 
@@ -16,7 +16,7 @@ export const SystemPromptPicker: FC<SystemPromptPickerProps> = () => {
 
   const selectedSystemPromptName = useMemo(() => {
     return predefinedSystemPrompts.find((t) => {
-      return t.template === markpromptOptions.prompt?.systemPrompt;
+      return t.content === markpromptOptions.prompt?.systemPrompt;
     })?.name;
   }, [markpromptOptions?.prompt?.systemPrompt]);
 
@@ -25,8 +25,8 @@ export const SystemPromptPicker: FC<SystemPromptPickerProps> = () => {
       value={selectedSystemPromptName || 'Custom'}
       onValueChange={(value) => {
         const systemPrompt =
-          predefinedSystemPrompts.find((t) => t.name === value)?.template ||
-          DEFAULT_SYSTEM_PROMPT.template;
+          predefinedSystemPrompts.find((t) => t.name === value)?.content ||
+          DEFAULT_SYSTEM_PROMPT.content;
         setMarkpromptOptions({
           ...markpromptOptions,
           prompt: {
