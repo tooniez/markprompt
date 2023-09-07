@@ -96,7 +96,7 @@ export const DEFAULT_MARKPROMPT_OPTIONS_GPT4: SerializableMarkpromptOptions =
     chat: {
       ...DEFAULT_MARKPROMPT_OPTIONS.chat,
       ...DEFAULT_SUBMIT_CHAT_OPTIONS,
-      enabled: true,
+      // enabled: true,
     },
     prompt: {
       ...DEFAULT_MARKPROMPT_OPTIONS.prompt,

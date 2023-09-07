@@ -21,7 +21,6 @@ import {
   STREAM_SEPARATOR,
 } from '@/lib/constants';
 import { track } from '@/lib/posthog';
-import { DEFAULT_SYSTEM_PROMPT } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import {
   canUseCustomModelConfig,
@@ -41,7 +40,11 @@ import {
   stringToLLMInfo,
 } from '@/lib/utils';
 import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
-import { approximatedTokenCount, isTruthyQueryParam } from '@/lib/utils.nodeps';
+import {
+  approximatedTokenCount,
+  isFalsyQueryParam,
+  isTruthyQueryParam,
+} from '@/lib/utils.nodeps';
 import {
   ApiError,
   FileSectionMatchResult,
@@ -158,13 +161,19 @@ export default async function handler(req: NextRequest) {
   try {
     let params = await req.json();
 
-    const prompt = (params.prompt as string)?.substring(0, MAX_PROMPT_LENGTH);
+    // The markprompt-js component is now sending a messages list (and
+    // hits the /chat endpoint by default), so in case the client uses
+    // the /completions apiUrl, we need to make sure we understand the
+    // messages param in addition to the legacy prompt param.
+    const prompt = (
+      params.prompt || (params.messages?.[0]?.content as string)
+    )?.substring(0, MAX_PROMPT_LENGTH);
     const iDontKnowMessage =
       (params.i_dont_know_message as string) || // v1
       (params.iDontKnowMessage as string) || // v0
       I_DONT_KNOW;
 
-    const stream = isTruthyQueryParam(params.stream);
+    const stream = !isFalsyQueryParam(params.stream); // Defaults to true
     const excludeFromInsights = isTruthyQueryParam(params.excludeFromInsights);
     const redact = isTruthyQueryParam(params.redact);
 
@@ -384,7 +393,7 @@ export default async function handler(req: NextRequest) {
         return new Response(
           JSON.stringify({
             message: `Unable to retrieve completions response: ${message}`,
-            debugInfo,
+            ...(params.debug ? debugInfo : {}),
           }),
           { status: 400, headers },
         );
@@ -421,7 +430,7 @@ export default async function handler(req: NextRequest) {
             text,
             references,
             responseId: promptId,
-            debugInfo,
+            ...(params.debug ? debugInfo : {}),
           }),
           {
             status: 200,

@@ -61,5 +61,7 @@ export const getChatCompletionModelMaxTokenCount = (
       return 4097;
     case 'gpt-4':
       return 8192;
+    case 'gpt-4-32-k':
+      return 32768;
   }
 };

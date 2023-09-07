@@ -80,6 +80,7 @@ const UIConfigurator: FC<UIConfiguratorProps> = () => {
             onCheckedChange={(b: boolean) =>
               setMarkpromptOptions({
                 ...markpromptOptions,
+                defaultView: b ? markpromptOptions.defaultView : 'prompt',
                 search: {
                   ...markpromptOptions.search,
                   enabled: b,

@@ -1,8 +1,7 @@
-import { init, Tiktoken } from '@dqbd/tiktoken/lite/init';
+import { Tiktoken } from '@dqbd/tiktoken/lite/init';
 import {
   FileSectionReference,
   OpenAIChatCompletionsModelId,
-  STREAM_SEPARATOR,
 } from '@markprompt/core';
 import { stripIndent } from 'common-tags';
 import {
@@ -493,7 +492,7 @@ export default async function handler(req: NextRequest) {
         return new Response(
           JSON.stringify({
             message: `Unable to retrieve completions response: ${message}`,
-            debugInfo,
+            ...(params.debug ? debugInfo : {}),
           }),
           { status: 400, headers },
         );
@@ -531,7 +530,7 @@ export default async function handler(req: NextRequest) {
             text,
             references,
             responseId: promptId,
-            debugInfo,
+            ...(params.debug ? debugInfo : {}),
           }),
           {
             status: 200,
