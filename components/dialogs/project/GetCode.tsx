@@ -183,18 +183,18 @@ ${indentString(themeCSS, 2)}
 </style>\n`;
   }
 
-  return `<link rel="stylesheet" href="https://unpkg.com/@markprompt/css@${
+  return `<link rel="stylesheet" href="https://esm.sh/@markprompt/css@${
     MARKPROMPT_JS_PACKAGE_VERSIONS.css
-  }/markprompt.css" />
+  }?css" />
 <script>
   window.markprompt = ${indentString(
     stringify(codeOptionsToDisplay, null, 2),
     4,
   ).trim()}
 </script>
-<script async src="https://unpkg.com/@markprompt/web@${
+<script type="module" src="https://esm.sh/@markprompt/web@${
     MARKPROMPT_JS_PACKAGE_VERSIONS.web
-  }/dist/init.js"></script>
+  }/init"></script>
 
 <!-- Container for the Markprompt trigger button -->
 <div id="${containerId}" />
