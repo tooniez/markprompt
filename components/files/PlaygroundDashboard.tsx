@@ -559,7 +559,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       showBranding: markpromptOptions.showBranding,
       prompt: {
         ...markpromptOptions.prompt,
-        apiUrl: getApiUrl('completions', false),
+        apiUrl: getApiUrl('chat', false),
       },
       chat: {
         ...markpromptOptions.chat,

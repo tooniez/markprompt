@@ -17,7 +17,7 @@ export default async function EmbedMiddleware(req: NextRequest) {
     display: 'plain',
     prompt: {
       ...params.markpromptOptions.prompt,
-      apiUrl: getApiUrl('completions', false),
+      apiUrl: getApiUrl('chat', false),
     },
     search: {
       ...params.markpromptOptions.search,
