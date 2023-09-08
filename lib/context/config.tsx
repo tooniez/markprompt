@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+import { SubmitChatOptions } from '@markprompt/core';
 import { DEFAULT_MARKPROMPT_OPTIONS } from '@markprompt/react';
 import {
   createContext,
@@ -6,6 +7,7 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
+  useEffect,
 } from 'react';
 
 import { SerializableMarkpromptOptions } from '@/types/types';
@@ -13,6 +15,7 @@ import { SerializableMarkpromptOptions } from '@/types/types';
 import { modelConfigFields } from '../config';
 import useProject from '../hooks/use-project';
 import { useLocalStorage } from '../hooks/utils/use-localstorage';
+import { DEFAULT_SYSTEM_PROMPT } from '../prompt';
 import {
   defaultTheme,
   findMatchingTheme,
@@ -65,11 +68,32 @@ const removeUnserializableEntries = (
   return serializableMarkpromptOptions;
 };
 
+// TODO: remove when new markprompt-js is published.
+const DEFAULT_SUBMIT_CHAT_OPTIONS = {
+  apiUrl: 'https://api.markprompt.com/v1/chat',
+  frequencyPenalty: 0,
+  iDontKnowMessage: 'Sorry, I am not sure how to answer that.',
+  maxTokens: 500,
+  model: 'gpt-3.5-turbo',
+  presencePenalty: 0,
+  sectionsMatchCount: 5,
+  sectionsMatchThreshold: 0.5,
+  systemPrompt: DEFAULT_SYSTEM_PROMPT.content,
+  temperature: 0.1,
+  topP: 1,
+} satisfies SubmitChatOptions;
+
 export const DEFAULT_MARKPROMPT_OPTIONS_GPT4: SerializableMarkpromptOptions =
   removeUnserializableEntries({
     ...DEFAULT_MARKPROMPT_OPTIONS,
+    chat: {
+      ...DEFAULT_MARKPROMPT_OPTIONS.chat,
+      ...DEFAULT_SUBMIT_CHAT_OPTIONS,
+      // enabled: true,
+    },
     prompt: {
       ...DEFAULT_MARKPROMPT_OPTIONS.prompt,
+      ...DEFAULT_SUBMIT_CHAT_OPTIONS,
       model: 'gpt-4',
     },
     references: {
@@ -244,6 +268,23 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
           initialState.markpromptOptions.prompt!.sectionsMatchThreshold,
       },
     });
+  }, [markpromptOptions, setMarkpromptOptions]);
+
+  useEffect(() => {
+    // Migration from promptTemplate to systemPrompt
+    const promptTemplate = (markpromptOptions?.prompt as any)?.promptTemplate;
+    if (markpromptOptions && promptTemplate) {
+      setMarkpromptOptions({
+        ...markpromptOptions,
+        prompt: {
+          ...markpromptOptions.prompt,
+          // Clear promptTemplate from local storage so the migration
+          // doesn't run again
+          promptTemplate: undefined,
+          systemPrompt: promptTemplate,
+        } as any,
+      });
+    }
   }, [markpromptOptions, setMarkpromptOptions]);
 
   return (

@@ -81,7 +81,7 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
       <div className="mt-1 flex w-full flex-col">
         <NoAutoTextArea
           value={markpromptOptions.prompt?.systemPrompt}
-          className="h-[200px] w-full"
+          className="h-[220px] w-full"
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             setMarkpromptOptions({
               ...markpromptOptions,
@@ -93,7 +93,7 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
           }}
         />
         <Link
-          href="/docs#templates"
+          href="/docs#system-prompts"
           target="_blank"
           rel="noreferrer"
           className="button-ring mt-4 mb-4 flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"

@@ -59,7 +59,7 @@ export const ModelPicker: FC<ModelPickerProps> = () => {
             <ChevronDown className="h-4 w-4" />
           </Select.ScrollDownButton>
         </Select.Content>
-      </Select.Portal>{' '}
+      </Select.Portal>
     </Select.Root>
   );
 };

@@ -21,7 +21,6 @@ import {
   STREAM_SEPARATOR,
 } from '@/lib/constants';
 import { track } from '@/lib/posthog';
-import { DEFAULT_SYSTEM_PROMPT } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import {
   canUseCustomModelConfig,
@@ -48,7 +47,6 @@ import {
 } from '@/lib/utils.nodeps';
 import {
   ApiError,
-  DbQueryStat,
   FileSectionMatchResult,
   FileSectionMeta,
   OpenAIModelIdWithType,
@@ -163,26 +161,21 @@ export default async function handler(req: NextRequest) {
   try {
     let params = await req.json();
 
-    const prompt = (params.prompt as string)?.substring(0, MAX_PROMPT_LENGTH);
+    // The markprompt-js component is now sending a messages list (and
+    // hits the /chat endpoint by default), so in case the client uses
+    // the /completions apiUrl, we need to make sure we understand the
+    // messages param in addition to the legacy prompt param.
+    const prompt = (
+      params.prompt || (params.messages?.[0]?.content as string)
+    )?.substring(0, MAX_PROMPT_LENGTH);
     const iDontKnowMessage =
       (params.i_dont_know_message as string) || // v1
       (params.iDontKnowMessage as string) || // v0
       I_DONT_KNOW;
 
-    let stream = true;
-    if (isFalsyQueryParam(params.stream)) {
-      stream = false;
-    }
-
-    let excludeFromInsights = false;
-    if (isTruthyQueryParam(params.excludeFromInsights)) {
-      excludeFromInsights = true;
-    }
-
-    let redact = false;
-    if (isTruthyQueryParam(params.redact)) {
-      redact = true;
-    }
+    const stream = !isFalsyQueryParam(params.stream); // Defaults to true
+    const excludeFromInsights = isTruthyQueryParam(params.excludeFromInsights);
+    const redact = isTruthyQueryParam(params.redact);
 
     const { pathname, searchParams } = new URL(req.url);
 
@@ -253,20 +246,21 @@ export default async function handler(req: NextRequest) {
     try {
       const sectionsResponse = await getMatchingSections(
         sanitizedQuery,
-        prompt,
         params.sectionsMatchThreshold,
         params.sectionsMatchCount,
         projectId,
         byoOpenAIKey,
         'completions',
+        true,
         supabaseAdmin,
       );
       fileSections = sectionsResponse.fileSections;
       promptEmbedding = sectionsResponse.promptEmbedding;
     } catch (e) {
-      const promptId = await storePromptOrPlaceholder(
+      const { conversationId, promptId } = await storePromptOrPlaceholder(
         supabaseAdmin,
         projectId,
+        undefined,
         prompt,
         undefined,
         promptEmbedding,
@@ -277,7 +271,7 @@ export default async function handler(req: NextRequest) {
         redact,
       );
 
-      const headers = getHeaders([], promptId);
+      const headers = getHeaders([], conversationId, promptId);
 
       if (e instanceof ApiError) {
         return new Response(e.message, { status: e.code, headers });
@@ -380,9 +374,10 @@ export default async function handler(req: NextRequest) {
     if (!stream) {
       if (!res.ok) {
         const message = await res.text();
-        const promptId = await storePromptOrPlaceholder(
+        const { conversationId, promptId } = await storePromptOrPlaceholder(
           supabaseAdmin,
           projectId,
+          undefined,
           prompt,
           undefined,
           promptEmbedding,
@@ -393,12 +388,12 @@ export default async function handler(req: NextRequest) {
           redact,
         );
 
-        const headers = getHeaders(references, promptId);
+        const headers = getHeaders(references, conversationId, promptId);
 
         return new Response(
           JSON.stringify({
             message: `Unable to retrieve completions response: ${message}`,
-            debugInfo,
+            ...(params.debug ? debugInfo : {}),
           }),
           { status: 400, headers },
         );
@@ -414,9 +409,10 @@ export default async function handler(req: NextRequest) {
         );
         const text = getCompletionsResponseText(json, modelInfo.model);
         const idk = isIDontKnowResponse(text, iDontKnowMessage);
-        const promptId = await storePromptOrPlaceholder(
+        const { conversationId, promptId } = await storePromptOrPlaceholder(
           supabaseAdmin,
           projectId,
+          undefined,
           prompt,
           text,
           promptEmbedding,
@@ -427,14 +423,14 @@ export default async function handler(req: NextRequest) {
           redact,
         );
 
-        const headers = getHeaders(references, promptId);
+        const headers = getHeaders(references, conversationId, promptId);
 
         return new Response(
           JSON.stringify({
             text,
             references,
             responseId: promptId,
-            debugInfo,
+            ...(params.debug ? debugInfo : {}),
           }),
           {
             status: 200,
@@ -458,9 +454,10 @@ export default async function handler(req: NextRequest) {
     // the prompt id needs to be sent in the header, which is done immediately.
     // We keep the prompt id and update the prompt with the generated response
     // once it is done.
-    const promptId = await storePromptOrPlaceholder(
+    const { conversationId, promptId } = await storePromptOrPlaceholder(
       supabaseAdmin,
       projectId,
+      undefined,
       prompt,
       '',
       promptEmbedding,
@@ -549,7 +546,7 @@ export default async function handler(req: NextRequest) {
       },
     });
 
-    const headers = getHeaders(references, promptId);
+    const headers = getHeaders(references, conversationId, promptId);
 
     // const encodedDebugInfo = headerEncoder
     //   .encode(JSON.stringify(debugInfo))
