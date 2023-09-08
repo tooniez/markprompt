@@ -1,4 +1,4 @@
-import { SubmitPromptOptions } from '@markprompt/core';
+import { SubmitChatOptions } from '@markprompt/core';
 
 import { getResponseOrThrow, slugFromNameOrRandom } from '@/lib/utils';
 import {
@@ -55,7 +55,7 @@ export const createPromptConfig = async (
   config: {
     theme: Theme;
     placeholder?: string;
-    modelConfig?: SubmitPromptOptions;
+    modelConfig?: SubmitChatOptions;
     iDontKnowMessage?: string;
     referencesHeading?: string;
     loadingHeading?: string;

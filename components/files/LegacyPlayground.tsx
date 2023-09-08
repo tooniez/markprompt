@@ -1,4 +1,4 @@
-import { SubmitPromptOptions } from '@markprompt/core';
+import { SubmitChatOptions } from '@markprompt/core';
 import cn from 'classnames';
 import { X, Search } from 'lucide-react';
 import {
@@ -94,7 +94,7 @@ type PlaygroundProps = {
   demoReferenceIds?: string[];
   noAnimation?: boolean;
   iDontKnowMessage?: string;
-  modelConfig?: SubmitPromptOptions;
+  modelConfig?: SubmitChatOptions;
   placeholder?: string;
   referencesHeading?: string;
   loadingHeading?: string;
