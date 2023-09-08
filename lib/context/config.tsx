@@ -15,6 +15,7 @@ import { SerializableMarkpromptOptions } from '@/types/types';
 import { modelConfigFields } from '../config';
 import useProject from '../hooks/use-project';
 import { useLocalStorage } from '../hooks/utils/use-localstorage';
+import { DEFAULT_SYSTEM_PROMPT } from '../prompt';
 import {
   defaultTheme,
   findMatchingTheme,
@@ -22,7 +23,6 @@ import {
   ThemeColorKeys,
   ThemeColors,
 } from '../themes';
-import { DEFAULT_SYSTEM_PROMPT } from '../prompt';
 
 export type State = {
   markpromptOptions: SerializableMarkpromptOptions;
