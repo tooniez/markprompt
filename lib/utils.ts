@@ -462,7 +462,6 @@ export const isSKTestKey = (key: string | null) => {
 
 export const stringToLLMInfo = (model?: string): LLMInfo => {
   switch (model) {
-    case 'gpt-4-32k':
     case 'gpt-4':
       return {
         vendor: 'openai',

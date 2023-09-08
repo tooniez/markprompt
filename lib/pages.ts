@@ -36,7 +36,7 @@ export const getMarkdocStaticProps = async (pageId: string) => {
       ...iconTags,
     },
     variables: {
-      defaultPromptTemplate: DEFAULT_SYSTEM_PROMPT.template,
+      defaultPromptTemplate: DEFAULT_SYSTEM_PROMPT.content,
     },
   };
 

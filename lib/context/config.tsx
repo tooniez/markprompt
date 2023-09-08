@@ -7,6 +7,7 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
+  useEffect,
 } from 'react';
 
 import { SerializableMarkpromptOptions } from '@/types/types';
@@ -275,6 +276,22 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
           initialState.markpromptOptions.prompt!.sectionsMatchThreshold,
       },
     });
+  }, [markpromptOptions, setMarkpromptOptions]);
+
+  useEffect(() => {
+    // Migration from promptTemplate to systemPrompt
+    const promptTemplate = (markpromptOptions?.prompt as any)?.promptTemplate;
+    if (markpromptOptions && promptTemplate) {
+      setMarkpromptOptions({
+        ...markpromptOptions,
+        prompt: {
+          ...markpromptOptions.prompt,
+          // Set promptTemplate to null in local storage so it doesn't run again
+          promptTemplate: undefined,
+          systemPrompt: promptTemplate,
+        } as any,
+      });
+    }
   }, [markpromptOptions, setMarkpromptOptions]);
 
   return (
