@@ -7,6 +7,7 @@ import {
   FileSectionReference,
   OpenAIChatCompletionsModelId,
   OpenAICompletionsModelId,
+  OpenAIEmbeddingsModelId,
 } from '@markprompt/core';
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
@@ -467,7 +468,10 @@ export const isSKTestKey = (key: string | null) => {
 };
 
 export const stringToLLMInfo = (
-  model?: OpenAIChatCompletionsModelId | OpenAICompletionsModelId,
+  model?:
+    | OpenAIChatCompletionsModelId
+    | OpenAICompletionsModelId
+    | OpenAIEmbeddingsModelId,
 ): LLMInfo => {
   switch (model) {
     case 'gpt-3.5-turbo':
@@ -489,6 +493,11 @@ export const stringToLLMInfo = (
       return {
         vendor: 'openai',
         model: { type: 'completions', value: model },
+      };
+    case 'text-embedding-ada-002':
+      return {
+        vendor: 'openai',
+        model: { type: 'embeddings', value: model },
       };
     default:
       return {
