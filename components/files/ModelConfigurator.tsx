@@ -93,7 +93,7 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
           }}
         />
         <Link
-          href="/docs#templates"
+          href="/docs#system-prompts"
           target="_blank"
           rel="noreferrer"
           className="button-ring mt-4 mb-4 flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
