@@ -1,4 +1,4 @@
-import { SubmitPromptOptions } from '@markprompt/core';
+import { SubmitChatOptions } from '@markprompt/core';
 import cn from 'classnames';
 import { Moon } from 'lucide-react';
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
@@ -14,7 +14,7 @@ import { getNameFromPath, removeFileExtension } from '@/lib/utils';
 type PromptConfig = {
   theme: Theme;
   placeholder: string;
-  modelConfig: SubmitPromptOptions;
+  modelConfig: SubmitChatOptions;
   iDontKnowMessage: string;
   referencesHeading: string;
   loadingHeading: string;

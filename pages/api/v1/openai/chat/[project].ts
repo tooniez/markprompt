@@ -37,8 +37,8 @@ import {
   getTeamTierInfo,
 } from '@/lib/supabase';
 import {
-  getChatRequestTokenCount,
   getMaxTokenCount,
+  getChatRequestTokenCount,
   getTokenizer,
 } from '@/lib/tokenizer.edge';
 import {
@@ -51,10 +51,11 @@ import { isRequestFromMarkprompt } from '@/lib/utils.edge';
 import { isFalsyQueryParam, isTruthyQueryParam } from '@/lib/utils.nodeps';
 import {
   ApiError,
+  DEFAULT_CHAT_COMPLETION_MODEL,
   FileSectionMatchResult,
   FileSectionMeta,
-  OpenAIModelIdWithType,
   Project,
+  SUPPORTED_MODELS,
 } from '@/types/types';
 
 export const config = {
@@ -65,6 +66,15 @@ export const config = {
 const supabaseAdmin = createServiceRoleSupabaseClient();
 
 const allowedMethods = ['POST'];
+
+const normalizeModelIdWithFallback = (
+  modelId: string,
+): OpenAIChatCompletionsModelId => {
+  if ((SUPPORTED_MODELS.chat_completions as string[]).includes(modelId)) {
+    return modelId as OpenAIChatCompletionsModelId;
+  }
+  return DEFAULT_CHAT_COMPLETION_MODEL;
+};
 
 const isChatMessages = (
   data: unknown,
@@ -88,15 +98,6 @@ const isIDontKnowResponse = (
   iDontKnowMessage: string,
 ) => {
   return !responseText || responseText.endsWith(iDontKnowMessage);
-};
-
-const getSupportedChatModelValueOrFallback = (
-  model: OpenAIModelIdWithType,
-): OpenAIChatCompletionsModelId => {
-  if (model.value !== 'gpt-3.5-turbo' && model.value !== 'gpt-4') {
-    return 'gpt-3.5-turbo';
-  }
-  return model.value;
 };
 
 const getPayload = (
@@ -312,9 +313,7 @@ export default async function handler(req: NextRequest) {
       insightsType = teamTierInfo && getAccessibleInsightsType(teamTierInfo);
     }
 
-    const modelId = getSupportedChatModelValueOrFallback(
-      stringToLLMInfo(params?.model).model,
-    );
+    const modelId = normalizeModelIdWithFallback(params?.model);
 
     const sectionsTs = Date.now();
 
@@ -391,14 +390,10 @@ export default async function handler(req: NextRequest) {
     //     0,
     //   );
 
-    // const maxTokensWithBuffer =
-    //   0.9 * getChatCompletionModelMaxTokenCount(modelId);
-    const maxCompletionTokens = (params.maxTokens ?? 1500) as number;
-
     for (const section of fileSections) {
       numTokens += section.file_sections_token_count;
 
-      if (numTokens >= maxCompletionTokens) {
+      if (numTokens >= 1500) {
         break;
       }
 
@@ -422,14 +417,14 @@ export default async function handler(req: NextRequest) {
       !!params.doNotInjectContext,
     );
 
-    // const model = 'gpt-3.5-turbo-0301'
-    // const maxCompletionTokenCount = 1024
+    // Max length of completion
+    const maxCompletionTokenCount = params.maxTokens || 1024;
 
     const tokenizer = await getTokenizer();
     const cappedMessages: ChatCompletionRequestMessage[] = capMessages(
       initMessages,
       contextMessages,
-      maxCompletionTokens,
+      maxCompletionTokenCount,
       modelId,
       tokenizer,
     );
@@ -441,7 +436,7 @@ export default async function handler(req: NextRequest) {
       params.topP ?? 1,
       params.frequencyPenalty ?? 0,
       params.presencePenalty ?? 0,
-      maxCompletionTokens,
+      maxCompletionTokenCount,
       stream,
     );
 

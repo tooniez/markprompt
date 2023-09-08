@@ -41,12 +41,15 @@ export type OpenAIModelIdWithType =
   | { type: 'completions'; value: OpenAICompletionsModelId }
   | { type: 'embeddings'; value: OpenAIEmbeddingsModelId };
 
+export const DEFAULT_CHAT_COMPLETION_MODEL: OpenAIChatCompletionsModelId =
+  'gpt-3.5-turbo';
+
 export const SUPPORTED_MODELS: {
   chat_completions: OpenAIChatCompletionsModelId[];
   completions: OpenAICompletionsModelId[];
   embeddings: OpenAIEmbeddingsModelId[];
 } = {
-  chat_completions: ['gpt-4', 'gpt-3.5-turbo'],
+  chat_completions: ['gpt-4-32k', 'gpt-4', 'gpt-3.5-turbo'],
   completions: [
     'text-davinci-003',
     'text-davinci-002',

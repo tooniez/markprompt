@@ -52,14 +52,3 @@ export const createEmbedding = async (
     }),
   }).then((r) => r.json());
 };
-
-export const getChatCompletionModelMaxTokenCount = (
-  modelId: OpenAIChatCompletionsModelId,
-) => {
-  switch (modelId) {
-    case 'gpt-3.5-turbo':
-      return 4097;
-    case 'gpt-4':
-      return 8192;
-  }
-};

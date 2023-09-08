@@ -2,7 +2,13 @@
 /* eslint-disable no-useless-escape */
 import { createHash } from 'crypto';
 
-import { FileReferenceFileData, FileSectionReference } from '@markprompt/core';
+import {
+  FileReferenceFileData,
+  FileSectionReference,
+  OpenAIChatCompletionsModelId,
+  OpenAICompletionsModelId,
+  OpenAIEmbeddingsModelId,
+} from '@markprompt/core';
 import slugify from '@sindresorhus/slugify';
 import confetti from 'canvas-confetti';
 import dayjs from 'dayjs';
@@ -23,6 +29,7 @@ import {
 import { GitHubIcon } from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
 import {
+  DEFAULT_CHAT_COMPLETION_MODEL,
   DateCountHistogramEntry,
   DbSource,
   FileSectionHeading,
@@ -460,14 +467,16 @@ export const isSKTestKey = (key: string | null) => {
   return key?.startsWith(SK_TEST_PREFIX);
 };
 
-export const stringToLLMInfo = (model?: string): LLMInfo => {
+export const stringToLLMInfo = (
+  model?:
+    | OpenAIChatCompletionsModelId
+    | OpenAICompletionsModelId
+    | OpenAIEmbeddingsModelId,
+): LLMInfo => {
   switch (model) {
-    case 'gpt-4':
-      return {
-        vendor: 'openai',
-        model: { type: 'chat_completions', value: 'gpt-4' },
-      };
     case 'gpt-3.5-turbo':
+    case 'gpt-4':
+    case 'gpt-4-32k':
       return {
         vendor: 'openai',
         model: { type: 'chat_completions', value: model },
@@ -485,10 +494,18 @@ export const stringToLLMInfo = (model?: string): LLMInfo => {
         vendor: 'openai',
         model: { type: 'completions', value: model },
       };
+    case 'text-embedding-ada-002':
+      return {
+        vendor: 'openai',
+        model: { type: 'embeddings', value: model },
+      };
     default:
       return {
         vendor: 'openai',
-        model: { type: 'chat_completions', value: 'gpt-3.5-turbo' },
+        model: {
+          type: 'chat_completions',
+          value: DEFAULT_CHAT_COMPLETION_MODEL,
+        },
       };
   }
 };

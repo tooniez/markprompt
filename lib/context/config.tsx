@@ -10,7 +10,10 @@ import {
   useEffect,
 } from 'react';
 
-import { SerializableMarkpromptOptions } from '@/types/types';
+import {
+  DEFAULT_CHAT_COMPLETION_MODEL,
+  SerializableMarkpromptOptions,
+} from '@/types/types';
 
 import { modelConfigFields } from '../config';
 import useProject from '../hooks/use-project';
@@ -74,7 +77,7 @@ const DEFAULT_SUBMIT_CHAT_OPTIONS = {
   frequencyPenalty: 0,
   iDontKnowMessage: 'Sorry, I am not sure how to answer that.',
   maxTokens: 500,
-  model: 'gpt-3.5-turbo',
+  model: DEFAULT_CHAT_COMPLETION_MODEL,
   presencePenalty: 0,
   sectionsMatchCount: 5,
   sectionsMatchThreshold: 0.5,
