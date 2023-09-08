@@ -57,6 +57,7 @@ export const getMessageTokenCount = (
       tokensPerName = -1; // if there's a name, the role is omitted
       break;
     case 'gpt-4':
+    case 'gpt-4-32k':
       tokensPerMessage = 3;
       tokensPerName = 1;
       break;
@@ -71,13 +72,14 @@ export const getMessageTokenCount = (
   }, tokensPerMessage);
 };
 
-export const getMaxTokenCount = (
-  modelId: OpenAIChatCompletionsModelId,
-): number => {
+// Source: https://platform.openai.com/docs/models/overview
+export const getMaxTokenCount = (modelId: OpenAIChatCompletionsModelId) => {
   switch (modelId) {
     case 'gpt-3.5-turbo':
       return 4097;
     case 'gpt-4':
-      return 4097;
+      return 8192;
+    case 'gpt-4-32k':
+      return 32768;
   }
 };
