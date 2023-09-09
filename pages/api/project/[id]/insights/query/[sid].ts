@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { withProjectAccess } from '@/lib/middleware/common';
+import { safeParseJSON } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
 import { DbQueryStat, PromptQueryStatFull } from '@/types/types';
 
@@ -24,7 +25,7 @@ export default withProjectAccess(
       const { data, error } = await supabase
         .from('decrypted_query_stats')
         .select(
-          'id,created_at,decrypted_prompt,decrypted_response,no_response,feedback,meta,processed_state',
+          'id,created_at,decrypted_prompt,decrypted_response,no_response,feedback,meta,processed_state,decrypted_conversations(decrypted_metadata)',
         )
         .eq('id', id)
         .limit(1)
@@ -47,11 +48,29 @@ export default withProjectAccess(
         return res.status(404).json({ error: 'No matching query stat found.' });
       }
 
-      const { decrypted_prompt, decrypted_response, ...rest } = data;
+      const {
+        decrypted_prompt,
+        decrypted_response,
+        decrypted_conversations,
+        ...rest
+      } = data;
+      const decrypted_conversation = decrypted_conversations as {
+        decrypted_metadata: string | null;
+      };
+
+      let conversationMetadata: any = {};
+      if (decrypted_conversation?.decrypted_metadata) {
+        conversationMetadata = safeParseJSON(
+          decrypted_conversation?.decrypted_metadata,
+          undefined,
+        );
+      }
+
       return res.status(200).json({
         ...rest,
         prompt: decrypted_prompt,
         response: decrypted_response,
+        conversationMetadata,
       } as PromptQueryStatFull);
     }
 

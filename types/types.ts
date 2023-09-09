@@ -113,7 +113,8 @@ export type PromptQueryStatFull = Pick<
   | 'no_response'
   | 'feedback'
   | 'meta'
->;
+> & { conversationMetadata: any | undefined };
+
 export type ReferenceWithOccurrenceCount = {
   path: string;
   occurrences: number;
