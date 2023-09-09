@@ -7,6 +7,7 @@ import { FC, useState } from 'react';
 import useSWR from 'swr';
 
 import { MarkdownContainer } from '@/components/emails/templates/MarkdownContainer';
+import { JSONViewer } from '@/components/ui/JSONViewer';
 import { SkeletonTable } from '@/components/ui/Skeletons';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
@@ -135,6 +136,17 @@ const QueryStatDialog: FC<QueryStatDialogProps> = ({
                     </div>
                   )}
                 </div>
+                {queryStat?.conversationMetadata && (
+                  <div className="flex flex-col gap-2 pb-4">
+                    <p className="mb-2 text-sm text-neutral-500">Metadata</p>
+                    <div className="w-full">
+                      <JSONViewer
+                        className="w-full"
+                        json={queryStat.conversationMetadata}
+                      />
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>

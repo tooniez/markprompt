@@ -13,16 +13,19 @@ export interface Database {
         Row: {
           created_at: string
           id: string
+          metadata: string | null
           project_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          metadata?: string | null
           project_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          metadata?: string | null
           project_id?: string
         }
         Relationships: [
@@ -417,7 +420,7 @@ export interface Database {
       }
       query_stats: {
         Row: {
-          conversation_id: string
+          conversation_id: string | null
           created_at: string
           downvoted: boolean | null
           embedding: string | null
@@ -438,7 +441,7 @@ export interface Database {
           upvoted: boolean | null
         }
         Insert: {
-          conversation_id: string
+          conversation_id?: string | null
           created_at?: string
           downvoted?: boolean | null
           embedding?: string | null
@@ -459,7 +462,7 @@ export interface Database {
           upvoted?: boolean | null
         }
         Update: {
-          conversation_id?: string
+          conversation_id?: string | null
           created_at?: string
           downvoted?: boolean | null
           embedding?: string | null
@@ -484,6 +487,12 @@ export interface Database {
             foreignKeyName: "query_stats_conversation_id_fkey"
             columns: ["conversation_id"]
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_conversation_id_fkey"
+            columns: ["conversation_id"]
+            referencedRelation: "decrypted_conversations"
             referencedColumns: ["id"]
           },
           {
@@ -774,6 +783,55 @@ export interface Database {
       }
     }
     Views: {
+      decrypted_conversations: {
+        Row: {
+          created_at: string | null
+          decrypted_metadata: string | null
+          id: string | null
+          metadata: string | null
+          project_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          decrypted_metadata?: never
+          id?: string | null
+          metadata?: string | null
+          project_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          decrypted_metadata?: never
+          id?: string | null
+          metadata?: string | null
+          project_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "conversations_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "conversations_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
+      }
       decrypted_query_stats: {
         Row: {
           conversation_id: string | null
@@ -849,6 +907,12 @@ export interface Database {
             foreignKeyName: "query_stats_conversation_id_fkey"
             columns: ["conversation_id"]
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_conversation_id_fkey"
+            columns: ["conversation_id"]
+            referencedRelation: "decrypted_conversations"
             referencedColumns: ["id"]
           },
           {
