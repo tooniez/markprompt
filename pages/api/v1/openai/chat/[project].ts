@@ -200,6 +200,7 @@ export default async function handler(req: NextRequest) {
 
     const messages = params.messages;
     const existingConversationId = params.conversationId;
+    const conversationMetadata = params.conversationMetadata;
 
     const iDontKnowMessage =
       (params.i_dont_know_message as string) || // v1
@@ -226,6 +227,16 @@ export default async function handler(req: NextRequest) {
     if (!projectIdParam) {
       console.error(`[CHAT] [${pathname}] Project not found`);
       return new Response('Project not found', { status: 400 });
+    }
+
+    if (conversationMetadata && typeof conversationMetadata !== 'object') {
+      console.error(
+        `[CHAT] ${conversationMetadata} is not a well-formatted object.`,
+      );
+      return new Response(
+        `${conversationMetadata} is not a well-formatted object.`,
+        { status: 400 },
+      );
     }
 
     const projectId = projectIdParam as Project['id'];
@@ -341,6 +352,7 @@ export default async function handler(req: NextRequest) {
         supabaseAdmin,
         projectId,
         existingConversationId,
+        conversationMetadata,
         userMessage.content,
         undefined,
         promptEmbedding,
@@ -472,6 +484,7 @@ export default async function handler(req: NextRequest) {
           supabaseAdmin,
           projectId,
           existingConversationId,
+          conversationMetadata,
           userMessage.content,
           undefined,
           promptEmbedding,
@@ -508,6 +521,7 @@ export default async function handler(req: NextRequest) {
           supabaseAdmin,
           projectId,
           existingConversationId,
+          conversationMetadata,
           userMessage.content,
           text,
           promptEmbedding,
@@ -552,6 +566,7 @@ export default async function handler(req: NextRequest) {
       supabaseAdmin,
       projectId,
       existingConversationId,
+      conversationMetadata,
       userMessage.content,
       '',
       promptEmbedding,

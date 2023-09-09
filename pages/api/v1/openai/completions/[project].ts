@@ -261,6 +261,7 @@ export default async function handler(req: NextRequest) {
         supabaseAdmin,
         projectId,
         undefined,
+        undefined,
         prompt,
         undefined,
         promptEmbedding,
@@ -378,6 +379,7 @@ export default async function handler(req: NextRequest) {
           supabaseAdmin,
           projectId,
           undefined,
+          undefined,
           prompt,
           undefined,
           promptEmbedding,
@@ -412,6 +414,7 @@ export default async function handler(req: NextRequest) {
         const { conversationId, promptId } = await storePromptOrPlaceholder(
           supabaseAdmin,
           projectId,
+          undefined,
           undefined,
           prompt,
           text,
@@ -457,6 +460,7 @@ export default async function handler(req: NextRequest) {
     const { conversationId, promptId } = await storePromptOrPlaceholder(
       supabaseAdmin,
       projectId,
+      undefined,
       undefined,
       prompt,
       '',
