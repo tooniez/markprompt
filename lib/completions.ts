@@ -231,10 +231,19 @@ const conversationExists = async (
 const createConversation = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  conversationMetadata: any | undefined,
 ): Promise<DbConversation['id'] | undefined> => {
   const { data } = await supabase
     .from('conversations')
-    .insert([{ project_id: projectId }])
+    .insert([
+      {
+        project_id: projectId,
+        ...(conversationMetadata
+          ? { metadata: conversationMetadata }
+          : undefined),
+      },
+    ])
     .select('*')
     .limit(1)
     .maybeSingle();
@@ -246,6 +255,8 @@ const getOrCreateConversationId = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
   existingConversationId: DbConversation['id'] | undefined,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  conversationMetadata: any | undefined,
 ): Promise<DbConversation['id'] | undefined> => {
   if (existingConversationId) {
     // Make sure the conversation still exists
@@ -258,13 +269,14 @@ const getOrCreateConversationId = async (
       return existingConversationId;
     }
   }
-  return createConversation(supabase, projectId);
+  return createConversation(supabase, projectId, conversationMetadata);
 };
 
 export const storePromptOrPlaceholder = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
   existingConversationId: DbConversation['id'] | undefined,
+  conversationMetadata: any | undefined,
   prompt: string,
   responseText: string | undefined,
   promptEmbedding: number[] | undefined,
@@ -284,7 +296,9 @@ export const storePromptOrPlaceholder = async (
     supabase,
     projectId,
     existingConversationId,
+    conversationMetadata,
   );
+
   if (!conversationId) {
     throw new Error('Unable to create conversation.');
   }

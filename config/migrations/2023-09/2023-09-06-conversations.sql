@@ -14,7 +14,7 @@ declare
   row_query_stats query_stats%ROWTYPE;
   v_conversation_id uuid;
 begin
-  for row_query_stats in select * from query_stats
+  for row_query_stats in select * from query_stats where conversation_id is null
   loop
     insert into conversations (project_id, created_at)
     values (row_query_stats.project_id, row_query_stats.created_at)
@@ -24,8 +24,6 @@ begin
     where id = row_query_stats.id;
   end loop;
 end $$;
-
--- IMPORTANT: now set converation_id to not nullable in Supabase
 
 -- RLS
 

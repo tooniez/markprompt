@@ -166,6 +166,7 @@ create table public.conversations (
   id         uuid primary key default uuid_generate_v4(),
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   project_id uuid references public.projects on delete cascade not null
+  metadata   text
 );
 comment on table public.conversations is 'Conversations.';
 
