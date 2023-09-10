@@ -27,6 +27,7 @@ import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import * as GitHub from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
+import { SalesforceIcon } from '@/components/icons/Salesforce';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Onboarding from '@/components/onboarding/Onboarding';
 import Button from '@/components/ui/Button';
@@ -60,6 +61,11 @@ const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
 
 const GitHubAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/GitHub'),
+  { loading: () => Loading },
+);
+
+const SalesforceAddSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/Salesforce'),
   { loading: () => Loading },
 );
 
@@ -584,6 +590,19 @@ const Data = () => {
                 <span className="truncate">Connect GitHub repo</span>
               </button>
             </GitHubAddSourceDialog>
+            <SalesforceAddSourceDialog>
+              <button
+                className={cn(
+                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                  {
+                    'pointer-events-none opacity-50': !canAddMoreContent,
+                  },
+                )}
+              >
+                <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
+                <span className="truncate">Connect Salesforce</span>
+              </button>
+            </SalesforceAddSourceDialog>
             <MotifAddSourceDialog>
               <button
                 className={cn(
