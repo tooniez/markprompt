@@ -31,6 +31,7 @@
     "@markprompt/react": "^0.21.0",
     "@mdx-js/loader": "^2.3.0",
     "@mdx-js/react": "^2.3.0",
+    "@nangohq/frontend": "^0.31.1",
     "@next/mdx": "^13.2.4",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-checkbox": "^1.0.3",
