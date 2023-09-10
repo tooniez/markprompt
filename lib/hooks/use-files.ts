@@ -25,7 +25,7 @@ export default function useFiles() {
     fetcher<DbFileWithoutContent[]>,
   );
 
-  const { data: countData } = useSWR(
+  const { data: countData, mutate: mutateCount } = useSWR(
     project?.id ? `/api/project/${project.id}/files/count` : null,
     fetcher<{ count: number }>,
   );
@@ -43,5 +43,6 @@ export default function useFiles() {
     pageSize,
     hasMorePages,
     setPage,
+    mutateCount,
   };
 }

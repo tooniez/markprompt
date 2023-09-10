@@ -187,6 +187,7 @@ const Data = () => {
     page,
     setPage,
     hasMorePages,
+    mutateCount,
   } = useFiles();
   const { sources } = useSources();
   const {
@@ -413,6 +414,7 @@ const Data = () => {
                     paginatedFiles?.filter((f) => !fileIds.includes(f.id)),
                   );
                   await mutateFileStats();
+                  await mutateCount();
                   setRowSelection([]);
                   setIsDeleting(false);
                   toast.success(
@@ -486,6 +488,7 @@ const Data = () => {
                     },
                   );
                   await mutateFiles();
+                  await mutateCount();
                   toast.success('Processing complete.', {
                     id: 'processing-complete',
                   });
