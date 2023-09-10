@@ -246,6 +246,8 @@ export const getFileType = (name: string): FileType => {
     case 'html':
     case 'htm':
       return 'html';
+    case 'text':
+      return 'txt';
     default:
       return 'txt';
   }
@@ -268,6 +270,7 @@ export const SUPPORTED_EXTENSIONS = [
   'mdoc',
   'rst',
   'txt',
+  'text',
   'html',
   'htm',
 ];

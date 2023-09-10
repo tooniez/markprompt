@@ -11,7 +11,7 @@ export const getMarkpromptPathFromGitHubArchivePath = (path: string) => {
   return path.split('/').slice(1).join('/');
 };
 
-const downloadAndExtraRepo = async (
+const downloadAndExtractRepo = async (
   owner: string,
   repo: string,
   branch: string | undefined,
@@ -75,7 +75,7 @@ export const getGitHubFiles = async (
     return [];
   }
 
-  const data = await downloadAndExtraRepo(
+  const data = await downloadAndExtractRepo(
     info.owner,
     info.repo,
     branch,

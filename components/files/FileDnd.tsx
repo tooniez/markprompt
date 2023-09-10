@@ -52,7 +52,16 @@ const FileDnd: FC<FileDndProps> = ({
     maxFiles: 1000,
     maxSize: 1_000_000,
     accept: {
-      'text/*': ['.md', '.mdoc', '.mdx', '.rst', '.html', '.htm', '.txt'],
+      'text/*': [
+        '.md',
+        '.mdoc',
+        '.mdx',
+        '.rst',
+        '.html',
+        '.htm',
+        '.txt',
+        '.text',
+      ],
     },
     onDragEnter: () => {
       setDragging(true);
