@@ -1,3 +1,4 @@
+import Nango from '@nangohq/frontend';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Popover from '@radix-ui/react-popover';
@@ -19,7 +20,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { MoreHorizontal, Globe, Upload, SettingsIcon } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { FC, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
@@ -600,7 +601,7 @@ const Data = () => {
                 )}
               >
                 <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
-                <span className="truncate">Connect Salesforce</span>
+                <span className="truncate">Connect Salesforce Knowledge</span>
               </button>
             </SalesforceAddSourceDialog>
             <MotifAddSourceDialog>

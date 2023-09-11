@@ -1,0 +1,61 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { NangoSync, NangoFile } from './models';
+
+interface Metadata {
+  customFields: string[];
+}
+
+export default async function fetchData(nango: NangoSync) {
+  const customFields =
+    (await nango.getMetadata<Metadata>())?.customFields || [];
+
+  const fields = ['Id', 'Title', ...customFields, 'LastModifiedDate'];
+  let query = `SELECT ${fields.join(', ')}
+        FROM Knowledge__kav
+        WHERE IsLatestVersion = true`;
+
+  if (nango.lastSyncDate) {
+    query += ` WHERE LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
+  }
+
+  let endpoint = '/services/data/v53.0/query';
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const response = await nango.get({
+      endpoint: endpoint,
+      params: endpoint === '/services/data/v53.0/query' ? { q: query } : {},
+    });
+
+    let i = 0;
+    while (i++ < 10) {
+      console.log(
+        'response.data.records',
+        JSON.stringify(response.data.records[i], null, 2),
+      );
+    }
+    const mappedRecords = mapRecords(response.data.records, customFields);
+
+    await nango.batchSave(mappedRecords, 'NangoFile');
+
+    if (response.data.done) {
+      break;
+    }
+
+    endpoint = response.data.nextRecordsUrl;
+  }
+}
+
+function mapRecords(records: any[], customFields: string[]): NangoFile[] {
+  return records.map((record: any) => {
+    return {
+      id: record.Id as string,
+      title: record.Name,
+      path: record.Name,
+      content: customFields
+        .map((field: string) => `Field: ${field}\n${record[field]}`)
+        .join('\n'),
+      last_modified: record.LastModifiedDate,
+    };
+  });
+}

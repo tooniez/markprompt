@@ -153,6 +153,10 @@ export type SourceDataType =
 export type GitHubSourceDataType = { url: string; branch?: string };
 export type MotifSourceDataType = { projectDomain: string };
 export type WebsiteSourceDataType = { url: string };
+export type SalesforceSourceDataType = {
+  identifier: string;
+  instanceUrl: string;
+};
 
 export type RobotsTxtInfo = { sitemap?: string; disallowedPaths: string[] };
 

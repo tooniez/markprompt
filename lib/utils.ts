@@ -40,6 +40,7 @@ import {
   LLMInfo,
   MotifSourceDataType,
   OpenAIModelIdWithType,
+  SalesforceSourceDataType,
   Source,
   SourceType,
   TimeInterval,
@@ -667,6 +668,10 @@ export const getLabelForSource = (source: Source, inline: boolean) => {
       return inline ? 'file uploads' : 'File uploads';
     case 'api-upload':
       return 'API uploads';
+    case 'salesforce': {
+      const data = source.data as SalesforceSourceDataType;
+      return data.identifier;
+    }
     default:
       return 'Unknown source';
   }

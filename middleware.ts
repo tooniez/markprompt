@@ -25,6 +25,8 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
     return new Response('ok', { status: 200 });
   }
 
+  console.log('GOT IT');
+
   if (
     PUBLIC_NON_ROUTED_API_PATHS.some((path) =>
       req.nextUrl.pathname.startsWith(path),
