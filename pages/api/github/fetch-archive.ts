@@ -21,7 +21,7 @@ const fetchArchiveStream = async (
     {
       headers: {
         Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${accessToken}`,
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         'X-GitHub-Api-Version': '2022-11-28',
       },
     },
