@@ -19,6 +19,7 @@ const UNAUTHED_PATHS = [
   '/login/email',
   '/login/confirm',
   '/login/accept-invite',
+  '/login/confirm-signup',
   '/signup',
   '/resources/**/*',
   '/legal/**/*',
