@@ -136,7 +136,8 @@ const QueryStatDialog: FC<QueryStatDialogProps> = ({
                     </div>
                   )}
                 </div>
-                {queryStat?.conversationMetadata && (
+                {Object.keys(queryStat?.conversationMetadata || {})?.length >
+                  0 && (
                   <div className="flex flex-col gap-2 pb-4">
                     <p className="mb-2 text-sm text-neutral-500">Metadata</p>
                     <div className="w-full">
