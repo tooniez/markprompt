@@ -226,7 +226,7 @@ export const LegacyPlayground = forwardRef(
         setLoading(true);
 
         try {
-          const res = await fetch(getApiUrl('chat', !!forceUseProdAPI), {
+          const res = await fetch(getApiUrl('completions', !!forceUseProdAPI), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
