@@ -358,10 +358,16 @@ const Insights = () => {
                 label="Status"
                 title="Filter by status"
                 values={['Answered', 'Unsanswered']}
+                align="start"
               />
               <MutliSelectFilterPill
                 label="Feedback"
                 title="Filter by feedback"
+                values={['Upvoted', 'Downvoted', 'No vote']}
+              />
+              <MutliSelectFilterPill
+                label="Metadata"
+                title="Filter by metadata"
                 values={['Upvoted', 'Downvoted', 'No vote']}
               />
               <Button

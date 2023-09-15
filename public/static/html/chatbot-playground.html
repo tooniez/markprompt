@@ -139,6 +139,10 @@
           event.data?.isDark ? 'dark' : 'light',
         );
 
+        console.log(
+          'event.data.serializedProps',
+          JSON.stringify(event.data.serializedProps, null, 2),
+        );
         markprompt(event.data.projectKey, el, {
           ...event.data.serializedProps,
           trigger: {

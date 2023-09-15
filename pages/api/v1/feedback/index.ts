@@ -26,6 +26,7 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
+  console.log('req.body.feedback', JSON.stringify(req.body.feedback, null, 2));
   if (req.method === 'POST') {
     if (!req.body.promptId) {
       return res.status(400).json({ error: 'Please provide a prompt id.' });

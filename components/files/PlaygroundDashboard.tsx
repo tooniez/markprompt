@@ -557,20 +557,23 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       ...markpromptOptions,
       projectKey: project.private_dev_api_key,
       showBranding: markpromptOptions.showBranding,
+      trigger: { floating: true },
       prompt: {
         ...markpromptOptions.prompt,
         apiUrl: getApiUrl('chat', false),
       },
       chat: {
         ...markpromptOptions.chat,
-        // enabled: true,
         apiUrl: getApiUrl('chat', false),
       },
-      trigger: { floating: true },
       search: {
         ...markpromptOptions.search,
         apiUrl: getApiUrl('search', false),
         getHref: undefined,
+      },
+      feedback: {
+        ...markpromptOptions.feedback,
+        apiUrl: getApiUrl('feedback', false),
       },
       references: {
         ...markpromptOptions.references,

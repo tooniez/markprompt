@@ -24,6 +24,7 @@ import {
   getEmbeddingTokensAllowance,
 } from './stripe/tiers';
 import { generateKey } from './utils';
+import { isPresent } from 'ts-is-present';
 
 export const getBYOOpenAIKey = async (
   supabaseAdmin: SupabaseClient<Database>,
@@ -351,31 +352,42 @@ export const getQueryStats = async (
   toISO: string,
   limit: number,
   page: number,
-  // filter: InsightsFilter,
+  filter: InsightsFilter,
 ): Promise<{
   error: PostgrestError | null;
   queries: PromptQueryStat[] | null;
 }> => {
-  console.log('RANGE', page * limit, '-', (page + 1) * (limit - 1));
+  // Cf. https://github.com/orgs/supabase/discussions/3080#discussioncomment-1282318 to dynamically add filters
 
-  const { data, error } = await supabase
-    .from('decrypted_query_stats')
-    .select('id,created_at,decrypted_prompt,no_response,feedback')
-    .eq('project_id', projectId)
-    .or('processed_state.eq.processed,processed_state.eq.skipped')
-    // .eq('')
-    .gte('created_at', fromISO)
-    .lte('created_at', toISO)
-    .not('decrypted_prompt', 'is', null)
-    .neq('decrypted_prompt', '')
-    .order('created_at', { ascending: false })
-    .range(page * limit, (page + 1) * limit - 1);
+  const filters: any[] = [
+    ['eq', 'project_id', projectId],
+    ['or', 'processed_state.eq.processed,processed_state.eq.skipped'],
+    ['is', 'no_response', null],
+    // ['eq', 'no_response', null],
+    // true || filter.status === 'answered_only'
+    //   ? ['neq', 'no_response', true]
+    //   : undefined,
+    ['gte', 'created_at', fromISO],
+    ['lte', 'created_at', toISO],
+    ['not', 'decrypted_prompt', 'is', null],
+    ['neq', 'decrypted_prompt', ''],
+    ['order', 'created_at', { ascending: false }],
+    ['range', page * limit, (page + 1) * limit - 1],
+  ].filter(isPresent);
+
+  console.log('filters', JSON.stringify(filters, null, 2));
+  const supabaseWithFilters = filters.reduce((acc, [fn, ...args]) => {
+    return acc[fn](...args);
+  }, supabase.from('decrypted_query_stats').select('id,created_at,decrypted_prompt,no_response,feedback'));
+
+  const { data, error } = await supabaseWithFilters;
 
   if (error) {
+    console.log('Error', error);
     return { error, queries: null };
   }
 
-  const queries = (data || []).map((q) => {
+  const queries = (data || []).map((q: any) => {
     const { decrypted_prompt, ...rest } = q;
     return { ...rest, prompt: decrypted_prompt } as PromptQueryStat;
   });

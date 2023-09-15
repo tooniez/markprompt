@@ -51,12 +51,14 @@ type MutliSelectFilterPillProps = {
   label: string;
   title: string;
   values: string[];
+  align?: 'start' | 'center' | 'end';
 };
 
 export const MutliSelectFilterPill: FC<MutliSelectFilterPillProps> = ({
   label,
   title,
   values,
+  align,
 }) => {
   const [isOpen, setOpen] = useState(false);
   return (
@@ -65,7 +67,11 @@ export const MutliSelectFilterPill: FC<MutliSelectFilterPillProps> = ({
         <FilterPill label={label} />
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content className="animate-menu-up dropdown-menu-content z-50 flex w-[200px] flex-col gap-1 p-3">
+        <Popover.Content
+          className="animate-menu-up dropdown-menu-content z-50 flex w-[200px] flex-col gap-1 p-3"
+          align={align}
+          sideOffset={5}
+        >
           <h2 className="mb-2 text-sm font-bold text-neutral-300">{title}</h2>
           {values.map((value) => {
             const id = `filter-pill-${value}`;
