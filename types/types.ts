@@ -218,3 +218,12 @@ export type SerializableMarkpromptOptions = Omit<
 };
 
 export type OpenAIErrorResponse = any;
+
+export type InsightsFilter = {
+  status: 'answered_only' | 'unanswered_only' | undefined;
+  feedback:
+    | 'upvoted_only'
+    | 'downvoted_only'
+    | 'upvoted_or_downvoted'
+    | 'no_vote';
+};

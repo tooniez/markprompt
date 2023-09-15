@@ -13,6 +13,7 @@ export type ButtonVariant =
   | 'text'
   | 'plain'
   | 'bordered'
+  | 'bordered-dashed'
   | 'fuchsia'
   | 'borderedWhite'
   | 'borderedFuchsia';
@@ -42,6 +43,7 @@ ButtonOrLinkWrapper.displayName = 'ButtonOrLinkWrapper';
 export type ButtonProps = {
   buttonSize?: 'xs' | 'sm' | 'base' | 'md' | 'lg';
   variant?: ButtonVariant;
+  shape?: 'rounded';
   light?: boolean;
   left?: boolean;
   href?: string;
@@ -65,6 +67,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     {
       buttonSize,
       variant,
+      shape,
       light,
       href,
       left,
@@ -99,9 +102,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 className,
                 'button-ring relative flex select-none flex-row items-center whitespace-nowrap border disabled:cursor-not-allowed',
                 {
-                  'rounded-md': !squareCorners,
-                  'rounded-l-md border-r-0': squareCorners === 'right',
-                  'rounded-r-md': squareCorners === 'left',
+                  'rounded-md': !squareCorners && shape !== 'rounded',
+                  'rounded-l-md border-r-0':
+                    squareCorners === 'right' && shape !== 'rounded',
+                  'rounded-r-md':
+                    squareCorners === 'left' && shape !== 'rounded',
+                  'rounded-full': shape === 'rounded',
                   'justify-center': !left,
                   'justify-start': left,
                   'border-transparent bg-white text-neutral-900 hover:bg-neutral-300 disabled:bg-neutral-900 disabled:text-neutral-500 hover:disabled:bg-neutral-900':
@@ -114,8 +120,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     variant === 'danger',
                   'border-neutral-800 bg-neutral-900 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
                     variant === 'plain',
-                  'border-neutral-900 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
-                    variant === 'bordered',
+                  'border-neutral-800 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
+                    variant === 'bordered' || variant === 'bordered-dashed',
+                  'border-dashed': variant === 'bordered-dashed',
                   'button-ring-light border-neutral-900/10 text-neutral-900 hover:bg-neutral-100 disabled:opacity-50':
                     variant === 'borderedWhite',
                   'border-transparent text-neutral-100 hover:bg-neutral-1000 disabled:text-neutral-500 hover:disabled:bg-opacity-100':

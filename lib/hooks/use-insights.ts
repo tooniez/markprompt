@@ -114,6 +114,7 @@ export default function useInsights() {
     );
   }, [queriesHistogramResponse]);
 
+  console.log('queries?.queries?.length', queries?.queries?.length);
   return {
     queries: queries?.queries,
     topReferences,
@@ -128,6 +129,6 @@ export default function useInsights() {
       !project?.id || (!topReferences && !topReferencesError),
     loadingQueriesHistogram:
       !project?.id || (!queriesHistogram && !queriesHistogramError),
-    hasMorePages: queries?.queries?.length === limit,
+    hasMorePages: (queries?.queries?.length || 0) >= limit,
   };
 }

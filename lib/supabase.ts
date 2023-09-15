@@ -13,6 +13,7 @@ import {
   DbTeam,
   WebsiteSourceDataType,
   PromptQueryStat,
+  InsightsFilter,
 } from '@/types/types';
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
@@ -350,15 +351,19 @@ export const getQueryStats = async (
   toISO: string,
   limit: number,
   page: number,
+  // filter: InsightsFilter,
 ): Promise<{
   error: PostgrestError | null;
   queries: PromptQueryStat[] | null;
 }> => {
+  console.log('RANGE', page * limit, '-', (page + 1) * (limit - 1));
+
   const { data, error } = await supabase
     .from('decrypted_query_stats')
     .select('id,created_at,decrypted_prompt,no_response,feedback')
     .eq('project_id', projectId)
     .or('processed_state.eq.processed,processed_state.eq.skipped')
+    // .eq('')
     .gte('created_at', fromISO)
     .lte('created_at', toISO)
     .not('decrypted_prompt', 'is', null)
