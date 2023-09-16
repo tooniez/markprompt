@@ -5,6 +5,7 @@ import useSWR from 'swr';
 
 import {
   DateCountHistogramEntry,
+  DbQueryFilter,
   PromptQueryStat,
   ReferenceWithOccurrenceCount,
 } from '@/types/types';
@@ -21,11 +22,22 @@ import {
 import { canViewInsights } from '../stripe/tiers';
 import { fetcher, formatUrl } from '../utils';
 
+type UIQueryFilter = {
+  status?: 'answered' | 'unanswered' | 'both';
+};
+
 export default function useInsights() {
   const { team } = useTeam();
   const { project } = useProject();
   const [page, setPage] = useState(0);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [queriesFilters, setQueriesFilters] = useState<UIQueryFilter>({
+    status: 'both',
+  });
+  // const [queriesFilters, setQueriesFilters] = useLocalStorage<InsightsFilters>(
+  //   `${project?.id}:insights:queries-filters`,
+  //   { status: [], feedback: [], metadata: [] },
+  // );
 
   useEffect(() => {
     if (!project?.id) {
@@ -58,17 +70,33 @@ export default function useInsights() {
   const toISO = dateRange?.to && formatISO(dateRange?.to);
   const limit = team && canViewInsights(team) ? 20 : 3;
 
+  const preparedDBQueriesFilters = useMemo(() => {
+    if (!project?.id) {
+      return undefined;
+    }
+
+    const filters: DbQueryFilter[] = [];
+    // Transforms UI filters to DB filters
+    if (queriesFilters.status === 'answered') {
+      filters.push(['is', 'no_response', null]);
+    } else if (queriesFilters.status === 'unanswered') {
+      filters.push(['eq', 'no_response', true]);
+    }
+    return filters;
+  }, [queriesFilters, project?.id]);
+
   const {
     data: queries,
     mutate: mutateQueries,
     error: queriesError,
   } = useSWR(
-    project?.id && fromISO && toISO
+    project?.id && fromISO && toISO && preparedDBQueriesFilters !== undefined
       ? formatUrl(`/api/project/${project.id}/insights/queries`, {
           page: `${page || 0}`,
           from: fromISO,
           to: toISO,
           limit: `${limit || 20}`,
+          filters: JSON.stringify(preparedDBQueriesFilters),
         })
       : null,
     fetcher<{ queries: PromptQueryStat[] }>,
@@ -114,13 +142,14 @@ export default function useInsights() {
     );
   }, [queriesHistogramResponse]);
 
-  console.log('queries?.queries?.length', queries?.queries?.length);
   return {
     queries: queries?.queries,
     topReferences,
     queriesHistogram,
     dateRange,
     setDateRange,
+    queriesFilters,
+    setQueriesFilters,
     page,
     setPage,
     mutateQueries,

@@ -45,6 +45,7 @@ export default async function handler(
       req.query.to as string,
       limit,
       page,
+      [],
     );
 
     if (error) {

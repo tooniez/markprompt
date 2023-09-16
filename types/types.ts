@@ -219,11 +219,17 @@ export type SerializableMarkpromptOptions = Omit<
 
 export type OpenAIErrorResponse = any;
 
-export type InsightsFilter = {
-  status: 'answered_only' | 'unanswered_only' | undefined;
-  feedback:
-    | 'upvoted_only'
-    | 'downvoted_only'
-    | 'upvoted_or_downvoted'
-    | 'no_vote';
-};
+type DbQueryFilterColumnName = string;
+type DbQueryFilterValue = string | number | boolean | null;
+type DbQueryFilterOperator = 'eq' | 'neq' | 'is';
+type DbQueryFilterOrCondition = string;
+
+export type DbQueryFilter =
+  | [DbQueryFilterOperator, DbQueryFilterColumnName, DbQueryFilterValue]
+  | ['or', DbQueryFilterOrCondition];
+
+// export type InsightsFilters = {
+//   status?: DbQueryFilter[];
+//   feedback?: DbQueryFilter[];
+//   metadata?: DbQueryFilter[];
+// };

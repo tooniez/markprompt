@@ -11,7 +11,7 @@ import { TopReferences } from '@/components/insights/top-references';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Button from '@/components/ui/Button';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
-import { MutliSelectFilterPill } from '@/components/ui/FilterPill';
+import { MultiSelectFilterButton } from '@/components/ui/FilterButton';
 import { Tag } from '@/components/ui/Tag';
 import { processQueryStats } from '@/lib/api';
 import { FixedDateRange, formatShortDateTimeInTimeZone } from '@/lib/date';
@@ -52,6 +52,8 @@ const Insights = () => {
     loadingQueriesHistogram,
     dateRange,
     setDateRange,
+    queriesFilters,
+    setQueriesFilters,
     page,
     setPage,
     hasMorePages,
@@ -64,7 +66,6 @@ const Insights = () => {
     DbQueryStat['id'] | undefined
   >(undefined);
   const [queryStatDialogOpen, setQueryStatDialogOpen] = useState(false);
-  const [filters, setFilters] = useState(undefined);
 
   const columns = useMemo(() => {
     return [
@@ -354,18 +355,44 @@ const Insights = () => {
         <div className="col-span-2">
           <Card title="Latest questions">
             <div className="flex flex-row items-center gap-2">
-              <MutliSelectFilterPill
+              <MultiSelectFilterButton
                 label="Status"
                 title="Filter by status"
-                values={['Answered', 'Unsanswered']}
+                values={['Answered', 'Unanswered']}
+                checked={
+                  queriesFilters.status === 'answered'
+                    ? ['Answered']
+                    : queriesFilters.status === 'unanswered'
+                    ? ['Unanswered']
+                    : queriesFilters.status === 'both'
+                    ? ['Answered', 'Unanswered']
+                    : []
+                }
                 align="start"
+                // onCheckChanged={(checked) => {
+                //   if (checked.length === 1) {
+                //     if (checked === 'Answered') {
+                //       setQueriesFilters({
+                //         ...queriesFilters,
+                //         status: [['is', 'no_response', null]],
+                //       });
+                //     } else {
+                //       setQueriesFilters({
+                //         ...queriesFilters,
+                //         status: [['eq', 'no_response', true]],
+                //       });
+                //     }
+                //   } else {
+                //     setQueriesFilters({ ...queriesFilters, status: [] });
+                //   }
+                // }}
               />
-              <MutliSelectFilterPill
+              <MultiSelectFilterButton
                 label="Feedback"
                 title="Filter by feedback"
                 values={['Upvoted', 'Downvoted', 'No vote']}
               />
-              <MutliSelectFilterPill
+              <MultiSelectFilterButton
                 label="Metadata"
                 title="Filter by metadata"
                 values={['Upvoted', 'Downvoted', 'No vote']}
@@ -374,9 +401,9 @@ const Insights = () => {
                 variant="text"
                 buttonSize="xs"
                 shape="rounded"
-                onClick={() => {
-                  setFilters(undefined);
-                }}
+                // onClick={() => {
+                //   setFilters(undefined);
+                // }}
               >
                 Clear filters
               </Button>

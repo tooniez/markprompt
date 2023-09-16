@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { PostgrestError, User, createClient } from '@supabase/supabase-js';
+import { isPresent } from 'ts-is-present';
 
 import { Database, Json } from '@/types/supabase';
 import {
@@ -13,7 +14,7 @@ import {
   DbTeam,
   WebsiteSourceDataType,
   PromptQueryStat,
-  InsightsFilter,
+  DbQueryFilter,
 } from '@/types/types';
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
@@ -24,7 +25,6 @@ import {
   getEmbeddingTokensAllowance,
 } from './stripe/tiers';
 import { generateKey } from './utils';
-import { isPresent } from 'ts-is-present';
 
 export const getBYOOpenAIKey = async (
   supabaseAdmin: SupabaseClient<Database>,
@@ -345,6 +345,22 @@ export const hasUserAccessToProject = async (
   return !!response.data?.has_access;
 };
 
+const SUPPORTED_QUERY_FILTER_FUNCTIONS = [
+  'is',
+  'eq',
+  'neq',
+  'gte',
+  'lte',
+  'or',
+];
+
+const isValidQueryFilters = (filters: DbQueryFilter[]) => {
+  return (
+    filters.length === 0 ||
+    filters.every((f) => SUPPORTED_QUERY_FILTER_FUNCTIONS.includes(f[0]))
+  );
+};
+
 export const getQueryStats = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
@@ -352,17 +368,28 @@ export const getQueryStats = async (
   toISO: string,
   limit: number,
   page: number,
-  filter: InsightsFilter,
+  filters: DbQueryFilter[],
 ): Promise<{
   error: PostgrestError | null;
   queries: PromptQueryStat[] | null;
 }> => {
+  if (!isValidQueryFilters(filters || [])) {
+    const message = `Invalid filters. Filters may only contains the following operators: ${JSON.stringify(
+      SUPPORTED_QUERY_FILTER_FUNCTIONS,
+    )}`;
+    return {
+      error: { message, details: message, hint: message, code: '' },
+      queries: null,
+    };
+  }
+
   // Cf. https://github.com/orgs/supabase/discussions/3080#discussioncomment-1282318 to dynamically add filters
 
-  const filters: any[] = [
+  const allFilters: any[] = [
     ['eq', 'project_id', projectId],
     ['or', 'processed_state.eq.processed,processed_state.eq.skipped'],
-    ['is', 'no_response', null],
+    ...filters,
+    // ['is', 'no_response', null],
     // ['eq', 'no_response', null],
     // true || filter.status === 'answered_only'
     //   ? ['neq', 'no_response', true]
@@ -375,15 +402,13 @@ export const getQueryStats = async (
     ['range', page * limit, (page + 1) * limit - 1],
   ].filter(isPresent);
 
-  console.log('filters', JSON.stringify(filters, null, 2));
-  const supabaseWithFilters = filters.reduce((acc, [fn, ...args]) => {
+  const supabaseWithFilters = allFilters.reduce((acc, [fn, ...args]) => {
     return acc[fn](...args);
   }, supabase.from('decrypted_query_stats').select('id,created_at,decrypted_prompt,no_response,feedback'));
 
   const { data, error } = await supabaseWithFilters;
 
   if (error) {
-    console.log('Error', error);
     return { error, queries: null };
   }
 

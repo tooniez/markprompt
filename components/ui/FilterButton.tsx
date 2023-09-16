@@ -1,18 +1,17 @@
 import * as Popover from '@radix-ui/react-popover';
 import { ChevronDown, PlusCircle, XCircle } from 'lucide-react';
-import { FC, forwardRef, useState } from 'react';
+import { FC, forwardRef, useEffect, useState } from 'react';
 
 import Button from './Button';
 import { Checkbox } from './Checkbox';
 
-type FilterPillProps = {
+type FilterButtonProps = {
   label: string;
   value?: string;
 };
 
-export const FilterPill = forwardRef<HTMLButtonElement, FilterPillProps>(
+export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
   ({ label, value, ...props }, ref) => {
-    // export const FilterPill: FC<FilterPillProps> = ({ label, value }) => {
     return (
       <Button
         ref={ref}
@@ -45,48 +44,62 @@ export const FilterPill = forwardRef<HTMLButtonElement, FilterPillProps>(
   },
 );
 
-FilterPill.displayName = 'FilterPill';
+FilterButton.displayName = 'FilterButton';
 
-type MutliSelectFilterPillProps = {
+type MultiSelectFilterButtonProps = {
   label: string;
   title: string;
   values: string[];
+  checked?: string[];
   align?: 'start' | 'center' | 'end';
 };
 
-export const MutliSelectFilterPill: FC<MutliSelectFilterPillProps> = ({
+export const MultiSelectFilterButton: FC<MultiSelectFilterButtonProps> = ({
   label,
   title,
   values,
+  checked: initialChecked,
   align,
 }) => {
   const [isOpen, setOpen] = useState(false);
+  const [checked, setChecked] = useState<string[]>([]);
+
+  useEffect(() => {
+    setChecked(initialChecked || []);
+  }, [initialChecked]);
+
+  console.log('checked', JSON.stringify(checked, null, 2));
+
   return (
     <Popover.Root open={isOpen} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
-        <FilterPill label={label} />
+        <FilterButton label={label} />
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="animate-menu-up dropdown-menu-content z-50 flex w-[200px] flex-col gap-1 p-3"
+          className="animate-menu-up dropdown-menu-content z-50 flex min-w-[240px] flex-col gap-1 p-3"
           align={align}
           sideOffset={5}
         >
           <h2 className="mb-2 text-sm font-bold text-neutral-300">{title}</h2>
           {values.map((value) => {
-            const id = `filter-pill-${value}`;
             return (
-              <div key={id} className="flex flex-row items-center gap-2">
+              <div
+                key={`filter-pill-${value}`}
+                className="flex flex-row items-center gap-2"
+              >
                 <Checkbox
-                  className="flex-none"
-                  id={id}
-                  // checked={table.getIsAllRowsSelected()}
-                  // indeterminate={table.getIsSomeRowsSelected()}
-                  // onChange={table.getToggleAllRowsSelectedHandler()}
+                  label={value}
+                  defaultChecked={checked?.includes(value)}
+                  onCheckedChange={(c) => {
+                    const rest = checked.filter((v) => v !== value);
+                    if (c === true) {
+                      setChecked([...rest, value]);
+                    } else {
+                      setChecked(rest);
+                    }
+                  }}
                 />
-                <label htmlFor={id}>
-                  <span className="text-sm text-neutral-300">{value}</span>
-                </label>
               </div>
             );
           })}
@@ -94,16 +107,6 @@ export const MutliSelectFilterPill: FC<MutliSelectFilterPillProps> = ({
           <Button className="mt-2" variant="cta" buttonSize="xs">
             Apply
           </Button>
-          {/* <Popover.CheckboxItem
-            // key={`date-range-picker-${rangeKey}`}
-            className="dropdown-menu-item dropdown-menu-item-indent"
-            // checked={checked}
-            // onClick={() => {
-            //   setRange?.(fixedRangeToDateRangeZonedTime(range));
-            // }}
-          >
-            asd
-          </Popover.CheckboxItem> */}
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
