@@ -24,6 +24,7 @@ import { fetcher, formatUrl } from '../utils';
 
 type UIQueryFilter = {
   status?: 'answered' | 'unanswered' | 'both';
+  feedback?: 'upvoted' | 'downvoted' | 'upvoted_or_downvoted' | 'no_vote';
 };
 
 export default function useInsights() {
@@ -32,12 +33,8 @@ export default function useInsights() {
   const [page, setPage] = useState(0);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [queriesFilters, setQueriesFilters] = useState<UIQueryFilter>({
-    status: 'both',
+    status: undefined,
   });
-  // const [queriesFilters, setQueriesFilters] = useLocalStorage<InsightsFilters>(
-  //   `${project?.id}:insights:queries-filters`,
-  //   { status: [], feedback: [], metadata: [] },
-  // );
 
   useEffect(() => {
     if (!project?.id) {

@@ -58,6 +58,7 @@ export type ButtonProps = {
   loading?: boolean;
   loadingMessage?: string;
   noStyle?: boolean;
+  noPadding?: boolean;
   Icon?: JSXElementConstructor<any> | string;
   Component?: JSXElementConstructor<any> | string;
 } & React.HTMLProps<HTMLButtonElement>;
@@ -81,6 +82,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       loading,
       loadingMessage,
       noStyle,
+      noPadding,
       Component = 'button',
       ...props
     },
@@ -110,7 +112,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                   'rounded-full': shape === 'rounded',
                   'justify-center': !left,
                   'justify-start': left,
-                  'border-transparent bg-white text-neutral-900 hover:bg-neutral-300 disabled:bg-neutral-900 disabled:text-neutral-500 hover:disabled:bg-neutral-900':
+                  'border-transparent bg-white text-neutral-900 hover:bg-neutral-300 disabled:bg-white/5 disabled:text-neutral-500 hover:disabled:bg-white/5 hover:disabled:bg-neutral-900':
                     variant === 'cta',
                   'button-glow-color border-transparent bg-fuchsia-600 text-white hover:bg-fuchsia-700':
                     variant === 'glow',
@@ -131,11 +133,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     variant === 'text',
                   'border-fuchsia-400/20 text-fuchsia-400 hover:bg-fuchsia-900/20 hover:text-fuchsia-100 disabled:border-transparent disabled:text-fuchsia-500 hover:disabled:bg-opacity-100':
                     variant === 'borderedFuchsia',
-                  'px-4 py-2 text-sm': size === 'base',
-                  'px-2 py-1.5 text-xs': size === 'xs',
-                  'px-4 py-1.5 text-sm': size === 'sm',
-                  'px-4 py-2.5 text-sm sm:px-5 sm:py-3 sm:text-base':
-                    size === 'lg',
+                  'text-sm': size === 'base' || size === 'sm',
+                  'text-xs': size === 'xs',
+                  'text-sm sm:text-base': size === 'lg',
+                  'px-4 py-2': size === 'base' && !noPadding,
+                  'px-2 py-1.5': size === 'xs' && !noPadding,
+                  'px-4 py-1.5': size === 'sm' && !noPadding,
+                  'px-4 py-2.5 sm:px-5 sm:py-3': size === 'lg' && !noPadding,
                   'font-semibold': !light,
                 },
               )

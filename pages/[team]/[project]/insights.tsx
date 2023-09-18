@@ -354,11 +354,20 @@ const Insights = () => {
       <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-3">
         <div className="col-span-2">
           <Card title="Latest questions">
-            <div className="flex flex-row items-center gap-2">
+            <div className="flex flex-row flex-wrap items-center gap-2">
               <MultiSelectFilterButton
-                label="Status"
+                legend="Status"
                 title="Filter by status"
-                values={['Answered', 'Unanswered']}
+                activeValue={
+                  queriesFilters.status === 'answered'
+                    ? 'Answered'
+                    : queriesFilters.status === 'unanswered'
+                    ? 'Unanswered'
+                    : queriesFilters.status === 'both'
+                    ? 'Answered, Unanswered'
+                    : undefined
+                }
+                options={['Answered', 'Unanswered']}
                 checked={
                   queriesFilters.status === 'answered'
                     ? ['Answered']
@@ -368,45 +377,60 @@ const Insights = () => {
                     ? ['Answered', 'Unanswered']
                     : []
                 }
+                onSubmit={(newValues) => {
+                  if (newValues.length === 1) {
+                    setQueriesFilters({
+                      ...queriesFilters,
+                      status:
+                        newValues[0] === 'Answered' ? 'answered' : 'unanswered',
+                    });
+                  } else {
+                    setQueriesFilters({
+                      ...queriesFilters,
+                      status: newValues.length === 2 ? 'both' : undefined,
+                    });
+                  }
+                }}
+                onClear={() => {
+                  setQueriesFilters({
+                    ...queriesFilters,
+                    status: undefined,
+                  });
+                }}
                 align="start"
-                // onCheckChanged={(checked) => {
-                //   if (checked.length === 1) {
-                //     if (checked === 'Answered') {
-                //       setQueriesFilters({
-                //         ...queriesFilters,
-                //         status: [['is', 'no_response', null]],
-                //       });
-                //     } else {
-                //       setQueriesFilters({
-                //         ...queriesFilters,
-                //         status: [['eq', 'no_response', true]],
-                //       });
-                //     }
-                //   } else {
-                //     setQueriesFilters({ ...queriesFilters, status: [] });
-                //   }
-                // }}
               />
               <MultiSelectFilterButton
-                label="Feedback"
+                legend="Feedback"
                 title="Filter by feedback"
-                values={['Upvoted', 'Downvoted', 'No vote']}
+                activeValue={
+                  queriesFilters.status === 'answered'
+                    ? 'Answered'
+                    : queriesFilters.status === 'unanswered'
+                    ? 'Unanswered'
+                    : queriesFilters.status === 'both'
+                    ? 'Answered, Unanswered'
+                    : undefined
+                }
+                options={['Upvoted', 'Downvoted', 'No vote']}
               />
               <MultiSelectFilterButton
-                label="Metadata"
+                legend="Metadata"
                 title="Filter by metadata"
-                values={['Upvoted', 'Downvoted', 'No vote']}
+                options={['Upvoted', 'Downvoted', 'No vote']}
               />
-              <Button
-                variant="text"
-                buttonSize="xs"
-                shape="rounded"
-                // onClick={() => {
-                //   setFilters(undefined);
-                // }}
-              >
-                Clear filters
-              </Button>
+              {!!queriesFilters.status && (
+                <button
+                  className="cursor-pointer whitespace-nowrap rounded-full px-2 py-1 text-xs font-medium text-sky-500 transition hover:bg-neutral-900"
+                  // variant="text"
+                  // buttonSize="xs"
+                  // shape="rounded"
+                  onClick={() => {
+                    setFilters(undefined);
+                  }}
+                >
+                  Clear filters
+                </button>
+              )}
             </div>
             <QueriesDataTable
               loading={loadingQueries}

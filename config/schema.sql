@@ -679,7 +679,7 @@ create trigger trigger_update_file_sections_cf_project_id
 create trigger query_stats_encrypt_secret_trigger_prompt_encrypted before insert
 or
 update of prompt_encrypted on query_stats for each row
-execute function query_stats_encrypt_secret_prompt_encrypted ();
+execute function query_stats_encrypt_secret_prompt_encrypted();
 
 -- Views
 
