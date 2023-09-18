@@ -83,7 +83,7 @@ export const SearchProviderConfig: FC<SearchProviderConfigProps> = () => {
                 <ChevronDown className="h-4 w-4" />
               </Select.ScrollDownButton>
             </Select.Content>
-          </Select.Portal>{' '}
+          </Select.Portal>
         </Select.Root>
       </Row>
       {markpromptOptions.search?.provider?.name !== 'algolia' && (

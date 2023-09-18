@@ -1,47 +1,37 @@
 import * as Select from '@radix-ui/react-select';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { FC, useMemo } from 'react';
+import { FC } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
-import { DEFAULT_SYSTEM_PROMPT, predefinedSystemPrompts } from '@/lib/prompt';
 
 import { SelectItem } from '../ui/Select';
 
-type SystemPromptPickerProps = {
+type LayoutPickerProps = {
   className?: string;
 };
 
-export const SystemPromptPicker: FC<SystemPromptPickerProps> = () => {
+export const LayoutPicker: FC<LayoutPickerProps> = () => {
   const { markpromptOptions, setMarkpromptOptions } = useConfigContext();
-
-  const selectedSystemPromptName = useMemo(() => {
-    return predefinedSystemPrompts.find((t) => {
-      return t.content === markpromptOptions.prompt?.systemPrompt;
-    })?.name;
-  }, [markpromptOptions?.prompt?.systemPrompt]);
 
   return (
     <Select.Root
-      value={selectedSystemPromptName || 'Custom'}
+      value={markpromptOptions.chat?.enabled ? 'chat' : 'prompt'}
       onValueChange={(value) => {
-        const systemPrompt =
-          predefinedSystemPrompts.find((t) => t.name === value)?.content ||
-          DEFAULT_SYSTEM_PROMPT.content;
         setMarkpromptOptions({
           ...markpromptOptions,
-          prompt: {
-            ...markpromptOptions.prompt,
-            systemPrompt,
+          chat: {
+            ...markpromptOptions.chat,
+            enabled: value === 'chat',
           },
         });
       }}
     >
       <Select.Trigger
         className="button-ring flex w-full flex-row items-center gap-2 rounded-md border border-neutral-900 py-1.5 px-3 text-sm text-neutral-300 outline-none"
-        aria-label="Theme"
+        aria-label="Layout"
       >
         <div className="flex-grow truncate whitespace-nowrap text-left">
-          <Select.Value placeholder="Pick a template…" />
+          <Select.Value placeholder="Pick a layout…" />
         </div>
         <Select.Icon className="flex-none text-neutral-500">
           <ChevronDown className="h-4 w-4" />
@@ -54,16 +44,8 @@ export const SystemPromptPicker: FC<SystemPromptPickerProps> = () => {
           </Select.ScrollUpButton>
           <Select.Viewport>
             <Select.Group>
-              {!selectedSystemPromptName && (
-                <SelectItem value="Custom">Custom</SelectItem>
-              )}
-              {predefinedSystemPrompts?.map((prompt) => {
-                return (
-                  <SelectItem key={`prompt-${prompt.name}`} value={prompt.name}>
-                    {prompt.name}
-                  </SelectItem>
-                );
-              })}
+              <SelectItem value="chat">Chat</SelectItem>
+              <SelectItem value="prompt">Prompt</SelectItem>
             </Select.Group>
           </Select.Viewport>
           <Select.ScrollDownButton className="flex items-center justify-center p-2">

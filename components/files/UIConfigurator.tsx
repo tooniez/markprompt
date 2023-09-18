@@ -12,6 +12,7 @@ import { canRemoveBranding } from '@/lib/stripe/tiers';
 import { Theme, ThemeColorKeys, ThemeColors } from '@/lib/themes';
 import { SerializableMarkpromptOptions } from '@/types/types';
 
+import { LayoutPicker } from './LayoutPicker';
 import { Row } from './PlaygroundDashboard';
 import { SearchProviderConfig } from './SearchProviderConfig';
 import { ThemePicker } from './ThemePicker';
@@ -63,6 +64,9 @@ const UIConfigurator: FC<UIConfiguratorProps> = () => {
     <div className="flex flex-col">
       <Row label="Theme">
         <ThemePicker />
+      </Row>
+      <Row label="Layout">
+        <LayoutPicker />
       </Row>
       <Row label="Instant search">
         <div className="flex flex-row items-center justify-end gap-2">
