@@ -1,4 +1,5 @@
 import * as Popover from '@radix-ui/react-popover';
+import * as RadioGroup from '@radix-ui/react-radio-group';
 import { ChevronDown, PlusCircle, XCircle } from 'lucide-react';
 import { FC, forwardRef, useEffect, useState } from 'react';
 
@@ -62,30 +63,30 @@ FilterButton.displayName = 'FilterButton';
 type MultiSelectFilterButtonProps = {
   legend: string;
   title: string;
-  activeValue?: string;
+  activeLabel?: string;
   options: string[];
-  checked?: string[];
+  checkedIndices?: number[];
   align?: 'start' | 'center' | 'end';
-  onSubmit?: (newValues: string[]) => void;
+  onSubmit?: (indices: number[]) => void;
   onClear?: () => void;
 };
 
 export const MultiSelectFilterButton: FC<MultiSelectFilterButtonProps> = ({
   legend,
   title,
-  activeValue,
+  activeLabel,
   options,
-  checked: initialChecked,
+  checkedIndices: initialCheckedIndices,
   align,
   onSubmit,
   onClear,
 }) => {
   const [isOpen, setOpen] = useState(false);
-  const [checked, setChecked] = useState<string[]>([]);
+  const [checkedIndices, setCheckedIndices] = useState<number[]>([]);
 
   useEffect(() => {
-    setChecked(initialChecked || []);
-  }, [initialChecked]);
+    setCheckedIndices(initialCheckedIndices || []);
+  }, [initialCheckedIndices]);
 
   return (
     <Popover.Root
@@ -93,13 +94,13 @@ export const MultiSelectFilterButton: FC<MultiSelectFilterButtonProps> = ({
       onOpenChange={(o) => {
         if (!o) {
           // Reset to initial values
-          setChecked(initialChecked || []);
+          setCheckedIndices(initialCheckedIndices || []);
         }
         setOpen(o);
       }}
     >
       <Popover.Trigger asChild>
-        <FilterButton legend={legend} value={activeValue} onClear={onClear} />
+        <FilterButton legend={legend} value={activeLabel} onClear={onClear} />
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
@@ -108,7 +109,7 @@ export const MultiSelectFilterButton: FC<MultiSelectFilterButtonProps> = ({
           sideOffset={5}
         >
           <h2 className="mb-2 text-sm font-bold text-neutral-300">{title}</h2>
-          {options.map((option) => {
+          {options.map((option, i) => {
             return (
               <div
                 key={`filter-pill-${option}`}
@@ -116,13 +117,13 @@ export const MultiSelectFilterButton: FC<MultiSelectFilterButtonProps> = ({
               >
                 <Checkbox
                   label={option}
-                  defaultChecked={checked?.includes(option)}
+                  defaultChecked={checkedIndices?.includes(i)}
                   onCheckedChange={(c) => {
-                    const rest = checked.filter((v) => v !== option);
+                    const rest = checkedIndices.filter((v) => v !== i);
                     if (c === true) {
-                      setChecked([...rest, option]);
+                      setCheckedIndices([...rest, i]);
                     } else {
-                      setChecked(rest);
+                      setCheckedIndices(rest);
                     }
                   }}
                 />
@@ -134,10 +135,107 @@ export const MultiSelectFilterButton: FC<MultiSelectFilterButtonProps> = ({
             className="mt-2"
             variant="cta"
             buttonSize="xs"
-            disabled={arrayEquals(initialChecked || [], checked)}
+            disabled={arrayEquals(initialCheckedIndices || [], checkedIndices)}
             onClick={() => {
               setOpen(false);
-              onSubmit?.(checked);
+              onSubmit?.(checkedIndices);
+            }}
+          >
+            Apply
+          </Button>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+};
+
+type SingleSelectFilterButtonProps = {
+  legend: string;
+  title: string;
+  activeLabel?: string;
+  options: string[];
+  selectedIndex?: number;
+  align?: 'start' | 'center' | 'end';
+  onSubmit?: (index: number) => void;
+  onClear?: () => void;
+};
+
+export const SingleSelectFilterButton: FC<SingleSelectFilterButtonProps> = ({
+  legend,
+  title,
+  activeLabel,
+  options,
+  selectedIndex: initialSelectedIndex,
+  align,
+  onSubmit,
+  onClear,
+}) => {
+  const [isOpen, setOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
+    setSelectedIndex(initialSelectedIndex);
+  }, [initialSelectedIndex]);
+
+  return (
+    <Popover.Root
+      open={isOpen}
+      onOpenChange={(o) => {
+        if (!o) {
+          // Reset to initial values
+          setSelectedIndex(initialSelectedIndex);
+        }
+        setOpen(o);
+      }}
+    >
+      <Popover.Trigger asChild>
+        <FilterButton legend={legend} value={activeLabel} onClear={onClear} />
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          className="animate-menu-up dropdown-menu-content z-50 flex min-w-[240px] flex-col gap-1 p-3"
+          align={align}
+          sideOffset={5}
+        >
+          <h2 className="mb-2 text-sm font-bold text-neutral-300">{title}</h2>
+          <RadioGroup.Root
+            className="RadioGroupRoot"
+            aria-label={title}
+            defaultValue={`${initialSelectedIndex || 0}`}
+            onValueChange={(value) => {
+              setSelectedIndex(parseInt(value));
+            }}
+          >
+            {options.map((option, i) => {
+              const id = `filter-pill-${option}`;
+              return (
+                <div key={id} className="flex flex-row items-center gap-2">
+                  <RadioGroup.Item
+                    className="RadioGroupItem"
+                    value={`${i}`}
+                    id={id}
+                  >
+                    <RadioGroup.Indicator className="RadioGroupIndicator" />
+                  </RadioGroup.Item>
+                  <label htmlFor={id}>
+                    <span className="Label">{option}</span>
+                  </label>
+                </div>
+              );
+            })}
+          </RadioGroup.Root>
+          <Button
+            className="mt-2"
+            variant="cta"
+            buttonSize="xs"
+            disabled={initialSelectedIndex === selectedIndex}
+            onClick={() => {
+              setOpen(false);
+              if (typeof selectedIndex !== 'undefined') {
+                onSubmit?.(selectedIndex);
+              }
             }}
           >
             Apply

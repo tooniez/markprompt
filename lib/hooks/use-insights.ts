@@ -34,6 +34,7 @@ export default function useInsights() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [queriesFilters, setQueriesFilters] = useState<UIQueryFilter>({
     status: undefined,
+    feedback: undefined,
   });
 
   useEffect(() => {
@@ -72,13 +73,27 @@ export default function useInsights() {
       return undefined;
     }
 
-    const filters: DbQueryFilter[] = [];
     // Transforms UI filters to DB filters
+    const filters: DbQueryFilter[] = [];
+
+    // Status
     if (queriesFilters.status === 'answered') {
       filters.push(['is', 'no_response', null]);
     } else if (queriesFilters.status === 'unanswered') {
       filters.push(['eq', 'no_response', true]);
     }
+
+    // Feedback
+    if (queriesFilters.feedback === 'upvoted') {
+      filters.push(['eq', 'feedback->>vote', '1']);
+    } else if (queriesFilters.feedback === 'downvoted') {
+      filters.push(['eq', 'feedback->>vote', '-1']);
+    } else if (queriesFilters.feedback === 'upvoted_or_downvoted') {
+      filters.push(['neq', 'feedback->>vote', null]);
+    } else if (queriesFilters.feedback === 'no_vote') {
+      filters.push(['is', 'feedback->>vote', null]);
+    }
+
     return filters;
   }, [queriesFilters, project?.id]);
 

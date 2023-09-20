@@ -11,7 +11,10 @@ import { TopReferences } from '@/components/insights/top-references';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Button from '@/components/ui/Button';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
-import { MultiSelectFilterButton } from '@/components/ui/FilterButton';
+import {
+  MultiSelectFilterButton,
+  SingleSelectFilterButton,
+} from '@/components/ui/FilterButton';
 import { Tag } from '@/components/ui/Tag';
 import { processQueryStats } from '@/lib/api';
 import { FixedDateRange, formatShortDateTimeInTimeZone } from '@/lib/date';
@@ -358,7 +361,7 @@ const Insights = () => {
               <MultiSelectFilterButton
                 legend="Status"
                 title="Filter by status"
-                activeValue={
+                activeLabel={
                   queriesFilters.status === 'answered'
                     ? 'Answered'
                     : queriesFilters.status === 'unanswered'
@@ -368,26 +371,25 @@ const Insights = () => {
                     : undefined
                 }
                 options={['Answered', 'Unanswered']}
-                checked={
+                checkedIndices={
                   queriesFilters.status === 'answered'
-                    ? ['Answered']
+                    ? [0]
                     : queriesFilters.status === 'unanswered'
-                    ? ['Unanswered']
+                    ? [1]
                     : queriesFilters.status === 'both'
-                    ? ['Answered', 'Unanswered']
+                    ? [0, 1]
                     : []
                 }
-                onSubmit={(newValues) => {
-                  if (newValues.length === 1) {
+                onSubmit={(indices) => {
+                  if (indices.length === 1) {
                     setQueriesFilters({
                       ...queriesFilters,
-                      status:
-                        newValues[0] === 'Answered' ? 'answered' : 'unanswered',
+                      status: indices[0] === 0 ? 'answered' : 'unanswered',
                     });
                   } else {
                     setQueriesFilters({
                       ...queriesFilters,
-                      status: newValues.length === 2 ? 'both' : undefined,
+                      status: indices.length === 2 ? 'both' : undefined,
                     });
                   }
                 }}
@@ -399,19 +401,59 @@ const Insights = () => {
                 }}
                 align="start"
               />
-              <MultiSelectFilterButton
+              <SingleSelectFilterButton
                 legend="Feedback"
                 title="Filter by feedback"
-                activeValue={
-                  queriesFilters.status === 'answered'
-                    ? 'Answered'
-                    : queriesFilters.status === 'unanswered'
-                    ? 'Unanswered'
-                    : queriesFilters.status === 'both'
-                    ? 'Answered, Unanswered'
+                activeLabel={
+                  queriesFilters.feedback === 'upvoted'
+                    ? 'Upvoted'
+                    : queriesFilters.feedback === 'downvoted'
+                    ? 'Downvoted'
+                    : queriesFilters.feedback === 'upvoted_or_downvoted'
+                    ? 'Upvoted, Downvoted'
+                    : queriesFilters.feedback === 'no_vote'
+                    ? 'No vote'
                     : undefined
                 }
-                options={['Upvoted', 'Downvoted', 'No vote']}
+                options={[
+                  'Upvoted',
+                  'Downvoted',
+                  'Upvoted or downvoted',
+                  'No vote',
+                  'All',
+                ]}
+                selectedIndex={
+                  queriesFilters.feedback === 'upvoted'
+                    ? 0
+                    : queriesFilters.feedback === 'downvoted'
+                    ? 1
+                    : queriesFilters.feedback === 'upvoted_or_downvoted'
+                    ? 2
+                    : queriesFilters.feedback === 'no_vote'
+                    ? 3
+                    : 4
+                }
+                onSubmit={(index) => {
+                  setQueriesFilters({
+                    ...queriesFilters,
+                    feedback:
+                      index === 0
+                        ? 'upvoted'
+                        : index === 1
+                        ? 'downvoted'
+                        : index === 2
+                        ? 'upvoted_or_downvoted'
+                        : index === 3
+                        ? 'no_vote'
+                        : undefined,
+                  });
+                }}
+                onClear={() => {
+                  setQueriesFilters({
+                    ...queriesFilters,
+                    feedback: undefined,
+                  });
+                }}
               />
               <MultiSelectFilterButton
                 legend="Metadata"
@@ -425,7 +467,10 @@ const Insights = () => {
                   // buttonSize="xs"
                   // shape="rounded"
                   onClick={() => {
-                    setFilters(undefined);
+                    setQueriesFilters({
+                      status: undefined,
+                      feedback: undefined,
+                    });
                   }}
                 >
                   Clear filters

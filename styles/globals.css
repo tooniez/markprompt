@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+@import 'ui.css';
 @import 'prism.css';
 @import 'markprompt.css';
 @import 'supabase.css';
