@@ -20,11 +20,20 @@ import {
   getStoredRangeOrDefaultZonedTime,
 } from '../date';
 import { canViewInsights } from '../stripe/tiers';
+import { QueryFilterOperation } from '../supabase';
 import { fetcher, formatUrl } from '../utils';
+import { safeParseJSON } from '../utils.edge';
+
+type UIMetadataQueryFilter = {
+  field: string;
+  op: QueryFilterOperation;
+  value: string | null;
+};
 
 type UIQueryFilter = {
   status?: 'answered' | 'unanswered' | 'both';
   feedback?: 'upvoted' | 'downvoted' | 'upvoted_or_downvoted' | 'no_vote';
+  metadata?: UIMetadataQueryFilter[];
 };
 
 export default function useInsights() {
@@ -32,10 +41,9 @@ export default function useInsights() {
   const { project } = useProject();
   const [page, setPage] = useState(0);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  const [queriesFilters, setQueriesFilters] = useState<UIQueryFilter>({
-    status: undefined,
-    feedback: undefined,
-  });
+  const [queriesFilters, setQueriesFilters] = useState<
+    UIQueryFilter | undefined
+  >(undefined);
 
   useEffect(() => {
     if (!project?.id) {
@@ -68,6 +76,29 @@ export default function useInsights() {
   const toISO = dateRange?.to && formatISO(dateRange?.to);
   const limit = team && canViewInsights(team) ? 20 : 3;
 
+  const storageKey = project?.id
+    ? `${project.id}:insights:query-filters`
+    : undefined;
+  useEffect(() => {
+    if (!storageKey) {
+      return;
+    }
+    setQueriesFilters(
+      safeParseJSON(localStorage.getItem(storageKey), undefined),
+    );
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!storageKey) {
+      return;
+    }
+    if (!queriesFilters) {
+      localStorage.removeItem(storageKey);
+    } else {
+      localStorage.setItem(storageKey, JSON.stringify(queriesFilters));
+    }
+  }, [queriesFilters, storageKey]);
+
   const preparedDBQueriesFilters = useMemo(() => {
     if (!project?.id) {
       return undefined;
@@ -77,22 +108,33 @@ export default function useInsights() {
     const filters: DbQueryFilter[] = [];
 
     // Status
-    if (queriesFilters.status === 'answered') {
+    if (queriesFilters?.status === 'answered') {
       filters.push(['is', 'no_response', null]);
-    } else if (queriesFilters.status === 'unanswered') {
+    } else if (queriesFilters?.status === 'unanswered') {
       filters.push(['eq', 'no_response', true]);
     }
 
     // Feedback
-    if (queriesFilters.feedback === 'upvoted') {
+    if (queriesFilters?.feedback === 'upvoted') {
       filters.push(['eq', 'feedback->>vote', '1']);
-    } else if (queriesFilters.feedback === 'downvoted') {
+    } else if (queriesFilters?.feedback === 'downvoted') {
       filters.push(['eq', 'feedback->>vote', '-1']);
-    } else if (queriesFilters.feedback === 'upvoted_or_downvoted') {
+    } else if (queriesFilters?.feedback === 'upvoted_or_downvoted') {
       filters.push(['neq', 'feedback->>vote', null]);
-    } else if (queriesFilters.feedback === 'no_vote') {
+    } else if (queriesFilters?.feedback === 'no_vote') {
       filters.push(['is', 'feedback->>vote', null]);
     }
+
+    // Metadata
+    // if (queriesFilters.feedback === 'upvoted') {
+    //   filters.push(['eq', 'feedback->>vote', '1']);
+    // } else if (queriesFilters.feedback === 'downvoted') {
+    //   filters.push(['eq', 'feedback->>vote', '-1']);
+    // } else if (queriesFilters.feedback === 'upvoted_or_downvoted') {
+    //   filters.push(['neq', 'feedback->>vote', null]);
+    // } else if (queriesFilters.feedback === 'no_vote') {
+    //   filters.push(['is', 'feedback->>vote', null]);
+    // }
 
     return filters;
   }, [queriesFilters, project?.id]);

@@ -227,9 +227,3 @@ type DbQueryFilterOrCondition = string;
 export type DbQueryFilter =
   | [DbQueryFilterOperator, DbQueryFilterColumnName, DbQueryFilterValue]
   | ['or', DbQueryFilterOrCondition];
-
-// export type InsightsFilters = {
-//   status?: DbQueryFilter[];
-//   feedback?: DbQueryFilter[];
-//   metadata?: DbQueryFilter[];
-// };

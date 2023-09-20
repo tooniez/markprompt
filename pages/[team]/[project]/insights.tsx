@@ -43,7 +43,7 @@ export const PromptStatusTag = ({ noResponse }: { noResponse: boolean }) => {
 };
 
 const Insights = () => {
-  const { project } = useProject();
+  const { project, config } = useProject();
   const { team } = useTeam();
   const {
     queries,
@@ -287,7 +287,6 @@ const Insights = () => {
     }
     const insightsType = getAccessibleInsightsType(team);
     if (!insightsType) {
-      console.info('No processing insights');
       // Don't process insights unless on the adequate plan.
       return;
     }
@@ -357,26 +356,26 @@ const Insights = () => {
       <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-3">
         <div className="col-span-2">
           <Card title="Latest questions">
-            <div className="flex flex-row flex-wrap items-center gap-2">
+            <div className="mt-4 flex flex-row flex-wrap items-center gap-2">
               <MultiSelectFilterButton
                 legend="Status"
                 title="Filter by status"
                 activeLabel={
-                  queriesFilters.status === 'answered'
+                  queriesFilters?.status === 'answered'
                     ? 'Answered'
-                    : queriesFilters.status === 'unanswered'
+                    : queriesFilters?.status === 'unanswered'
                     ? 'Unanswered'
-                    : queriesFilters.status === 'both'
+                    : queriesFilters?.status === 'both'
                     ? 'Answered, Unanswered'
                     : undefined
                 }
                 options={['Answered', 'Unanswered']}
                 checkedIndices={
-                  queriesFilters.status === 'answered'
+                  queriesFilters?.status === 'answered'
                     ? [0]
-                    : queriesFilters.status === 'unanswered'
+                    : queriesFilters?.status === 'unanswered'
                     ? [1]
-                    : queriesFilters.status === 'both'
+                    : queriesFilters?.status === 'both'
                     ? [0, 1]
                     : []
                 }
@@ -405,13 +404,13 @@ const Insights = () => {
                 legend="Feedback"
                 title="Filter by feedback"
                 activeLabel={
-                  queriesFilters.feedback === 'upvoted'
+                  queriesFilters?.feedback === 'upvoted'
                     ? 'Upvoted'
-                    : queriesFilters.feedback === 'downvoted'
+                    : queriesFilters?.feedback === 'downvoted'
                     ? 'Downvoted'
-                    : queriesFilters.feedback === 'upvoted_or_downvoted'
+                    : queriesFilters?.feedback === 'upvoted_or_downvoted'
                     ? 'Upvoted, Downvoted'
-                    : queriesFilters.feedback === 'no_vote'
+                    : queriesFilters?.feedback === 'no_vote'
                     ? 'No vote'
                     : undefined
                 }
@@ -423,13 +422,13 @@ const Insights = () => {
                   'All',
                 ]}
                 selectedIndex={
-                  queriesFilters.feedback === 'upvoted'
+                  queriesFilters?.feedback === 'upvoted'
                     ? 0
-                    : queriesFilters.feedback === 'downvoted'
+                    : queriesFilters?.feedback === 'downvoted'
                     ? 1
-                    : queriesFilters.feedback === 'upvoted_or_downvoted'
+                    : queriesFilters?.feedback === 'upvoted_or_downvoted'
                     ? 2
-                    : queriesFilters.feedback === 'no_vote'
+                    : queriesFilters?.feedback === 'no_vote'
                     ? 3
                     : 4
                 }
@@ -460,7 +459,7 @@ const Insights = () => {
                 title="Filter by metadata"
                 options={['Upvoted', 'Downvoted', 'No vote']}
               />
-              {!!queriesFilters.status && (
+              {!!queriesFilters?.status && (
                 <button
                   className="cursor-pointer whitespace-nowrap rounded-full px-2 py-1 text-xs font-medium text-sky-500 transition hover:bg-neutral-900"
                   // variant="text"

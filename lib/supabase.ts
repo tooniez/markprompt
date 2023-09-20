@@ -345,14 +345,17 @@ export const hasUserAccessToProject = async (
   return !!response.data?.has_access;
 };
 
-const SUPPORTED_QUERY_FILTER_FUNCTIONS = [
-  'is',
-  'eq',
-  'neq',
-  'gte',
-  'lte',
-  'or',
-];
+export enum QueryFilterOperation {
+  'is' = 'is',
+  'eq' = 'eq',
+  'neq' = 'neq',
+  'gte' = 'gte',
+  'lte' = 'lte',
+  'or' = 'or',
+}
+
+const SUPPORTED_QUERY_FILTER_FUNCTIONS: string[] =
+  Object.values(QueryFilterOperation);
 
 const isValidQueryFilters = (filters: DbQueryFilter[]) => {
   return (
@@ -389,11 +392,6 @@ export const getQueryStats = async (
     ['eq', 'project_id', projectId],
     ['or', 'processed_state.eq.processed,processed_state.eq.skipped'],
     ...filters,
-    // ['is', 'no_response', null],
-    // ['eq', 'no_response', null],
-    // true || filter.status === 'answered_only'
-    //   ? ['neq', 'no_response', true]
-    //   : undefined,
     ['gte', 'created_at', fromISO],
     ['lte', 'created_at', toISO],
     ['not', 'decrypted_prompt', 'is', null],
@@ -404,7 +402,7 @@ export const getQueryStats = async (
 
   const supabaseWithFilters = allFilters.reduce((acc, [fn, ...args]) => {
     return acc[fn](...args);
-  }, supabase.from('decrypted_query_stats').select('id,created_at,decrypted_prompt,no_response,feedback'));
+  }, supabase.from('v_insights_query_stats').select('id,created_at,decrypted_prompt,no_response,feedback'));
 
   const { data, error } = await supabaseWithFilters;
 

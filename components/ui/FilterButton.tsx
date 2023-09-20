@@ -245,3 +245,100 @@ export const SingleSelectFilterButton: FC<SingleSelectFilterButtonProps> = ({
     </Popover.Root>
   );
 };
+
+// type SingleSelectFilterButtonProps = {
+//   legend: string;
+//   title: string;
+//   activeLabel?: string;
+//   options: string[];
+//   selectedIndex?: number;
+//   align?: 'start' | 'center' | 'end';
+//   onSubmit?: (index: number) => void;
+//   onClear?: () => void;
+// };
+
+// export const SingleSelectFilterButton: FC<SingleSelectFilterButtonProps> = ({
+//   legend,
+//   title,
+//   activeLabel,
+//   options,
+//   selectedIndex: initialSelectedIndex,
+//   align,
+//   onSubmit,
+//   onClear,
+// }) => {
+//   const [isOpen, setOpen] = useState(false);
+//   const [selectedIndex, setSelectedIndex] = useState<number | undefined>(
+//     undefined,
+//   );
+
+//   useEffect(() => {
+//     setSelectedIndex(initialSelectedIndex);
+//   }, [initialSelectedIndex]);
+
+//   return (
+//     <Popover.Root
+//       open={isOpen}
+//       onOpenChange={(o) => {
+//         if (!o) {
+//           // Reset to initial values
+//           setSelectedIndex(initialSelectedIndex);
+//         }
+//         setOpen(o);
+//       }}
+//     >
+//       <Popover.Trigger asChild>
+//         <FilterButton legend={legend} value={activeLabel} onClear={onClear} />
+//       </Popover.Trigger>
+//       <Popover.Portal>
+//         <Popover.Content
+//           className="animate-menu-up dropdown-menu-content z-50 flex min-w-[240px] flex-col gap-1 p-3"
+//           align={align}
+//           sideOffset={5}
+//         >
+//           <h2 className="mb-2 text-sm font-bold text-neutral-300">{title}</h2>
+//           <RadioGroup.Root
+//             className="RadioGroupRoot"
+//             aria-label={title}
+//             defaultValue={`${initialSelectedIndex || 0}`}
+//             onValueChange={(value) => {
+//               setSelectedIndex(parseInt(value));
+//             }}
+//           >
+//             {options.map((option, i) => {
+//               const id = `filter-pill-${option}`;
+//               return (
+//                 <div key={id} className="flex flex-row items-center gap-2">
+//                   <RadioGroup.Item
+//                     className="RadioGroupItem"
+//                     value={`${i}`}
+//                     id={id}
+//                   >
+//                     <RadioGroup.Indicator className="RadioGroupIndicator" />
+//                   </RadioGroup.Item>
+//                   <label htmlFor={id}>
+//                     <span className="Label">{option}</span>
+//                   </label>
+//                 </div>
+//               );
+//             })}
+//           </RadioGroup.Root>
+//           <Button
+//             className="mt-2"
+//             variant="cta"
+//             buttonSize="xs"
+//             disabled={initialSelectedIndex === selectedIndex}
+//             onClick={() => {
+//               setOpen(false);
+//               if (typeof selectedIndex !== 'undefined') {
+//                 onSubmit?.(selectedIndex);
+//               }
+//             }}
+//           >
+//             Apply
+//           </Button>
+//         </Popover.Content>
+//       </Popover.Portal>
+//     </Popover.Root>
+//   );
+// };
