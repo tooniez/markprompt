@@ -405,7 +405,7 @@ export default async function handler(req: NextRequest) {
     for (const section of fileSections) {
       numTokens += section.file_sections_token_count;
 
-      if (numTokens >= 3000) {
+      if (numTokens >= 1500) {
         break;
       }
 
