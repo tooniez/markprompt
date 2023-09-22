@@ -1,5 +1,3 @@
-import { SubmitChatOptions } from '@markprompt/core';
-
 import { getResponseOrThrow, slugFromNameOrRandom } from '@/lib/utils';
 import {
   DbFile,
@@ -13,6 +11,7 @@ import {
   DbTeam,
   Token,
   QueryStatsProcessingResponseData,
+  SerializableMarkpromptOptions,
 } from '@/types/types';
 
 import { Theme } from './themes';
@@ -54,12 +53,7 @@ export const createPromptConfig = async (
   shareKey: string,
   config: {
     theme: Theme;
-    placeholder?: string;
-    modelConfig?: SubmitChatOptions;
-    iDontKnowMessage?: string;
-    referencesHeading?: string;
-    loadingHeading?: string;
-    includeBranding?: boolean;
+    options?: SerializableMarkpromptOptions;
   },
 ): Promise<PromptConfig> => {
   const res = await fetch(`/api/project/${id}/prompt-configs`, {

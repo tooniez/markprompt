@@ -2,24 +2,14 @@ import { SubmitChatOptions } from '@markprompt/core';
 import cn from 'classnames';
 import { Moon } from 'lucide-react';
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
-import { FC } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 
-import { LegacyPlayground } from '@/components/files/LegacyPlayground';
 import { SharedHead } from '@/components/pages/SharedHead';
 import { useLocalStorage } from '@/lib/hooks/utils/use-localstorage';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import { Theme } from '@/lib/themes';
-import { getNameFromPath, removeFileExtension } from '@/lib/utils';
-
-type PromptConfig = {
-  theme: Theme;
-  placeholder: string;
-  modelConfig: SubmitChatOptions;
-  iDontKnowMessage: string;
-  referencesHeading: string;
-  loadingHeading: string;
-  includeBranding: boolean;
-};
+import { getApiUrl } from '@/lib/utils.edge';
+import { SerializableMarkpromptOptions } from '@/types/types';
 
 export const getStaticPaths = async () => {
   return {
@@ -47,22 +37,25 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     throw new Error('Failed to fetch config');
   }
 
-  const config = data.config as any;
-
-  const promptConfig: PromptConfig = {
-    theme: config.theme,
-    placeholder: config.placeholder,
-    modelConfig: config.modelConfig,
-    iDontKnowMessage: config.iDontKnowMessage,
-    referencesHeading: config.referencesHeading,
-    loadingHeading: config.loadingHeading,
-    includeBranding: config.includeBranding,
-  };
-
   return {
     props: {
       projectKey,
-      promptConfig,
+      // Note that old version may contain a different payload, of the
+      // shape
+      // promptConfig: {
+      //   theme: Theme;
+      //   placeholder: string;
+      //   modelConfig: SubmitChatOptions;
+      //   iDontKnowMessage: string;
+      //   referencesHeading: string;
+      //   loadingHeading: string;
+      //   includeBranding: boolean;
+      // };
+      // We handle this in the parsing below.
+      promptConfig: data.config as any as {
+        theme: Theme;
+        options?: SerializableMarkpromptOptions;
+      },
     },
     revalidate: 10,
   };
@@ -71,10 +64,118 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 const SharePage: FC<InferGetStaticPropsType<typeof getStaticProps>> & {
   hideChat: boolean;
 } = ({ projectKey, promptConfig }) => {
+  const playgroundRef = useRef<HTMLIFrameElement>(null);
+  const [isPlaygroundLoaded, setPlaygroundLoaded] = useState(false);
   const [isDark, setDark] = useLocalStorage<boolean>(
     'public:share:isDark',
     true,
   );
+  const theme = promptConfig?.theme;
+
+  useEffect(() => {
+    if (
+      !isPlaygroundLoaded ||
+      !playgroundRef.current?.contentWindow ||
+      !projectKey ||
+      !promptConfig
+    ) {
+      return;
+    }
+
+    let serializedProps: any;
+    if (promptConfig.options) {
+      const isProd = process.env.NODE_ENV === 'production';
+      // New configs just store the MarkpromptConfig object
+      serializedProps = {
+        projectKey,
+        ...promptConfig.options,
+        ...(!isProd && {
+          prompt: {
+            ...promptConfig.options.prompt,
+            apiUrl: getApiUrl('chat', false),
+          },
+          chat: {
+            ...promptConfig.options.chat,
+            apiUrl: getApiUrl('chat', false),
+          },
+        }),
+      };
+    } else {
+      // Legacy configs
+      const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        modelConfig,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        placeholder,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        loadingHeading,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        includeBranding,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        iDontKnowMessage,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        referencesHeading,
+        ...rest
+      } = promptConfig;
+
+      const { promptTemplate, restModelConfig } = modelConfig;
+
+      serializedProps = {
+        ...rest,
+        projectKey,
+        // Legacy
+        showBranding: promptConfig.showBranding || promptConfig.includeBranding,
+        prompt: {
+          ...restModelConfig,
+          apiUrl: getApiUrl('chat', false),
+          // Legacy
+          iDontKnowMessage:
+            restModelConfig?.prompt?.iDontKnowMessage ||
+            promptConfig.iDontKnowMessage,
+          placeholder:
+            restModelConfig?.prompt?.placeholder || promptConfig.placeholder,
+          systemPrompt: restModelConfig?.systemPrompt || promptTemplate,
+        },
+        chat: {
+          ...restModelConfig,
+          apiUrl: getApiUrl('chat', false),
+          // Legacy
+          iDontKnowMessage:
+            restModelConfig?.chat?.iDontKnowMessage ||
+            promptConfig.iDontKnowMessage,
+          placeholder:
+            restModelConfig?.chat?.placeholder || promptConfig.placeholder,
+          systemPrompt: restModelConfig?.systemPrompt || promptTemplate,
+        },
+        trigger: { floating: true },
+        search: {
+          apiUrl: getApiUrl('search', false),
+          getHref: undefined,
+        },
+        references: {
+          getHref: undefined,
+          getLabel: undefined,
+          transformReferenceId: undefined,
+          heading: promptConfig.referencesHeading,
+          loadingText: promptConfig.loadingHeading,
+        },
+      };
+    }
+
+    const colors = isDark ? theme.colors.dark : theme.colors.light;
+
+    console.log('serializedProps', JSON.stringify(serializedProps, null, 2));
+    playgroundRef.current.contentWindow.postMessage(
+      {
+        serializedProps,
+        colors,
+        size: theme.size,
+        dimensions: theme.dimensions,
+        isDark,
+      },
+      '*',
+    );
+  }, [isPlaygroundLoaded, projectKey, theme, isDark, promptConfig]);
 
   if (!promptConfig) {
     return <></>;
@@ -103,24 +204,16 @@ const SharePage: FC<InferGetStaticPropsType<typeof getStaticProps>> & {
           </div>
         </div>
         <div className="relative flex h-full w-full items-center justify-center">
-          <div className="h-[calc(100vh-120px)] max-h-[900px] w-[80%] max-w-[700px]">
-            <LegacyPlayground
-              projectKey={projectKey}
-              iDontKnowMessage={promptConfig.iDontKnowMessage}
-              theme={promptConfig.theme}
-              placeholder={promptConfig.placeholder}
-              isDark={!!isDark}
-              modelConfig={promptConfig.modelConfig}
-              referencesHeading={promptConfig.referencesHeading}
-              loadingHeading={promptConfig.loadingHeading}
-              includeBranding={true}
-              hideCloseButton
-              getReferenceInfo={(path: string) => {
-                const name = removeFileExtension(getNameFromPath(path));
-                return { name };
-              }}
-            />
-          </div>
+          <iframe
+            ref={playgroundRef}
+            src="/static/html/chatbot-playground.html"
+            className="absolute inset-0 h-full w-full bg-transparent"
+            onLoad={() => {
+              setTimeout(() => {
+                setPlaygroundLoaded(true);
+              }, 100);
+            }}
+          />
         </div>
       </div>
     </>

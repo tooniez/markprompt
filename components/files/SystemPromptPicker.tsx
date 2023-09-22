@@ -33,6 +33,10 @@ export const SystemPromptPicker: FC<SystemPromptPickerProps> = () => {
             ...markpromptOptions.prompt,
             systemPrompt,
           },
+          chat: {
+            ...markpromptOptions.chat,
+            systemPrompt,
+          },
         });
       }}
     >

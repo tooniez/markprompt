@@ -25,6 +25,10 @@ export const ModelPicker: FC<ModelPickerProps> = () => {
             ...markpromptOptions.prompt,
             model: value as OpenAIModelId,
           },
+          chat: {
+            ...markpromptOptions.chat,
+            model: value as OpenAIModelId,
+          },
         });
       }}
     >

@@ -297,6 +297,10 @@ const UIConfigurator: FC<UIConfiguratorProps> = () => {
                         ...markpromptOptions.prompt,
                         placeholder: event.target.value,
                       },
+                      chat: {
+                        ...markpromptOptions.chat,
+                        placeholder: event.target.value,
+                      },
                     });
                   }}
                 />
@@ -310,6 +314,10 @@ const UIConfigurator: FC<UIConfiguratorProps> = () => {
                       ...markpromptOptions,
                       prompt: {
                         ...markpromptOptions.prompt,
+                        iDontKnowMessage: event.target.value,
+                      },
+                      chat: {
+                        ...markpromptOptions.chat,
                         iDontKnowMessage: event.target.value,
                       },
                     });
@@ -374,6 +382,10 @@ const UIConfigurator: FC<UIConfiguratorProps> = () => {
                             ...markpromptOptions.prompt,
                             tabLabel: event.target.value,
                           },
+                          chat: {
+                            ...markpromptOptions.chat,
+                            tabLabel: event.target.value,
+                          },
                         });
                       }}
                     />
@@ -384,45 +396,6 @@ const UIConfigurator: FC<UIConfiguratorProps> = () => {
           </AccordionContent>
         </Accordion.Item>
       </Accordion.Root>
-      {/* <Accordion.Root className="mt-2 w-full" type="single" collapsible>
-        <Accordion.Item value="options">
-          <AccordionTrigger>Link mappings</AccordionTrigger>
-          <AccordionContent className="pt-4">
-            <div className="flex flex-col gap-2">
-              <div className="mt-1 flex w-full flex-col">
-                <div className="input-base input-base-border input-focus py-4 pl-4 font-mono">
-                  <NoAutoTextArea
-                    value={markpromptOptions.prompt?.promptTemplate}
-                    className="input-base-noborder h-[200px] w-full border-0 bg-transparent text-xs"
-                    noStyle
-                    textAreaSize="sm"
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                      setMarkpromptOptions({
-                        ...markpromptOptions,
-                        prompt: {
-                          ...markpromptOptions.prompt,
-                          promptTemplate: event.target.value,
-                        },
-                      });
-                    }}
-                  />
-                </div>
-                <Link
-                  href="/docs#templates"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="button-ring mt-4 mb-4 flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
-                >
-                  <Info className="h-4 w-4 text-neutral-300" />
-                  <span className="subtle-underline">
-                    Learn more about templates
-                  </span>
-                </Link>
-              </div>
-            </div>
-          </AccordionContent>
-        </Accordion.Item>
-      </Accordion.Root> */}
     </div>
   );
 };

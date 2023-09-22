@@ -581,7 +581,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     };
 
     const colors = isDark ? theme.colors.dark : theme.colors.light;
-    theme.size;
+
     playgroundRef.current.contentWindow.postMessage(
       {
         serializedProps,

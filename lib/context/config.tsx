@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { SubmitChatOptions } from '@markprompt/core';
 import { DEFAULT_MARKPROMPT_OPTIONS } from '@markprompt/react';
@@ -269,6 +270,18 @@ const ConfigContextProvider = (props: PropsWithChildren) => {
           initialState.markpromptOptions.prompt!.sectionsMatchCount,
         sectionsMatchThreshold:
           initialState.markpromptOptions.prompt!.sectionsMatchThreshold,
+      },
+      chat: {
+        ...(markpromptOptions?.chat || {}),
+        temperature: initialState.markpromptOptions.chat!.temperature,
+        topP: initialState.markpromptOptions.chat!.topP,
+        frequencyPenalty: initialState.markpromptOptions.chat!.frequencyPenalty,
+        presencePenalty: initialState.markpromptOptions.chat!.presencePenalty,
+        maxTokens: initialState.markpromptOptions.chat!.maxTokens,
+        sectionsMatchCount:
+          initialState.markpromptOptions.chat!.sectionsMatchCount,
+        sectionsMatchThreshold:
+          initialState.markpromptOptions.chat!.sectionsMatchThreshold,
       },
     });
   }, [markpromptOptions, setMarkpromptOptions]);
