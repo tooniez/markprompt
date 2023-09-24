@@ -150,7 +150,6 @@ const SharePage: FC<InferGetStaticPropsType<typeof getStaticProps>> & {
 
     const colors = isDark ? theme.colors.dark : theme.colors.light;
 
-    console.log('serializedProps', JSON.stringify(serializedProps, null, 2));
     playgroundRef.current.contentWindow.postMessage(
       {
         serializedProps,
