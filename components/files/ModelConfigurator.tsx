@@ -89,6 +89,10 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                 ...markpromptOptions.prompt,
                 systemPrompt: event.target.value,
               },
+              chat: {
+                ...markpromptOptions.chat,
+                systemPrompt: event.target.value,
+              },
             });
           }}
         />
@@ -123,6 +127,10 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                       ...markpromptOptions.prompt,
                       temperature: value,
                     },
+                    chat: {
+                      ...markpromptOptions.chat,
+                      temperature: value,
+                    },
                   });
                 }}
               />
@@ -138,6 +146,10 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                     ...markpromptOptions,
                     prompt: {
                       ...markpromptOptions.prompt,
+                      topP: value,
+                    },
+                    chat: {
+                      ...markpromptOptions.chat,
                       topP: value,
                     },
                   });
@@ -157,6 +169,10 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                       ...markpromptOptions.prompt,
                       frequencyPenalty: value,
                     },
+                    chat: {
+                      ...markpromptOptions.chat,
+                      frequencyPenalty: value,
+                    },
                   });
                 }}
               />
@@ -172,6 +188,10 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                     ...markpromptOptions,
                     prompt: {
                       ...markpromptOptions.prompt,
+                      presencePenalty: value,
+                    },
+                    chat: {
+                      ...markpromptOptions.chat,
                       presencePenalty: value,
                     },
                   });
@@ -191,6 +211,10 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                       ...markpromptOptions.prompt,
                       maxTokens: value,
                     },
+                    chat: {
+                      ...markpromptOptions.chat,
+                      maxTokens: value,
+                    },
                   });
                 }}
               />
@@ -208,6 +232,10 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                       ...markpromptOptions.prompt,
                       sectionsMatchCount: value,
                     },
+                    chat: {
+                      ...markpromptOptions.chat,
+                      sectionsMatchCount: value,
+                    },
                   });
                 }}
               />
@@ -223,6 +251,10 @@ const ModelConfigurator: FC<ModelConfiguratorProps> = () => {
                     ...markpromptOptions,
                     prompt: {
                       ...markpromptOptions.prompt,
+                      sectionsMatchThreshold: value,
+                    },
+                    chat: {
+                      ...markpromptOptions.chat,
                       sectionsMatchThreshold: value,
                     },
                   });

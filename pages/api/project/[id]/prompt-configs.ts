@@ -23,20 +23,21 @@ export default withProjectAccess(
     const projectId = req.query.id as Project['id'];
 
     if (req.method === 'GET') {
-      const { data: tokens, error } = await supabase
+      const { data: configs, error } = await supabase
         .from('prompt_configs')
         .select('*')
-        .eq('project_id', projectId);
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
 
       if (error) {
         return res.status(400).json({ error: error.message });
       }
 
-      if (!tokens) {
+      if (!configs) {
         return res.status(404).json({ error: 'No prompt config found.' });
       }
 
-      return res.status(200).json(tokens);
+      return res.status(200).json(configs);
     } else if (req.method === 'POST') {
       const { error, data } = await supabase
         .from('prompt_configs')

@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 
 import Button from '@/components/ui/Button';
 import { CTABar } from '@/components/ui/SettingsCard';
-import { createPromptConfig, deletePromptConfig } from '@/lib/api';
+import { createPromptConfig } from '@/lib/api';
 import { useConfigContext } from '@/lib/context/config';
 import useProject from '@/lib/hooks/use-project';
 import usePromptConfigs from '@/lib/hooks/use-prompt-configs';
@@ -36,25 +36,28 @@ const Share = ({ children }: { children: ReactNode }) => {
 
       setGeneratingKey(true);
 
-      if (promptConfig) {
-        await deletePromptConfig(project.id, promptConfig.id);
-      }
+      // Keep older share links active - we will later provide a way
+      // to see them and delete them manually
+      // if (promptConfig) {
+      //   await deletePromptConfig(project.id, promptConfig.id);
+      // }
 
       if (shareKey) {
         await createPromptConfig(project.id, shareKey, {
           theme,
-          placeholder: markpromptOptions.prompt?.placeholder,
-          modelConfig: markpromptOptions.prompt,
-          iDontKnowMessage: markpromptOptions.prompt?.iDontKnowMessage,
-          referencesHeading: markpromptOptions.references?.heading,
-          loadingHeading: markpromptOptions.references?.loadingText,
-          includeBranding: markpromptOptions.showBranding,
+          options: markpromptOptions,
+          // placeholder: markpromptOptions.prompt?.placeholder,
+          // modelConfig: markpromptOptions.prompt,
+          // iDontKnowMessage: markpromptOptions.prompt?.iDontKnowMessage,
+          // referencesHeading: markpromptOptions.references?.heading,
+          // loadingHeading: markpromptOptions.references?.loadingText,
+          // includeBranding: markpromptOptions.showBranding,
         });
       }
       await mutatePromptConfigs();
       setGeneratingKey(false);
     },
-    [markpromptOptions, mutatePromptConfigs, project, promptConfig, theme],
+    [markpromptOptions, mutatePromptConfigs, project, theme],
   );
 
   useEffect(() => {
