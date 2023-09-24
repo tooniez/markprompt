@@ -120,7 +120,7 @@ const SharePage: FC<InferGetStaticPropsType<typeof getStaticProps>> & {
         showBranding: promptConfig.showBranding || includeBranding,
         prompt: {
           ...restModelConfig,
-          apiUrl: getApiUrl('completions', false),
+          apiUrl: getApiUrl('chat', false),
           iDontKnowMessage,
           placeholder: restModelConfig?.prompt?.placeholder || placeholder,
           systemPrompt: restModelConfig?.systemPrompt || promptTemplate,
