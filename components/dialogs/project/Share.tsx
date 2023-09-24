@@ -36,22 +36,10 @@ const Share = ({ children }: { children: ReactNode }) => {
 
       setGeneratingKey(true);
 
-      // Keep older share links active - we will later provide a way
-      // to see them and delete them manually
-      // if (promptConfig) {
-      //   await deletePromptConfig(project.id, promptConfig.id);
-      // }
-
       if (shareKey) {
         await createPromptConfig(project.id, shareKey, {
           theme,
           options: markpromptOptions,
-          // placeholder: markpromptOptions.prompt?.placeholder,
-          // modelConfig: markpromptOptions.prompt,
-          // iDontKnowMessage: markpromptOptions.prompt?.iDontKnowMessage,
-          // referencesHeading: markpromptOptions.references?.heading,
-          // loadingHeading: markpromptOptions.references?.loadingText,
-          // includeBranding: markpromptOptions.showBranding,
         });
       }
       await mutatePromptConfigs();
