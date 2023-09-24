@@ -103,48 +103,34 @@ const SharePage: FC<InferGetStaticPropsType<typeof getStaticProps>> & {
     } else {
       // Legacy configs
       const {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         modelConfig,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         placeholder,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        loadingHeading,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        includeBranding,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         iDontKnowMessage,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        loadingHeading,
         referencesHeading,
+        includeBranding,
         ...rest
       } = promptConfig;
 
-      const { promptTemplate, restModelConfig } = modelConfig;
+      const { promptTemplate, ...restModelConfig } = modelConfig;
 
       serializedProps = {
         ...rest,
         projectKey,
-        // Legacy
-        showBranding: promptConfig.showBranding || promptConfig.includeBranding,
+        showBranding: promptConfig.showBranding || includeBranding,
         prompt: {
           ...restModelConfig,
           apiUrl: getApiUrl('chat', false),
-          // Legacy
-          iDontKnowMessage:
-            restModelConfig?.prompt?.iDontKnowMessage ||
-            promptConfig.iDontKnowMessage,
-          placeholder:
-            restModelConfig?.prompt?.placeholder || promptConfig.placeholder,
+          iDontKnowMessage,
+          placeholder: restModelConfig?.prompt?.placeholder || placeholder,
           systemPrompt: restModelConfig?.systemPrompt || promptTemplate,
         },
         chat: {
           ...restModelConfig,
           apiUrl: getApiUrl('chat', false),
           // Legacy
-          iDontKnowMessage:
-            restModelConfig?.chat?.iDontKnowMessage ||
-            promptConfig.iDontKnowMessage,
-          placeholder:
-            restModelConfig?.chat?.placeholder || promptConfig.placeholder,
+          iDontKnowMessage,
+          placeholder: restModelConfig?.chat?.placeholder || placeholder,
           systemPrompt: restModelConfig?.systemPrompt || promptTemplate,
         },
         trigger: { floating: true },
@@ -156,8 +142,8 @@ const SharePage: FC<InferGetStaticPropsType<typeof getStaticProps>> & {
           getHref: undefined,
           getLabel: undefined,
           transformReferenceId: undefined,
-          heading: promptConfig.referencesHeading,
-          loadingText: promptConfig.loadingHeading,
+          heading: referencesHeading,
+          loadingText: loadingHeading,
         },
       };
     }
