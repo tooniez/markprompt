@@ -415,34 +415,34 @@ const Insights = () => {
                     : undefined
                 }
                 options={[
+                  'All',
                   'Upvoted',
                   'Downvoted',
                   'Upvoted or downvoted',
                   'No vote',
-                  'All',
                 ]}
                 selectedIndex={
                   queriesFilters?.feedback === 'upvoted'
-                    ? 0
-                    : queriesFilters?.feedback === 'downvoted'
                     ? 1
-                    : queriesFilters?.feedback === 'upvoted_or_downvoted'
+                    : queriesFilters?.feedback === 'downvoted'
                     ? 2
-                    : queriesFilters?.feedback === 'no_vote'
+                    : queriesFilters?.feedback === 'upvoted_or_downvoted'
                     ? 3
-                    : 4
+                    : queriesFilters?.feedback === 'no_vote'
+                    ? 4
+                    : 0
                 }
                 onSubmit={(index) => {
                   setQueriesFilters({
                     ...queriesFilters,
                     feedback:
-                      index === 0
+                      index === 1
                         ? 'upvoted'
-                        : index === 1
-                        ? 'downvoted'
                         : index === 2
-                        ? 'upvoted_or_downvoted'
+                        ? 'downvoted'
                         : index === 3
+                        ? 'upvoted_or_downvoted'
+                        : index === 4
                         ? 'no_vote'
                         : undefined,
                   });
@@ -454,11 +454,13 @@ const Insights = () => {
                   });
                 }}
               />
-              <MultiSelectFilterButton
-                legend="Metadata"
-                title="Filter by metadata"
-                options={['Upvoted', 'Downvoted', 'No vote']}
-              />
+              {false && (
+                <MultiSelectFilterButton
+                  legend="Metadata"
+                  title="Filter by metadata"
+                  options={['Upvoted', 'Downvoted', 'No vote']}
+                />
+              )}
               {!!queriesFilters?.status && (
                 <button
                   className="cursor-pointer whitespace-nowrap rounded-full px-2 py-1 text-xs font-medium text-sky-500 transition hover:bg-neutral-900"
