@@ -6,6 +6,13 @@ integrations:
       auto_start: false
       returns:
         - NangoFile
+  salesforce:
+    salesforce-articles:
+      type: sync
+      runs: every day
+      auto_start: false
+      returns:
+        - NangoFile
 models:
   NangoFile:
     id: string
