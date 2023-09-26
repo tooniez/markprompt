@@ -1,0 +1,32 @@
+export const meta = {
+  title: 'Subprocessors',
+};
+
+# Markprompt Subprocessors
+
+Please find all of Markprompt's current subprocessors here.
+
+A subprocessor is any business that customer data may pass through as a side effect of using Markprompt's service. We use partners for business processes that are not core to our expertise but are critical to our customers having a quality experience.
+
+[Subscribe to our RSS Feed](/legal/subprocessors/feed.rss).
+
+| Name | Nature of processing | Country|
+| -------- | -------- |  -------- |
+| Google | Customers may choose to contact Markprompt via email. Markprompt uses Google as its primary email service provider. Markprompt does not require nor encourage disclosure of Personal Data via email, however the potential for Personal Data being transmitted to Markprompt remains. | United States |
+| Nango | Markprompt uses Nango to synchronize data between customer sources and Markprompt. | United States |
+| Posthog | Markprompt uses Posthog for analytics purposes in order to improve user experience. | United States |
+| Resend | Markprompt uses Resend to send your transactional emails about our services. | United States |
+| Stripe | Markprompt uses Stripe to process credit cards and payments. | United States |
+| Supabase | Markprompt uses Supabase for data storage. | United States |
+| Vercel | Markprompt uses Vercel for cloud computing and hosting. | United States |
+
+
+---
+
+**Last Updated:** **September 26, 2023**
+
+import { MDXComponent } from '@/components/ui/MDX';
+
+export default ({ children }) => (
+  <MDXComponent meta={meta}>{children}</MDXComponent>
+);

@@ -1,0 +1,39 @@
+{
+  "subprocessors": [
+    {
+      "name": "Google",
+      "description": "Customers may choose to contact Markprompt via email. Markprompt uses Google as its primary email service provider. Markprompt does not require nor encourage disclosure of Personal Data via email, however the potential for Personal Data being transmitted to Markprompt remains.",
+      "country": "United States"
+    },
+    {
+      "name": "Nango",
+      "description": "Markprompt uses Nango to synchronize data between customer sources and Markprompt.",
+      "country": "United States"
+    },
+    {
+      "name": "Posthog",
+      "description": "Markprompt uses Posthog for analytics purposes in order to improve user experience.",
+      "country": "United States"
+    },
+    {
+      "name": "Resend",
+      "description": "Markprompt uses Resend to send your transactional emails about our services.",
+      "country": "United States"
+    },
+    {
+      "name": "Stripe",
+      "description": "Markprompt uses Stripe to process credit cards and payments.",
+      "country": "United States"
+    },
+    {
+      "name": "Supabase",
+      "description": "Markprompt uses Supabase for data storage.",
+      "country": "United States"
+    },
+    {
+      "name": "Vercel",
+      "description": "Markprompt uses Vercel for cloud computing and hosting.",
+      "country": "United States"
+    }
+  ]
+}
