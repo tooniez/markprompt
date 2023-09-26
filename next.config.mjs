@@ -1,5 +1,18 @@
-const withMDX = require('@next/mdx')({
+import nextMdx from '@next/mdx';
+import remarkGfm from 'remark-gfm';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+// const withMDX = require('@next/mdx')({
+//   extension: /\.mdx?$/,
+//   options: {
+//     remarkPlugins: [remarkGfm],
+//   },
+// });
+const withMDX = nextMdx({
   extension: /\.mdx?$/,
+  options: {
+    remarkPlugins: [remarkGfm],
+  },
 });
 
 const corsHeaders = [
@@ -43,4 +56,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withMDX(nextConfig);
+export default withMDX(nextConfig);
