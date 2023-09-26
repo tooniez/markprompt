@@ -78,17 +78,20 @@ const feed = `<?xml version="1.0" encoding="utf-8"?>
   .replace(/\n+/gi, '')
   .replace(/\s{2,}/gi, '');
 
-const feedPage = `import React from 'react'
+const feedPage = `import { NextPageContext } from 'next';
+import { Component } from 'react';
 
-class Sitemap extends React.Component {
-  static async getInitialProps({ res, query }) {
-    res.setHeader('Content-Type', 'text/xml');
-    res.write(\`${feed}\`);
-    res.end();
+class Sitemap extends Component {
+  static async getInitialProps({ res }: NextPageContext) {
+    res?.setHeader('Content-Type', 'text/xml');
+    res?.write(
+      \`${feed}\`,
+    );
+    res?.end();
   }
 }
 
-export default Sitemap
+export default Sitemap;
 `;
 
 await Bun.write(feedOutputPath, feedPage);
