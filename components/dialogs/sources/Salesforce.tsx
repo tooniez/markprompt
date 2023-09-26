@@ -1,7 +1,6 @@
 import Nango from '@nangohq/frontend';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as RadioGroup from '@radix-ui/react-radio-group';
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import {
   ErrorMessage,
   Field,
@@ -40,7 +39,7 @@ import {
   sourceExists,
 } from '@/lib/integrations/salesforce';
 import { getLabelForSource } from '@/lib/utils';
-import { Project } from '@/types/types';
+import { DbSource, Project } from '@/types/types';
 
 const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
 
@@ -55,12 +54,14 @@ const nango = new Nango({
 
 const _addSource = async (
   projectId: Project['id'],
+  integrationId: string,
   identifier: string,
   instanceUrl: string,
   mutate: () => void,
-) => {
+): Promise<DbSource['id'] | undefined> => {
   try {
     const newSource = await addSource(projectId, 'salesforce', {
+      integrationId,
       identifier,
       instanceUrl,
     });
@@ -71,10 +72,12 @@ const _addSource = async (
         true,
       )} has been added to the project.`,
     );
+    return newSource.id;
   } catch (e) {
     console.error(e);
     toast.error(`${e}`);
   }
+  return undefined;
 };
 
 type SalesforceSourceProps = {
@@ -88,7 +91,7 @@ const identifierRegex = /^[a-zA-Z0-9-]+$/;
 const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
   const { project } = useProject();
   const { user } = useUser();
-  const { mutate } = useSources();
+  const { mutate: mutateSources } = useSources();
   const { isInfiniteEmbeddingsTokensAllowance } = useUsage();
 
   const connectAndAddSource = useCallback(
@@ -102,44 +105,66 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
         return;
       }
 
-      const providerConfigKey = getProviderConfigKey(environment);
-      const integrationId = getIntegrationId(environment);
-      const connectionId = getConnectionId(project.id, environment, identifier);
-
       try {
+        const integrationId = getIntegrationId(environment);
+
+        const newSource = await addSource(project.id, 'salesforce', {
+          integrationId,
+          identifier,
+          instanceUrl,
+        });
+
+        if (!newSource.id) {
+          throw new Error('Unable to create source');
+        }
+
         // Create the Nango connection. Note that nango.yaml specifies
         // `auto_start: false` to give us a chance to set the metadata
         // first.
-        const result = await nango.auth(providerConfigKey, connectionId, {
-          params: { instance_url: instanceUrl },
-        });
+        const providerConfigKey = getProviderConfigKey(environment);
+        const connectionId = getConnectionId(integrationId, newSource.id);
 
-        if ('message' in result) {
-          // Nango AuthError
-          throw new Error(result.message);
+        try {
+          const result = await nango.auth(providerConfigKey, connectionId, {
+            params: { instance_url: instanceUrl },
+          });
+
+          if ('message' in result) {
+            // Nango AuthError
+            throw new Error(result.message);
+          }
+
+          // Once the connection has been created, set the connection
+          // metadata (such as the query filters).
+          await setMetadata(project.id, integrationId, connectionId, metadata);
+
+          // Now that the metadata is set, we are ready to sync.
+          await triggerSync(project.id, integrationId, connectionId, [
+            SALESFORCE_ARTICLES_SYNC_ID,
+          ]);
+
+          await mutateSources();
+
+          toast.success(
+            `The source ${getLabelForSource(
+              newSource,
+              true,
+            )} has been added to the project.`,
+          );
+        } catch (e: any) {
+          // If there is an error, make sure to delete the connection
+          await deleteConnection(
+            project.id,
+            getIntegrationId(environment),
+            connectionId,
+          );
+          toast.error(`Error connecting to Salesforce: ${e.message || e}.`);
         }
-
-        // Once the connection has been created, set the connection
-        // metadata (such as the query filters).
-        await setMetadata(project.id, integrationId, connectionId, metadata);
-
-        // Now that the metadata is set, we are ready to sync.
-        await triggerSync(project.id, integrationId, connectionId, [
-          SALESFORCE_ARTICLES_SYNC_ID,
-        ]);
-
-        await _addSource(project.id, identifier, instanceUrl, mutate);
       } catch (e: any) {
-        // If there is an error, make sure to delete the connection
-        await deleteConnection(
-          project.id,
-          getIntegrationId(environment),
-          getConnectionId(project.id, environment, identifier),
-        );
         toast.error(`Error connecting to Salesforce: ${e.message || e}.`);
       }
     },
-    [mutate, project?.id],
+    [mutateSources, project?.id],
   );
 
   if (!user) {
@@ -151,13 +176,16 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
       <Formik
         initialValues={{
           identifier: 'salesforce',
-          environment: 'production' as SalesforceEnvironment,
+          environment: 'sandbox' as SalesforceEnvironment,
+          // IMPORTANT! Change to this:
+          // environment: 'production' as SalesforceEnvironment,
           instanceUrl: 'https://mindbody--eos1.sandbox.lightning.force.com',
-          customFields: '',
-          filters: '',
-          titleMapping: '',
-          contentMapping: '',
-          pathMapping: '',
+          customFields:
+            'Article_Body__c,PublishStatus,Language,IsVisibleInPkb,Product__c,UrlName',
+          filters: `PublishStatus ='Online' and Language ='en_us' and IsVisibleInPkb = true and (Product__c includes ('MINDBODY') or Product__c = 'Marketing Suite' or Product__c ='Bowtie')`,
+          titleMapping: 'Title',
+          contentMapping: 'Article_Body__c',
+          pathMapping: 'UrlName',
         }}
         validateOnMount
         validate={async (values) => {

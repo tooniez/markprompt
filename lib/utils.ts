@@ -28,10 +28,10 @@ import {
 
 import { GitHubIcon } from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
+import { SalesforceIcon } from '@/components/icons/Salesforce';
 import {
   DEFAULT_CHAT_COMPLETION_MODEL,
   DateCountHistogramEntry,
-  DbSource,
   FileSectionHeading,
   FileSectionMeta,
   FileType,
@@ -47,7 +47,7 @@ import {
   WebsiteSourceDataType,
 } from '@/types/types';
 
-import { APPROX_CHARS_PER_TOKEN, MIN_SLUG_LENGTH } from './constants';
+import { MIN_SLUG_LENGTH } from './constants';
 import { removeSchema } from './utils.edge';
 
 const lookup = [
@@ -740,6 +740,7 @@ export const getAccessoryLabelForSource = (
       if (data.branch) {
         return { label: data.branch, Icon: GitBranchIcon };
       }
+      break;
     }
   }
   return undefined;
@@ -883,6 +884,8 @@ export const getIconForSource = (sourceType: SourceType) => {
       return Upload;
     case 'api-upload':
       return ChevronsUp;
+    case 'salesforce':
+      return SalesforceIcon;
     default:
       return GitHubIcon;
   }

@@ -1,4 +1,4 @@
-import { Project } from '@/types/types';
+import { DbSource, Project } from '@/types/types';
 
 import { getResponseOrThrow } from '../utils';
 
@@ -20,11 +20,10 @@ export const getIntegrationId = (environment: SalesforceEnvironment) => {
 };
 
 export const getConnectionId = (
-  projectId: Project['id'],
-  environment: SalesforceEnvironment,
-  identifier: string,
+  integrationId: string,
+  sourceId: DbSource['id'],
 ) => {
-  return `${getIntegrationId(environment)}___${projectId}___${identifier}`;
+  return `${integrationId}:${sourceId}`;
 };
 
 export const getProviderConfigKey = (environment: SalesforceEnvironment) => {

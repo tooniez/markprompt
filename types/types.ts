@@ -154,6 +154,7 @@ export type GitHubSourceDataType = { url: string; branch?: string };
 export type MotifSourceDataType = { projectDomain: string };
 export type WebsiteSourceDataType = { url: string };
 export type SalesforceSourceDataType = {
+  integrationId: string;
   identifier: string;
   instanceUrl: string;
 };
