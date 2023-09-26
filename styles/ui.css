@@ -21,11 +21,6 @@
 .RadioGroupIndicator::after {
   @apply block h-2 w-2 rounded-full bg-sky-500;
   content: '';
-  /* display: block;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background-color: var(--violet-11); */
 }
 
 .Label {

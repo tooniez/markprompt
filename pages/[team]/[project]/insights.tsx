@@ -464,9 +464,6 @@ const Insights = () => {
               {!!queriesFilters?.status && (
                 <button
                   className="cursor-pointer whitespace-nowrap rounded-full px-2 py-1 text-xs font-medium text-sky-500 transition hover:bg-neutral-900"
-                  // variant="text"
-                  // buttonSize="xs"
-                  // shape="rounded"
                   onClick={() => {
                     setQueriesFilters({
                       status: undefined,
