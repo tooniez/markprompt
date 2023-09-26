@@ -30,7 +30,7 @@ import { MotifIcon } from '@/components/icons/Motif';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Onboarding from '@/components/onboarding/Onboarding';
 import Button from '@/components/ui/Button';
-import { Checkbox } from '@/components/ui/Checkbox';
+import { IndeterminateCheckbox } from '@/components/ui/Checkbox';
 import { SkeletonTable } from '@/components/ui/Skeletons';
 import { Tag } from '@/components/ui/Tag';
 import { deleteFiles } from '@/lib/api';
@@ -229,7 +229,7 @@ const Data = () => {
         id: 'select',
         enableSorting: false,
         header: ({ table }) => (
-          <Checkbox
+          <IndeterminateCheckbox
             checked={table.getIsAllRowsSelected()}
             indeterminate={table.getIsSomeRowsSelected()}
             onChange={table.getToggleAllRowsSelectedHandler()}
@@ -237,7 +237,7 @@ const Data = () => {
         ),
         cell: ({ row }) => {
           return (
-            <Checkbox
+            <IndeterminateCheckbox
               checked={row.getIsSelected()}
               disabled={!row.getCanSelect()}
               indeterminate={row.getIsSomeSelected()}

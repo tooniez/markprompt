@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { PostgrestError, User, createClient } from '@supabase/supabase-js';
+import { isPresent } from 'ts-is-present';
 
 import { Database, Json } from '@/types/supabase';
 import {
@@ -13,6 +14,7 @@ import {
   DbTeam,
   WebsiteSourceDataType,
   PromptQueryStat,
+  DbQueryFilter,
 } from '@/types/types';
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
@@ -343,6 +345,25 @@ export const hasUserAccessToProject = async (
   return !!response.data?.has_access;
 };
 
+export enum QueryFilterOperation {
+  'is' = 'is',
+  'eq' = 'eq',
+  'neq' = 'neq',
+  'gte' = 'gte',
+  'lte' = 'lte',
+  'or' = 'or',
+}
+
+const SUPPORTED_QUERY_FILTER_FUNCTIONS: string[] =
+  Object.values(QueryFilterOperation);
+
+const isValidQueryFilters = (filters: DbQueryFilter[]) => {
+  return (
+    filters.length === 0 ||
+    filters.every((f) => SUPPORTED_QUERY_FILTER_FUNCTIONS.includes(f[0]))
+  );
+};
+
 export const getQueryStats = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
@@ -350,27 +371,46 @@ export const getQueryStats = async (
   toISO: string,
   limit: number,
   page: number,
+  filters: DbQueryFilter[],
 ): Promise<{
   error: PostgrestError | null;
   queries: PromptQueryStat[] | null;
 }> => {
-  const { data, error } = await supabase
-    .from('decrypted_query_stats')
-    .select('id,created_at,decrypted_prompt,no_response,feedback')
-    .eq('project_id', projectId)
-    .or('processed_state.eq.processed,processed_state.eq.skipped')
-    .gte('created_at', fromISO)
-    .lte('created_at', toISO)
-    .not('decrypted_prompt', 'is', null)
-    .neq('decrypted_prompt', '')
-    .order('created_at', { ascending: false })
-    .range(page * limit, (page + 1) * limit - 1);
+  if (!isValidQueryFilters(filters || [])) {
+    const message = `Invalid filters. Filters may only contains the following operators: ${JSON.stringify(
+      SUPPORTED_QUERY_FILTER_FUNCTIONS,
+    )}`;
+    return {
+      error: { message, details: message, hint: message, code: '' },
+      queries: null,
+    };
+  }
+
+  // Cf. https://github.com/orgs/supabase/discussions/3080#discussioncomment-1282318 to dynamically add filters
+
+  const allFilters: any[] = [
+    ['eq', 'project_id', projectId],
+    ['or', 'processed_state.eq.processed,processed_state.eq.skipped'],
+    ...filters,
+    ['gte', 'created_at', fromISO],
+    ['lte', 'created_at', toISO],
+    ['not', 'decrypted_prompt', 'is', null],
+    ['neq', 'decrypted_prompt', ''],
+    ['order', 'created_at', { ascending: false }],
+    ['range', page * limit, (page + 1) * limit - 1],
+  ].filter(isPresent);
+
+  const supabaseWithFilters = allFilters.reduce((acc, [fn, ...args]) => {
+    return acc[fn](...args);
+  }, supabase.from('v_insights_query_stats').select('id,created_at,decrypted_prompt,no_response,feedback'));
+
+  const { data, error } = await supabaseWithFilters;
 
   if (error) {
     return { error, queries: null };
   }
 
-  const queries = (data || []).map((q) => {
+  const queries = (data || []).map((q: any) => {
     const { decrypted_prompt, ...rest } = q;
     return { ...rest, prompt: decrypted_prompt } as PromptQueryStat;
   });

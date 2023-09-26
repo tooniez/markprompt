@@ -8,6 +8,7 @@ export type MarkpromptConfig = {
   processorOptions?: {
     linkRewrite?: RemarkLinkRewriteOptions;
   };
+  insightsMetadataFields?: string[];
 };
 
 export const MARKPROMPT_CONFIG_SCHEMA: JTDSchemaType<MarkpromptConfig> = {
@@ -33,6 +34,7 @@ export const MARKPROMPT_CONFIG_SCHEMA: JTDSchemaType<MarkpromptConfig> = {
         },
       },
     },
+    insightsMetadataFields: { elements: { type: 'string' } },
   },
 };
 

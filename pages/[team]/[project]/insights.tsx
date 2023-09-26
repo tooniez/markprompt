@@ -11,6 +11,10 @@ import { TopReferences } from '@/components/insights/top-references';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Button from '@/components/ui/Button';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
+import {
+  MultiSelectFilterButton,
+  SingleSelectFilterButton,
+} from '@/components/ui/FilterButton';
 import { Tag } from '@/components/ui/Tag';
 import { processQueryStats } from '@/lib/api';
 import { FixedDateRange, formatShortDateTimeInTimeZone } from '@/lib/date';
@@ -39,7 +43,7 @@ export const PromptStatusTag = ({ noResponse }: { noResponse: boolean }) => {
 };
 
 const Insights = () => {
-  const { project } = useProject();
+  const { project, config } = useProject();
   const { team } = useTeam();
   const {
     queries,
@@ -51,6 +55,8 @@ const Insights = () => {
     loadingQueriesHistogram,
     dateRange,
     setDateRange,
+    queriesFilters,
+    setQueriesFilters,
     page,
     setPage,
     hasMorePages,
@@ -281,7 +287,6 @@ const Insights = () => {
     }
     const insightsType = getAccessibleInsightsType(team);
     if (!insightsType) {
-      console.info('No processing insights');
       // Don't process insights unless on the adequate plan.
       return;
     }
@@ -351,6 +356,125 @@ const Insights = () => {
       <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-3">
         <div className="col-span-2">
           <Card title="Latest questions">
+            <div className="mt-4 flex flex-row flex-wrap items-center gap-2">
+              <MultiSelectFilterButton
+                legend="Status"
+                title="Filter by status"
+                activeLabel={
+                  queriesFilters?.status === 'answered'
+                    ? 'Answered'
+                    : queriesFilters?.status === 'unanswered'
+                    ? 'Unanswered'
+                    : queriesFilters?.status === 'both'
+                    ? 'Answered, Unanswered'
+                    : undefined
+                }
+                options={['Answered', 'Unanswered']}
+                checkedIndices={
+                  queriesFilters?.status === 'answered'
+                    ? [0]
+                    : queriesFilters?.status === 'unanswered'
+                    ? [1]
+                    : queriesFilters?.status === 'both'
+                    ? [0, 1]
+                    : []
+                }
+                onSubmit={(indices) => {
+                  if (indices.length === 1) {
+                    setQueriesFilters({
+                      ...queriesFilters,
+                      status: indices[0] === 0 ? 'answered' : 'unanswered',
+                    });
+                  } else {
+                    setQueriesFilters({
+                      ...queriesFilters,
+                      status: indices.length === 2 ? 'both' : undefined,
+                    });
+                  }
+                }}
+                onClear={() => {
+                  setQueriesFilters({
+                    ...queriesFilters,
+                    status: undefined,
+                  });
+                }}
+                align="start"
+              />
+              <SingleSelectFilterButton
+                legend="Feedback"
+                title="Filter by feedback"
+                activeLabel={
+                  queriesFilters?.feedback === 'upvoted'
+                    ? 'Upvoted'
+                    : queriesFilters?.feedback === 'downvoted'
+                    ? 'Downvoted'
+                    : queriesFilters?.feedback === 'upvoted_or_downvoted'
+                    ? 'Upvoted, Downvoted'
+                    : queriesFilters?.feedback === 'no_vote'
+                    ? 'No vote'
+                    : undefined
+                }
+                options={[
+                  'All',
+                  'Upvoted',
+                  'Downvoted',
+                  'Upvoted or downvoted',
+                  'No vote',
+                ]}
+                selectedIndex={
+                  queriesFilters?.feedback === 'upvoted'
+                    ? 1
+                    : queriesFilters?.feedback === 'downvoted'
+                    ? 2
+                    : queriesFilters?.feedback === 'upvoted_or_downvoted'
+                    ? 3
+                    : queriesFilters?.feedback === 'no_vote'
+                    ? 4
+                    : 0
+                }
+                onSubmit={(index) => {
+                  setQueriesFilters({
+                    ...queriesFilters,
+                    feedback:
+                      index === 1
+                        ? 'upvoted'
+                        : index === 2
+                        ? 'downvoted'
+                        : index === 3
+                        ? 'upvoted_or_downvoted'
+                        : index === 4
+                        ? 'no_vote'
+                        : undefined,
+                  });
+                }}
+                onClear={() => {
+                  setQueriesFilters({
+                    ...queriesFilters,
+                    feedback: undefined,
+                  });
+                }}
+              />
+              {false && (
+                <MultiSelectFilterButton
+                  legend="Metadata"
+                  title="Filter by metadata"
+                  options={['Upvoted', 'Downvoted', 'No vote']}
+                />
+              )}
+              {!!queriesFilters?.status && (
+                <button
+                  className="cursor-pointer whitespace-nowrap rounded-full px-2 py-1 text-xs font-medium text-sky-500 transition hover:bg-neutral-900"
+                  onClick={() => {
+                    setQueriesFilters({
+                      status: undefined,
+                      feedback: undefined,
+                    });
+                  }}
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
             <QueriesDataTable
               loading={loadingQueries}
               columns={columns}

@@ -13,6 +13,7 @@ export type ButtonVariant =
   | 'text'
   | 'plain'
   | 'bordered'
+  | 'bordered-dashed'
   | 'fuchsia'
   | 'borderedWhite'
   | 'borderedFuchsia';
@@ -42,6 +43,7 @@ ButtonOrLinkWrapper.displayName = 'ButtonOrLinkWrapper';
 export type ButtonProps = {
   buttonSize?: 'xs' | 'sm' | 'base' | 'md' | 'lg';
   variant?: ButtonVariant;
+  shape?: 'rounded';
   light?: boolean;
   left?: boolean;
   href?: string;
@@ -56,6 +58,7 @@ export type ButtonProps = {
   loading?: boolean;
   loadingMessage?: string;
   noStyle?: boolean;
+  noPadding?: boolean;
   Icon?: JSXElementConstructor<any> | string;
   Component?: JSXElementConstructor<any> | string;
 } & React.HTMLProps<HTMLButtonElement>;
@@ -65,6 +68,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     {
       buttonSize,
       variant,
+      shape,
       light,
       href,
       left,
@@ -78,6 +82,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       loading,
       loadingMessage,
       noStyle,
+      noPadding,
       Component = 'button',
       ...props
     },
@@ -99,12 +104,15 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 className,
                 'button-ring relative flex select-none flex-row items-center whitespace-nowrap border disabled:cursor-not-allowed',
                 {
-                  'rounded-md': !squareCorners,
-                  'rounded-l-md border-r-0': squareCorners === 'right',
-                  'rounded-r-md': squareCorners === 'left',
+                  'rounded-md': !squareCorners && shape !== 'rounded',
+                  'rounded-l-md border-r-0':
+                    squareCorners === 'right' && shape !== 'rounded',
+                  'rounded-r-md':
+                    squareCorners === 'left' && shape !== 'rounded',
+                  'rounded-full': shape === 'rounded',
                   'justify-center': !left,
                   'justify-start': left,
-                  'border-transparent bg-white text-neutral-900 hover:bg-neutral-300 disabled:bg-neutral-900 disabled:text-neutral-500 hover:disabled:bg-neutral-900':
+                  'border-transparent bg-white text-neutral-900 hover:bg-neutral-300 disabled:bg-white/5 disabled:text-neutral-500 hover:disabled:bg-white/5 hover:disabled:bg-neutral-900':
                     variant === 'cta',
                   'button-glow-color border-transparent bg-fuchsia-600 text-white hover:bg-fuchsia-700':
                     variant === 'glow',
@@ -114,8 +122,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     variant === 'danger',
                   'border-neutral-800 bg-neutral-900 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
                     variant === 'plain',
-                  'border-neutral-900 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
-                    variant === 'bordered',
+                  'border-neutral-800 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
+                    variant === 'bordered' || variant === 'bordered-dashed',
+                  'border-dashed': variant === 'bordered-dashed',
                   'button-ring-light border-neutral-900/10 text-neutral-900 hover:bg-neutral-100 disabled:opacity-50':
                     variant === 'borderedWhite',
                   'border-transparent text-neutral-100 hover:bg-neutral-1000 disabled:text-neutral-500 hover:disabled:bg-opacity-100':
@@ -124,11 +133,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     variant === 'text',
                   'border-fuchsia-400/20 text-fuchsia-400 hover:bg-fuchsia-900/20 hover:text-fuchsia-100 disabled:border-transparent disabled:text-fuchsia-500 hover:disabled:bg-opacity-100':
                     variant === 'borderedFuchsia',
-                  'px-4 py-2 text-sm': size === 'base',
-                  'px-2 py-1.5 text-xs': size === 'xs',
-                  'px-4 py-1.5 text-sm': size === 'sm',
-                  'px-4 py-2.5 text-sm sm:px-5 sm:py-3 sm:text-base':
-                    size === 'lg',
+                  'text-sm': size === 'base' || size === 'sm',
+                  'text-xs': size === 'xs',
+                  'text-sm sm:text-base': size === 'lg',
+                  'px-4 py-2': size === 'base' && !noPadding,
+                  'px-2 py-1.5': size === 'xs' && !noPadding,
+                  'px-4 py-1.5': size === 'sm' && !noPadding,
+                  'px-4 py-2.5 sm:px-5 sm:py-3': size === 'lg' && !noPadding,
                   'font-semibold': !light,
                 },
               )

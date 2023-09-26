@@ -540,7 +540,8 @@ const ProjectSettingsPage = () => {
               >
                 glob pattern
               </a>
-              , and define link processing rules .{' '}
+              ; define link processing rules; define what fields to filter in
+              insights.{' '}
               <Link href="/docs#configuration" className="subtle-underline">
                 Read more in the docs
               </Link>

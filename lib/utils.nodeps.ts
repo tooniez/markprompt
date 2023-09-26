@@ -74,3 +74,11 @@ export const roundToLowerOrderDecimal = (n: number) => {
 export const approximatedTokenCount = (text: string) => {
   return Math.round(text.length / APPROX_CHARS_PER_TOKEN);
 };
+
+export const arrayEquals = <T>(arr1: T[], arr2: T[]) => {
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+
+  return arr1.every((item) => arr2.includes(item));
+};

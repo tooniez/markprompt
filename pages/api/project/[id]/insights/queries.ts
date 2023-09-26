@@ -2,8 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { withProjectAccess } from '@/lib/middleware/common';
 import { createServiceRoleSupabaseClient, getQueryStats } from '@/lib/supabase';
-import { safeParseInt } from '@/lib/utils.edge';
-import { Project, PromptQueryStat } from '@/types/types';
+import { safeParseInt, safeParseJSON } from '@/lib/utils.edge';
+import { DbQueryFilter, Project, PromptQueryStat } from '@/types/types';
 
 type Data =
   | {
@@ -32,6 +32,7 @@ export default withProjectAccess(
         req.query.to as string,
         limit,
         page,
+        safeParseJSON(req.query.filters as string, []) as DbQueryFilter[],
       );
 
       if (error) {

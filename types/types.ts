@@ -218,3 +218,12 @@ export type SerializableMarkpromptOptions = Omit<
 };
 
 export type OpenAIErrorResponse = any;
+
+type DbQueryFilterColumnName = string;
+type DbQueryFilterValue = string | number | boolean | null;
+type DbQueryFilterOperator = 'eq' | 'neq' | 'is';
+type DbQueryFilterOrCondition = string;
+
+export type DbQueryFilter =
+  | [DbQueryFilterOperator, DbQueryFilterColumnName, DbQueryFilterValue]
+  | ['or', DbQueryFilterOrCondition];

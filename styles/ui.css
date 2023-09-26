@@ -1,0 +1,28 @@
+.RadioGroupRoot {
+  @apply flex flex-col gap-1;
+}
+
+.RadioGroupItem {
+  @apply h-3.5 w-3.5 rounded-full border border-neutral-700 bg-neutral-900 transition;
+}
+
+.RadioGroupItem:hover {
+  @apply border-neutral-600 bg-neutral-700;
+}
+
+.RadioGroupItem:focus {
+  @apply border-sky-500;
+}
+
+.RadioGroupIndicator {
+  @apply relative flex h-full w-full items-center justify-center;
+}
+
+.RadioGroupIndicator::after {
+  @apply block h-2 w-2 rounded-full bg-sky-500;
+  content: '';
+}
+
+.Label {
+  @apply cursor-pointer select-none text-sm text-neutral-300;
+}
