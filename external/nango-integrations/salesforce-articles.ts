@@ -7,17 +7,23 @@ interface Metadata {
 }
 
 export default async function fetchData(nango: NangoSync) {
-  const metadata = await nango.getMetadata<Metadata>();
+  console.log('Log');
+  // const metadata = await nango.getMetadata<Metadata>();
+  // const customFields = (await nango.getMetadata<Metadata>()).customFields;
+  const customFields = (await nango.getMetadata<Metadata>()).customFields || [];
 
-  const fixedFields = ['Id', 'Title', 'LastModifiedDate'];
-  const customFields = (metadata?.customFields || []).filter(
-    (f) => !fixedFields.includes(f),
-  );
-  const fields = [...fixedFields, ...customFields];
+  // console.log('metadata', JSON.stringify(metadata, null, 2));
+  // const fixedFields = ['Id', 'Title', 'LastModifiedDate'];
+  // const customFields = metadata?.customFields;
+  // const customFields = (metadata?.customFields || []).filter(
+  //   (f) => !fixedFields.includes(f),
+  // );
+  // const fields = [...fixedFields, ...customFields];
 
-  const filters = metadata?.filters;
+  // const filters = metadata?.filters;
+  const filters = '';
 
-  let query = `SELECT ${fields.join(', ')}
+  let query = `SELECT ${customFields.join(', ')}
         FROM Knowledge__kav
         WHERE IsLatestVersion = true AND (${filters})`;
 
