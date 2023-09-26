@@ -139,9 +139,9 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
           await setMetadata(project.id, integrationId, connectionId, metadata);
 
           // Now that the metadata is set, we are ready to sync.
-          await triggerSync(project.id, integrationId, connectionId, [
-            SALESFORCE_ARTICLES_SYNC_ID,
-          ]);
+          // await triggerSync(project.id, integrationId, connectionId, [
+          //   SALESFORCE_ARTICLES_SYNC_ID,
+          // ]);
 
           await mutateSources();
 

@@ -43,6 +43,12 @@ import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
+import { triggerSync } from '@/lib/integrations/nango';
+import {
+  SALESFORCE_ARTICLES_SYNC_ID,
+  getConnectionId,
+  getIntegrationId,
+} from '@/lib/integrations/salesforce';
 import {
   canDeleteSource,
   getAccessoryLabelForSource,
@@ -591,6 +597,24 @@ const Data = () => {
                 <span className="truncate">Connect GitHub repo</span>
               </button>
             </GitHubAddSourceDialog>
+            <Button
+              variant="cta"
+              onClick={() => {
+                if (!project) {
+                  return;
+                }
+                const integrationId = getIntegrationId('sandbox');
+                const connectionId = getConnectionId(
+                  integrationId,
+                  'c18e44bb-abd8-4c86-addd-23a8a90c1956',
+                );
+                triggerSync(project.id, integrationId, connectionId, [
+                  SALESFORCE_ARTICLES_SYNC_ID,
+                ]);
+              }}
+            >
+              Train
+            </Button>
             <SalesforceAddSourceDialog>
               <button
                 className={cn(
