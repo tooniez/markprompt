@@ -3,16 +3,19 @@ import { NangoSync, NangoFile } from './models';
 
 interface Metadata {
   customFields: string[];
+  filters: string;
 }
 
 export default async function fetchData(nango: NangoSync) {
-  const customFields =
-    (await nango.getMetadata<Metadata>())?.customFields || [];
+  const metadata = await nango.getMetadata<Metadata>();
+  const customFields = metadata?.customFields || [];
+  const filters = metadata?.filters;
 
   const fields = ['Id', 'Title', ...customFields, 'LastModifiedDate'];
+
   let query = `SELECT ${fields.join(', ')}
         FROM Knowledge__kav
-        WHERE IsLatestVersion = true`;
+        WHERE IsLatestVersion = true AND ${filters}`;
 
   if (nango.lastSyncDate) {
     query += ` WHERE LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
@@ -27,11 +30,13 @@ export default async function fetchData(nango: NangoSync) {
       params: endpoint === '/services/data/v53.0/query' ? { q: query } : {},
     });
 
+    console.log(
+      'response.data.records',
+      JSON.stringify(response.data.records, null, 2),
+    );
     const mappedRecords = mapRecords(response.data.records, customFields);
 
     await nango.batchSave(mappedRecords, 'NangoFile');
-
-    console.log('Saving', mappedRecords.length);
 
     if (response.data.done) {
       break;
