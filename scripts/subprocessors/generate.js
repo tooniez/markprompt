@@ -4,7 +4,7 @@
 const dataPath = './scripts/subprocessors/data.json';
 const templatePath = './scripts/subprocessors/template.mdx';
 const pageOutputPath = './pages/legal/subprocessors/index.mdx';
-const feedOutputPath = './pages/legal/subprocessors/feed.xml';
+const feedOutputPath = './pages/legal/subprocessors/rss.xml.tsx';
 
 const now = new Date();
 const utcString = now.toUTCString();
@@ -78,4 +78,17 @@ const feed = `<?xml version="1.0" encoding="utf-8"?>
   .replace(/\n+/gi, '')
   .replace(/\s{2,}/gi, '');
 
-await Bun.write(feedOutputPath, feed);
+const feedPage = `import React from 'react'
+
+class Sitemap extends React.Component {
+  static async getInitialProps({ res, query }) {
+    res.setHeader('Content-Type', 'text/xml');
+    res.write(\`${feed}\`);
+    res.end();
+  }
+}
+
+export default Sitemap
+`;
+
+await Bun.write(feedOutputPath, feedPage);
