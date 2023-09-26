@@ -29,11 +29,6 @@ export default withProjectAccess(
         return res.status(400).json({ error: 'No connection id provided.' });
       }
 
-      console.log(
-        'Trigger sync',
-        req.body.integrationId,
-        req.body.connectionId,
-      );
       await nango.triggerSync(
         req.body.integrationId,
         req.body.connectionId,

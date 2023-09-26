@@ -27,16 +27,11 @@ export default async function fetchData(nango: NangoSync) {
       params: endpoint === '/services/data/v53.0/query' ? { q: query } : {},
     });
 
-    let i = 0;
-    while (i++ < 10) {
-      console.log(
-        'response.data.records',
-        JSON.stringify(response.data.records[i], null, 2),
-      );
-    }
     const mappedRecords = mapRecords(response.data.records, customFields);
 
     await nango.batchSave(mappedRecords, 'NangoFile');
+
+    console.log('Saving', mappedRecords.length);
 
     if (response.data.done) {
       break;
