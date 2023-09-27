@@ -27,15 +27,19 @@ export default withProjectAccess(
       // project_id, and the value is null, somehow the following
       // join with filter does not include these rows. This looks
       // like a bug in Supabase.
-      const limit = Math.min(safeParseInt(req.query.limit as string, 50), 50);
+      const limit = Math.max(
+        1,
+        Math.min(safeParseInt(req.query.limit as string, 50), 50),
+      );
       const page = safeParseInt(req.query.page as string, 0);
+      const startOffset = page * limit;
       const { data: files, error } = await supabase
         .from('files')
         .select(
           'id,path,meta,project_id,updated_at,source_id,checksum,token_count, sources!inner (project_id)',
         )
         .eq('sources.project_id', projectId)
-        .range(page * limit, (page + 1) * (limit - 1));
+        .range(startOffset, startOffset + limit - 1);
 
       if (error) {
         return res.status(400).json({ error: error.message });
