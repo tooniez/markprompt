@@ -22,7 +22,12 @@ import {
   updatePrompt,
 } from '@/lib/completions';
 import { modelConfigFields } from '@/lib/config';
-import { I_DONT_KNOW } from '@/lib/constants';
+import {
+  DEFAULT_TEMPLATE_CONTEXT_TAG,
+  DEFAULT_TEMPLATE_IDK_TAG,
+  DEFAULT_TEMPLATE_PROMPT_TAG,
+  I_DONT_KNOW,
+} from '@/lib/constants';
 import { createModeration } from '@/lib/openai.edge';
 import { DEFAULT_SYSTEM_PROMPT } from '@/lib/prompt';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
@@ -45,7 +50,6 @@ import {
   buildSectionReferenceFromMatchResult,
   getChatCompletionsResponseText,
   getChatCompletionsUrl,
-  stringToLLMInfo,
 } from '@/lib/utils';
 import { isRequestFromMarkprompt } from '@/lib/utils.edge';
 import { isFalsyQueryParam, isTruthyQueryParam } from '@/lib/utils.nodeps';
@@ -57,6 +61,8 @@ import {
   Project,
   SUPPORTED_MODELS,
 } from '@/types/types';
+
+import { buildFullPrompt } from '../completions/[project]';
 
 export const config = {
   runtime: 'edge',
@@ -183,6 +189,14 @@ const capMessages = (
   }
 
   return [...initMessages, ...cappedContextMessages];
+};
+
+const isLegacyTemplate = (systemPrompt: string) => {
+  return (
+    systemPrompt.includes(DEFAULT_TEMPLATE_CONTEXT_TAG) ||
+    systemPrompt.includes(DEFAULT_TEMPLATE_PROMPT_TAG) ||
+    systemPrompt.includes(DEFAULT_TEMPLATE_IDK_TAG)
+  );
 };
 
 export default async function handler(req: NextRequest) {
@@ -330,11 +344,10 @@ export default async function handler(req: NextRequest) {
 
     let fileSections: FileSectionMatchResult[] = [];
     let promptEmbedding: number[] | undefined = undefined;
-    try {
-      const sanitizedUserMessage = userMessage.content
-        .trim()
-        .replace('\n', ' ');
 
+    const sanitizedUserMessage = userMessage.content.trim().replace('\n', ' ');
+
+    try {
       const matches = await getMatchingSections(
         sanitizedUserMessage,
         params.sectionsMatchThreshold,
@@ -392,9 +405,25 @@ export default async function handler(req: NextRequest) {
 
     // TODO: should we create references for each message?
     const references: FileSectionReference[] = [];
-    const systemPrompt =
+    let systemPrompt =
       (params.systemPrompt as string) || DEFAULT_SYSTEM_PROMPT.content!;
 
+    if (isLegacyTemplate(systemPrompt)) {
+      // Before system prompts, we were using a prompt template in which
+      // the context and prompt were injected in a single user message.
+
+      systemPrompt = buildFullPrompt(
+        systemPrompt,
+        contextText,
+        sanitizedUserMessage,
+        iDontKnowMessage,
+        params.contextTag || DEFAULT_TEMPLATE_CONTEXT_TAG,
+        params.promptTag || DEFAULT_TEMPLATE_PROMPT_TAG,
+        params.idkTag || DEFAULT_TEMPLATE_IDK_TAG,
+        !!params.doNotInjectContext,
+        !!params.doNotInjectPrompt,
+      );
+    }
     // const approxMessagesTokens =
     //   approximatedTokenCount(systemPrompt) +
     //   messages.reduce(

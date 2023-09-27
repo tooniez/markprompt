@@ -8,6 +8,9 @@ export const APPROX_CHARS_PER_TOKEN = 4;
 export const SAMPLE_REPO_URL =
   'https://github.com/motifland/markprompt-sample-docs';
 export const MIN_SLUG_LENGTH = 3;
+export const DEFAULT_TEMPLATE_CONTEXT_TAG = '{{CONTEXT}}';
+export const DEFAULT_TEMPLATE_PROMPT_TAG = '{{PROMPT}}';
+export const DEFAULT_TEMPLATE_IDK_TAG = '{{I_DONT_KNOW}}';
 
 export const DEFAULT_MARKPROMPT_CONFIG = `{
   "include": [

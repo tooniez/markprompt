@@ -16,6 +16,9 @@ import {
 import { modelConfigFields } from '@/lib/config';
 import {
   CONTEXT_TOKENS_CUTOFF,
+  DEFAULT_TEMPLATE_CONTEXT_TAG,
+  DEFAULT_TEMPLATE_IDK_TAG,
+  DEFAULT_TEMPLATE_PROMPT_TAG,
   I_DONT_KNOW,
   MAX_PROMPT_LENGTH,
   STREAM_SEPARATOR,
@@ -113,7 +116,7 @@ const supabaseAdmin = createServiceRoleSupabaseClient();
 
 const allowedMethods = ['POST'];
 
-const buildFullPrompt = (
+export const buildFullPrompt = (
   template: string,
   context: string,
   prompt: string,
@@ -335,9 +338,9 @@ export default async function handler(req: NextRequest) {
       contextText,
       sanitizedQuery,
       iDontKnowMessage,
-      params.contextTag || '{{CONTEXT}}',
-      params.promptTag || '{{PROMPT}}',
-      params.idkTag || '{{I_DONT_KNOW}}',
+      params.contextTag || DEFAULT_TEMPLATE_CONTEXT_TAG,
+      params.promptTag || DEFAULT_TEMPLATE_PROMPT_TAG,
+      params.idkTag || DEFAULT_TEMPLATE_IDK_TAG,
       !!params.doNotInjectContext,
       !!params.doNotInjectPrompt,
     );
