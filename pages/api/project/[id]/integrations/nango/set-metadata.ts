@@ -31,13 +31,18 @@ export default withProjectAccess(
         return res.status(400).json({ error: 'No metadata provided.' });
       }
 
-      await nango.setMetadata(
-        req.body.integrationId,
-        req.body.connectionId,
-        req.body.metadata,
-      );
+      try {
+        const metadata = JSON.parse(req.body.metadata);
+        await nango.setMetadata(
+          req.body.integrationId,
+          req.body.connectionId,
+          'abc',
+        );
 
-      return res.status(200).json({});
+        return res.status(200).json({});
+      } catch {
+        // Do nothing
+      }
     }
 
     return res.status(400).end();

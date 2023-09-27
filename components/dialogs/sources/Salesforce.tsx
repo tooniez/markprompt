@@ -52,34 +52,6 @@ const nango = new Nango({
   publicKey: process.env.NEXT_PUBLIC_NANGO_PUBLIC_KEY!,
 });
 
-const _addSource = async (
-  projectId: Project['id'],
-  integrationId: string,
-  identifier: string,
-  instanceUrl: string,
-  mutate: () => void,
-): Promise<DbSource['id'] | undefined> => {
-  try {
-    const newSource = await addSource(projectId, 'salesforce', {
-      integrationId,
-      identifier,
-      instanceUrl,
-    });
-    await mutate();
-    toast.success(
-      `The source ${getLabelForSource(
-        newSource,
-        true,
-      )} has been added to the project.`,
-    );
-    return newSource.id;
-  } catch (e) {
-    console.error(e);
-    toast.error(`${e}`);
-  }
-  return undefined;
-};
-
 type SalesforceSourceProps = {
   clearPrevious?: boolean;
   openPricingAsDialog?: boolean;

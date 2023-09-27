@@ -613,7 +613,7 @@ const Data = () => {
                 ]);
               }}
             >
-              Train
+              Train!
             </Button>
             <SalesforceAddSourceDialog>
               <button
