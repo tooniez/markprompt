@@ -606,7 +606,7 @@ const Data = () => {
                 const integrationId = getIntegrationId('sandbox');
                 const connectionId = getConnectionId(
                   integrationId,
-                  'c18e44bb-abd8-4c86-addd-23a8a90c1956',
+                  '37180302-226a-4fd7-ac1f-e918ad79bf1c',
                 );
                 triggerSync(project.id, integrationId, connectionId, [
                   SALESFORCE_ARTICLES_SYNC_ID,

@@ -29,14 +29,6 @@ export default withProjectAccess(
         return res.status(400).json({ error: 'No connection id provided.' });
       }
 
-      const metadata = await nango.getMetadata<Metadata>();
-
-      console.log(
-        'ID',
-        req.body.integrationId,
-        req.body.connectionId,
-        req.body.syncIds,
-      );
       try {
         await nango.triggerSync(
           req.body.integrationId,
@@ -47,7 +39,6 @@ export default withProjectAccess(
         console.log('Error trigger sync', e);
       }
 
-      console.log('ALL good');
       return res.status(200).json({});
     }
 

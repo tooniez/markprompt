@@ -60,7 +60,7 @@ type SalesforceSourceProps = {
 
 const identifierRegex = /^[a-zA-Z0-9-]+$/;
 
-const prepareCustomFields = (input: string) => {
+const prepareFields = (input: string) => {
   return input.split(',').map((v) => v.trim());
 };
 
@@ -159,10 +159,11 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
           instanceUrl: 'https://mindbody--eos1.sandbox.lightning.force.com',
           customFields:
             'Article_Body__c,PublishStatus,Language,IsVisibleInPkb,Product__c,UrlName',
-          filters: `PublishStatus ='Online' and Language ='en_us' and IsVisibleInPkb = true and (Product__c includes ('MINDBODY') or Product__c = 'Marketing Suite' or Product__c ='Bowtie')`,
+          filters: `PublishStatus = 'Online' and Language = 'en_us' and IsVisibleInPkb = true and (Product__c includes ('MINDBODY') or Product__c = 'Marketing Suite' or Product__c ='Bowtie')`,
           titleMapping: 'Title',
           contentMapping: 'Article_Body__c',
           pathMapping: 'UrlName',
+          metadataFields: 'Id, Language',
         }}
         validateOnMount
         validate={async (values) => {
@@ -203,11 +204,14 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
             values.environment,
             values.instanceUrl,
             {
-              customFields: prepareCustomFields(values.customFields),
+              customFields: prepareFields(values.customFields),
               filters: values.filters,
-              titleMapping: values.titleMapping,
-              contentMapping: values.contentMapping,
-              pathMapping: values.pathMapping,
+              mappings: {
+                title: values.titleMapping,
+                content: values.contentMapping,
+                path: values.pathMapping,
+              },
+              metadataFields: prepareFields(values.metadataFields),
             },
           );
           setSubmitting(false);
@@ -369,6 +373,24 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
                   placeholder={`Example: UrlName`}
                   inputSize="sm"
                   as={NoAutoInput}
+                  disabled={isSubmitting}
+                />
+              </div>
+              <p className="pt-4 text-sm font-medium text-neutral-300">
+                Metadata fields (comma separated)
+              </p>
+              <p className="pb-2 text-sm text-neutral-500">
+                Specify what custom fields should be included in the file
+                metadata.
+              </p>
+              <div className="flex flex-row gap-2">
+                <Field
+                  className="h-[60px] flex-grow font-mono text-xs"
+                  type="text"
+                  name="metadataFields"
+                  placeholder={`Example: Id, Language`}
+                  inputSize="sm"
+                  as={NoAutoTextArea}
                   disabled={isSubmitting}
                 />
               </div>

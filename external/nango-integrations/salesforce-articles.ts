@@ -4,10 +4,18 @@ import { NangoSync, NangoFile } from './models';
 interface Metadata {
   customFields: string[];
   filters: string;
+  mappings: {
+    title: string | undefined;
+    content: string | undefined;
+    path: string | undefined;
+  };
+  metadataFields: string[];
 }
 
 export default async function fetchData(nango: NangoSync) {
   const metadata = await nango.getMetadata<Metadata>();
+
+  console.log('metadata', JSON.stringify(metadata, null, 2));
 
   const fixedFields = ['Id', 'Title', 'LastModifiedDate'];
   const customFields = (metadata?.customFields || []).filter(
@@ -15,9 +23,9 @@ export default async function fetchData(nango: NangoSync) {
   );
   const fields = [...fixedFields, ...customFields];
 
-  let query = `SELECT ${fields.join(', ')}
-        FROM Knowledge__kav
-        WHERE IsLatestVersion = true`;
+  let query = `SELECT ${fields.join(
+    ', ',
+  )} FROM Knowledge__kav WHERE IsLatestVersion = true`;
 
   const filters = metadata?.filters;
 
@@ -26,10 +34,11 @@ export default async function fetchData(nango: NangoSync) {
   }
 
   if (nango.lastSyncDate) {
-    query += ` WHERE LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
+    query += ` AND LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
   }
 
-  query += ' LIMIT 3';
+  // TODO: REMOVE
+  query += ' LIMIT 4';
 
   console.log('query', JSON.stringify(query, null, 2));
 
@@ -42,7 +51,13 @@ export default async function fetchData(nango: NangoSync) {
       params: endpoint === '/services/data/v53.0/query' ? { q: query } : {},
     });
 
-    const mappedRecords = mapRecords(response.data.records, customFields);
+    const mappedRecords = mapRecords(
+      response.data.records,
+      metadata?.mappings,
+      metadata?.metadataFields,
+    );
+
+    console.log('mappedRecords', JSON.stringify(mappedRecords, null, 2));
 
     await nango.batchSave(mappedRecords, 'NangoFile');
 
@@ -54,16 +69,20 @@ export default async function fetchData(nango: NangoSync) {
   }
 }
 
-function mapRecords(records: any[], customFields: string[]): NangoFile[] {
+function mapRecords(
+  records: any[],
+  mappings: Metadata['mappings'],
+  metadataFields: Metadata['metadataFields'],
+): NangoFile[] {
   return records.map((record: any) => {
     return {
-      id: record.Id as string,
-      title: record.Name,
-      path: record.Name,
-      content: customFields
-        .map((field: string) => `Field: ${field}\n${record[field]}`)
-        .join('\n'),
-      last_modified: record.LastModifiedDate,
+      id: record.Id,
+      title: mappings.title ? record[mappings.title] : record.Title,
+      path: mappings.path ? record[mappings.path] : record.Id,
+      content: mappings.content ? record[mappings.content] : '',
+      meta: (metadataFields || []).reduce((acc, key) => {
+        return { ...acc, [key]: record[key] };
+      }, {}),
     };
   });
 }

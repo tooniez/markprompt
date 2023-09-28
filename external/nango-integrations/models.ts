@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface NangoFile {
-  id: string;
   path: string;
   title: string;
   content: string;
-  last_modified: string;
+  meta: any;
 }
 
 type LogLevel =
