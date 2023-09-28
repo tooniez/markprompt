@@ -15,8 +15,6 @@ interface Metadata {
 export default async function fetchData(nango: NangoSync) {
   const metadata = await nango.getMetadata<Metadata>();
 
-  console.log('metadata', JSON.stringify(metadata, null, 2));
-
   const fixedFields = ['Id', 'Title', 'LastModifiedDate'];
   const customFields = (metadata?.customFields || []).filter(
     (f) => !fixedFields.includes(f),
@@ -40,8 +38,6 @@ export default async function fetchData(nango: NangoSync) {
   // TODO: REMOVE
   query += ' LIMIT 4';
 
-  console.log('query', JSON.stringify(query, null, 2));
-
   let endpoint = '/services/data/v53.0/query';
 
   // eslint-disable-next-line no-constant-condition
@@ -56,8 +52,6 @@ export default async function fetchData(nango: NangoSync) {
       metadata?.mappings,
       metadata?.metadataFields,
     );
-
-    console.log('mappedRecords', JSON.stringify(mappedRecords, null, 2));
 
     await nango.batchSave(mappedRecords, 'NangoFile');
 

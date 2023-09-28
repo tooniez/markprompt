@@ -342,7 +342,7 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
                 Mappings
               </p>
               <p className="pb-2 text-sm text-neutral-500">
-                Specify how your object fields should map to Markprompt files.
+                Specify how your object fields should map to files.
               </p>
               <div className="grid grid-cols-4 items-center gap-2">
                 <p className="text-sm text-neutral-300">Title</p>
@@ -380,8 +380,7 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
                 Metadata fields (comma separated)
               </p>
               <p className="pb-2 text-sm text-neutral-500">
-                Specify what custom fields should be included in the file
-                metadata.
+                Specify custom fields to include in the file metadata.
               </p>
               <div className="flex flex-row gap-2">
                 <Field
