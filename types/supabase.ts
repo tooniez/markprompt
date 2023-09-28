@@ -1156,6 +1156,46 @@ export interface Database {
           }
         ]
       }
+      v_insights_query_stats: {
+        Row: {
+          created_at: string | null
+          decrypted_conversation_metadata: Json | null
+          decrypted_prompt: string | null
+          feedback: Json | null
+          id: string | null
+          no_response: boolean | null
+          processed_state:
+            | Database["public"]["Enums"]["query_stat_processed_state"]
+            | null
+          project_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "query_stats_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
+      }
       v_team_project_info: {
         Row: {
           plan_details: Json | null
@@ -1420,7 +1460,13 @@ export interface Database {
         | "unprocessed"
         | "errored"
         | "skipped"
-      source_type: "github" | "motif" | "website" | "file-upload" | "api-upload"
+      source_type:
+        | "github"
+        | "motif"
+        | "website"
+        | "salesforce"
+        | "file-upload"
+        | "api-upload"
     }
     CompositeTypes: {
       [_ in never]: never
