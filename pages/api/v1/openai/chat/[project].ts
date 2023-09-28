@@ -66,6 +66,7 @@ import { buildFullPrompt } from '../completions/[project]';
 
 export const config = {
   runtime: 'edge',
+  maxDuration: 300,
 };
 
 // Admin access to Supabase, bypassing RLS.

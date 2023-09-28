@@ -6,6 +6,7 @@ import { OAuthToken } from '@/types/types';
 
 export const config = {
   runtime: 'edge',
+  maxDuration: 300,
 };
 
 const allowedMethods = ['POST'];

@@ -58,6 +58,7 @@ import {
 
 export const config = {
   runtime: 'edge',
+  maxDuration: 300,
 };
 
 const isIDontKnowResponse = (
