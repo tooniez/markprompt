@@ -21,6 +21,8 @@ export const config = {
 export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
   const hostname = req.headers.get('host');
 
+  console.log('Got event!', req.nextUrl.pathname);
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { status: 200 });
   }

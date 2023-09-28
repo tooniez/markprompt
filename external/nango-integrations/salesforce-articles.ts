@@ -29,6 +29,8 @@ export default async function fetchData(nango: NangoSync) {
     query += ` WHERE LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
   }
 
+  query += ' LIMIT 3';
+
   console.log('query', JSON.stringify(query, null, 2));
 
   let endpoint = '/services/data/v53.0/query';
