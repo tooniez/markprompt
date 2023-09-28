@@ -7,29 +7,29 @@ interface Metadata {
 }
 
 export default async function fetchData(nango: NangoSync) {
-  console.log('Log');
-  // const metadata = await nango.getMetadata<Metadata>();
-  // const customFields = (await nango.getMetadata<Metadata>()).customFields;
-  const customFields = (await nango.getMetadata<Metadata>()).customFields || [];
+  const metadata = await nango.getMetadata<Metadata>();
 
-  // console.log('metadata', JSON.stringify(metadata, null, 2));
-  // const fixedFields = ['Id', 'Title', 'LastModifiedDate'];
-  // const customFields = metadata?.customFields;
-  // const customFields = (metadata?.customFields || []).filter(
-  //   (f) => !fixedFields.includes(f),
-  // );
-  // const fields = [...fixedFields, ...customFields];
+  const fixedFields = ['Id', 'Title', 'LastModifiedDate'];
+  const customFields = (metadata?.customFields || []).filter(
+    (f) => !fixedFields.includes(f),
+  );
+  const fields = [...fixedFields, ...customFields];
 
-  // const filters = metadata?.filters;
-  const filters = '';
-
-  let query = `SELECT ${customFields.join(', ')}
+  let query = `SELECT ${fields.join(', ')}
         FROM Knowledge__kav
-        WHERE IsLatestVersion = true AND (${filters})`;
+        WHERE IsLatestVersion = true`;
+
+  const filters = metadata?.filters;
+
+  if (filters?.length > 0) {
+    query += ` AND (${filters})`;
+  }
 
   if (nango.lastSyncDate) {
     query += ` WHERE LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
   }
+
+  console.log('query', JSON.stringify(query, null, 2));
 
   let endpoint = '/services/data/v53.0/query';
 

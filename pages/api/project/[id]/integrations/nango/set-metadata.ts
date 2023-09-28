@@ -32,11 +32,10 @@ export default withProjectAccess(
       }
 
       try {
-        const metadata = JSON.parse(req.body.metadata);
         await nango.setMetadata(
           req.body.integrationId,
           req.body.connectionId,
-          'abc',
+          req.body.metadata,
         );
 
         return res.status(200).json({});

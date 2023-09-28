@@ -8,7 +8,7 @@ export type SalesforceEnvironment = 'production' | 'sandbox';
 export const SALESFORCE_ARTICLES_SYNC_ID = 'salesforce-articles';
 
 export type SalesforceNangoMetadata = {
-  customFields: string | undefined;
+  customFields: string[] | undefined;
   filters: string | undefined;
   titleMapping: string | undefined;
   contentMapping: string | undefined;

@@ -18,7 +18,7 @@ import { ErrorLabel } from '@/components/ui/Forms';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { NoAutoInput } from '@/components/ui/Input';
 import { NoAutoTextArea } from '@/components/ui/TextArea';
-import { addSource } from '@/lib/api';
+import { addSource, deleteSource } from '@/lib/api';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
@@ -59,6 +59,10 @@ type SalesforceSourceProps = {
 };
 
 const identifierRegex = /^[a-zA-Z0-9-]+$/;
+
+const prepareCustomFields = (input: string) => {
+  return input.split(',').map((v) => v.trim());
+};
 
 const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
   const { project } = useProject();
@@ -130,6 +134,7 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
             getIntegrationId(environment),
             connectionId,
           );
+          await deleteSource(project.id, newSource.id);
           toast.error(`Error connecting to Salesforce: ${e.message || e}.`);
         }
       } catch (e: any) {
@@ -198,7 +203,7 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
             values.environment,
             values.instanceUrl,
             {
-              customFields: values.customFields,
+              customFields: prepareCustomFields(values.customFields),
               filters: values.filters,
               titleMapping: values.titleMapping,
               contentMapping: values.contentMapping,
