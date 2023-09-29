@@ -16,7 +16,7 @@ export const InfoTooltip = ({
       <Tooltip.Root open={open} onOpenChange={(open) => setOpen(open)}>
         <Tooltip.Trigger asChild>
           <button
-            className="button-ring flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300"
+            className="flex w-min cursor-pointer flex-row items-center gap-2 truncate whitespace-nowrap rounded-md text-xs text-neutral-300 outline-none"
             onClick={() => {
               setOpen(!open);
             }}
