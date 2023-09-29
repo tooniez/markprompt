@@ -1461,11 +1461,13 @@ export interface Database {
         | "errored"
         | "skipped"
       source_type:
+        | 'salesforce'
+        | "api-upload"
+        | "file-upload"
         | "github"
         | "motif"
+        | "nango"
         | "website"
-        | "file-upload"
-        | "api-upload"
     }
     CompositeTypes: {
       [_ in never]: never
