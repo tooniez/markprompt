@@ -28,7 +28,7 @@
     "@markdoc/next.js": "^0.2.2",
     "@markprompt/core": "^0.16.4",
     "@markprompt/css": "^0.16.3",
-    "@markprompt/react": "^0.26.0",
+    "@markprompt/react": "^0.26.1",
     "@mdx-js/loader": "^2.3.0",
     "@mdx-js/react": "^2.3.0",
     "@next/mdx": "^13.2.4",
