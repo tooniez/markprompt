@@ -1,6 +1,6 @@
-import { Nango } from '@nangohq/node';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { getNangoServerInstance } from '@/lib/integrations/nango';
 import { withProjectAccess } from '@/lib/middleware/common';
 
 type Data = {
@@ -10,14 +10,7 @@ type Data = {
 
 const allowedMethods = ['POST'];
 
-const nango = new Nango({
-  secretKey:
-    process.env.NODE_ENV === 'production'
-      ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        process.env.NANGO_SECRET_KEY_PROD!
-      : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        process.env.NANGO_SECRET_KEY_DEV!,
-});
+const nango = getNangoServerInstance();
 
 export default withProjectAccess(
   allowedMethods,

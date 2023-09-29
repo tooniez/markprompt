@@ -150,13 +150,18 @@ export type SourceDataType =
   | GitHubSourceDataType
   | MotifSourceDataType
   | WebsiteSourceDataType;
+
 export type GitHubSourceDataType = { url: string; branch?: string };
+
 export type MotifSourceDataType = { projectDomain: string };
+
 export type WebsiteSourceDataType = { url: string };
-export type SalesforceSourceDataType = {
-  integrationId: string;
+
+export type NangoIntegrationId = 'salesforce' | 'salesforce-sandbox';
+
+export type NangoSourceDataType = {
+  integrationId: NangoIntegrationId;
   identifier: string;
-  instanceUrl: string;
 };
 
 export type RobotsTxtInfo = { sitemap?: string; disallowedPaths: string[] };

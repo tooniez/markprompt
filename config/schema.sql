@@ -48,7 +48,7 @@ create table public.projects (
 comment on table public.projects is 'Projects within a team.';
 
 -- Sources
-create type source_type as enum ('github', 'motif', 'website', 'salesforce', 'file-upload', 'api-upload');
+create type source_type as enum ('github', 'motif', 'website', 'nango', 'file-upload', 'api-upload');
 
 create table public.sources (
   id          uuid primary key default uuid_generate_v4(),

@@ -25,7 +25,7 @@ export default withProjectAccess(
         .from('sources')
         .select('id')
         .eq('project_id', req.query.id)
-        .eq('type', 'salesforce')
+        .eq('type', 'nango')
         .eq('data->identifier', req.query.identifier);
 
       return res.status(200).json({ exists: !!data });

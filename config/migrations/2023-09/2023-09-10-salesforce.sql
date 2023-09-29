@@ -1,1 +1,0 @@
-alter type source_type add value 'salesforce' after 'website';

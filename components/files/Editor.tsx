@@ -53,7 +53,7 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
     if (!source) {
       return <></>;
     }
-    const Icon = getIconForSource(source.type);
+    const Icon = getIconForSource(source);
     const label = getLabelForSource(source, false);
     const url = getURLForSource(source);
 

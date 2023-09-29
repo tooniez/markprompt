@@ -32,6 +32,7 @@ import { SalesforceIcon } from '@/components/icons/Salesforce';
 import {
   DEFAULT_CHAT_COMPLETION_MODEL,
   DateCountHistogramEntry,
+  DbSource,
   FileSectionHeading,
   FileSectionMeta,
   FileType,
@@ -39,10 +40,9 @@ import {
   HistogramStat,
   LLMInfo,
   MotifSourceDataType,
+  NangoSourceDataType,
   OpenAIModelIdWithType,
-  SalesforceSourceDataType,
   Source,
-  SourceType,
   TimeInterval,
   WebsiteSourceDataType,
 } from '@/types/types';
@@ -668,8 +668,8 @@ export const getLabelForSource = (source: Source, inline: boolean) => {
       return inline ? 'file uploads' : 'File uploads';
     case 'api-upload':
       return 'API uploads';
-    case 'salesforce': {
-      const data = source.data as SalesforceSourceDataType;
+    case 'nango': {
+      const data = source.data as NangoSourceDataType;
       return data.identifier;
     }
     default:
@@ -874,20 +874,31 @@ export const splitIntoSubstringsOfMaxLength = (
   return result;
 };
 
-export const getIconForSource = (sourceType: SourceType) => {
-  switch (sourceType) {
-    case 'motif':
-      return MotifIcon;
-    case 'website':
-      return Globe;
-    case 'file-upload':
-      return Upload;
+export const getIconForSource = (source: Pick<DbSource, 'type' | 'data'>) => {
+  switch (source.type) {
     case 'api-upload':
       return ChevronsUp;
-    case 'salesforce':
-      return SalesforceIcon;
-    default:
+    case 'file-upload':
+      return Upload;
+    case 'github':
       return GitHubIcon;
+    case 'motif':
+      return MotifIcon;
+    case 'nango': {
+      const integrationId = (source.data as unknown as NangoSourceDataType)
+        ?.integrationId;
+      if (
+        integrationId === 'salesforce' ||
+        integrationId === 'salesforce-sandbox'
+      ) {
+        return SalesforceIcon;
+      }
+      return Globe;
+    }
+    case 'website':
+      return Globe;
+    default:
+      return Globe;
   }
 };
 

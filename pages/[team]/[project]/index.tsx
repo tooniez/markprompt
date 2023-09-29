@@ -46,7 +46,6 @@ import useUser from '@/lib/hooks/use-user';
 import { triggerSync } from '@/lib/integrations/nango';
 import {
   SALESFORCE_ARTICLES_SYNC_ID,
-  getConnectionId,
   getIntegrationId,
 } from '@/lib/integrations/salesforce';
 import {
@@ -133,7 +132,7 @@ type SourceItemProps = {
 };
 
 const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
-  const Icon = getIconForSource(source.type);
+  const Icon = getIconForSource(source);
   const accessory = getAccessoryLabelForSource(source);
   let AccessoryTag = <></>;
   if (accessory) {
@@ -604,13 +603,12 @@ const Data = () => {
                   return;
                 }
                 const integrationId = getIntegrationId('sandbox');
-                const connectionId = getConnectionId(
+                triggerSync(
+                  project.id,
                   integrationId,
                   '37180302-226a-4fd7-ac1f-e918ad79bf1c',
+                  [SALESFORCE_ARTICLES_SYNC_ID],
                 );
-                triggerSync(project.id, integrationId, connectionId, [
-                  SALESFORCE_ARTICLES_SYNC_ID,
-                ]);
               }}
             >
               Train!

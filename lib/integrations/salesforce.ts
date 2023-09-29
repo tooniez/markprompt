@@ -1,6 +1,4 @@
-import { DbSource, Project } from '@/types/types';
-
-import { getResponseOrThrow } from '../utils';
+import { NangoIntegrationId } from '@/types/types';
 
 export type SalesforceEnvironment = 'production' | 'sandbox';
 
@@ -18,40 +16,8 @@ export type SalesforceNangoMetadata = {
   metadataFields: string[] | undefined;
 };
 
-export const getIntegrationId = (environment: SalesforceEnvironment) => {
+export const getIntegrationId = (
+  environment: SalesforceEnvironment,
+): NangoIntegrationId => {
   return environment === 'production' ? 'salesforce' : 'salesforce-sandbox';
-};
-
-export const getConnectionId = (
-  integrationId: string,
-  sourceId: DbSource['id'],
-) => {
-  return `${integrationId}:${sourceId}`;
-};
-
-export const getProviderConfigKey = (environment: SalesforceEnvironment) => {
-  return environment === 'production'
-    ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      process.env.NEXT_PUBLIC_NANGO_INTEGRATION_KEY_SALESFORCE!
-    : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      process.env.NEXT_PUBLIC_NANGO_INTEGRATION_KEY_SALESFORCE_SANDBOX!;
-};
-
-export const sourceExists = async (
-  projectId: Project['id'],
-  identifier: string,
-): Promise<boolean> => {
-  const res = await fetch(
-    `/api/project/${projectId}/integrations/salesforce-knowledge/source-exists`,
-    {
-      method: 'POST',
-      body: JSON.stringify({
-        identifier,
-      }),
-      headers: { 'Content-Type': 'application/json' },
-    },
-  );
-
-  const existsRes = await getResponseOrThrow<{ exists: boolean }>(res);
-  return existsRes.exists;
 };

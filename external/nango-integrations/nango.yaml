@@ -19,4 +19,5 @@ models:
     path: string
     title: string
     content: string
+    meta: object
     last_modified: string

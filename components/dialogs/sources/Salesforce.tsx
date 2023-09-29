@@ -21,25 +21,19 @@ import { NoAutoTextArea } from '@/components/ui/TextArea';
 import { addSource, deleteSource } from '@/lib/api';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
-import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
 import {
   deleteConnection,
   setMetadata,
-  triggerSync,
+  sourceExists,
 } from '@/lib/integrations/nango';
 import {
-  SALESFORCE_ARTICLES_SYNC_ID,
   SalesforceEnvironment,
   SalesforceNangoMetadata,
-  getConnectionId,
   getIntegrationId,
-  getProviderConfigKey,
-  sourceExists,
 } from '@/lib/integrations/salesforce';
 import { getLabelForSource } from '@/lib/utils';
-import { DbSource, Project } from '@/types/types';
 
 const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
 
@@ -84,10 +78,9 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
       try {
         const integrationId = getIntegrationId(environment);
 
-        const newSource = await addSource(project.id, 'salesforce', {
+        const newSource = await addSource(project.id, 'nango', {
           integrationId,
           identifier,
-          instanceUrl,
         });
 
         if (!newSource.id) {
@@ -97,11 +90,8 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
         // Create the Nango connection. Note that nango.yaml specifies
         // `auto_start: false` to give us a chance to set the metadata
         // first.
-        const providerConfigKey = getProviderConfigKey(environment);
-        const connectionId = getConnectionId(integrationId, newSource.id);
-
         try {
-          const result = await nango.auth(providerConfigKey, connectionId, {
+          const result = await nango.auth(integrationId, newSource.id, {
             params: { instance_url: instanceUrl },
           });
 
@@ -112,7 +102,7 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
 
           // Once the connection has been created, set the connection
           // metadata (such as the query filters).
-          await setMetadata(project.id, integrationId, connectionId, metadata);
+          await setMetadata(project.id, integrationId, newSource.id, metadata);
 
           // Now that the metadata is set, we are ready to sync.
           // await triggerSync(project.id, integrationId, connectionId, [
@@ -132,7 +122,7 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
           await deleteConnection(
             project.id,
             getIntegrationId(environment),
-            connectionId,
+            newSource.id,
           );
           await deleteSource(project.id, newSource.id);
           toast.error(`Error connecting to Salesforce: ${e.message || e}.`);
@@ -430,8 +420,6 @@ const SalesforceAddSourceDialog = ({
   onDidAddSource?: () => void;
   children: ReactNode;
 }) => {
-  const { team } = useTeam();
-  const { project } = useProject();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (

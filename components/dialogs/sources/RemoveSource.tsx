@@ -7,9 +7,8 @@ import useFiles from '@/lib/hooks/use-files';
 import useSources from '@/lib/hooks/use-sources';
 import useUsage from '@/lib/hooks/use-usage';
 import { deleteConnection } from '@/lib/integrations/nango';
-import { getConnectionId } from '@/lib/integrations/salesforce';
 import { getLabelForSource } from '@/lib/utils';
-import { Project, DbSource, SalesforceSourceDataType } from '@/types/types';
+import { Project, DbSource, NangoSourceDataType } from '@/types/types';
 
 type RemoveSourceDialogProps = {
   projectId: Project['id'];
@@ -41,26 +40,23 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
 
           // For Nango integrations, make sure to delete the connection to
           // avoid subsequent syncs.
-          if (source.type === 'salesforce') {
-            const sourceData = source.data as SalesforceSourceDataType;
-            const connectionId = getConnectionId(
-              sourceData.integrationId,
-              source.id,
-            );
+          if (source.type === 'nango') {
+            const sourceData = source.data as NangoSourceDataType;
             try {
               await deleteConnection(
                 projectId,
                 sourceData.integrationId,
-                connectionId,
+                source.id,
               );
             } catch (e) {
-              // Ignore.
+              // Ignore
             }
           }
 
           await mutateSources();
           await mutateFiles();
           await mutateFileStats();
+
           toast.success(
             `The source ${getLabelForSource(
               source,

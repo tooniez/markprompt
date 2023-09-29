@@ -1,6 +1,19 @@
+import { Nango } from '@nangohq/node';
+
 import { Project } from '@/types/types';
 
 import { getResponseOrThrow } from '../utils';
+
+export const getNangoServerInstance = () => {
+  return new Nango({
+    secretKey:
+      process.env.NODE_ENV === 'production'
+        ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          process.env.NANGO_SECRET_KEY_PROD!
+        : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          process.env.NANGO_SECRET_KEY_DEV!,
+  });
+};
 
 export const setMetadata = async (
   projectId: Project['id'],
@@ -59,4 +72,23 @@ export const triggerSync = async (
     },
   );
   return getResponseOrThrow<void>(res);
+};
+
+export const sourceExists = async (
+  projectId: Project['id'],
+  identifier: string,
+): Promise<boolean> => {
+  const res = await fetch(
+    `/api/project/${projectId}/integrations/nango/source-exists`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        identifier,
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    },
+  );
+
+  const existsRes = await getResponseOrThrow<{ exists: boolean }>(res);
+  return existsRes.exists;
 };
