@@ -391,7 +391,6 @@ export const getQueryStats = async (
   }
 
   // Cf. https://github.com/orgs/supabase/discussions/3080#discussioncomment-1282318 to dynamically add filters
-
   const allFilters: any[] = [
     ['eq', 'project_id', projectId],
     ['or', 'processed_state.eq.processed,processed_state.eq.skipped'],

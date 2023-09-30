@@ -16,11 +16,9 @@ import {
 import { isPresent } from 'ts-is-present';
 
 import { FilterSpec } from '@/lib/hooks/use-insights';
-import {
-  QueryFilterComparisonOperation,
-  SUPPORTED_QUERY_FILTER_COMPARISON_OPERATIONS,
-} from '@/lib/supabase';
+import { SUPPORTED_QUERY_FILTER_COMPARISON_OPERATIONS } from '@/lib/supabase';
 import { arrayEquals } from '@/lib/utils.nodeps';
+import { QueryFilterComparisonOperation } from '@/types/types';
 
 import Button from './Button';
 import { Checkbox } from './Checkbox';
