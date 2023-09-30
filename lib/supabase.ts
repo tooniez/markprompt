@@ -15,6 +15,8 @@ import {
   WebsiteSourceDataType,
   PromptQueryStat,
   DbQueryFilter,
+  QueryFilterComparisonOperation,
+  QueryFilterLogicalOperation,
 } from '@/types/types';
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
@@ -345,22 +347,21 @@ export const hasUserAccessToProject = async (
   return !!response.data?.has_access;
 };
 
-export enum QueryFilterOperation {
-  'is' = 'is',
-  'eq' = 'eq',
-  'neq' = 'neq',
-  'gte' = 'gte',
-  'lte' = 'lte',
-  'or' = 'or',
-}
+export const SUPPORTED_QUERY_FILTER_COMPARISON_OPERATIONS: string[] =
+  Object.values(QueryFilterComparisonOperation);
 
-const SUPPORTED_QUERY_FILTER_FUNCTIONS: string[] =
-  Object.values(QueryFilterOperation);
+const SUPPORTED_QUERY_FILTER_LOGICAL_OPERATIONS: string[] = Object.values(
+  QueryFilterLogicalOperation,
+);
 
 const isValidQueryFilters = (filters: DbQueryFilter[]) => {
   return (
     filters.length === 0 ||
-    filters.every((f) => SUPPORTED_QUERY_FILTER_FUNCTIONS.includes(f[0]))
+    filters.every(
+      (f) =>
+        SUPPORTED_QUERY_FILTER_COMPARISON_OPERATIONS.includes(f[0]) ||
+        SUPPORTED_QUERY_FILTER_LOGICAL_OPERATIONS.includes(f[0]),
+    )
   );
 };
 
@@ -378,7 +379,10 @@ export const getQueryStats = async (
 }> => {
   if (!isValidQueryFilters(filters || [])) {
     const message = `Invalid filters. Filters may only contains the following operators: ${JSON.stringify(
-      SUPPORTED_QUERY_FILTER_FUNCTIONS,
+      [
+        ...SUPPORTED_QUERY_FILTER_COMPARISON_OPERATIONS,
+        ...SUPPORTED_QUERY_FILTER_LOGICAL_OPERATIONS,
+      ],
     )}`;
     return {
       error: { message, details: message, hint: message, code: '' },
@@ -387,7 +391,6 @@ export const getQueryStats = async (
   }
 
   // Cf. https://github.com/orgs/supabase/discussions/3080#discussioncomment-1282318 to dynamically add filters
-
   const allFilters: any[] = [
     ['eq', 'project_id', projectId],
     ['or', 'processed_state.eq.processed,processed_state.eq.skipped'],

@@ -58,7 +58,7 @@ const InputWrapper: FC<InputWrapperProps> = ({
 };
 
 type InputProps = {
-  inputSize?: 'sm' | 'base' | 'md' | 'lg';
+  inputSize?: 'xs' | 'sm' | 'base' | 'md' | 'lg';
   variant?: 'plain' | 'glow';
   children?: ReactNode;
   className?: string;
@@ -100,6 +100,7 @@ const Input: FC<InputProps> = ({
             'w-full flex-grow': hasRightAccessory || hasLeftAccessory,
             'px-2 py-2 text-sm': inputSize === 'base',
             'px-2 py-1.5 text-sm': inputSize === 'sm',
+            'px-2 py-1 text-sm': inputSize === 'xs',
             'input-glow-color': variant === 'glow',
           },
         )}

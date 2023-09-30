@@ -75,10 +75,33 @@ export const approximatedTokenCount = (text: string) => {
   return Math.round(text.length / APPROX_CHARS_PER_TOKEN);
 };
 
-export const arrayEquals = <T>(arr1: T[], arr2: T[]) => {
+const includesWithComparison = <T>(
+  array: T[],
+  element: T,
+  comparisonFunction?: (item1: T, item2: T) => boolean,
+) => {
+  if (!comparisonFunction) {
+    return array.includes(element);
+  }
+
+  for (let i = 0; i < array.length; i++) {
+    if (comparisonFunction(array[i], element)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+export const arrayEquals = <T>(
+  arr1: T[],
+  arr2: T[],
+  comparisonFunction?: (item1: T, item2: T) => boolean,
+) => {
   if (arr1.length !== arr2.length) {
     return false;
   }
 
-  return arr1.every((item) => arr2.includes(item));
+  return arr1.every((item) =>
+    includesWithComparison(arr2, item, comparisonFunction),
+  );
 };
