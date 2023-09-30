@@ -455,8 +455,8 @@ export const GenericFieldsFilterButton: FC<GenericFieldsFilterButtonProps> = ({
             <div className="mt-1 flex flex-col gap-2">
               {filters?.map((spec, i) => {
                 // Make sure key does not depend on field, op or value, as this
-                // would cause a rerender and hence loss of focus at each key
-                // stroke.
+                // would cause a rerender and hence loss of focus at each
+                // keystroke.
                 const key = `filter-spec-${i}`;
                 return (
                   <FilterRow
