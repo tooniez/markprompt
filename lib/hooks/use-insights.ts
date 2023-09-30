@@ -7,6 +7,7 @@ import {
   DateCountHistogramEntry,
   DbQueryFilter,
   PromptQueryStat,
+  QueryFilterComparisonOperation,
   ReferenceWithOccurrenceCount,
 } from '@/types/types';
 
@@ -20,20 +21,19 @@ import {
   getStoredRangeOrDefaultZonedTime,
 } from '../date';
 import { canViewInsights } from '../stripe/tiers';
-import { QueryFilterOperation } from '../supabase';
 import { fetcher, formatUrl } from '../utils';
 import { safeParseJSON } from '../utils.edge';
 
-type UIMetadataQueryFilter = {
+export type FilterSpec = {
   field: string;
-  op: QueryFilterOperation;
+  op: QueryFilterComparisonOperation;
   value: string | null;
 };
 
 type UIQueryFilter = {
   status?: 'answered' | 'unanswered' | 'both';
   feedback?: 'upvoted' | 'downvoted' | 'upvoted_or_downvoted' | 'no_vote';
-  metadata?: UIMetadataQueryFilter[];
+  metadata?: FilterSpec[];
 };
 
 export default function useInsights() {
@@ -109,32 +109,54 @@ export default function useInsights() {
 
     // Status
     if (queriesFilters?.status === 'answered') {
-      filters.push(['is', 'no_response', null]);
+      filters.push([
+        'is' as QueryFilterComparisonOperation,
+        'no_response',
+        null,
+      ]);
     } else if (queriesFilters?.status === 'unanswered') {
-      filters.push(['eq', 'no_response', true]);
+      filters.push([
+        'eq' as QueryFilterComparisonOperation,
+        'no_response',
+        true,
+      ]);
     }
 
     // Feedback
     if (queriesFilters?.feedback === 'upvoted') {
-      filters.push(['eq', 'feedback->>vote', '1']);
+      filters.push([
+        'eq' as QueryFilterComparisonOperation,
+        'feedback->>vote',
+        '1',
+      ]);
     } else if (queriesFilters?.feedback === 'downvoted') {
-      filters.push(['eq', 'feedback->>vote', '-1']);
+      filters.push([
+        'eq' as QueryFilterComparisonOperation,
+        'feedback->>vote',
+        '-1',
+      ]);
     } else if (queriesFilters?.feedback === 'upvoted_or_downvoted') {
-      filters.push(['neq', 'feedback->>vote', null]);
+      filters.push([
+        'neq' as QueryFilterComparisonOperation,
+        'feedback->>vote',
+        null,
+      ]);
     } else if (queriesFilters?.feedback === 'no_vote') {
-      filters.push(['is', 'feedback->>vote', null]);
+      filters.push([
+        'is' as QueryFilterComparisonOperation,
+        'feedback->>vote',
+        null,
+      ]);
     }
 
     // Metadata
-    // if (queriesFilters.feedback === 'upvoted') {
-    //   filters.push(['eq', 'feedback->>vote', '1']);
-    // } else if (queriesFilters.feedback === 'downvoted') {
-    //   filters.push(['eq', 'feedback->>vote', '-1']);
-    // } else if (queriesFilters.feedback === 'upvoted_or_downvoted') {
-    //   filters.push(['neq', 'feedback->>vote', null]);
-    // } else if (queriesFilters.feedback === 'no_vote') {
-    //   filters.push(['is', 'feedback->>vote', null]);
-    // }
+    for (const filter of queriesFilters?.metadata || []) {
+      filters.push([
+        filter.op,
+        `decrypted_conversation_metadata->>${filter.field}`,
+        filter.value,
+      ]);
+    }
 
     return filters;
   }, [queriesFilters, project?.id]);

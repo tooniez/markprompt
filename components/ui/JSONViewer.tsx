@@ -13,7 +13,15 @@ type JSONViewerProps = {
 export const JSONViewer: FC<JSONViewerProps> = ({ json, className }) => {
   const rows = useMemo(() => {
     return Object.keys(json || {}).reduce((acc, key) => {
-      return [...acc, { key, value: JSON.stringify(json[key]) }];
+      const rawValue = json[key];
+      return [
+        ...acc,
+        {
+          key,
+          value:
+            typeof rawValue === 'string' ? rawValue : JSON.stringify(rawValue),
+        },
+      ];
     }, [] as { key: string; value: string }[]);
   }, [json]);
 

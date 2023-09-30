@@ -219,11 +219,31 @@ export type SerializableMarkpromptOptions = Omit<
 
 export type OpenAIErrorResponse = any;
 
+export enum QueryFilterComparisonOperation {
+  'eq' = 'eq',
+  'neq' = 'neq',
+  'gt' = 'gt',
+  'lt' = 'lt',
+  'gte' = 'gte',
+  'lte' = 'lte',
+  'like' = 'like',
+  'ilike' = 'ilike',
+  'in' = 'in',
+  'is' = 'is',
+}
+
+export enum QueryFilterLogicalOperation {
+  'or' = 'or',
+}
+
 type DbQueryFilterColumnName = string;
 type DbQueryFilterValue = string | number | boolean | null;
-type DbQueryFilterOperator = 'eq' | 'neq' | 'is';
 type DbQueryFilterOrCondition = string;
 
 export type DbQueryFilter =
-  | [DbQueryFilterOperator, DbQueryFilterColumnName, DbQueryFilterValue]
+  | [
+      QueryFilterComparisonOperation,
+      DbQueryFilterColumnName,
+      DbQueryFilterValue,
+    ]
   | ['or', DbQueryFilterOrCondition];
