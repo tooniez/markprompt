@@ -29,7 +29,7 @@ export default withProjectAccess(
           req.body.syncIds,
         );
       } catch (e) {
-        console.log('Error trigger sync', e);
+        console.error('Error triggering sync', e);
       }
 
       return res.status(200).json({});

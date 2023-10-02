@@ -2,10 +2,12 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getNangoServerInstance } from '@/lib/integrations/nango';
 import { withProjectAccess } from '@/lib/middleware/common';
+import { FileData, NangoFileWithMetadata } from '@/types/types';
 
 type Data = {
   status?: string;
   error?: string;
+  fileData?: FileData[];
 };
 
 const allowedMethods = ['POST'];
@@ -22,12 +24,28 @@ export default withProjectAccess(
         return res.status(400).json({ error: 'No connection id provided.' });
       }
 
-      await nango.deleteConnection(
-        req.body.integrationId,
-        req.body.connectionId,
-      );
+      const records = await nango.getRecords({
+        providerConfigKey: req.body.integrationId,
+        connectionId: req.body.connectionId,
+        model: req.body.model,
+        delta: req.body.delta,
+        offset: req.body.offset,
+        limit: req.body.limit,
+        sortBy: req.body.sortBy,
+        order: req.body.order,
+        filter: req.body.filter,
+      });
 
-      return res.status(200).json({});
+      const fileData = records?.map((record: NangoFileWithMetadata) => {
+        return {
+          path: record.path,
+          name: record.title,
+          content: record.content,
+          metadata: record.meta,
+        };
+      });
+
+      return res.status(200).json({ fileData });
     }
 
     return res.status(400).end();

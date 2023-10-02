@@ -88,7 +88,7 @@ const processFileData = (
   markpromptConfig: MarkpromptConfig,
 ): Omit<FileSectionsData, 'leadFileHeading'> | undefined => {
   let fileSectionsData: FileSectionsData | undefined;
-  const fileType = getFileType(file.name);
+  const fileType = file.processAs ?? getFileType(file.name);
   if (fileType === 'mdoc') {
     fileSectionsData = markdocToFileSectionData(file.content, markpromptConfig);
   } else if (fileType === 'rst') {

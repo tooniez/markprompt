@@ -1,7 +1,13 @@
 import { Nango } from '@nangohq/node';
 
-import { Project } from '@/types/types';
+import {
+  FileData,
+  NangoFileWithMetadata,
+  NangoIntegrationId,
+  Project,
+} from '@/types/types';
 
+import { NangoModel, NangoSyncId } from './salesforce';
 import { getResponseOrThrow } from '../utils';
 
 export const getNangoServerInstance = () => {
@@ -17,7 +23,7 @@ export const getNangoServerInstance = () => {
 
 export const setMetadata = async (
   projectId: Project['id'],
-  integrationId: string,
+  integrationId: NangoIntegrationId,
   connectionId: string,
   metadata: any,
 ) => {
@@ -37,7 +43,7 @@ export const setMetadata = async (
 
 export const deleteConnection = async (
   projectId: Project['id'],
-  integrationId: string,
+  integrationId: NangoIntegrationId,
   connectionId: string,
 ) => {
   const res = await fetch(
@@ -56,7 +62,7 @@ export const deleteConnection = async (
 
 export const triggerSync = async (
   projectId: Project['id'],
-  integrationId: string,
+  integrationId: NangoIntegrationId,
   connectionId: string,
   syncIds?: string[],
 ) => {
@@ -72,6 +78,45 @@ export const triggerSync = async (
     },
   );
   return getResponseOrThrow<void>(res);
+};
+
+export const getRecords = async (
+  projectId: Project['id'],
+  integrationId: NangoIntegrationId,
+  connectionId: string,
+  model: NangoModel,
+  delta: string | undefined,
+  offset: number | undefined,
+  limit: number | undefined,
+  sortBy: string | undefined,
+  order: 'asc' | 'desc' | undefined,
+  filter: 'added' | 'updated' | 'deleted' | undefined,
+): Promise<FileData[]> => {
+  const res = await fetch(
+    `/api/project/${projectId}/integrations/nango/get-records`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        integrationId,
+        connectionId,
+        model,
+        delta,
+        offset,
+        limit,
+        sortBy,
+        order,
+        filter,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+      },
+    },
+  );
+
+  const data = await getResponseOrThrow<{ fileData: FileData[] }>(res);
+
+  return data.fileData;
 };
 
 export const sourceExists = async (

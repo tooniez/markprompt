@@ -315,6 +315,7 @@ export const getResponseOrThrow = async <T>(res: Response): Promise<T> => {
       throw new Error('An unexpected error occurred');
     }
   }
+
   return res.json();
 };
 
@@ -669,8 +670,7 @@ export const getLabelForSource = (source: Source, inline: boolean) => {
     case 'api-upload':
       return 'API uploads';
     case 'nango': {
-      const data = source.data as NangoSourceDataType;
-      return data.identifier;
+      return (source.data as NangoSourceDataType).identifier;
     }
     default:
       return 'Unknown source';

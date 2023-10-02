@@ -31,6 +31,7 @@ import {
 import {
   SalesforceEnvironment,
   SalesforceNangoMetadata,
+  getConnectionId,
   getIntegrationId,
 } from '@/lib/integrations/salesforce';
 import { getLabelForSource } from '@/lib/utils';
@@ -91,7 +92,8 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
         // `auto_start: false` to give us a chance to set the metadata
         // first.
         try {
-          const result = await nango.auth(integrationId, newSource.id, {
+          const connectionId = getConnectionId(newSource.id);
+          const result = await nango.auth(integrationId, connectionId, {
             params: { instance_url: instanceUrl },
           });
 
@@ -102,7 +104,7 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
 
           // Once the connection has been created, set the connection
           // metadata (such as the query filters).
-          await setMetadata(project.id, integrationId, newSource.id, metadata);
+          await setMetadata(project.id, integrationId, connectionId, metadata);
 
           // Now that the metadata is set, we are ready to sync.
           // await triggerSync(project.id, integrationId, connectionId, [

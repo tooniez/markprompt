@@ -71,9 +71,10 @@ function mapRecords(
   return records.map((record: any) => {
     return {
       id: record.Id,
-      title: mappings.title ? record[mappings.title] : record.Title,
       path: mappings.path ? record[mappings.path] : record.Id,
+      title: mappings.title ? record[mappings.title] : record.Title,
       content: mappings.content ? record[mappings.content] : '',
+      contentType: 'html',
       meta: (metadataFields || []).reduce((acc, key) => {
         return { ...acc, [key]: record[key] };
       }, {}),

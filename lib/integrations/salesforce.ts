@@ -1,9 +1,10 @@
-import { NangoIntegrationId } from '@/types/types';
+import { DbSource, NangoIntegrationId } from '@/types/types';
 
 export type SalesforceEnvironment = 'production' | 'sandbox';
 
 // Must match nango.yaml definition.
-export const SALESFORCE_ARTICLES_SYNC_ID = 'salesforce-articles';
+export type NangoSyncId = 'salesforce-articles';
+export type NangoModel = 'NangoFile';
 
 export type SalesforceNangoMetadata = {
   customFields: string[] | undefined;
@@ -20,4 +21,21 @@ export const getIntegrationId = (
   environment: SalesforceEnvironment,
 ): NangoIntegrationId => {
   return environment === 'production' ? 'salesforce' : 'salesforce-sandbox';
+};
+
+// Currently, we use the source ID as connect ID.
+export const getConnectionId = (sourceId: DbSource['id']): string => {
+  return sourceId;
+};
+
+export const getSyncId = (
+  integrationId: NangoIntegrationId,
+): NangoSyncId | undefined => {
+  switch (integrationId) {
+    case 'salesforce':
+    case 'salesforce-sandbox':
+      return 'salesforce-articles';
+    default:
+      return undefined;
+  }
 };
