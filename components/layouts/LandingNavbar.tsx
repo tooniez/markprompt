@@ -42,6 +42,12 @@ export default function LandingNavbar({
         Pricing
       </Link>
       <Link
+        className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 md:block"
+        href="/integrations"
+      >
+        Integrations
+      </Link>
+      <Link
         className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 sm:block"
         href="/blog"
       >

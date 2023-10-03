@@ -14,6 +14,7 @@ const UNAUTHED_PATHS = [
   '/home',
   '/docs',
   '/blog',
+  '/integrations',
   '/blog/**/*',
   '/login',
   '/login/email',
