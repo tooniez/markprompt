@@ -4,14 +4,13 @@ import * as Dialog from '@radix-ui/react-dialog';
 import cn from 'classnames';
 import { parseISO } from 'date-fns';
 import {
-  ChevronDownIcon,
   ChevronRightIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
   X,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { FC, useMemo, useState } from 'react';
+import { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import useSWR from 'swr';
 
 import { MarkdownContainer } from '@/components/emails/templates/MarkdownContainer';
@@ -21,7 +20,6 @@ import { Tag } from '@/components/ui/Tag';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
 import { fetcher } from '@/lib/utils';
-import { PromptStatusTag } from '@/pages/[team]/[project]/insights';
 import { DbConversation, PromptQueryStatFull } from '@/types/types';
 
 const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
@@ -33,6 +31,7 @@ const EditorDialog = dynamic(() => import('@/components/files/EditorDialog'), {
 type MessageResponseCardProps = {
   queryStat: PromptQueryStatFull;
   showFeedback: boolean;
+  highlighted: boolean;
   setEditorOpen: (open: boolean) => void;
   setOpenFileData: ({
     path,
@@ -43,102 +42,118 @@ type MessageResponseCardProps = {
   }) => void;
 };
 
-const MessageResponseCard: FC<MessageResponseCardProps> = ({
-  queryStat,
-  showFeedback,
-  setEditorOpen,
-  setOpenFileData,
-}) => {
-  const [showReferences, setShowReferences] = useState(false);
-  const vote = (queryStat.feedback as any)?.vote;
-  const references = (queryStat?.meta as any)
-    ?.references as FileSectionReference[];
-  return (
-    <div className="flex flex-col gap-2 pb-8">
-      <div className="sticky top-0 z-10 flex flex-row items-center gap-4 border-t border-b border-neutral-800 bg-neutral-900 px-6 py-6">
-        <p className="flex-grow text-sm font-medium text-neutral-100">
-          {queryStat?.prompt || ''}
-        </p>
-        {showFeedback && (
-          <>
-            {queryStat.no_response && <Tag color="orange">Unanswered</Tag>}
-            {vote === '1' && (
-              <ThumbsUpIcon className="h-4 w-4 text-green-600" />
-            )}
-            {vote === '-1' && (
-              <ThumbsDownIcon className="h-4 w-4 text-orange-600" />
-            )}
-          </>
+export const MessageResponseCard = forwardRef<
+  HTMLDivElement | undefined,
+  MessageResponseCardProps
+>(
+  (
+    { queryStat, showFeedback, highlighted, setEditorOpen, setOpenFileData },
+    ref,
+  ) => {
+    const [showReferences, setShowReferences] = useState(false);
+    const vote = (queryStat.feedback as any)?.vote;
+    const references = (queryStat?.meta as any)
+      ?.references as FileSectionReference[];
+    return (
+      <div
+        {...(ref ? { ref: ref as any } : {})}
+        className="relative flex flex-col gap-2 pb-8"
+      >
+        {highlighted && (
+          <div className="absolute inset-y-0 left-0 z-20 w-1 bg-sky-500" />
         )}
+        <div
+          className={cn(
+            'sticky top-0 z-10 flex flex-row items-center gap-4 border-b border-t border-neutral-800 bg-neutral-900 px-6 py-6',
+          )}
+        >
+          <p className="flex-grow text-sm font-medium text-neutral-100">
+            {queryStat?.prompt || ''}
+          </p>
+          {showFeedback && (
+            <>
+              {queryStat.no_response && <Tag color="orange">Unanswered</Tag>}
+              {vote === '1' && (
+                <ThumbsUpIcon className="h-4 w-4 text-green-600" />
+              )}
+              {vote === '-1' && (
+                <ThumbsDownIcon className="h-4 w-4 text-orange-600" />
+              )}
+            </>
+          )}
+        </div>
+        <div className="px-6">
+          <MarkdownContainer markdown={queryStat.response || 'No response'} />
+        </div>
+        <div className="flex flex-col items-start gap-2 px-6 pb-4">
+          <Accordion.Root type="single" collapsible>
+            <Accordion.Item className="overflow-hidden" value="references">
+              <Accordion.Header>
+                <Accordion.Trigger>
+                  <button
+                    className="flex flex-row items-center gap-2 rounded-full border border-neutral-900 bg-neutral-1100 py-1 pl-3 pr-2 text-sm font-medium text-neutral-300 outline-none"
+                    onClick={() => {
+                      setShowReferences((s) => !s);
+                    }}
+                  >
+                    References
+                    <ChevronRightIcon
+                      className={cn('h-3.5 w-3.5 transform transition', {
+                        'rotate-90': showReferences,
+                      })}
+                    />
+                  </button>
+                </Accordion.Trigger>
+              </Accordion.Header>
+              <Accordion.Content className="py-4">
+                <>
+                  {!references || references.length === 0 ? (
+                    <p className="text-sm text-neutral-300">N/A</p>
+                  ) : (
+                    <div className="flex flex-row flex-wrap items-center gap-2">
+                      {references.map((f, i) => {
+                        return (
+                          <button
+                            className="rounded-md border border-neutral-900 bg-neutral-1100 py-1 px-2 text-sm font-medium text-neutral-300"
+                            key={`reference-${f.file?.path}-${f.meta?.leadHeading?.slug}-${i}`}
+                            onClick={() => {
+                              setOpenFileData({
+                                path: f.file.path,
+                                sectionSlug: f.meta?.leadHeading?.slug,
+                              });
+                              setEditorOpen(true);
+                            }}
+                          >
+                            {f.meta?.leadHeading?.value ||
+                              f.file?.title ||
+                              'Untitled'}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              </Accordion.Content>
+            </Accordion.Item>
+          </Accordion.Root>
+        </div>
       </div>
-      <div className="px-6">
-        <MarkdownContainer markdown={queryStat.response || 'No response'} />
-      </div>
-      <div className="flex flex-col items-start gap-2 px-6 pb-4">
-        <Accordion.Root type="single" collapsible>
-          <Accordion.Item className="overflow-hidden" value="references">
-            <Accordion.Header>
-              <Accordion.Trigger>
-                <button
-                  className="flex flex-row items-center gap-2 rounded-full border border-neutral-900 bg-neutral-1100 py-1 pl-3 pr-2 text-sm font-medium text-neutral-300 outline-none"
-                  onClick={() => {
-                    setShowReferences((s) => !s);
-                  }}
-                >
-                  References
-                  <ChevronRightIcon
-                    className={cn('h-3.5 w-3.5 transform transition', {
-                      'rotate-90': showReferences,
-                    })}
-                  />
-                </button>
-              </Accordion.Trigger>
-            </Accordion.Header>
-            <Accordion.Content className="py-4">
-              <>
-                {!references || references.length === 0 ? (
-                  <p className="text-sm text-neutral-300">N/A</p>
-                ) : (
-                  <div className="flex flex-row flex-wrap items-center gap-2">
-                    {references.map((f, i) => {
-                      return (
-                        <button
-                          className="rounded-md border border-neutral-900 bg-neutral-1100 py-1 px-2 text-sm font-medium text-neutral-300"
-                          key={`reference-${f.file?.path}-${f.meta?.leadHeading?.slug}-${i}`}
-                          onClick={() => {
-                            setOpenFileData({
-                              path: f.file.path,
-                              sectionSlug: f.meta?.leadHeading?.slug,
-                            });
-                            setEditorOpen(true);
-                          }}
-                        >
-                          {f.meta?.leadHeading?.value ||
-                            f.file?.title ||
-                            'Untitled'}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </>
-            </Accordion.Content>
-          </Accordion.Item>
-        </Accordion.Root>
-      </div>
-    </div>
-  );
-};
+    );
+  },
+);
+
+MessageResponseCard.displayName = 'MessageResponseCard';
 
 type ConversationDialogProps = {
   conversationId?: DbConversation['id'];
-  displayQueryStatId?: DbConversation['id'];
+  sourceQueryStatId?: DbConversation['id'];
   open: boolean;
   setOpen: (open: boolean) => void;
 };
 
 const ConversationDialog: FC<ConversationDialogProps> = ({
   conversationId,
+  sourceQueryStatId,
   open,
   setOpen,
 }) => {
@@ -153,6 +168,7 @@ const ConversationDialog: FC<ConversationDialogProps> = ({
     { path: string; sectionSlug?: string | undefined } | undefined
   >(undefined);
   const [editorOpen, setEditorOpen] = useState<boolean>(false);
+  const highlightedRef = useRef();
 
   const loading = !conversation && !error;
 
@@ -172,6 +188,25 @@ const ConversationDialog: FC<ConversationDialogProps> = ({
   const numUnanswered = sortedConversations.filter(
     (q) => !!q.no_response,
   ).length;
+
+  useEffect(() => {
+    if (!sourceQueryStatId || !firstQueryStat?.id) {
+      return;
+    }
+    if (sourceQueryStatId === firstQueryStat.id) {
+      // Don't scroll if it's the first element (it will hide the
+      // conversation heading elements)
+      return;
+    }
+    setTimeout(() => {
+      if (!highlightedRef.current) {
+        return;
+      }
+      if (highlightedRef.current) {
+        (highlightedRef.current as any).scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 200);
+  }, [sourceQueryStatId, firstQueryStat]);
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -277,16 +312,30 @@ const ConversationDialog: FC<ConversationDialogProps> = ({
                     </div>
                   </div>
                 )}
-                <div className="flex flex-col gap-2 border-b border-neutral-900 pb-4">
+                <div className="flex flex-col border-b border-neutral-900 pb-4">
                   {sortedConversations.map((queryStat, i) => {
+                    const isHighlighted =
+                      sortedConversations.length > 1 &&
+                      queryStat.id === sourceQueryStatId;
                     return (
-                      <MessageResponseCard
-                        key={`${conversationId}-${i}`}
-                        queryStat={queryStat}
-                        showFeedback={sortedConversations.length > 0}
-                        setEditorOpen={setEditorOpen}
-                        setOpenFileData={setOpenFileData}
-                      />
+                      <>
+                        {isHighlighted && (
+                          <div
+                            ref={highlightedRef as any}
+                            style={{
+                              scrollMarginTop: 100,
+                            }}
+                          />
+                        )}
+                        <MessageResponseCard
+                          key={`${conversationId}-${i}`}
+                          queryStat={queryStat}
+                          showFeedback={sortedConversations.length > 1}
+                          highlighted={isHighlighted}
+                          setEditorOpen={setEditorOpen}
+                          setOpenFileData={setOpenFileData}
+                        />
+                      </>
                     );
                   })}
                 </div>

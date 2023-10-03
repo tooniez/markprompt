@@ -573,7 +573,7 @@ const Insights = () => {
       </div>
       <ConversationDialog
         conversationId={currentQueryStat?.conversationId}
-        displayQueryStatId={currentQueryStat?.activeQueryStatId}
+        sourceQueryStatId={currentQueryStat?.activeQueryStatId}
         open={queryStatDialogOpen}
         setOpen={setQueryStatDialogOpen}
       />
