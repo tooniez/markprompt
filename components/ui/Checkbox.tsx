@@ -54,7 +54,7 @@ export const IndeterminateCheckbox: FC<IndeterminateCheckboxProps> = ({
     <input
       type="checkbox"
       ref={ref}
-      className="h-4 w-4 cursor-pointer rounded border-neutral-800 bg-neutral-900 text-sky-600 ring-offset-sky-700 transition hover:text-sky-700 focus:ring-0 focus:ring-offset-sky-700"
+      className="h-4 w-4 cursor-pointer rounded border-neutral-800 bg-neutral-900 text-sky-600 ring-offset-sky-700 transition hover:text-sky-700 focus:ring-0 focus:ring-offset-sky-700 disabled:cursor-not-allowed disabled:border-neutral-900 disabled:bg-neutral-1000"
       onChange={(e) => {
         const v = e.target.value;
         onCheckedChange?.(

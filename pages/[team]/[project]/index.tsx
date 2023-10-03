@@ -42,6 +42,7 @@ import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
 import {
+  canDeleteSource,
   getAccessoryLabelForSource,
   getIconForSource,
   getLabelForSource,
@@ -223,25 +224,39 @@ const Data = () => {
     token_count: number | undefined;
   }>();
 
+  const pageHasSelectableItems = useMemo(() => {
+    return (paginatedFiles || []).some((f) => {
+      const source = sources.find((s) => s.id === f.source_id);
+      return source && canDeleteSource(source.type);
+    });
+  }, [paginatedFiles, sources]);
+
   const columns: any = useMemo(
     () => [
-      columnHelper.accessor((row) => row.path, {
+      columnHelper.accessor((row) => row.source_id, {
         id: 'select',
         enableSorting: false,
-        header: ({ table }) => (
-          <IndeterminateCheckbox
-            checked={table.getIsAllRowsSelected()}
-            indeterminate={table.getIsSomeRowsSelected()}
-            onChange={table.getToggleAllRowsSelectedHandler()}
-          />
-        ),
-        cell: ({ row }) => {
+        header: ({ table }) => {
+          if (!pageHasSelectableItems) {
+            return <></>;
+          }
           return (
             <IndeterminateCheckbox
-              checked={row.getIsSelected()}
-              disabled={!row.getCanSelect()}
-              indeterminate={row.getIsSomeSelected()}
-              onChange={row.getToggleSelectedHandler()}
+              checked={table.getIsAllRowsSelected()}
+              indeterminate={table.getIsSomeRowsSelected()}
+              onChange={table.getToggleAllRowsSelectedHandler()}
+            />
+          );
+        },
+        cell: (info) => {
+          if (!info.row.getCanSelect()) {
+            return <></>;
+          }
+          return (
+            <IndeterminateCheckbox
+              checked={info.row.getIsSelected()}
+              indeterminate={info.row.getIsSomeSelected()}
+              onChange={info.row.getToggleSelectedHandler()}
             />
           );
         },
@@ -332,14 +347,21 @@ const Data = () => {
         footer: (info) => info.column.id,
       }),
     ],
-    [columnHelper, sources],
+    [columnHelper, pageHasSelectableItems, sources],
   );
 
   const table = useReactTable({
     data: paginatedFiles || [],
     columns,
     state: { rowSelection, sorting },
-    enableRowSelection: true,
+    enableRowSelection: (row) => {
+      const value = row.getValue('source');
+      const source = sources.find((s) => s.id === value);
+      if (source && !canDeleteSource(source.type)) {
+        return false;
+      }
+      return true;
+    },
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
@@ -614,7 +636,7 @@ const Data = () => {
           {!loadingFiles && hasFiles && (
             <table className="w-full max-w-full table-fixed border-collapse">
               <colgroup>
-                <col className="w-[32px]" />
+                <col className={pageHasSelectableItems ? 'w-[32px]' : 'w-0'} />
                 <col className="w-[calc(50%-172px)]" />
                 <col className="w-[30%]" />
                 <col className="w-[20%]" />
