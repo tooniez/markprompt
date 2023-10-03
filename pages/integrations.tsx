@@ -10,6 +10,7 @@ import { ZendeskIcon } from '@/components/icons/brands/Zendesk';
 import { DiscordIcon } from '@/components/icons/Discord';
 import { GitHubIcon } from '@/components/icons/GitHub';
 import LandingNavbar from '@/components/layouts/LandingNavbar';
+import { SharedHead } from '@/components/pages/SharedHead';
 import Button from '@/components/ui/Button';
 import { Pattern } from '@/components/ui/Pattern';
 import { Tag } from '@/components/ui/Tag';
@@ -106,44 +107,50 @@ const Card: FC<IntegrationSpec> = ({ name, description, status, Icon }) => {
 
 const Integrations = () => {
   return (
-    <div className="relative mx-auto min-h-screen w-full">
-      <Pattern />
-      <div className="fixed top-0 left-0 right-0 z-30 h-24 bg-black/30 backdrop-blur">
-        <div className="mx-auto max-w-screen-xl px-6 sm:px-8">
-          <LandingNavbar noAnimation />
+    <>
+      <SharedHead
+        title="Integrations"
+        ogImage="https://markprompt.com/static/cover-integrations.png"
+      />
+      <div className="relative mx-auto min-h-screen w-full">
+        <Pattern />
+        <div className="fixed top-0 left-0 right-0 z-30 h-24 bg-black/30 backdrop-blur">
+          <div className="mx-auto max-w-screen-xl px-6 sm:px-8">
+            <LandingNavbar noAnimation />
+          </div>
+        </div>
+        <div className="prose prose-invert relative mx-auto min-h-screen w-full max-w-screen-xl px-6 pt-40 pb-48 sm:px-8">
+          <h1 className="gradient-heading mb-4 text-center text-3xl leading-[36px] tracking-[-0.6px] sm:text-5xl sm:leading-[64px]">
+            Integrations
+          </h1>
+          <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg text-neutral-500 sm:text-xl">
+            <Balancer>
+              Connect data sources and deploy across all distribution channels
+              using integrations with your existing tools.
+            </Balancer>
+          </p>
+          <div className="mt-12 flex justify-center">
+            <ContactWindow
+              closeOnClickOutside
+              Component={
+                <Button
+                  variant="cta"
+                  buttonSize="lg"
+                  aria-label="Request integration"
+                >
+                  Request integration
+                </Button>
+              }
+            />
+          </div>
+          <div className="mx-auto mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+            {integrations.map((integration, i) => {
+              return <Card key={`${integration.name}-${i}`} {...integration} />;
+            })}
+          </div>
         </div>
       </div>
-      <div className="prose prose-invert relative mx-auto min-h-screen w-full max-w-screen-xl px-6 pt-40 pb-48 sm:px-8">
-        <h1 className="gradient-heading mb-4 text-center text-3xl leading-[36px] tracking-[-0.6px] sm:text-5xl sm:leading-[64px]">
-          Integrations
-        </h1>
-        <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg text-neutral-500 sm:text-xl">
-          <Balancer>
-            Connect data sources and deploy across all distribution channels
-            using integrations with your existing tools.
-          </Balancer>
-        </p>
-        <div className="mt-12 flex justify-center">
-          <ContactWindow
-            closeOnClickOutside
-            Component={
-              <Button
-                variant="cta"
-                buttonSize="lg"
-                aria-label="Request integration"
-              >
-                Request integration
-              </Button>
-            }
-          />
-        </div>
-        <div className="mx-auto mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-          {integrations.map((integration, i) => {
-            return <Card key={`${integration.name}-${i}`} {...integration} />;
-          })}
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 
