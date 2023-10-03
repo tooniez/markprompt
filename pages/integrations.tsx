@@ -1,6 +1,7 @@
 import { FC, JSXElementConstructor } from 'react';
 import Balancer from 'react-wrap-balancer';
 
+import { AlgoliaIcon } from '@/components/icons/brands/Algolia';
 import { FrontIcon } from '@/components/icons/brands/Front';
 import { HubspotIcon } from '@/components/icons/brands/Hubspot';
 import { NotionIcon } from '@/components/icons/brands/Notion';
@@ -68,6 +69,11 @@ const integrations: IntegrationSpec[] = [
     description: 'Sync your knowledge articles',
     Icon: HubspotIcon,
     status: 'soon',
+  },
+  {
+    name: 'Algolia',
+    description: 'Combine LLM prompts with instant search',
+    Icon: AlgoliaIcon,
   },
   {
     name: 'Discord',
