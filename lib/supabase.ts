@@ -405,7 +405,7 @@ export const getQueryStats = async (
 
   const supabaseWithFilters = allFilters.reduce((acc, [fn, ...args]) => {
     return acc[fn](...args);
-  }, supabase.from('v_insights_query_stats').select('id,created_at,decrypted_prompt,no_response,feedback'));
+  }, supabase.from('v_insights_query_stats').select('id,conversation_id,created_at,decrypted_prompt,no_response,feedback'));
 
   const { data, error } = await supabaseWithFilters;
 

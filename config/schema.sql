@@ -770,6 +770,7 @@ order by created_at;
 create view v_insights_query_stats as
   select
     qs.id as id,
+    qs.conversation_id as conversation_id,
     qs.created_at as created_at,
     qs.project_id as project_id,
     qs.processed_state as processed_state,

@@ -102,7 +102,12 @@ export type DbFileWithoutContent = Omit<DbFile, 'raw_content'>;
 export type SourceType = Pick<Source, 'type'>['type'];
 export type PromptQueryStat = Pick<
   DbQueryStat,
-  'id' | 'created_at' | 'prompt' | 'no_response' | 'feedback'
+  | 'id'
+  | 'conversation_id'
+  | 'created_at'
+  | 'prompt'
+  | 'no_response'
+  | 'feedback'
 >;
 export type PromptQueryStatFull = Pick<
   DbQueryStat,
