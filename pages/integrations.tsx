@@ -47,7 +47,7 @@ const integrations: IntegrationSpec[] = [
   },
   {
     name: 'Zendesk Bot',
-    description: 'Answer customer question automatically',
+    description: 'Answer customers automatically',
     Icon: ZendeskIcon,
     status: 'soon',
   },
@@ -71,12 +71,12 @@ const integrations: IntegrationSpec[] = [
   },
   {
     name: 'Discord',
-    description: 'Answer customer question automatically',
+    description: 'Answer customers automatically',
     Icon: DiscordIcon,
   },
   {
     name: 'Slack',
-    description: 'Answer customer question automatically',
+    description: 'Answer customers automatically',
     Icon: SlackIcon,
     status: 'dev',
   },
