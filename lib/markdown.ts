@@ -12,7 +12,7 @@ import { filter } from 'unist-util-filter';
 
 import { getFileType, inferFileTitle } from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.non-edge';
-import { FileSectionData, FileSectionsData } from '@/types/types';
+import { FileSectionData, FileSectionsData, FileType } from '@/types/types';
 
 import { htmlToMarkdown } from './converters/html-to-markdown';
 import { markdocToMarkdown } from './converters/markdoc-to-markdown';

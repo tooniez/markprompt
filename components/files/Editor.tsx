@@ -79,15 +79,14 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
     );
   }, [source]);
 
-  const { markdownContent, filename } = useMemo(() => {
+  const { markdownContent } = useMemo(() => {
     if (!file?.raw_content || !source) {
       return { markdownContent: '', filename: '' };
     }
 
-    console.log('file.meta', JSON.stringify(file.meta, null, 2));
     const filename = getFileNameForSourceAtPath(source, file.path);
     const fileType =
-      (file.meta as any)?.['__markprompt_internal']?.contentType ??
+      (file.meta as any)?.['__markprompt_metadata']?.contentType ??
       getFileType(filename);
     const m = matter(file.raw_content);
     const markdownContent = convertToMarkdown(m.content.trim(), fileType);
