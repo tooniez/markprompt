@@ -10,7 +10,6 @@ import { ZendeskIcon } from '@/components/icons/brands/Zendesk';
 import { DiscordIcon } from '@/components/icons/Discord';
 import { GitHubIcon } from '@/components/icons/GitHub';
 import LandingNavbar from '@/components/layouts/LandingNavbar';
-import { SharedHead } from '@/components/pages/SharedHead';
 import Button from '@/components/ui/Button';
 import { Pattern } from '@/components/ui/Pattern';
 import { Tag } from '@/components/ui/Tag';
@@ -47,7 +46,7 @@ const integrations: IntegrationSpec[] = [
   },
   {
     name: 'Zendesk Bot',
-    description: 'Answer customers automatically',
+    description: 'Answer customer question automatically',
     Icon: ZendeskIcon,
     status: 'soon',
   },
@@ -59,24 +58,24 @@ const integrations: IntegrationSpec[] = [
   },
   {
     name: 'Notion',
-    description: 'Sync your workspace',
+    description: 'Sync your workspace pages',
     Icon: NotionIcon,
     status: 'soon',
   },
   {
     name: 'Hubspot',
-    description: 'Sync your articles',
+    description: 'Sync your knowledge articles',
     Icon: HubspotIcon,
     status: 'soon',
   },
   {
     name: 'Discord',
-    description: 'Answer customer questions',
+    description: 'Answer customer question automatically',
     Icon: DiscordIcon,
   },
   {
     name: 'Slack',
-    description: 'Answer customer questions',
+    description: 'Answer customer question automatically',
     Icon: SlackIcon,
     status: 'dev',
   },
