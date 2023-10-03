@@ -79,14 +79,16 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
       <DropdownMenu.Trigger asChild>
         {user?.has_completed_onboarding ? (
           <button
-            className="no-ring flex select-none flex-row items-center gap-2 rounded py-1 px-2 text-sm text-neutral-300 outline-none transition hover:bg-neutral-900 hover:text-neutral-400"
+            className="no-ring flex select-none flex-row items-center gap-2 overflow-hidden truncate whitespace-nowrap rounded py-1 px-2 text-sm text-neutral-300 outline-none transition hover:bg-neutral-900 hover:text-neutral-400"
             aria-label="Select team"
           >
-            {team?.name || ''}
+            <span className="overflow-hidden truncate whitespace-nowrap">
+              {team?.name || ''}
+            </span>
             {tier && (
               <Tag color={getColorForTier(tier)}>{getTierName(tier)}</Tag>
             )}
-            <ChevronsUpDown className="h-3 w-3" />
+            <ChevronsUpDown className="h-3 w-3 flex-none" />
           </button>
         ) : (
           <p className="dropdown-menu-button select-none">{team?.name || ''}</p>
@@ -162,12 +164,14 @@ const ProjectPicker = () => {
       <DropdownMenu.Trigger asChild>
         <button
           className={cn(
-            'flex select-none flex-row items-center gap-2 rounded px-2 py-1 text-sm text-neutral-300 outline-none transition hover:bg-neutral-900',
+            'flex select-none flex-row items-center gap-2 overflow-hidden rounded px-2 py-1 text-sm text-neutral-300 outline-none transition hover:bg-neutral-900',
           )}
           aria-label="Select team"
         >
-          {project.name}
-          <ChevronsUpDown className="h-3 w-3" />
+          <span className="overflow-hidden truncate whitespace-nowrap">
+            {project.name}
+          </span>
+          <ChevronsUpDown className="h-3 w-3 flex-none" />
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
@@ -226,7 +230,7 @@ export const TeamProjectPicker = () => {
 
   return (
     <>
-      <div className="flex flex-row items-center gap-2">
+      <div className="flex flex-row items-center gap-2 overflow-hidden">
         <Slash size="md" />
 
         {team ? (

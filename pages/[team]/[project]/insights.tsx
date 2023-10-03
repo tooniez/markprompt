@@ -25,12 +25,12 @@ import useTeam from '@/lib/hooks/use-team';
 import { canViewInsights, getAccessibleInsightsType } from '@/lib/stripe/tiers';
 import { pluralize } from '@/lib/utils';
 import { useDebouncedState } from '@/lib/utils.react';
-import { DbQueryStat, PromptQueryStat } from '@/types/types';
+import { DbConversation, DbQueryStat, PromptQueryStat } from '@/types/types';
 
 const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
 
-const QueryStat = dynamic(
-  () => import('@/components/dialogs/project/QueryStat'),
+const ConversationDialog = dynamic(
+  () => import('@/components/dialogs/project/Conversation'),
   {
     loading: () => Loading,
   },
@@ -45,7 +45,7 @@ export const PromptStatusTag = ({ noResponse }: { noResponse: boolean }) => {
 };
 
 const Insights = () => {
-  const { project, config } = useProject();
+  const { project } = useProject();
   const { team } = useTeam();
   const {
     queries,
@@ -67,8 +67,12 @@ const Insights = () => {
     false,
     1000,
   );
-  const [currentQueryStatId, setCurrentQueryStatId] = useState<
-    DbQueryStat['id'] | undefined
+  const [currentQueryStat, setCurrentQueryStat] = useState<
+    | {
+        activeQueryStatId: DbQueryStat['id'];
+        conversationId: DbConversation['id'];
+      }
+    | undefined
   >(undefined);
   const [queryStatDialogOpen, setQueryStatDialogOpen] = useState(false);
 
@@ -509,7 +513,13 @@ const Insights = () => {
               setPage={setPage}
               hasMorePages={hasMorePages}
               onRowClick={(row) => {
-                setCurrentQueryStatId(row.original.id);
+                if (!row.original.conversation_id) {
+                  return;
+                }
+                setCurrentQueryStat({
+                  activeQueryStatId: row.original.id,
+                  conversationId: row.original.conversation_id,
+                });
                 setQueryStatDialogOpen(true);
               }}
             />
@@ -561,8 +571,9 @@ const Insights = () => {
           </Card>
         </div>
       </div>
-      <QueryStat
-        queryStatId={currentQueryStatId}
+      <ConversationDialog
+        conversationId={currentQueryStat?.conversationId}
+        displayQueryStatId={currentQueryStat?.activeQueryStatId}
         open={queryStatDialogOpen}
         setOpen={setQueryStatDialogOpen}
       />
