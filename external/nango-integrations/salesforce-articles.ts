@@ -75,9 +75,11 @@ function mapRecords(
       title: mappings.title ? record[mappings.title] : record.Title,
       content: mappings.content ? record[mappings.content] : '',
       contentType: 'html',
-      meta: (metadataFields || []).reduce((acc, key) => {
-        return { ...acc, [key]: record[key] };
-      }, {}),
+      meta: {
+        ...(metadataFields || []).reduce((acc, key) => {
+          return { ...acc, [key]: record[key] };
+        }, {}),
+      },
     };
   });
 }

@@ -21,18 +21,22 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
-  console.log('BODY', JSON.stringify(req.body, null, 2));
+  console.log('Webhook body', JSON.stringify(req.body, null, 2));
   // {
-  //   "connectionId": "<user-id>",
-  //   "providerConfigKey": "<integration-id>",
-  //   "syncName": "<sync-name>",
-  //   "model": "<data-model>",
-  //   "responseResults": { "<DataModel>": { "added": 123, "updated": 123, "deleted": 123 } },
-  //   "syncType": "INITIAL" | "INCREMENTAL",
-  //   "queryTimeStamp": "2023-05-31T11:46:13.390Z",
+  //   "connectionId": "1390471b-0a75-4115-8b09-4deeb7eecce5",
+  //   "providerConfigKey": "salesforce-sandbox",
+  //   "syncName": "salesforce-articles",
+  //   "model": "NangoFile",
+  //   "responseResults": {
+  //     "added": 4,
+  //     "updated": 0,
+  //     "deleted": 0
+  //   },
+  //   "syncType": "INCREMENTAL",
+  //   "queryTimeStamp": "2023-10-02T23:24:59.196Z"
   // }
 
-  syncNangoRecords(JSON.parse(req.body) as NangoSyncWebhookBody);
+  // syncNangoRecords(req.body as NangoSyncWebhookBody);
 
   return res.status(200).json({});
 }

@@ -7,7 +7,7 @@ import {
   Project,
 } from '@/types/types';
 
-import { NangoModel, NangoSyncId } from './salesforce';
+import { NangoModel } from './salesforce';
 import { getResponseOrThrow } from '../utils';
 
 export const getNangoServerInstance = () => {

@@ -41,7 +41,11 @@ export default withProjectAccess(
           path: record.path,
           name: record.title,
           content: record.content,
-          metadata: record.meta,
+          metadata: {
+            title: record.title,
+            ...record.meta,
+          },
+          contentType: record.contentType,
         };
       });
 

@@ -271,7 +271,7 @@ const Data = () => {
       }),
       columnHelper.accessor((row) => row, {
         id: 'name',
-        header: () => <span>Name</span>,
+        header: () => <span>Title</span>,
         cell: (info) => {
           const value = info.getValue();
           // Ensure compat with previously trained data, where we don't

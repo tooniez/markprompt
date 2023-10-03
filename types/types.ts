@@ -107,7 +107,7 @@ export type FileData = {
   // and .html extension to the file name. Instead, we just want to
   // explicitly specify the file type that the content should be
   // processed as.
-  processAs?: FileType;
+  contentType?: FileType;
 };
 export type PathContentData = Pick<FileData, 'path' | 'content'>;
 export type Checksum = Pick<DbFile, 'path' | 'checksum'>;

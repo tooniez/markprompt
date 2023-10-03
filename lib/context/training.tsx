@@ -153,7 +153,9 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       getFileData: (
         index: number,
       ) => Promise<
-        | Partial<Pick<FileData, 'name' | 'content' | 'metadata' | 'processAs'>>
+        | Partial<
+            Pick<FileData, 'name' | 'content' | 'metadata' | 'contentType'>
+          >
         | undefined
       >,
       onFileProcessed?: (path: string) => void,
@@ -208,7 +210,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         name: fileData.name || '',
         content: fileData.content || '',
         metadata: fileData.metadata,
-        processAs: fileData.processAs,
+        contentType: fileData.contentType,
       };
 
       try {
@@ -285,7 +287,9 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       getFileData: (
         index: number,
       ) => Promise<
-        | Partial<Pick<FileData, 'name' | 'content' | 'metadata' | 'processAs'>>
+        | Partial<
+            Pick<FileData, 'name' | 'content' | 'metadata' | 'contentType'>
+          >
         | undefined
       >,
       onFileProcessed?: (path: string) => void,
@@ -430,9 +434,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
               fileData.length,
               forceRetrain,
               (i) => fileData[i].path,
-              async (i) => {
-                return fileData[i];
-              },
+              async (i) => fileData[i],
               onFileProcessed,
             );
 
@@ -441,6 +443,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
           let index = 0;
           let done = await processChunk(index);
+
           while (!done) {
             done = await processChunk(index);
             index += 1;
