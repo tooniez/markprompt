@@ -1,11 +1,6 @@
 import { Nango } from '@nangohq/node';
 
-import {
-  FileData,
-  NangoFileWithMetadata,
-  NangoIntegrationId,
-  Project,
-} from '@/types/types';
+import { FileData, NangoIntegrationId, Project } from '@/types/types';
 
 import { NangoModel } from './salesforce';
 import { getResponseOrThrow } from '../utils';
