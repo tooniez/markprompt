@@ -672,6 +672,10 @@ export const getLabelForSource = (source: Source, inline: boolean) => {
   }
 };
 
+export const canDeleteSource = (sourceType: Source['type']) => {
+  return sourceType === 'api-upload' || sourceType === 'file-upload';
+};
+
 export const getURLForSource = (source: Source) => {
   switch (source.type) {
     case 'github': {
