@@ -86,12 +86,11 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
 
     const filename = getFileNameForSourceAtPath(source, file.path);
     const fileType =
-      (file.meta as any)?.['__markprompt_metadata']?.contentType ??
-      getFileType(filename);
+      (file.internal_metadata as any)?.contentType ?? getFileType(filename);
     const m = matter(file.raw_content);
     const markdownContent = convertToMarkdown(m.content.trim(), fileType);
     return { markdownContent, filename };
-  }, [file?.raw_content, file?.meta, file?.path, source]);
+  }, [file?.raw_content, file?.internal_metadata, file?.path, source]);
 
   if (loading) {
     return (

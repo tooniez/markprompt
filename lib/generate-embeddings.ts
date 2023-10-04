@@ -170,6 +170,7 @@ const createFile = async (
   sourceId: DbSource['id'],
   path: string,
   meta: any,
+  internalMetadata: any,
   checksum: string,
   rawContent: string,
 ): Promise<DbFile['id'] | undefined> => {
@@ -181,6 +182,7 @@ const createFile = async (
         project_id: _projectId,
         path,
         meta,
+        internal_metadata: internalMetadata,
         checksum,
         raw_content: rawContent,
       },
@@ -235,9 +237,13 @@ export const generateFileEmbeddingsAndSaveFile = async (
     meta = {
       ...meta,
       ...file.metadata,
-      __markprompt_metadata: {
-        contentType: file.contentType,
-      },
+    };
+  }
+
+  let internalMetadata: any = undefined;
+  if (file.contentType) {
+    internalMetadata = {
+      contentType: file.contentType,
     };
   }
 
@@ -253,7 +259,12 @@ export const generateFileEmbeddingsAndSaveFile = async (
       .filter('file_id', 'eq', fileId);
     await supabaseAdmin
       .from('files')
-      .update({ meta, checksum, raw_content: file.content })
+      .update({
+        meta,
+        internal_metadata: internalMetadata,
+        checksum,
+        raw_content: file.content,
+      })
       .eq('id', fileId);
   } else {
     fileId = await createFile(
@@ -262,6 +273,7 @@ export const generateFileEmbeddingsAndSaveFile = async (
       sourceId,
       file.path,
       meta,
+      internalMetadata,
       checksum,
       file.content,
     );
