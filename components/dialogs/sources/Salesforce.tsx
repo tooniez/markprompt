@@ -144,18 +144,15 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
     <>
       <Formik
         initialValues={{
-          identifier: 'salesforce',
-          environment: 'sandbox' as SalesforceEnvironment,
-          // IMPORTANT! Change to this:
-          // environment: 'production' as SalesforceEnvironment,
-          instanceUrl: 'https://mindbody--eos1.sandbox.lightning.force.com',
-          customFields:
-            'Article_Body__c,PublishStatus,Language,IsVisibleInPkb,Product__c,UrlName',
-          filters: `PublishStatus = 'Online' and Language = 'en_us' and IsVisibleInPkb = true and (Product__c includes ('MINDBODY') or Product__c = 'Marketing Suite' or Product__c ='Bowtie')`,
-          titleMapping: 'Title',
-          contentMapping: 'Article_Body__c',
-          pathMapping: 'UrlName',
-          metadataFields: 'Id, Language',
+          identifier: '',
+          environment: 'production' as SalesforceEnvironment,
+          instanceUrl: '',
+          customFields: '',
+          filters: '',
+          titleMapping: '',
+          contentMapping: '',
+          pathMapping: '',
+          metadataFields: '',
         }}
         validateOnMount
         validate={async (values) => {

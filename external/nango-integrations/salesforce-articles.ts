@@ -35,9 +35,6 @@ export default async function fetchData(nango: NangoSync) {
     query += ` AND LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
   }
 
-  // TODO: REMOVE
-  query += ' LIMIT 4';
-
   let endpoint = '/services/data/v53.0/query';
 
   // eslint-disable-next-line no-constant-condition
