@@ -12,7 +12,7 @@ import { filter } from 'unist-util-filter';
 
 import { getFileType, inferFileTitle } from '@/lib/utils';
 import { extractFrontmatter } from '@/lib/utils.non-edge';
-import { FileSectionData, FileSectionsData } from '@/types/types';
+import { FileSectionData, FileSectionsData, FileType } from '@/types/types';
 
 import { htmlToMarkdown } from './converters/html-to-markdown';
 import { markdocToMarkdown } from './converters/markdoc-to-markdown';
@@ -68,7 +68,7 @@ const getProcessor = (withMdx: boolean, markpromptConfig: MarkpromptConfig) => {
   return chain;
 };
 
-export const augmentMetaWithTitle = (
+export const augmentMetaWithTitle = async (
   meta: {
     [key: string]: string;
   },
@@ -84,7 +84,7 @@ export const augmentMetaWithTitle = (
   }
 
   if (filePath) {
-    return { ...meta, title: inferFileTitle(meta, filePath) };
+    return { ...meta, title: await inferFileTitle(meta, filePath) };
   }
 
   return { ...meta, title: defaultFileSectionsData.meta.title };
@@ -217,7 +217,7 @@ export const htmlToFileSectionData = (
   markpromptConfig: MarkpromptConfig,
 ): FileSectionsData | undefined => {
   const $ = load(content);
-  const title = $('title').text();
+  const title = $('title').text()?.trim();
   const md = htmlToMarkdown(content);
 
   const fileSectionsData = md
@@ -228,11 +228,10 @@ export const htmlToFileSectionData = (
     return undefined;
   }
 
-  return { ...fileSectionsData, meta: { title } };
+  return { ...fileSectionsData, meta: title !== '' ? { title } : undefined };
 };
 
-export const convertToMarkdown = (content: string, filename: string) => {
-  const fileType = getFileType(filename);
+export const convertToMarkdown = (content: string, fileType: FileType) => {
   switch (fileType) {
     case 'mdoc':
       return markdocToMarkdown(content);

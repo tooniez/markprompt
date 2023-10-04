@@ -28,6 +28,7 @@ import {
 
 import { GitHubIcon } from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
+import { SalesforceIcon } from '@/components/icons/Salesforce';
 import {
   DEFAULT_CHAT_COMPLETION_MODEL,
   DateCountHistogramEntry,
@@ -39,14 +40,14 @@ import {
   HistogramStat,
   LLMInfo,
   MotifSourceDataType,
+  NangoSourceDataType,
   OpenAIModelIdWithType,
   Source,
-  SourceType,
   TimeInterval,
   WebsiteSourceDataType,
 } from '@/types/types';
 
-import { APPROX_CHARS_PER_TOKEN, MIN_SLUG_LENGTH } from './constants';
+import { MIN_SLUG_LENGTH } from './constants';
 import { removeSchema } from './utils.edge';
 
 const lookup = [
@@ -314,6 +315,7 @@ export const getResponseOrThrow = async <T>(res: Response): Promise<T> => {
       throw new Error('An unexpected error occurred');
     }
   }
+
   return res.json();
 };
 
@@ -667,6 +669,9 @@ export const getLabelForSource = (source: Source, inline: boolean) => {
       return inline ? 'file uploads' : 'File uploads';
     case 'api-upload':
       return 'API uploads';
+    case 'nango': {
+      return (source.data as NangoSourceDataType).identifier;
+    }
     default:
       return 'Unknown source';
   }
@@ -735,6 +740,7 @@ export const getAccessoryLabelForSource = (
       if (data.branch) {
         return { label: data.branch, Icon: GitBranchIcon };
       }
+      break;
     }
   }
   return undefined;
@@ -868,18 +874,31 @@ export const splitIntoSubstringsOfMaxLength = (
   return result;
 };
 
-export const getIconForSource = (sourceType: SourceType) => {
-  switch (sourceType) {
-    case 'motif':
-      return MotifIcon;
-    case 'website':
-      return Globe;
-    case 'file-upload':
-      return Upload;
+export const getIconForSource = (source: Pick<DbSource, 'type' | 'data'>) => {
+  switch (source.type) {
     case 'api-upload':
       return ChevronsUp;
-    default:
+    case 'file-upload':
+      return Upload;
+    case 'github':
       return GitHubIcon;
+    case 'motif':
+      return MotifIcon;
+    case 'nango': {
+      const integrationId = (source.data as unknown as NangoSourceDataType)
+        ?.integrationId;
+      if (
+        integrationId === 'salesforce' ||
+        integrationId === 'salesforce-sandbox'
+      ) {
+        return SalesforceIcon;
+      }
+      return Globe;
+    }
+    case 'website':
+      return Globe;
+    default:
+      return Globe;
   }
 };
 

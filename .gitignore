@@ -39,3 +39,5 @@ private
 next-env.d.ts
 
 temp/
+out.txt
+external/nango-integrations/out.txt

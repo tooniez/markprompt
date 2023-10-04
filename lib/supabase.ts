@@ -17,6 +17,7 @@ import {
   DbQueryFilter,
   QueryFilterComparisonOperation,
   QueryFilterLogicalOperation,
+  NangoSourceDataType,
 } from '@/types/types';
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
@@ -183,6 +184,11 @@ export const getSource = async (
       return sources.find((s) => {
         const _data = s.data as GitHubSourceDataType;
         return _data.url === data.url && _data.branch === data.branch;
+      });
+    case 'nango':
+      return sources.find((s) => {
+        const _data = s.data as NangoSourceDataType;
+        return _data.identifier === data.identifier;
       });
     case 'motif': {
       return sources.find((s) => {

@@ -21,6 +21,7 @@ import {
   MotifSourceDataType,
   DbSource,
   WebsiteSourceDataType,
+  NangoSourceDataType,
 } from '@/types/types';
 
 import { processFile } from '../api';
@@ -36,6 +37,8 @@ import {
   getMotifFileContent,
   getMotifPublicFileMetadata,
 } from '../integrations/motif';
+import { getRecords, triggerSync } from '../integrations/nango';
+import { getConnectionId, getSyncId } from '../integrations/salesforce';
 import {
   extractLinksFromHtml,
   fetchPageContent,
@@ -147,9 +150,14 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       numFiles: number,
       forceRetrain: boolean,
       getFilePath: (index: number) => string,
-      getFileNameContent: (
+      getFileData: (
         index: number,
-      ) => Promise<{ name: string; content: string } | undefined>,
+      ) => Promise<
+        | Partial<
+            Pick<FileData, 'name' | 'content' | 'metadata' | 'contentType'>
+          >
+        | undefined
+      >,
       onFileProcessed?: (path: string) => void,
     ) => {
       if (stopFlag.current) {
@@ -182,12 +190,12 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
       const prevChecksum = checksums?.find((c) => c.path === path)?.checksum;
 
-      const nameAndContent = await getFileNameContent(index);
-      if (!nameAndContent) {
+      const fileData = await getFileData(index);
+      if (!fileData) {
         return;
       }
 
-      const currentChecksum = createChecksum(nameAndContent.content);
+      const currentChecksum = createChecksum(fileData.content || '');
 
       // Check the checksum (or SHA if GitHub file), and skip if equals.
       if (prevChecksum === currentChecksum && !forceRetrain) {
@@ -199,8 +207,10 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
 
       const file: FileData = {
         path,
-        name: nameAndContent.name,
-        content: nameAndContent.content,
+        name: fileData.name || '',
+        content: fileData.content || '',
+        metadata: fileData.metadata,
+        contentType: fileData.contentType,
       };
 
       try {
@@ -253,9 +263,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             `Error processing file ${file?.path}: ${JSON.stringify(e)}`,
           );
           toast.error(
-            `Error processing file ${nameAndContent?.name}: ${JSON.stringify(
-              e,
-            )}`,
+            `Error processing file ${fileData?.name}: ${JSON.stringify(e)}`,
           );
           setErrors((errors) => [
             ...errors,
@@ -276,9 +284,14 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
       numFiles: number,
       forceRetrain: boolean,
       getFilePath: (index: number) => string,
-      getFileNameContent: (
+      getFileData: (
         index: number,
-      ) => Promise<{ name: string; content: string } | undefined>,
+      ) => Promise<
+        | Partial<
+            Pick<FileData, 'name' | 'content' | 'metadata' | 'contentType'>
+          >
+        | undefined
+      >,
       onFileProcessed?: (path: string) => void,
     ) => {
       if (!project?.id) {
@@ -311,7 +324,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
                   numFiles,
                   forceRetrain,
                   getFilePath,
-                  getFileNameContent,
+                  getFileData,
                   onFileProcessed,
                 );
               } catch (e) {
@@ -374,6 +387,68 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
             onError(`Error processing repo ${ownerAndRepo}: ${e}`);
             break;
           }
+          break;
+        }
+        case 'nango': {
+          if (!project?.id) {
+            break;
+          }
+          const data = source.data as NangoSourceDataType;
+          const syncId = getSyncId(data.integrationId);
+          const connectionId = getConnectionId(source.id);
+
+          await triggerSync(
+            project?.id,
+            data.integrationId,
+            connectionId,
+            syncId ? [syncId] : [],
+          );
+
+          const limit = 20;
+
+          const processChunk = async (index: number): Promise<boolean> => {
+            const fileData = await getRecords(
+              project.id,
+              data.integrationId,
+              connectionId,
+              'NangoFile',
+              undefined,
+              index * limit,
+              limit,
+              'id',
+              'asc',
+              undefined,
+            );
+
+            if (fileData.length === 0) {
+              return true;
+            }
+
+            console.info(
+              `Done fetching data. Now processing ${fileData.length} files...`,
+            );
+
+            await generateEmbeddings(
+              source.id,
+              'nango',
+              fileData.length,
+              forceRetrain,
+              (i) => fileData[i].path,
+              async (i) => fileData[i],
+              onFileProcessed,
+            );
+
+            return false;
+          };
+
+          let index = 0;
+          let done = await processChunk(index);
+
+          while (!done) {
+            done = await processChunk(index);
+            index += 1;
+          }
+
           break;
         }
         case 'motif': {
@@ -500,7 +575,13 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         }
       }
     },
-    [config.exclude, config.include, generateEmbeddings, useCustomPageFetcher],
+    [
+      config.exclude,
+      config.include,
+      generateEmbeddings,
+      project?.id,
+      useCustomPageFetcher,
+    ],
   );
 
   const trainAllSources = useCallback(

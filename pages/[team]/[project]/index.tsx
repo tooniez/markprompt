@@ -1,3 +1,4 @@
+import Nango from '@nangohq/frontend';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Popover from '@radix-ui/react-popover';
@@ -19,7 +20,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { MoreHorizontal, Globe, Upload, SettingsIcon } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { FC, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
@@ -27,6 +28,7 @@ import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import * as GitHub from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
+import { SalesforceIcon } from '@/components/icons/Salesforce';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Onboarding from '@/components/onboarding/Onboarding';
 import Button from '@/components/ui/Button';
@@ -60,6 +62,11 @@ const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
 
 const GitHubAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/GitHub'),
+  { loading: () => Loading },
+);
+
+const SalesforceAddSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/Salesforce'),
   { loading: () => Loading },
 );
 
@@ -120,7 +127,7 @@ type SourceItemProps = {
 };
 
 const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
-  const Icon = getIconForSource(source.type);
+  const Icon = getIconForSource(source);
   const accessory = getAccessoryLabelForSource(source);
   let AccessoryTag = <></>;
   if (accessory) {
@@ -264,7 +271,7 @@ const Data = () => {
       }),
       columnHelper.accessor((row) => row, {
         id: 'name',
-        header: () => <span>Name</span>,
+        header: () => <span>Title</span>,
         cell: (info) => {
           const value = info.getValue();
           // Ensure compat with previously trained data, where we don't
@@ -584,6 +591,19 @@ const Data = () => {
                 <span className="truncate">Connect GitHub repo</span>
               </button>
             </GitHubAddSourceDialog>
+            <SalesforceAddSourceDialog>
+              <button
+                className={cn(
+                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                  {
+                    'pointer-events-none opacity-50': !canAddMoreContent,
+                  },
+                )}
+              >
+                <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
+                <span className="truncate">Connect Salesforce Knowledge</span>
+              </button>
+            </SalesforceAddSourceDialog>
             <MotifAddSourceDialog>
               <button
                 className={cn(

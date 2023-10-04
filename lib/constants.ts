@@ -21,8 +21,8 @@ export const DEFAULT_MARKPROMPT_CONFIG = `{
 }`;
 
 export const MARKPROMPT_JS_PACKAGE_VERSIONS = {
-  css: '0.15.0',
-  web: '0.18.2',
-  react: '0.24.0',
+  css: '0.16.1',
+  web: '0.19.3',
+  react: '0.25.1',
   'docusaurus-theme-search': '0.12.2',
 };

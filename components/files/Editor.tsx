@@ -13,6 +13,7 @@ import { convertToMarkdown } from '@/lib/markdown';
 import {
   fetcher,
   getDisplayPathForPath,
+  getFileType,
   getFullURLForPath,
   getIconForSource,
   getLabelForSource,
@@ -53,7 +54,7 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
     if (!source) {
       return <></>;
     }
-    const Icon = getIconForSource(source.type);
+    const Icon = getIconForSource(source);
     const label = getLabelForSource(source, false);
     const url = getURLForSource(source);
 
@@ -78,15 +79,19 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
     );
   }, [source]);
 
-  const { markdownContent, filename } = useMemo(() => {
+  const { markdownContent } = useMemo(() => {
     if (!file?.raw_content || !source) {
       return { markdownContent: '', filename: '' };
     }
+
     const filename = getFileNameForSourceAtPath(source, file.path);
+    const fileType =
+      (file.meta as any)?.['__markprompt_metadata']?.contentType ??
+      getFileType(filename);
     const m = matter(file.raw_content);
-    const markdownContent = convertToMarkdown(m.content.trim(), filename);
+    const markdownContent = convertToMarkdown(m.content.trim(), fileType);
     return { markdownContent, filename };
-  }, [file?.raw_content, file?.path, source]);
+  }, [file?.raw_content, file?.meta, file?.path, source]);
 
   if (loading) {
     return (

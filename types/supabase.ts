@@ -1464,6 +1464,8 @@ export interface Database {
         | "github"
         | "motif"
         | "website"
+        | "nango"
+        | "salesforce"
         | "file-upload"
         | "api-upload"
     }

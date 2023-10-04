@@ -6,6 +6,7 @@ import { matchesGlobs } from '../utils';
 export const PUBLIC_NON_ROUTED_API_PATHS = [
   '/api/oauth',
   '/api/subscriptions/webhook',
+  '/api/webhooks/nango/sync',
   '/api/support/contact',
 ];
 

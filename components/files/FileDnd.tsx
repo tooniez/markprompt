@@ -52,16 +52,7 @@ const FileDnd: FC<FileDndProps> = ({
     maxFiles: 1000,
     maxSize: 1_000_000,
     accept: {
-      'text/*': [
-        '.md',
-        '.mdoc',
-        '.mdx',
-        '.rst',
-        '.html',
-        '.htm',
-        '.txt',
-        '.text',
-      ],
+      'text/*': SUPPORTED_EXTENSIONS.map((e) => `.${e}`),
     },
     onDragEnter: () => {
       setDragging(true);
@@ -190,7 +181,7 @@ const FileDnd: FC<FileDndProps> = ({
                       })}
                     >
                       Supported file extensions:{' '}
-                      {SUPPORTED_EXTENSIONS.join(', ')}.
+                      {SUPPORTED_EXTENSIONS.map((e) => `.${e}`).join(', ')}.
                     </p>
                   </>
                 }
