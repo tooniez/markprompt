@@ -175,6 +175,7 @@ export interface Database {
         Row: {
           checksum: string | null
           id: number
+          internal_metadata: Json | null
           meta: Json | null
           path: string
           project_id: string | null
@@ -186,6 +187,7 @@ export interface Database {
         Insert: {
           checksum?: string | null
           id?: number
+          internal_metadata?: Json | null
           meta?: Json | null
           path: string
           project_id?: string | null
@@ -197,6 +199,7 @@ export interface Database {
         Update: {
           checksum?: string | null
           id?: number
+          internal_metadata?: Json | null
           meta?: Json | null
           path?: string
           project_id?: string | null
@@ -1158,6 +1161,7 @@ export interface Database {
       }
       v_insights_query_stats: {
         Row: {
+          conversation_id: string | null
           created_at: string | null
           decrypted_conversation_metadata: Json | null
           decrypted_prompt: string | null
@@ -1170,6 +1174,18 @@ export interface Database {
           project_id: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "query_stats_conversation_id_fkey"
+            columns: ["conversation_id"]
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_conversation_id_fkey"
+            columns: ["conversation_id"]
+            referencedRelation: "decrypted_conversations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "query_stats_project_id_fkey"
             columns: ["project_id"]
