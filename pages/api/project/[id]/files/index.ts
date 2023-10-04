@@ -36,7 +36,7 @@ export default withProjectAccess(
       const { data: files, error } = await supabase
         .from('files')
         .select(
-          'id,path,meta,project_id,updated_at,source_id,checksum,token_count, sources!inner (project_id)',
+          'id,path,meta,project_id,updated_at,source_id,checksum,token_count,internal_metadata, sources!inner (project_id)',
         )
         .eq('sources.project_id', projectId)
         .range(startOffset, startOffset + limit - 1);
