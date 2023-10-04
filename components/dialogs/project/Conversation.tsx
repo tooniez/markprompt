@@ -183,7 +183,7 @@ const ConversationDialog: FC<ConversationDialogProps> = ({
     (q) => (q.feedback as any)?.vote === '1',
   ).length;
   const numDownvotes = sortedConversations.filter(
-    (q) => (q.feedback as any)?.vote === '1',
+    (q) => (q.feedback as any)?.vote === '-1',
   ).length;
   const numUnanswered = sortedConversations.filter(
     (q) => !!q.no_response,
