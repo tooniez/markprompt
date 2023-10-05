@@ -192,7 +192,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
                 <Balancer ratio={0.5}>
                   Connect any source of content, from public websites to
                   internal knowledge bases, configure the design and tone, and
-                  deploy across all chanels. In minutes, you have an AI chatbot
+                  deploy across all channels. In minutes, you have an AI chatbot
                   that answers your customers&apos; questions, and drafts your
                   support ticket replies.
                 </Balancer>
