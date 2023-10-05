@@ -194,7 +194,7 @@ export const ContactWindow = ({
                     variant="cta"
                     buttonSize="sm"
                     type="submit"
-                    href="https://cal.com/markprompt/demo"
+                    href="https://cal.com/markprompt/30min"
                     target="_blank"
                   >
                     Book a demo

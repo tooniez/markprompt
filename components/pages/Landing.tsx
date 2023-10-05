@@ -314,7 +314,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             id="pricing"
             className="gradient-heading mt-40 pt-8 text-center text-4xl"
           >
-            <Balancer>Simple pricing that scales as you grow</Balancer>
+            <Balancer>Pricing that scales as you grow</Balancer>
           </h2>
           <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg text-neutral-500">
             Start for free, no credit card required.
@@ -340,7 +340,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
               * BYO: Bring your own API key
             </p>
           </div> */}
-          <div className="relative mt-16 grid w-full max-w-screen-xl grid-cols-1 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-3">
+          <div className="relative mt-16 grid w-full max-w-screen-md grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
             <Blurs />
             <PricingCard
               tier={DEFAULT_TIERS.find((t) => t.id === 'hobby')!}
@@ -351,11 +351,11 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
               tier={DEFAULT_TIERS.find((t) => t.id === 'starter')!}
               cta="Get started with Starter"
             /> */}
-            <PricingCard
+            {/* <PricingCard
               tier={DEFAULT_TIERS.find((t) => t.id === 'pro')!}
               highlight
               cta="Get started with Pro"
-            />
+            /> */}
             <PricingCard
               tier={PLACEHOLDER_ENTERPRISE_TIER}
               cta="Contact Sales"
