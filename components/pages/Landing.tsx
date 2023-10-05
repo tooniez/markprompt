@@ -162,7 +162,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
 
   return (
     <>
-      <SharedHead title="Markprompt | Enterprise-grade AI prompts for your docs" />
+      <SharedHead title="Markprompt | Enterprise-Grade AI for Customer Experience Teams" />
       {/* <div className="z-40 bg-fuchsia-700 py-1.5 px-6 sm:px-8">
         <Link
           href="/blog/markprompt-qa"
@@ -178,21 +178,23 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
         <div className="animate-slide-up">
           <div className="grid grid-cols-1 gap-8 pb-24 sm:min-h-[calc(100vh-100px)] sm:grid-cols-5">
             <div className="col-span-3 mt-12 flex flex-col justify-center 2xl:mt-0">
-              <Link href="/blog/algolia">
+              <Link href="/blog/feedback-flows">
                 <Tag size="base" color="sky">
-                  Introducing Algolia instant search →
+                  Introducing ticket hand-off →
                 </Tag>
               </Link>
-              <h1 className="gradient-heading mt-6 text-left text-4xl leading-[36px] tracking-[-0.6px] sm:mr-[-50px] sm:text-6xl sm:leading-[64px]">
-                <Balancer>Enterprise-grade AI prompts for your docs</Balancer>
+              <h1 className="gradient-heading z-10 mt-6 text-left text-4xl leading-[36px] tracking-[-0.6px] sm:mr-[-100px] sm:text-5xl sm:leading-[64px]">
+                <Balancer>
+                  Enterprise-Grade AI for Customer Experience Teams
+                </Balancer>
               </h1>
               <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base text-neutral-500 sm:mt-4 sm:text-lg">
                 <Balancer ratio={0.5}>
-                  Connect any source of content, from public websites to private
-                  GitHub repos, configure the design and tone, and paste the
-                  code to your website. In minutes, you have a chatbot that
-                  answers all your customers&apos; questions. If not, you will
-                  get notified and can take action.
+                  Connect any source of content, from public websites to
+                  internal knowledge bases, configure the design and tone, and
+                  deploy across all channels. In minutes, you have an AI chatbot
+                  that answers your customers&apos; questions, and drafts your
+                  support ticket replies.
                 </Balancer>
               </p>
               <div className="flex flex-col items-start justify-start gap-4 pt-8 sm:flex-row sm:items-center">

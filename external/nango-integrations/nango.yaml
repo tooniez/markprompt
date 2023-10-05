@@ -1,0 +1,24 @@
+integrations:
+  salesforce-sandbox:
+    salesforce-articles:
+      type: sync
+      runs: every day
+      auto_start: false
+      returns:
+        - NangoFile
+  salesforce:
+    salesforce-articles:
+      type: sync
+      runs: every day
+      auto_start: false
+      returns:
+        - NangoFile
+models:
+  NangoFile:
+    id: string
+    path: string
+    title: string
+    content: string
+    contentType: string
+    meta: object
+    last_modified: string

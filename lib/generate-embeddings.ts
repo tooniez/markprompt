@@ -83,12 +83,12 @@ const splitWithinTokenCutoff = (section: string): string[] => {
   return subSections;
 };
 
-const processFileData = (
+const processFileData = async (
   file: FileData,
   markpromptConfig: MarkpromptConfig,
-): Omit<FileSectionsData, 'leadFileHeading'> | undefined => {
+): Promise<Omit<FileSectionsData, 'leadFileHeading'> | undefined> => {
   let fileSectionsData: FileSectionsData | undefined;
-  const fileType = getFileType(file.name);
+  const fileType = file.contentType ?? getFileType(file.name);
   if (fileType === 'mdoc') {
     fileSectionsData = markdocToFileSectionData(file.content, markpromptConfig);
   } else if (fileType === 'rst') {
@@ -135,8 +135,8 @@ const processFileData = (
 
   return {
     sections: trimmedSectionsData,
-    meta: augmentMetaWithTitle(
-      fileSectionsData.meta,
+    meta: await augmentMetaWithTitle(
+      fileSectionsData.meta ?? {},
       fileSectionsData.leadFileHeading,
       file.path,
     ),
@@ -170,6 +170,7 @@ const createFile = async (
   sourceId: DbSource['id'],
   path: string,
   meta: any,
+  internalMetadata: any,
   checksum: string,
   rawContent: string,
 ): Promise<DbFile['id'] | undefined> => {
@@ -181,6 +182,7 @@ const createFile = async (
         project_id: _projectId,
         path,
         meta,
+        internal_metadata: internalMetadata,
         checksum,
         raw_content: rawContent,
       },
@@ -220,13 +222,30 @@ export const generateFileEmbeddingsAndSaveFile = async (
   let embeddingsTokenCount = 0;
   const errors: { path: string; message: string }[] = [];
 
-  const fileData = processFileData(file, markpromptConfig);
+  const fileData = await processFileData(file, markpromptConfig);
 
   if (!fileData) {
     return [{ path: file.path, message: 'Empty content.' }];
   }
 
-  const { meta, sections } = fileData;
+  // Integrations can specify fields to include as metadata (in
+  // addition to what's extracted from e.g. Markdown metadata).
+  let meta = fileData.meta;
+  const sections = fileData.sections;
+
+  if (file.metadata) {
+    meta = {
+      ...meta,
+      ...file.metadata,
+    };
+  }
+
+  let internalMetadata: any = undefined;
+  if (file.contentType) {
+    internalMetadata = {
+      contentType: file.contentType,
+    };
+  }
 
   let fileId = await getFileAtPath(supabaseAdmin, sourceId, file.path);
 
@@ -240,7 +259,12 @@ export const generateFileEmbeddingsAndSaveFile = async (
       .filter('file_id', 'eq', fileId);
     await supabaseAdmin
       .from('files')
-      .update({ meta, checksum, raw_content: file.content })
+      .update({
+        meta,
+        internal_metadata: internalMetadata,
+        checksum,
+        raw_content: file.content,
+      })
       .eq('id', fileId);
   } else {
     fileId = await createFile(
@@ -249,6 +273,7 @@ export const generateFileEmbeddingsAndSaveFile = async (
       sourceId,
       file.path,
       meta,
+      internalMetadata,
       checksum,
       file.content,
     );

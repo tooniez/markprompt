@@ -1,3 +1,4 @@
+import Nango from '@nangohq/frontend';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Popover from '@radix-ui/react-popover';
@@ -19,7 +20,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { MoreHorizontal, Globe, Upload, SettingsIcon } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { FC, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
@@ -27,6 +28,7 @@ import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import * as GitHub from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
+import { SalesforceIcon } from '@/components/icons/Salesforce';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Onboarding from '@/components/onboarding/Onboarding';
 import Button from '@/components/ui/Button';
@@ -42,6 +44,7 @@ import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
 import {
+  canDeleteSource,
   getAccessoryLabelForSource,
   getIconForSource,
   getLabelForSource,
@@ -59,6 +62,11 @@ const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
 
 const GitHubAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/GitHub'),
+  { loading: () => Loading },
+);
+
+const SalesforceAddSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/Salesforce'),
   { loading: () => Loading },
 );
 
@@ -119,7 +127,7 @@ type SourceItemProps = {
 };
 
 const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
-  const Icon = getIconForSource(source.type);
+  const Icon = getIconForSource(source);
   const accessory = getAccessoryLabelForSource(source);
   let AccessoryTag = <></>;
   if (accessory) {
@@ -223,25 +231,39 @@ const Data = () => {
     token_count: number | undefined;
   }>();
 
+  const pageHasSelectableItems = useMemo(() => {
+    return (paginatedFiles || []).some((f) => {
+      const source = sources.find((s) => s.id === f.source_id);
+      return source && canDeleteSource(source.type);
+    });
+  }, [paginatedFiles, sources]);
+
   const columns: any = useMemo(
     () => [
-      columnHelper.accessor((row) => row.path, {
+      columnHelper.accessor((row) => row.source_id, {
         id: 'select',
         enableSorting: false,
-        header: ({ table }) => (
-          <IndeterminateCheckbox
-            checked={table.getIsAllRowsSelected()}
-            indeterminate={table.getIsSomeRowsSelected()}
-            onChange={table.getToggleAllRowsSelectedHandler()}
-          />
-        ),
-        cell: ({ row }) => {
+        header: ({ table }) => {
+          if (!pageHasSelectableItems) {
+            return <></>;
+          }
           return (
             <IndeterminateCheckbox
-              checked={row.getIsSelected()}
-              disabled={!row.getCanSelect()}
-              indeterminate={row.getIsSomeSelected()}
-              onChange={row.getToggleSelectedHandler()}
+              checked={table.getIsAllRowsSelected()}
+              indeterminate={table.getIsSomeRowsSelected()}
+              onChange={table.getToggleAllRowsSelectedHandler()}
+            />
+          );
+        },
+        cell: (info) => {
+          if (!info.row.getCanSelect()) {
+            return <></>;
+          }
+          return (
+            <IndeterminateCheckbox
+              checked={info.row.getIsSelected()}
+              indeterminate={info.row.getIsSomeSelected()}
+              onChange={info.row.getToggleSelectedHandler()}
             />
           );
         },
@@ -249,7 +271,7 @@ const Data = () => {
       }),
       columnHelper.accessor((row) => row, {
         id: 'name',
-        header: () => <span>Name</span>,
+        header: () => <span>Title</span>,
         cell: (info) => {
           const value = info.getValue();
           // Ensure compat with previously trained data, where we don't
@@ -332,14 +354,21 @@ const Data = () => {
         footer: (info) => info.column.id,
       }),
     ],
-    [columnHelper, sources],
+    [columnHelper, pageHasSelectableItems, sources],
   );
 
   const table = useReactTable({
     data: paginatedFiles || [],
     columns,
     state: { rowSelection, sorting },
-    enableRowSelection: true,
+    enableRowSelection: (row) => {
+      const value = row.getValue('source');
+      const source = sources.find((s) => s.id === value);
+      if (source && !canDeleteSource(source.type)) {
+        return false;
+      }
+      return true;
+    },
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
@@ -562,6 +591,19 @@ const Data = () => {
                 <span className="truncate">Connect GitHub repo</span>
               </button>
             </GitHubAddSourceDialog>
+            <SalesforceAddSourceDialog>
+              <button
+                className={cn(
+                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                  {
+                    'pointer-events-none opacity-50': !canAddMoreContent,
+                  },
+                )}
+              >
+                <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
+                <span className="truncate">Connect Salesforce Knowledge</span>
+              </button>
+            </SalesforceAddSourceDialog>
             <MotifAddSourceDialog>
               <button
                 className={cn(
@@ -614,7 +656,7 @@ const Data = () => {
           {!loadingFiles && hasFiles && (
             <table className="w-full max-w-full table-fixed border-collapse">
               <colgroup>
-                <col className="w-[32px]" />
+                <col className={pageHasSelectableItems ? 'w-[32px]' : 'w-0'} />
                 <col className="w-[calc(50%-172px)]" />
                 <col className="w-[30%]" />
                 <col className="w-[20%]" />

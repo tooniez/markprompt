@@ -12,6 +12,7 @@ import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayou
 import Button from '@/components/ui/Button';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
 import {
+  GenericFieldsFilterButton,
   MultiSelectFilterButton,
   SingleSelectFilterButton,
 } from '@/components/ui/FilterButton';
@@ -22,13 +23,14 @@ import useInsights from '@/lib/hooks/use-insights';
 import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
 import { canViewInsights, getAccessibleInsightsType } from '@/lib/stripe/tiers';
+import { pluralize } from '@/lib/utils';
 import { useDebouncedState } from '@/lib/utils.react';
-import { DbQueryStat, PromptQueryStat } from '@/types/types';
+import { DbConversation, DbQueryStat, PromptQueryStat } from '@/types/types';
 
 const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
 
-const QueryStat = dynamic(
-  () => import('@/components/dialogs/project/QueryStat'),
+const ConversationDialog = dynamic(
+  () => import('@/components/dialogs/project/Conversation'),
   {
     loading: () => Loading,
   },
@@ -43,7 +45,7 @@ export const PromptStatusTag = ({ noResponse }: { noResponse: boolean }) => {
 };
 
 const Insights = () => {
-  const { project, config } = useProject();
+  const { project } = useProject();
   const { team } = useTeam();
   const {
     queries,
@@ -65,8 +67,12 @@ const Insights = () => {
     false,
     1000,
   );
-  const [currentQueryStatId, setCurrentQueryStatId] = useState<
-    DbQueryStat['id'] | undefined
+  const [currentQueryStat, setCurrentQueryStat] = useState<
+    | {
+        activeQueryStatId: DbQueryStat['id'];
+        conversationId: DbConversation['id'];
+      }
+    | undefined
   >(undefined);
   const [queryStatDialogOpen, setQueryStatDialogOpen] = useState(false);
 
@@ -454,20 +460,43 @@ const Insights = () => {
                   });
                 }}
               />
-              {false && (
-                <MultiSelectFilterButton
-                  legend="Metadata"
-                  title="Filter by metadata"
-                  options={['Upvoted', 'Downvoted', 'No vote']}
-                />
-              )}
-              {!!queriesFilters?.status && (
+              <GenericFieldsFilterButton
+                legend="Metadata"
+                title="Filter by metadata"
+                activeLabel={
+                  queriesFilters?.metadata && queriesFilters.metadata.length > 0
+                    ? pluralize(
+                        queriesFilters.metadata.length,
+                        'filter',
+                        'filters',
+                      )
+                    : undefined
+                }
+                initialFilters={queriesFilters?.metadata || []}
+                onSubmit={(filters) => {
+                  setQueriesFilters({
+                    ...queriesFilters,
+                    metadata: filters,
+                  });
+                }}
+                onClear={() => {
+                  setQueriesFilters({
+                    ...queriesFilters,
+                    metadata: undefined,
+                  });
+                }}
+              />
+              {(queriesFilters?.status ||
+                queriesFilters?.feedback ||
+                (queriesFilters?.metadata &&
+                  queriesFilters.metadata.length > 0)) && (
                 <button
-                  className="cursor-pointer whitespace-nowrap rounded-full px-2 py-1 text-xs font-medium text-sky-500 transition hover:bg-neutral-900"
+                  className="button-ring cursor-pointer whitespace-nowrap rounded-full px-2 py-1 text-xs font-medium text-sky-500 transition hover:bg-neutral-900"
                   onClick={() => {
                     setQueriesFilters({
                       status: undefined,
                       feedback: undefined,
+                      metadata: undefined,
                     });
                   }}
                 >
@@ -484,7 +513,13 @@ const Insights = () => {
               setPage={setPage}
               hasMorePages={hasMorePages}
               onRowClick={(row) => {
-                setCurrentQueryStatId(row.original.id);
+                if (!row.original.conversation_id) {
+                  return;
+                }
+                setCurrentQueryStat({
+                  activeQueryStatId: row.original.id,
+                  conversationId: row.original.conversation_id,
+                });
                 setQueryStatDialogOpen(true);
               }}
             />
@@ -536,8 +571,9 @@ const Insights = () => {
           </Card>
         </div>
       </div>
-      <QueryStat
-        queryStatId={currentQueryStatId}
+      <ConversationDialog
+        conversationId={currentQueryStat?.conversationId}
+        sourceQueryStatId={currentQueryStat?.activeQueryStatId}
         open={queryStatDialogOpen}
         setOpen={setQueryStatDialogOpen}
       />

@@ -703,7 +703,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
               </h2>
               <div className="mt-4 flex flex-col gap-2">
                 {sources.map((source, i) => {
-                  const Icon = getIconForSource(source.type);
+                  const Icon = getIconForSource(source);
                   const accessory = getAccessoryLabelForSource(source);
                   return (
                     <div

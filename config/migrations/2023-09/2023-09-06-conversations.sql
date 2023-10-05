@@ -8,7 +8,7 @@ comment on table public.conversations is 'Conversations.';
 alter table query_stats
 add column conversation_id uuid references public.conversations on delete cascade;
 
--- Migration: create a new converation for each query_stats row
+-- Migration: create a new conversation for each query_stats row
 do $$
 declare
   row_query_stats query_stats%ROWTYPE;

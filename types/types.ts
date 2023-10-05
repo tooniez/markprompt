@@ -5,6 +5,8 @@ import {
 } from '@markprompt/core';
 import { MarkpromptOptions } from '@markprompt/react';
 
+import { NangoFile } from '@/external/nango-integrations/models';
+
 import { Database } from './supabase';
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
@@ -95,14 +97,30 @@ export type DbConversation =
   Database['public']['Tables']['conversations']['Row'];
 
 export type Source = PartialBy<Pick<DbSource, 'type' | 'data'>, 'data'>;
-export type FileData = { path: string; name: string; content: string };
+export type FileData = {
+  path: string;
+  name: string;
+  content: string;
+  metadata?: any;
+  // For some sources, such as Salesforce articles, the content is not
+  // in plain Markdown (e.g. it's in HTML), but we don't want to force
+  // and .html extension to the file name. Instead, we just want to
+  // explicitly specify the file type that the content should be
+  // processed as.
+  contentType?: FileType;
+};
 export type PathContentData = Pick<FileData, 'path' | 'content'>;
 export type Checksum = Pick<DbFile, 'path' | 'checksum'>;
 export type DbFileWithoutContent = Omit<DbFile, 'raw_content'>;
 export type SourceType = Pick<Source, 'type'>['type'];
 export type PromptQueryStat = Pick<
   DbQueryStat,
-  'id' | 'created_at' | 'prompt' | 'no_response' | 'feedback'
+  | 'id'
+  | 'conversation_id'
+  | 'created_at'
+  | 'prompt'
+  | 'no_response'
+  | 'feedback'
 >;
 export type PromptQueryStatFull = Pick<
   DbQueryStat,
@@ -145,9 +163,28 @@ export type SourceDataType =
   | GitHubSourceDataType
   | MotifSourceDataType
   | WebsiteSourceDataType;
+
 export type GitHubSourceDataType = { url: string; branch?: string };
+
 export type MotifSourceDataType = { projectDomain: string };
+
 export type WebsiteSourceDataType = { url: string };
+
+export type NangoIntegrationId = 'salesforce' | 'salesforce-sandbox';
+
+type NangoFileMetadata = {
+  deleted_at: string | null;
+  last_action: string;
+  first_seen_at: string;
+  last_modified_at: string;
+};
+
+export type NangoFileWithMetadata = NangoFile & NangoFileMetadata;
+
+export type NangoSourceDataType = {
+  integrationId: NangoIntegrationId;
+  identifier: string;
+};
 
 export type RobotsTxtInfo = { sitemap?: string; disallowedPaths: string[] };
 
@@ -219,11 +256,31 @@ export type SerializableMarkpromptOptions = Omit<
 
 export type OpenAIErrorResponse = any;
 
+export enum QueryFilterComparisonOperation {
+  'eq' = 'eq',
+  'neq' = 'neq',
+  'gt' = 'gt',
+  'lt' = 'lt',
+  'gte' = 'gte',
+  'lte' = 'lte',
+  'like' = 'like',
+  'ilike' = 'ilike',
+  'in' = 'in',
+  'is' = 'is',
+}
+
+export enum QueryFilterLogicalOperation {
+  'or' = 'or',
+}
+
 type DbQueryFilterColumnName = string;
 type DbQueryFilterValue = string | number | boolean | null;
-type DbQueryFilterOperator = 'eq' | 'neq' | 'is';
 type DbQueryFilterOrCondition = string;
 
 export type DbQueryFilter =
-  | [DbQueryFilterOperator, DbQueryFilterColumnName, DbQueryFilterValue]
+  | [
+      QueryFilterComparisonOperation,
+      DbQueryFilterColumnName,
+      DbQueryFilterValue,
+    ]
   | ['or', DbQueryFilterOrCondition];

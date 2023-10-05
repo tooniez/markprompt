@@ -32,7 +32,10 @@ export const TopReferences: FC<TopReferencesProps> = ({
     <div className="hidden-scrollbar relative flex max-h-[500px] min-h-[200px] flex-col gap-2 overflow-y-auto">
       <SkeletonTable onDark loading={loading} />
       {topReferences?.map((r, i) => {
-        const Icon = getIconForSource(r.source_type);
+        const Icon = getIconForSource({
+          type: r.source_type,
+          data: r.source_data,
+        });
         return (
           <div key={`top-reference-${i}-${r.path}`} className="relative">
             <div className="relative z-10 flex flex-row items-center gap-3 px-2 py-1 text-sm text-neutral-300">
