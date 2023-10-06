@@ -23,7 +23,7 @@ import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
-import SalesforceCasesAddSourceDialog from '@/components/dialogs/sources/SalesforceCases';
+import SalesforceCaseAddSourceDialog from '@/components/dialogs/sources/SalesforceCase';
 import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import * as GitHub from '@/components/icons/GitHub';
@@ -625,7 +625,7 @@ const Data = () => {
                 )}
               </button>
             </SalesforceKnowledgeAddSourceDialog>
-            <SalesforceCasesAddSourceDialog>
+            <SalesforceCaseAddSourceDialog>
               <button
                 className={cn(
                   'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
@@ -644,7 +644,7 @@ const Data = () => {
               >
                 <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
                 <span className="flex-grow truncate">
-                  Connect Salesforce Cases
+                  Connect Salesforce Case
                 </span>
 
                 {!isEnterpriseTier && (
@@ -653,7 +653,7 @@ const Data = () => {
                   </div>
                 )}
               </button>
-            </SalesforceCasesAddSourceDialog>
+            </SalesforceCaseAddSourceDialog>
             <MotifAddSourceDialog>
               <button
                 className={cn(

@@ -1,3 +1,5 @@
+// AUTO-GENERATED FILE. DO NOT EDIT!
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NangoSync, NangoFile } from './models';
 
@@ -15,7 +17,7 @@ interface Metadata {
 export default async function fetchData(nango: NangoSync) {
   const metadata = await nango.getMetadata<Metadata>();
 
-  const fixedFields = ['Id', 'CaseNumber', 'Subject', 'LastModifiedDate'];
+  const fixedFields = ['Id', 'Title', 'LastModifiedDate'];
   const customFields = (metadata?.customFields || []).filter(
     (f) => !fixedFields.includes(f),
   );
@@ -23,20 +25,16 @@ export default async function fetchData(nango: NangoSync) {
 
   let query = `SELECT ${fields.join(
     ', ',
-  )} (SELECT Id, CommentBody, CreatedDate FROM CaseComments) FROM Case`;
+  )} FROM Knowledge__kav WHERE IsLatestVersion = true`;
 
   const filters = metadata?.filters;
 
-  let didSetWhere = false;
   if (filters?.length > 0) {
-    didSetWhere = true;
-    query += ` WHERE (${filters})`;
+    query += ` AND (${filters})`;
   }
 
   if (nango.lastSyncDate) {
-    query += ` ${
-      didSetWhere ? 'AND' : 'WHERE'
-    } LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
+    query += ` AND LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
   }
 
   let endpoint = '/services/data/v53.0/query';
@@ -72,13 +70,9 @@ function mapRecords(
   return records.map((record: any) => {
     return {
       id: record.Id,
-      path: mappings.path ? record[mappings.path] : record.CaseNumber,
-      title: mappings.title ? record[mappings.title] : record.Subject,
-      content: (
-        record.CaseComments?.records.map((comment: any) => {
-          return `# Comment ${comment.Id} at ${comment.CreatedDate}\n\n${comment.CommentBody}`;
-        }) || []
-      ).join('\n\n'),
+      path: mappings.path ? record[mappings.path] : record.Id,
+      title: mappings.title ? record[mappings.title] : record.Title,
+      content: mappings.content ? record[mappings.content] : '',
       contentType: 'html',
       meta: {
         ...(metadataFields || []).reduce((acc, key) => {

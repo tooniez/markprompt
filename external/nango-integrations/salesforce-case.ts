@@ -15,7 +15,7 @@ interface Metadata {
 export default async function fetchData(nango: NangoSync) {
   const metadata = await nango.getMetadata<Metadata>();
 
-  const fixedFields = ['Id', 'Title', 'LastModifiedDate'];
+  const fixedFields = ['Id', 'CaseNumber', 'Subject', 'LastModifiedDate'];
   const customFields = (metadata?.customFields || []).filter(
     (f) => !fixedFields.includes(f),
   );
@@ -23,16 +23,20 @@ export default async function fetchData(nango: NangoSync) {
 
   let query = `SELECT ${fields.join(
     ', ',
-  )} FROM Knowledge__kav WHERE IsLatestVersion = true`;
+  )}, (SELECT Id, CommentBody, CreatedDate FROM CaseComments) FROM Case`;
 
   const filters = metadata?.filters;
 
+  let didSetWhere = false;
   if (filters?.length > 0) {
-    query += ` AND (${filters})`;
+    didSetWhere = true;
+    query += ` WHERE (${filters})`;
   }
 
   if (nango.lastSyncDate) {
-    query += ` AND LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
+    query += ` ${
+      didSetWhere ? 'AND' : 'WHERE'
+    } LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
   }
 
   let endpoint = '/services/data/v53.0/query';
@@ -68,10 +72,17 @@ function mapRecords(
   return records.map((record: any) => {
     return {
       id: record.Id,
-      path: mappings.path ? record[mappings.path] : record.Id,
-      title: mappings.title ? record[mappings.title] : record.Title,
-      content: mappings.content ? record[mappings.content] : '',
-      contentType: 'html',
+      path: mappings.path ? record[mappings.path] : record.CaseNumber,
+      title: mappings.title ? record[mappings.title] : record.Subject,
+      content: mappings.content
+        ? record[mappings.content]
+        : (record.Description ? record.Description + '\n\n' : '') +
+          (
+            record.CaseComments?.records.map((comment: any) => {
+              return comment.CommentBody;
+            }) || []
+          ).join('\n\n'),
+      contentType: 'md',
       meta: {
         ...(metadataFields || []).reduce((acc, key) => {
           return { ...acc, [key]: record[key] };

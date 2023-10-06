@@ -32,7 +32,7 @@ import {
   SalesforceEnvironment,
   SalesforceNangoMetadata,
   getConnectionId,
-  getCasesIntegrationId,
+  getCaseIntegrationId,
 } from '@/lib/integrations/salesforce';
 import { getLabelForSource } from '@/lib/utils';
 
@@ -47,7 +47,7 @@ const nango = new Nango({
   publicKey: process.env.NEXT_PUBLIC_NANGO_PUBLIC_KEY!,
 });
 
-type SalesforceCasesSourceProps = {
+type SalesforceCaseSourceProps = {
   clearPrevious?: boolean;
   openPricingAsDialog?: boolean;
   onDidAddSource: () => void;
@@ -59,7 +59,7 @@ const prepareFields = (input: string) => {
   return input.split(',').map((v) => v.trim());
 };
 
-const SalesforceCasesSource: FC<SalesforceCasesSourceProps> = ({
+const SalesforceCaseSource: FC<SalesforceCaseSourceProps> = ({
   onDidAddSource,
 }) => {
   const { project } = useProject();
@@ -79,7 +79,7 @@ const SalesforceCasesSource: FC<SalesforceCasesSourceProps> = ({
       }
 
       try {
-        const integrationId = getCasesIntegrationId(environment);
+        const integrationId = getCaseIntegrationId(environment);
 
         const newSource = await addSource(project.id, 'nango', {
           integrationId,
@@ -125,7 +125,7 @@ const SalesforceCasesSource: FC<SalesforceCasesSourceProps> = ({
           // If there is an error, make sure to delete the connection
           await deleteConnection(
             project.id,
-            getCasesIntegrationId(environment),
+            getCaseIntegrationId(environment),
             newSource.id,
           );
           await deleteSource(project.id, newSource.id);
@@ -142,30 +142,19 @@ const SalesforceCasesSource: FC<SalesforceCasesSourceProps> = ({
     return <></>;
   }
 
-  console.log('IN HERE');
   return (
     <>
       <Formik
         initialValues={{
-          identifier: 'salesforce-cases',
-          environment: 'sandbox' as SalesforceEnvironment,
-          // instanceUrl: 'https://markprompt-dev-ed.develop.lightning.force.com',
-          instanceUrl: 'https://mindbody--eos1.sandbox.lightning.force.com',
-          customFields: 'Description',
+          identifier: '',
+          environment: 'production' as SalesforceEnvironment,
+          instanceUrl: '',
+          customFields: '',
           filters: '',
           titleMapping: '',
           contentMapping: '',
           pathMapping: '',
-          metadataFields: 'Description',
-          // identifier: '',
-          // environment: 'production' as SalesforceEnvironment,
-          // instanceUrl: '',
-          // customFields: '',
-          // filters: '',
-          // titleMapping: '',
-          // contentMapping: '',
-          // pathMapping: '',
-          // metadataFields: '',
+          metadataFields: '',
         }}
         validateOnMount
         validate={async (values) => {
@@ -423,7 +412,7 @@ const SalesforceCasesSource: FC<SalesforceCasesSourceProps> = ({
   );
 };
 
-const SalesforceCasesAddSourceDialog = ({
+const SalesforceCaseAddSourceDialog = ({
   openPricingAsDialog,
   onDidAddSource,
   children,
@@ -442,14 +431,14 @@ const SalesforceCasesAddSourceDialog = ({
         <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[720px] w-[90%] max-w-[500px] flex-col">
           <div className="flex-none">
             <Dialog.Title className="dialog-title flex-none">
-              Connect Salesforce Cases
+              Connect Salesforce Case
             </Dialog.Title>
             <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-              <p>Sync content from a Salesforce Cases base.</p>
+              <p>Sync content from a Salesforce Case base.</p>
             </div>
           </div>
           <div className="flex-grow overflow-y-hidden">
-            <SalesforceCasesSource
+            <SalesforceCaseSource
               openPricingAsDialog={openPricingAsDialog}
               onDidAddSource={() => {
                 setDialogOpen(false);
@@ -463,4 +452,4 @@ const SalesforceCasesAddSourceDialog = ({
   );
 };
 
-export default SalesforceCasesAddSourceDialog;
+export default SalesforceCaseAddSourceDialog;

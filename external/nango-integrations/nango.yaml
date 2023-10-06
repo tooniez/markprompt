@@ -29,15 +29,15 @@ integrations:
       auto_start: false
       returns:
         - NangoFile
-  salesforce-cases:
-    salesforce-cases:
+  salesforce-case:
+    salesforce-case:
       type: sync
       runs: every day
       auto_start: false
       returns:
         - NangoFile
-  salesforce-cases-sandbox:
-    salesforce-cases-sandbox:
+  salesforce-case-sandbox:
+    salesforce-case-sandbox:
       type: sync
       runs: every day
       auto_start: false
