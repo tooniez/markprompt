@@ -23,6 +23,7 @@ import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
+import SalesforceCaseAddSourceDialog from '@/components/dialogs/sources/SalesforceCase';
 import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import * as GitHub from '@/components/icons/GitHub';
@@ -66,8 +67,8 @@ const GitHubAddSourceDialog = dynamic(
   { loading: () => Loading },
 );
 
-const SalesforceAddSourceDialog = dynamic(
-  () => import('@/components/dialogs/sources/Salesforce'),
+const SalesforceKnowledgeAddSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/SalesforceKnowledge'),
   { loading: () => Loading },
 );
 
@@ -224,7 +225,7 @@ const Data = () => {
   const [editorOpen, setEditorOpen] = useState<boolean>(false);
 
   const tier = team && getTier(team);
-  const isEnterpriseTier = tier && isEnterpriseOrCustomTier(tier);
+  const isEnterpriseTier = !tier || isEnterpriseOrCustomTier(tier);
 
   const columnHelper = createColumnHelper<{
     id: DbFile['id'];
@@ -595,7 +596,7 @@ const Data = () => {
                 <span className="truncate">Connect GitHub repo</span>
               </button>
             </GitHubAddSourceDialog>
-            <SalesforceAddSourceDialog>
+            <SalesforceKnowledgeAddSourceDialog>
               <button
                 className={cn(
                   'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
@@ -623,7 +624,36 @@ const Data = () => {
                   </div>
                 )}
               </button>
-            </SalesforceAddSourceDialog>
+            </SalesforceKnowledgeAddSourceDialog>
+            <SalesforceCaseAddSourceDialog>
+              <button
+                className={cn(
+                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                  {
+                    'pointer-events-none opacity-50': !canAddMoreContent,
+                  },
+                )}
+                {...(!isEnterpriseTier
+                  ? {
+                      onClick: (e) => {
+                        e.preventDefault();
+                        emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
+                      },
+                    }
+                  : {})}
+              >
+                <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
+                <span className="flex-grow truncate">
+                  Connect Salesforce Case
+                </span>
+
+                {!isEnterpriseTier && (
+                  <div className="flex-nonw">
+                    <Tag>Enterprise</Tag>
+                  </div>
+                )}
+              </button>
+            </SalesforceCaseAddSourceDialog>
             <MotifAddSourceDialog>
               <button
                 className={cn(

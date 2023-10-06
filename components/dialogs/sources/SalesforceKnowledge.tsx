@@ -32,7 +32,7 @@ import {
   SalesforceEnvironment,
   SalesforceNangoMetadata,
   getConnectionId,
-  getIntegrationId,
+  getKnowledgeIntegrationId,
 } from '@/lib/integrations/salesforce';
 import { getLabelForSource } from '@/lib/utils';
 
@@ -47,7 +47,7 @@ const nango = new Nango({
   publicKey: process.env.NEXT_PUBLIC_NANGO_PUBLIC_KEY!,
 });
 
-type SalesforceSourceProps = {
+type SalesforceKnowledgeSourceProps = {
   clearPrevious?: boolean;
   openPricingAsDialog?: boolean;
   onDidAddSource: () => void;
@@ -59,7 +59,9 @@ const prepareFields = (input: string) => {
   return input.split(',').map((v) => v.trim());
 };
 
-const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
+const SalesforceKnowledgeSource: FC<SalesforceKnowledgeSourceProps> = ({
+  onDidAddSource,
+}) => {
   const { project } = useProject();
   const { user } = useUser();
   const { mutate: mutateSources } = useSources();
@@ -77,7 +79,7 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
       }
 
       try {
-        const integrationId = getIntegrationId(environment);
+        const integrationId = getKnowledgeIntegrationId(environment);
 
         const newSource = await addSource(project.id, 'nango', {
           integrationId,
@@ -123,7 +125,7 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
           // If there is an error, make sure to delete the connection
           await deleteConnection(
             project.id,
-            getIntegrationId(environment),
+            getKnowledgeIntegrationId(environment),
             newSource.id,
           );
           await deleteSource(project.id, newSource.id);
@@ -410,7 +412,7 @@ const SalesforceSource: FC<SalesforceSourceProps> = ({ onDidAddSource }) => {
   );
 };
 
-const SalesforceAddSourceDialog = ({
+const SalesforceKnowledgeAddSourceDialog = ({
   openPricingAsDialog,
   onDidAddSource,
   children,
@@ -436,7 +438,7 @@ const SalesforceAddSourceDialog = ({
             </div>
           </div>
           <div className="flex-grow overflow-y-hidden">
-            <SalesforceSource
+            <SalesforceKnowledgeSource
               openPricingAsDialog={openPricingAsDialog}
               onDidAddSource={() => {
                 setDialogOpen(false);
@@ -450,4 +452,4 @@ const SalesforceAddSourceDialog = ({
   );
 };
 
-export default SalesforceAddSourceDialog;
+export default SalesforceKnowledgeAddSourceDialog;
