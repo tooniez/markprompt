@@ -170,7 +170,11 @@ export type MotifSourceDataType = { projectDomain: string };
 
 export type WebsiteSourceDataType = { url: string };
 
-export type NangoIntegrationId = 'salesforce' | 'salesforce-sandbox';
+export type NangoIntegrationId =
+  | 'salesforce'
+  | 'salesforce-sandbox'
+  | 'salesforce-cases'
+  | 'salesforce-cases-sandbox';
 
 type NangoFileMetadata = {
   deleted_at: string | null;

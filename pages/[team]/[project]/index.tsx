@@ -23,6 +23,7 @@ import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
+import SalesforceCasesAddSourceDialog from '@/components/dialogs/sources/SalesforceCases';
 import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import * as GitHub from '@/components/icons/GitHub';
@@ -66,8 +67,8 @@ const GitHubAddSourceDialog = dynamic(
   { loading: () => Loading },
 );
 
-const SalesforceAddSourceDialog = dynamic(
-  () => import('@/components/dialogs/sources/Salesforce'),
+const SalesforceKnowledgeAddSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/SalesforceKnowledge'),
   { loading: () => Loading },
 );
 
@@ -595,7 +596,7 @@ const Data = () => {
                 <span className="truncate">Connect GitHub repo</span>
               </button>
             </GitHubAddSourceDialog>
-            <SalesforceAddSourceDialog>
+            <SalesforceKnowledgeAddSourceDialog>
               <button
                 className={cn(
                   'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
@@ -623,7 +624,20 @@ const Data = () => {
                   </div>
                 )}
               </button>
-            </SalesforceAddSourceDialog>
+            </SalesforceKnowledgeAddSourceDialog>
+            <SalesforceCasesAddSourceDialog>
+              <button
+                className={cn(
+                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                  {
+                    'pointer-events-none opacity-50': !canAddMoreContent,
+                  },
+                )}
+              >
+                <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
+                <span className="truncate">Connect Salesforce Cases</span>
+              </button>
+            </SalesforceCasesAddSourceDialog>
             <MotifAddSourceDialog>
               <button
                 className={cn(

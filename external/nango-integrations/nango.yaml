@@ -1,4 +1,11 @@
 integrations:
+  salesforce:
+    salesforce-articles:
+      type: sync
+      runs: every day
+      auto_start: false
+      returns:
+        - NangoFile
   salesforce-sandbox:
     salesforce-articles:
       type: sync
@@ -6,8 +13,15 @@ integrations:
       auto_start: false
       returns:
         - NangoFile
-  salesforce:
-    salesforce-articles:
+  salesforce-cases:
+    salesforce-cases:
+      type: sync
+      runs: every day
+      auto_start: false
+      returns:
+        - NangoFile
+  salesforce-cases-sandbox:
+    salesforce-cases:
       type: sync
       runs: every day
       auto_start: false
