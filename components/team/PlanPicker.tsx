@@ -237,12 +237,12 @@ const PlanPicker = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <PricingCard
           tier={DEFAULT_TIERS.find((t) => t.id === 'hobby')!}
           priceLabel="Free"
         />
-        <PricingCard tier={DEFAULT_TIERS.find((t) => t.id === 'starter')!} />
+        {/* <PricingCard tier={DEFAULT_TIERS.find((t) => t.id === 'starter')!} /> */}
         <PricingCard tier={DEFAULT_TIERS.find((t) => t.id === 'pro')!} />
         {tiers.length === 0 && (
           <PricingCard

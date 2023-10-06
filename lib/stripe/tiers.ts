@@ -358,3 +358,7 @@ export const isInifiniteEmbeddingsTokensAllowance = (numTokens: number) => {
 export const isInifiniteCompletionsAllowance = (numCompletions: number) => {
   return numCompletions >= MAX_COMPLETIONS_ALLOWANCE;
 };
+
+export const isEnterpriseOrCustomTier = (tier: Tier) => {
+  return tier.id === 'placeholder-enterprise' || tier.id === 'custom';
+};
