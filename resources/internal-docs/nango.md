@@ -19,3 +19,11 @@ instead of this:
   - Issues
 - Website
 - etc.
+
+Note that sync names need to be unique on Nango, so we cannot reuse the same sync script for e.g. `salesforce-knowledge` and `salesforce-knowledge-sandbox`.
+
+In order to deploy, run via npm:
+
+```
+npm run nango-deploy-dev
+```

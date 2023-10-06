@@ -12,7 +12,9 @@
     "lint:ts": "tsc",
     "version": "changeset version && npm install",
     "test": "vitest run --coverage",
-    "test:watch": "vitest watch --coverage"
+    "test:watch": "vitest watch --coverage",
+    "nango:copy-scripts": "pushd external/nango; for file in \"salesforce-knowledge.ts salesforce-cases.ts\"; do cp $file.ts ",
+    "nango:deploy:dev": "npm run nango:copy-scripts"
   },
   "overrides": {
     "@types/react": "^18.0.0",
