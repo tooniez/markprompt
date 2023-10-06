@@ -141,10 +141,6 @@
 
         markprompt(event.data.projectKey, el, {
           ...event.data.serializedProps,
-          chat: {
-            ...event.data.serializedProps.chat,
-            history: false,
-          },
           trigger: {
             ...event.data.serializedProps?.trigger,
             customElement: true,

@@ -100,12 +100,8 @@ const UIConfigurator: FC<UIConfiguratorProps> = () => {
       {markpromptOptions.search?.enabled && <SearchProviderConfig />}
       {markpromptOptions.chat?.enabled && (
         <Row
-          label={
-            <span className="inline-flex flex-row flex-nowrap gap-2">
-              Retain chat history{' '}
-              <InfoTooltip message="Store a user's chat history in their browser, allowing them to get back to conversations later." />
-            </span>
-          }
+          label="Chat history"
+          tip="Store a user's chat history in their browser, allowing them to get back to conversations later."
         >
           <div className="flex flex-row items-center justify-end gap-1">
             <Switch.Root
