@@ -26,14 +26,19 @@ type IntegrationSpec = {
 
 const integrations: IntegrationSpec[] = [
   {
+    name: 'GitHub',
+    description: 'Sync files in your repo',
+    Icon: GitHubIcon,
+  },
+  {
     name: 'Salesforce Knowledge',
     description: 'Sync your knowledge articles',
     Icon: SalesforceIcon,
   },
   {
-    name: 'GitHub',
-    description: 'Sync files in your repo',
-    Icon: GitHubIcon,
+    name: 'Salesforce Case',
+    description: 'Sync your cases',
+    Icon: SalesforceIcon,
   },
   {
     name: 'Zendesk Articles',
