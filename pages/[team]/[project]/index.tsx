@@ -225,7 +225,7 @@ const Data = () => {
   const [editorOpen, setEditorOpen] = useState<boolean>(false);
 
   const tier = team && getTier(team);
-  const isEnterpriseTier = tier && isEnterpriseOrCustomTier(tier);
+  const isEnterpriseTier = !tier || isEnterpriseOrCustomTier(tier);
 
   const columnHelper = createColumnHelper<{
     id: DbFile['id'];
@@ -633,9 +633,25 @@ const Data = () => {
                     'pointer-events-none opacity-50': !canAddMoreContent,
                   },
                 )}
+                {...(!isEnterpriseTier
+                  ? {
+                      onClick: (e) => {
+                        e.preventDefault();
+                        emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
+                      },
+                    }
+                  : {})}
               >
                 <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
-                <span className="truncate">Connect Salesforce Cases</span>
+                <span className="flex-grow truncate">
+                  Connect Salesforce Cases
+                </span>
+
+                {!isEnterpriseTier && (
+                  <div className="flex-nonw">
+                    <Tag>Enterprise</Tag>
+                  </div>
+                )}
               </button>
             </SalesforceCasesAddSourceDialog>
             <MotifAddSourceDialog>
