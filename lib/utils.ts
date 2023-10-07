@@ -888,7 +888,6 @@ export const getIconForSource = (source: Pick<DbSource, 'type' | 'data'>) => {
     case 'nango': {
       const integrationId = (source.data as unknown as NangoSourceDataType)
         ?.integrationId;
-      console.log('integrationId', JSON.stringify(integrationId, null, 2));
       if (integrationId?.startsWith('salesforce-')) {
         return SalesforceIcon;
       }
