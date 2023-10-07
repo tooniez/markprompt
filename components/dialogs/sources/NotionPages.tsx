@@ -16,24 +16,17 @@ import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { NoAutoInput } from '@/components/ui/Input';
-import { NoAutoTextArea } from '@/components/ui/TextArea';
 import { addSource, deleteSource } from '@/lib/api';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
+import { getConnectionId } from '@/lib/integrations/nango';
 import {
   deleteConnection,
   getNangoClientInstance,
-  setMetadata,
   sourceExists,
 } from '@/lib/integrations/nango.client';
-import {
-  SalesforceEnvironment,
-  SalesforceNangoMetadata,
-  getConnectionId,
-  getKnowledgeIntegrationId,
-} from '@/lib/integrations/salesforce';
 import { getLabelForSource } from '@/lib/utils';
 
 const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
@@ -51,10 +44,6 @@ type NotionPagesSourceProps = {
 };
 
 const identifierRegex = /^[a-zA-Z0-9-]+$/;
-
-const prepareFields = (input: string) => {
-  return input.split(',').map((v) => v.trim());
-};
 
 const INTEGRATION_ID = 'notion-pages';
 

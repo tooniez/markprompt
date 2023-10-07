@@ -1,10 +1,5 @@
 import { Nango } from '@nangohq/node';
 
-import { FileData, NangoIntegrationId, Project } from '@/types/types';
-
-import { NangoModel } from './salesforce';
-import { getResponseOrThrow } from '../utils';
-
 export const getNangoServerInstance = () => {
   return new Nango({
     secretKey:

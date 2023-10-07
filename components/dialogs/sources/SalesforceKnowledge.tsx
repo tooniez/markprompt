@@ -22,6 +22,7 @@ import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
+import { getConnectionId } from '@/lib/integrations/nango';
 import {
   deleteConnection,
   getNangoClientInstance,
@@ -31,7 +32,6 @@ import {
 import {
   SalesforceEnvironment,
   SalesforceNangoMetadata,
-  getConnectionId,
   getKnowledgeIntegrationId,
 } from '@/lib/integrations/salesforce';
 import { getLabelForSource } from '@/lib/utils';
