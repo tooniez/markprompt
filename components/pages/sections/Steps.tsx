@@ -24,6 +24,7 @@ import Balancer from 'react-wrap-balancer';
 import colors from 'tailwindcss/colors';
 
 import { GitHubIcon } from '@/components/icons/GitHub';
+import Button from '@/components/ui/Button';
 
 const AnimatedGlobe = ({ className }: { className: string }) => {
   const canvasRef = useRef<any>();
@@ -295,7 +296,7 @@ const StepsSection = () => {
               source of content
             </p>
           }
-          description="Ingest a website, a GitHub repo, a Zendesk knowledge base, a Gitbook docs site. Drag and drop files. Or upload programmatically via API."
+          description="Ingest anything from a Salesforce or Zendesk knowledge base, a Notion workspace, a Gitbook repository, a website, and more."
           Icon={Unplug}
           position="left"
         >
@@ -333,7 +334,7 @@ const StepsSection = () => {
         </Step>
         <Step
           title="Configure to your needs"
-          description="Fine-tune prompt and model parameters to match your tone, language and use case. Customize the UI to match your brand."
+          description="Finely tune the prompts and components to match your tone, language and brand."
           Icon={Settings2}
           position="middle"
         >
@@ -410,8 +411,8 @@ const StepsSection = () => {
           </div>
         </Step>
         <Step
-          title="Launch at all touch points"
-          description="Paste a script tag to your website. Use a React component in your web application. Build custom logic with our streaming API endpoints."
+          title="Deploy at all touch points"
+          description="Use with your CX tools. Publish as AI chatbots with our customizable component libraries. Or build bespoke flows on top of our APIs."
           Icon={Code}
           position="right"
         >
@@ -429,6 +430,11 @@ const StepsSection = () => {
             </div>
           </div>
         </Step>
+      </div>
+      <div className="flex items-center justify-center pt-20">
+        <Button variant="cta" href="/integrations" buttonSize="lg">
+          See all integrations
+        </Button>
       </div>
     </div>
   );

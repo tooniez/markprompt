@@ -64,9 +64,9 @@ export default function LandingNavbar({
         Component={
           <button
             className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 sm:block"
-            aria-label="Contact us"
+            aria-label="Contact sales"
           >
-            Contact us
+            Contact sales
           </button>
         }
       />

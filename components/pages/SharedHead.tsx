@@ -20,14 +20,14 @@ export const SharedHead: FC<SharedHeadProps> = ({
       <meta
         name="description"
         content={
-          description || 'Enterprise-Grade AI for Customer Experience Teams'
+          description || 'AI infrastructure for customer experience teams'
         }
         key="desc"
       />
       <meta
         property="og:description"
         content={
-          description || 'Enterprise-Grade AI for Customer Experience Teams'
+          description || 'AI infrastructure for customer experience teams'
         }
       />
 
@@ -43,7 +43,7 @@ export const SharedHead: FC<SharedHeadProps> = ({
       <meta
         name="twitter:description"
         content={
-          description || 'Enterprise-Grade AI for Customer Experience Teams'
+          description || 'AI infrastructure for customer experience teams'
         }
       />
       <meta name="twitter:image" content={_ogImage} />
