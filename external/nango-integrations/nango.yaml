@@ -47,7 +47,6 @@ integrations:
     notion-pages:
       type: sync
       runs: every day
-      auto_start: false
       returns:
         - NangoFile
 models:
