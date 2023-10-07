@@ -17,11 +17,9 @@ export default async function fetchData(nango: NangoSync) {
     );
     const batchOfPages = pages.slice(i, Math.min(pages.length, i + batchSize));
     const pagesWithPlainText = await Promise.all(
-      batchOfPages.map(async (page: any) =>
-        mapPage(page, await fetchAsMarkdown(nango, page)),
-      ),
+      batchOfPages.map(async (page: any) => mapPage(nango, page)),
     );
-    await nango.batchSave(pagesWithPlainText, 'NotionPage');
+    await nango.batchSave(pagesWithPlainText, 'NangoFile');
   }
 }
 
@@ -430,17 +428,90 @@ const blockToMarkdown = async (nango: NangoSync, block: any) => {
   return parsedData;
 };
 
-const mapPage = (page: any, plainText: string): NangoFile => {
+const mapPage = async (nango: NangoSync, page: any): Promise<NangoFile> => {
+  const content = await fetchAsMarkdown(nango, page);
+
+  const keys = Object.keys(page.properties);
+
+  const properties = keys.reduce((acc: any, key: string) => {
+    const textValue = propertyToPlainText(page.properties[key]);
+    if (!textValue) {
+      return acc;
+    }
+    return { ...acc, [key]: textValue };
+  }, {});
+
+  let title = properties.title;
+  if (!title) {
+    // When the page is part of a table, the title is the
+    // value of the first column, and can be obtained by
+    // finding the column with a 'title' type.
+    for (const key of keys) {
+      const property = page.properties[key];
+      if (property.type === 'title') {
+        title = property.title.map((t: any) => t.plain_text).join('');
+        break;
+      }
+    }
+  }
+
   return {
     id: page.id,
     path: page.url,
-    title: page.title,
-    content: plainText,
+    title,
+    content: content,
     contentType: 'md',
     meta: {
-      parent_page_id: page.parent.page_id,
+      created_time: page.created_time,
+      last_edited_time: page.last_edited_time,
+      properties,
     },
   };
+};
+
+const propertyToPlainText = (property: any) => {
+  try {
+    switch (property.type) {
+      case 'title': {
+        return property.title.map((t: any) => t.plain_text).join('');
+      }
+      case 'rich_text': {
+        return property.rich_text.map((t: any) => t.plain_text).join('');
+      }
+      case 'number': {
+        return String(property.number);
+      }
+      case 'select': {
+        return property.select.name;
+      }
+      case 'multi_select': {
+        return property.multi_select.map((s: any) => s.name).join(', ');
+      }
+      case 'checkbox': {
+        return String(property.checkbox);
+      }
+      case 'date': {
+        return property.date.start;
+      }
+      case 'created_time': {
+        return property.created_time;
+      }
+      case 'email': {
+        return property.email;
+      }
+      case 'phone_number': {
+        return property.phone_number;
+      }
+      case 'status': {
+        return property.status.name;
+      }
+      case 'formula': {
+        return property.formula.string;
+      }
+    }
+  } catch {
+    return undefined;
+  }
 };
 
 const inlineCode = (text: string) => {

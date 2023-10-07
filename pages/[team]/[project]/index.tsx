@@ -290,12 +290,6 @@ const Data = () => {
             <button
               className="w-full overflow-hidden truncate text-left outline-none"
               onClick={() => {
-                if (!value.token_count) {
-                  toast.success(
-                    'To view the file content, retrain with the "force retrain" setting on.',
-                  );
-                  return;
-                }
                 setOpenFilePath(value.path);
                 setEditorOpen(true);
               }}

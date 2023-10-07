@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getNangoServerInstance } from '@/lib/integrations/nango';
+import { getNangoServerInstance } from '@/lib/integrations/nango.server';
 import { withProjectAccess } from '@/lib/middleware/common';
 import { FileData, NangoFileWithMetadata } from '@/types/types';
 

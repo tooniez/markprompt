@@ -61,7 +61,7 @@ const NotionPagesSource: FC<NotionPagesSourceProps> = ({ onDidAddSource }) => {
 
       try {
         const newSource = await addSource(project.id, 'nango', {
-          INTEGRATION_ID,
+          integrationId: INTEGRATION_ID,
           identifier,
         });
 
@@ -150,7 +150,7 @@ const NotionPagesSource: FC<NotionPagesSourceProps> = ({ onDidAddSource }) => {
           onDidAddSource();
         }}
       >
-        {({ isSubmitting, isValid, values, setFieldValue }) => (
+        {({ isSubmitting, isValid }) => (
           <Form className="flex h-full flex-col">
             <div className="flex h-full min-h-0 flex-grow flex-col gap-1 overflow-y-auto px-4 pb-8">
               <div className="mb-1 flex flex-row items-center gap-2 pt-4">
