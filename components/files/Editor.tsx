@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import matter from 'gray-matter';
 import Link from 'next/link';
-import { FC, Fragment, useMemo } from 'react';
+import { FC, useMemo } from 'react';
 import useSWR from 'swr';
 
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
@@ -169,7 +169,11 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
           </div>
         )} */}
       <div className="mt-8 pb-24">
-        <MarkdownContainer markdown={markdownContent} />
+        {markdownContent ? (
+          <MarkdownContainer markdown={markdownContent} />
+        ) : (
+          <p className="select-none text-sm text-neutral-700">Empty content</p>
+        )}
       </div>
     </div>
   );

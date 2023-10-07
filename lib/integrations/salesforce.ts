@@ -38,11 +38,6 @@ export const getCaseIntegrationId = (
     : 'salesforce-case-sandbox';
 };
 
-// Currently, we use the source ID as connect ID.
-export const getConnectionId = (sourceId: DbSource['id']): string => {
-  return sourceId;
-};
-
 export const getSyncId = (
   integrationId: NangoIntegrationId,
 ): NangoSyncId | undefined => {

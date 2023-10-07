@@ -43,6 +43,12 @@ integrations:
       auto_start: false
       returns:
         - NangoFile
+  notion-pages:
+    notion-pages:
+      type: sync
+      runs: every day
+      returns:
+        - NangoFile
 models:
   NangoFile:
     id: string

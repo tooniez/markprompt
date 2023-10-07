@@ -1,4 +1,3 @@
-import Nango from '@nangohq/frontend';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as RadioGroup from '@radix-ui/react-radio-group';
 import {
@@ -23,15 +22,16 @@ import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
+import { getConnectionId } from '@/lib/integrations/nango';
 import {
   deleteConnection,
+  getNangoClientInstance,
   setMetadata,
   sourceExists,
-} from '@/lib/integrations/nango';
+} from '@/lib/integrations/nango.client';
 import {
   SalesforceEnvironment,
   SalesforceNangoMetadata,
-  getConnectionId,
   getCaseIntegrationId,
 } from '@/lib/integrations/salesforce';
 import { getLabelForSource } from '@/lib/utils';
@@ -42,10 +42,7 @@ const DocsLimit = dynamic(() => import('@/components/files/DocsLimit'), {
   loading: () => Loading,
 });
 
-const nango = new Nango({
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  publicKey: process.env.NEXT_PUBLIC_NANGO_PUBLIC_KEY!,
-});
+const nango = getNangoClientInstance();
 
 type SalesforceCaseSourceProps = {
   clearPrevious?: boolean;

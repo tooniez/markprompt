@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { NangoFile } from '@/external/nango-integrations/models';
-import { getNangoServerInstance } from '@/lib/integrations/nango';
+import { getNangoServerInstance } from '@/lib/integrations/nango.server';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import {
   DbSource,

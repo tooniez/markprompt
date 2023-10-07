@@ -628,13 +628,12 @@ const ProjectSettingsPage = () => {
                     return;
                   }
                   setLoading(true);
-                  const name = project.name;
                   await deleteProject(project.id);
                   await mutateProjects(
                     projects.filter((p) => p.id !== project.id),
                   );
                   await mutateProject();
-                  toast.success(`Project ${name} has been deleted.`);
+                  toast.success(`Project ${project.name} has been deleted.`);
                   setLoading(false);
                   Router.replace('/');
                 }}

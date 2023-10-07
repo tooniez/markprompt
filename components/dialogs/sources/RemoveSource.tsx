@@ -6,7 +6,7 @@ import { deleteSource } from '@/lib/api';
 import useFiles from '@/lib/hooks/use-files';
 import useSources from '@/lib/hooks/use-sources';
 import useUsage from '@/lib/hooks/use-usage';
-import { deleteConnection } from '@/lib/integrations/nango';
+import { deleteConnection } from '@/lib/integrations/nango.client';
 import { getLabelForSource } from '@/lib/utils';
 import { Project, DbSource, NangoSourceDataType } from '@/types/types';
 

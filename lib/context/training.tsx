@@ -37,8 +37,9 @@ import {
   getMotifFileContent,
   getMotifPublicFileMetadata,
 } from '../integrations/motif';
-import { getRecords, triggerSync } from '../integrations/nango';
-import { getConnectionId, getSyncId } from '../integrations/salesforce';
+import { getConnectionId } from '../integrations/nango';
+import { getRecords, triggerSync } from '../integrations/nango.client';
+import { getSyncId } from '../integrations/salesforce';
 import {
   extractLinksFromHtml,
   fetchPageContent,
