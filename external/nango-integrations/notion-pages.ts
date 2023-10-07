@@ -218,7 +218,6 @@ const blockToMarkdown = async (nango: NangoSync, block: any) => {
         link = blockContent.file.url;
       }
 
-      // image caption with high priority
       if (image_caption_plain.trim().length > 0) {
         image_title = image_caption_plain;
       } else if (image_type === 'file' || image_type === 'external') {
