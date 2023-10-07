@@ -1,7 +1,7 @@
 // AUTO-GENERATED FILE. DO NOT EDIT!
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NangoSync, NangoFile } from './models';
+import type { NangoSync, NangoFile } from './models';
 
 interface Metadata {
   customFields: string[];

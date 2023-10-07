@@ -174,7 +174,8 @@ export type NangoIntegrationId =
   | 'salesforce-knowledge'
   | 'salesforce-knowledge-sandbox'
   | 'salesforce-case'
-  | 'salesforce-case-sandbox';
+  | 'salesforce-case-sandbox'
+  | 'notion-pages';
 
 type NangoFileMetadata = {
   deleted_at: string | null;

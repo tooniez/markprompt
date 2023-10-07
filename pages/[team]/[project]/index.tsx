@@ -23,11 +23,13 @@ import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
+import NotionPagesAddSourceDialog from '@/components/dialogs/sources/NotionPages';
 import SalesforceCaseAddSourceDialog from '@/components/dialogs/sources/SalesforceCase';
 import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import * as GitHub from '@/components/icons/GitHub';
 import { MotifIcon } from '@/components/icons/Motif';
+import { NotionIcon } from '@/components/icons/Notion';
 import { SalesforceIcon } from '@/components/icons/Salesforce';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Onboarding from '@/components/onboarding/Onboarding';
@@ -596,6 +598,19 @@ const Data = () => {
                 <span className="truncate">Connect GitHub repo</span>
               </button>
             </GitHubAddSourceDialog>
+            <NotionPagesAddSourceDialog>
+              <button
+                className={cn(
+                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                  {
+                    'pointer-events-none opacity-50': !canAddMoreContent,
+                  },
+                )}
+              >
+                <NotionIcon className="h-4 w-4 flex-none text-neutral-500" />
+                <span className="flex-grow truncate">Connect Notion</span>
+              </button>
+            </NotionPagesAddSourceDialog>
             <SalesforceKnowledgeAddSourceDialog>
               <button
                 className={cn(
