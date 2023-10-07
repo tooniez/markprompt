@@ -10,8 +10,8 @@ import {
   Settings2,
   Unplug,
   Upload,
+  X,
 } from 'lucide-react';
-import { X } from 'lucide-react';
 import Image from 'next/image';
 import {
   JSXElementConstructor,
