@@ -6,6 +6,7 @@ import Balancer from 'react-wrap-balancer';
 import { AlgoliaIcon } from '@/components/icons/brands/Algolia';
 import { FrontIcon } from '@/components/icons/brands/Front';
 import { HubspotIcon } from '@/components/icons/brands/Hubspot';
+import { JiraIcon } from '@/components/icons/brands/Jira';
 import { NotionIcon } from '@/components/icons/brands/Notion';
 import { SalesforceIcon } from '@/components/icons/brands/Salesforce';
 import { SlackIcon } from '@/components/icons/brands/Slack';
@@ -59,6 +60,12 @@ const integrations: IntegrationSpec[] = [
     description: 'Answer customers automatically',
     Icon: ZendeskIcon,
     status: 'soon',
+  },
+  {
+    name: 'Atlassian Jira',
+    description: 'Sync your knowledge articles',
+    Icon: JiraIcon,
+    status: 'dev',
   },
   {
     name: 'Front Drafts',
