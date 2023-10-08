@@ -184,7 +184,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
                   Introducing ticket hand-off →
                 </Tag>
               </Link> */}
-              <h1 className="gradient-heading z-10 mt-6 text-left text-6xl leading-[56px] tracking-[-0.6px] sm:mr-[-200px] sm:text-7xl sm:leading-[64px]">
+              <h1 className="gradient-heading z-10 mt-6 text-left text-5xl leading-[56px] tracking-[-0.6px] sm:mr-[-200px] sm:text-6xl sm:leading-[64px] md:text-7xl">
                 <Balancer>AI infrastructure for CX teams</Balancer>
               </h1>
               <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base text-neutral-500 sm:mt-4 sm:text-lg">
