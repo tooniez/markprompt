@@ -419,8 +419,8 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             />
           </div>
         </div>
-        <div className="mt-48 grid grid-cols-1 items-center gap-8 border-t border-neutral-900/50 px-6 pt-12 pb-20 sm:grid-cols-2 sm:py-12 sm:px-8 lg:grid-cols-3">
-          <div className="flex flex-row items-center justify-center gap-6 text-sm text-neutral-500 md:justify-start">
+        <div className="mt-48 grid grid-cols-1 items-center gap-8 border-t border-neutral-900/50 px-6 pt-12 pb-20 sm:py-12 sm:px-8 lg:grid-cols-3">
+          <div className="flex flex-row items-center justify-center gap-6 text-sm text-neutral-500 lg:justify-start">
             <SystemStatusButton status={status} />
             <Link href="/legal/terms">Terms</Link>
             <Link href="/legal/privacy">Privacy</Link>
@@ -433,14 +433,18 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             </a>
           </div>
           <div className="hidden flex-row items-baseline justify-center gap-1 text-center text-sm text-neutral-500 lg:flex"></div>
-          <div className="mr-0 flex flex-row items-center justify-center gap-4 text-neutral-700 sm:mr-8 sm:justify-end md:mr-12 xl:mr-0">
-            <a
-              className="transition hover:text-neutral-500"
+          <div className="mr-0 flex flex-row items-center justify-center gap-4 text-neutral-700 lg:justify-end">
+            <Button
+              variant="plain"
+              buttonSize="sm"
               href="https://github.com/motifland/markprompt"
-              aria-label="Markprompt on GitHub"
+              Icon={GitHubIcon}
             >
-              <GitHubIcon className="h-5 w-5" />
-            </a>
+              Star on GitHub
+              <span className="ml-2 text-neutral-600">
+                {formatNumStars(stars)}
+              </span>
+            </Button>
             <a
               className="transition hover:text-neutral-500"
               href="https://x.com/markprompt"
