@@ -190,8 +190,8 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
               <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base text-neutral-500 sm:mt-4 sm:text-lg">
                 <Balancer ratio={0.5}>
                   Connect all your sources of data, such as Salesforce Service
-                  Cloud, Notion pages and GitHub repositories, and use as
-                  context to automatically answer your users&apos; questions,
+                  Cloud, Zendesk, Notion pages and GitHub repositories, and use
+                  as context to automatically answer your users&apos; questions,
                   deflect tickets and draft case replies.
                 </Balancer>
               </p>
