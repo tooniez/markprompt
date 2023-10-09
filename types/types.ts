@@ -186,14 +186,18 @@ export type NangoIntegrationId =
 // are identical.
 export type NangoSyncId = NangoIntegrationId;
 
+export type NangoAction = 'ADDED' | 'UPDATED' | 'DELETED';
+
 type NangoFileMetadata = {
   deleted_at: string | null;
-  last_action: string;
+  last_action: NangoAction;
   first_seen_at: string;
   last_modified_at: string;
 };
 
-export type NangoFileWithMetadata = NangoFile & NangoFileMetadata;
+export type NangoFileWithMetadata = NangoFile & {
+  _nango_metadata: NangoFileMetadata;
+};
 
 export type NangoSourceDataType = {
   integrationId: NangoIntegrationId;

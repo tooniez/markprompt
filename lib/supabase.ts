@@ -18,6 +18,7 @@ import {
   QueryFilterComparisonOperation,
   QueryFilterLogicalOperation,
   NangoSourceDataType,
+  DbFile,
 } from '@/types/types';
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
@@ -462,6 +463,46 @@ export const getQueryStats = async (
   });
 
   return { queries, error: null };
+};
+
+// Important: two files may have the same nangoId, in case where
+// the same source (e.g. Salesforce Knowledge) was added twice (say with
+// different filters). They are therefore distinguished by their sourceId.
+export const getFileBySourceAndNangoId = async (
+  supabase: SupabaseClient<Database>,
+  sourceId: DbSource['id'],
+  nangoFileId: string,
+): Promise<DbFile | undefined> => {
+  const { data, error } = await supabase
+    .from('files')
+    .select('*')
+    .eq('source_id', sourceId)
+    .eq('internal_metadata->>nangoId', nangoFileId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return undefined;
+  }
+
+  return data;
+};
+
+// Important: two files may have the same nangoId, in case where
+// the same source (e.g. Salesforce Knowledge) was added twice (say with
+// different filters). They are therefore distinguished by their sourceId.
+export const bacthDeleteFileBySourceAndNangoId = async (
+  supabase: SupabaseClient<Database>,
+  sourceId: DbSource['id'],
+  nangoFileIds: string[],
+) => {
+  const { error } = await supabase
+    .from('files')
+    .delete()
+    .eq('source_id', sourceId)
+    .in('internal_metadata->>nangoId', nangoFileIds);
+  if (error) {
+    throw new Error(`${error}`);
+  }
 };
 
 export const getPublicAnonSupabase = () => {

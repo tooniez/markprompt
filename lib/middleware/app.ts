@@ -8,6 +8,10 @@ export const PUBLIC_NON_ROUTED_API_PATHS = [
   '/api/subscriptions/webhook',
   '/api/webhooks/nango/sync',
   '/api/support/contact',
+  '/api/inngest',
+  '/x/inngest',
+  '/.netlify/functions/inngest',
+  '/.redwood/functions/inngest',
 ];
 
 const UNAUTHED_PATHS = [

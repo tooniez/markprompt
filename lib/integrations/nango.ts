@@ -5,9 +5,14 @@ import {
   NangoSyncId,
 } from '@/types/types';
 
-// Currently, we use the source ID as connect ID.
+// Currently, we use the source ID as connection ID.
 export const getConnectionId = (sourceId: DbSource['id']): string => {
   return sourceId;
+};
+
+// Currently, we use the source ID as connection ID.
+export const getSourceId = (connectionId: string): DbSource['id'] => {
+  return connectionId;
 };
 
 export const getIntegrationId = (

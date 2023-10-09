@@ -26,3 +26,7 @@ export const MARKPROMPT_JS_PACKAGE_VERSIONS = {
   react: '0.28.1',
   'docusaurus-theme-search': '0.13.13',
 };
+
+export const OPENAI_RPM = {
+  'text-embedding-ada-002': 3000,
+};

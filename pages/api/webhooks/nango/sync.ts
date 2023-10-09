@@ -1,4 +1,3 @@
-import { NangoSyncWebhookBody } from '@nangohq/node';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { inngest } from '../../inngest';
@@ -21,10 +20,7 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
-  await inngest.send({
-    name: 'nango-sync',
-    data: req.body as NangoSyncWebhookBody,
-  });
+  await inngest.send({ name: 'nango/sync', data: req.body });
 
   return res.status(200).json({});
 }
