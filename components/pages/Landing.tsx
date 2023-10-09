@@ -178,7 +178,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
         <LandingNavbar />
         <div className="animate-slide-up">
           <div className="grid grid-cols-1 gap-8 pb-24 sm:min-h-[calc(100vh-100px)] sm:grid-cols-5">
-            <div className="col-span-3 mt-12 flex flex-col justify-center 2xl:mt-0">
+            <div className="col-span-3 mt-4 flex flex-col justify-center sm:mt-12 2xl:mt-0">
               {/* <Link href="/blog/feedback-flows">
                 <Tag size="base" color="sky">
                   Introducing ticket hand-off →
