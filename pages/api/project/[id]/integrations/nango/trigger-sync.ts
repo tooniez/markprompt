@@ -1,7 +1,9 @@
+import { NangoSyncWebhookBody } from '@nangohq/node';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getNangoServerInstance } from '@/lib/integrations/nango.server';
 import { withProjectAccess } from '@/lib/middleware/common';
+import { inngest } from '@/pages/api/inngest';
 
 type Data = {
   status?: string;

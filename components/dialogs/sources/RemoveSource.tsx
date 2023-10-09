@@ -6,9 +6,10 @@ import { deleteSource } from '@/lib/api';
 import useFiles from '@/lib/hooks/use-files';
 import useSources from '@/lib/hooks/use-sources';
 import useUsage from '@/lib/hooks/use-usage';
+import { getIntegrationId } from '@/lib/integrations/nango';
 import { deleteConnection } from '@/lib/integrations/nango.client';
 import { getLabelForSource } from '@/lib/utils';
-import { Project, DbSource, NangoSourceDataType } from '@/types/types';
+import { Project, DbSource } from '@/types/types';
 
 type RemoveSourceDialogProps = {
   projectId: Project['id'];
@@ -41,15 +42,13 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
           // For Nango integrations, make sure to delete the connection to
           // avoid subsequent syncs.
           if (source.type === 'nango') {
-            const sourceData = source.data as NangoSourceDataType;
-            try {
-              await deleteConnection(
-                projectId,
-                sourceData.integrationId,
-                source.id,
-              );
-            } catch (e) {
-              // Ignore
+            const integrationId = getIntegrationId(source);
+            if (integrationId) {
+              try {
+                await deleteConnection(projectId, integrationId, source.id);
+              } catch (e) {
+                // Ignore
+              }
             }
           }
 

@@ -47,6 +47,12 @@ import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
 import {
+  getConnectionId,
+  getIntegrationId,
+  getSyncId,
+} from '@/lib/integrations/nango';
+import { triggerSync } from '@/lib/integrations/nango.client';
+import {
   INFINITE_TOKEN_ALLOWANCE,
   getTier,
   isEnterpriseOrCustomTier,
@@ -131,10 +137,15 @@ const getBasePath = (pathWithFile: string) => {
 
 type SourceItemProps = {
   source: DbSource;
+  onSyncSelected: () => void;
   onRemoveSelected: () => void;
 };
 
-const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
+const SourceItem: FC<SourceItemProps> = ({
+  source,
+  onSyncSelected,
+  onRemoveSelected,
+}) => {
   const Icon = getIconForSource(source);
   const accessory = getAccessoryLabelForSource(source);
   let AccessoryTag = <></>;
@@ -173,6 +184,11 @@ const SourceItem: FC<SourceItemProps> = ({ source, onRemoveSelected }) => {
             className="animate-menu-up dropdown-menu-content mr-2 min-w-[160px]"
             sideOffset={5}
           >
+            <DropdownMenu.Item asChild onSelect={() => onSyncSelected()}>
+              <span className="dropdown-menu-item dropdown-menu-item-noindent block">
+                Sync
+              </span>
+            </DropdownMenu.Item>
             <DropdownMenu.Item asChild onSelect={() => onRemoveSelected()}>
               <span className="dropdown-menu-item dropdown-menu-item-noindent block">
                 Remove
@@ -552,6 +568,25 @@ const Data = () => {
                     <SourceItem
                       key={source.id}
                       source={source}
+                      onSyncSelected={async () => {
+                        if (!project?.id) {
+                          return;
+                        }
+
+                        const integrationId = getIntegrationId(source);
+                        if (!integrationId) {
+                          return;
+                        }
+
+                        const connectionId = getConnectionId(source.id);
+
+                        await triggerSync(
+                          project.id,
+                          integrationId,
+                          connectionId,
+                          [getSyncId(integrationId)],
+                        );
+                      }}
                       onRemoveSelected={() => {
                         setSourceToRemove(source);
                       }}

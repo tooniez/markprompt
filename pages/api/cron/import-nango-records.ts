@@ -8,6 +8,7 @@ import {
   NangoSourceDataType,
   QueryStatsProcessingResponseData,
 } from '@/types/types';
+import { getIntegrationId } from '@/lib/integrations/nango';
 
 export const config = {
   maxDuration: 300,
@@ -48,7 +49,13 @@ export default async function handler(
     return;
   }
 
-  const integrationId = (source.data as NangoSourceDataType).integrationId;
+  const integrationId = getIntegrationId(source);
+
+  if (!integrationId) {
+    // Nothing to sync
+    return;
+  }
+
   const connectionId = source.id;
 
   // Fetch records from Nango associated to a connection

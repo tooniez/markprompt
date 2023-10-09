@@ -1,7 +1,7 @@
 import { NangoSyncWebhookBody } from '@nangohq/node';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { syncNangoRecords } from '@/lib/sync/api';
+import { inngest } from '../../inngest';
 
 type Data =
   | {
@@ -21,22 +21,10 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
-  console.log('Webhook body', JSON.stringify(req.body, null, 2));
-  // {
-  //   "connectionId": "1390471b-0a75-4115-8b09-4deeb7eecce5",
-  //   "providerConfigKey": "salesforce-sandbox",
-  //   "syncName": "salesforce-articles",
-  //   "model": "NangoFile",
-  //   "responseResults": {
-  //     "added": 4,
-  //     "updated": 0,
-  //     "deleted": 0
-  //   },
-  //   "syncType": "INCREMENTAL",
-  //   "queryTimeStamp": "2023-10-02T23:24:59.196Z"
-  // }
-
-  // syncNangoRecords(req.body as NangoSyncWebhookBody);
+  await inngest.send({
+    name: 'nango-sync',
+    data: req.body as NangoSyncWebhookBody,
+  });
 
   return res.status(200).json({});
 }

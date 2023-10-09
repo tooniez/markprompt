@@ -182,6 +182,10 @@ export type NangoIntegrationId =
   | 'salesforce-case-sandbox'
   | 'notion-pages';
 
+// Must match nango.yaml definition. Currently, sync id and integration id
+// are identical.
+export type NangoSyncId = NangoIntegrationId;
+
 type NangoFileMetadata = {
   deleted_at: string | null;
   last_action: string;

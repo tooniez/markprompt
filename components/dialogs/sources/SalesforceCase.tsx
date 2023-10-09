@@ -22,12 +22,13 @@ import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
-import { getConnectionId } from '@/lib/integrations/nango';
+import { getConnectionId, getSyncId } from '@/lib/integrations/nango';
 import {
   deleteConnection,
   getNangoClientInstance,
   setMetadata,
   sourceExists,
+  triggerSync,
 } from '@/lib/integrations/nango.client';
 import {
   SalesforceEnvironment,
@@ -106,9 +107,9 @@ const SalesforceCaseSource: FC<SalesforceCaseSourceProps> = ({
           await setMetadata(project.id, integrationId, connectionId, metadata);
 
           // Now that the metadata is set, we are ready to sync.
-          // await triggerSync(project.id, integrationId, connectionId, [
-          //   SALESFORCE_ARTICLES_SYNC_ID,
-          // ]);
+          await triggerSync(project.id, integrationId, connectionId, [
+            getSyncId(integrationId),
+          ]);
 
           await mutateSources();
 

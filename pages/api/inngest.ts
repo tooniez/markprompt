@@ -3,16 +3,17 @@ import { serve } from 'inngest/next';
 
 export const inngest = new Inngest({ id: 'markprompt' });
 
-const helloWorld = inngest.createFunction(
-  { id: 'hello-world' },
-  { event: 'test/hello.world' },
+const sync = inngest.createFunction(
+  { id: 'nango-sync' },
+  { event: 'nango-sync' },
   async ({ event, step }) => {
-    await step.sleep('wait-a-moment', '1s');
+    console.log('Received event', JSON.stringify(event, null, 2));
+    // await step.sleep('wait-a-moment', '1s');
     return { event, body: 'Hello, World!' };
   },
 );
 
 export default serve({
   client: inngest,
-  functions: [helloWorld],
+  functions: [sync],
 });

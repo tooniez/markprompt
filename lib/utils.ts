@@ -49,6 +49,7 @@ import {
 } from '@/types/types';
 
 import { MIN_SLUG_LENGTH } from './constants';
+import { getIntegrationId } from './integrations/nango';
 import { removeSchema } from './utils.edge';
 
 const lookup = [
@@ -872,8 +873,7 @@ export const getIconForSource = (source: Pick<DbSource, 'type' | 'data'>) => {
     case 'motif':
       return MotifIcon;
     case 'nango': {
-      const integrationId = (source.data as unknown as NangoSourceDataType)
-        ?.integrationId;
+      const integrationId = getIntegrationId(source);
       if (integrationId?.startsWith('salesforce-')) {
         return SalesforceIcon;
       }

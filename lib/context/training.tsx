@@ -37,9 +37,12 @@ import {
   getMotifFileContent,
   getMotifPublicFileMetadata,
 } from '../integrations/motif';
-import { getConnectionId } from '../integrations/nango';
+import {
+  getConnectionId,
+  getIntegrationId,
+  getSyncId,
+} from '../integrations/nango';
 import { getRecords, triggerSync } from '../integrations/nango.client';
-import { getSyncId } from '../integrations/salesforce';
 import {
   extractLinksFromHtml,
   fetchPageContent,
@@ -394,13 +397,18 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           if (!project?.id) {
             break;
           }
-          const data = source.data as NangoSourceDataType;
-          const syncId = getSyncId(data.integrationId);
+
+          const integrationId = getIntegrationId(source);
+          if (!integrationId) {
+            break;
+          }
+
+          const syncId = getSyncId(integrationId);
           const connectionId = getConnectionId(source.id);
 
           await triggerSync(
             project?.id,
-            data.integrationId,
+            integrationId,
             connectionId,
             syncId ? [syncId] : [],
           );
@@ -410,7 +418,7 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           const processChunk = async (index: number): Promise<boolean> => {
             const fileData = await getRecords(
               project.id,
-              data.integrationId,
+              integrationId,
               connectionId,
               'NangoFile',
               undefined,

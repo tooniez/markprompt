@@ -1,6 +1,11 @@
 import Nango from '@nangohq/frontend';
 
-import { FileData, NangoIntegrationId, Project } from '@/types/types';
+import {
+  FileData,
+  NangoIntegrationId,
+  NangoSyncId,
+  Project,
+} from '@/types/types';
 
 import { NangoModel } from './salesforce';
 import { getResponseOrThrow } from '../utils';
@@ -54,7 +59,7 @@ export const triggerSync = async (
   projectId: Project['id'],
   integrationId: NangoIntegrationId,
   connectionId: string,
-  syncIds?: string[],
+  syncIds?: NangoSyncId[],
 ) => {
   const res = await fetch(
     `/api/project/${projectId}/integrations/nango/trigger-sync`,
