@@ -230,7 +230,8 @@ export const TeamProjectPicker = () => {
 
   return (
     <>
-      <div className="flex flex-row items-center gap-2 overflow-hidden">
+      {/* Keep overflow hidden for truncating, and translate to prevent cutting the slash */}
+      <div className="-ml-2 flex flex-row items-center gap-2 overflow-hidden pl-2">
         <Slash size="md" />
 
         {team ? (
