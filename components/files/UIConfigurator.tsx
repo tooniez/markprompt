@@ -19,7 +19,6 @@ import { ThemePicker } from './ThemePicker';
 import { AccordionContent, AccordionTrigger } from '../ui/Accordion';
 import { ButtonOrLinkWrapper } from '../ui/Button';
 import ColorPickerInput from '../ui/ColorPickerInput';
-import { InfoTooltip } from '../ui/InfoTooltip';
 import Input from '../ui/Input';
 import { Tag } from '../ui/Tag';
 

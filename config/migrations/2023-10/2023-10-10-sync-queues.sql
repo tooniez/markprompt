@@ -24,3 +24,6 @@ begin
     where sync_queues.id = append_log_to_sync_queue.id;
 end;
 $$;
+
+alter table sync_queues
+  enable row level security;

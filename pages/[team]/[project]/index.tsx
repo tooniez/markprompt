@@ -2,7 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Popover from '@radix-ui/react-popover';
 import * as Switch from '@radix-ui/react-switch';
-import * as Tooltip from '@radix-ui/react-tooltip';
+import * as ReactTooltip from '@radix-ui/react-tooltip';
 import {
   SortingState,
   createColumnHelper,
@@ -14,10 +14,20 @@ import {
 } from '@tanstack/react-table';
 import { track } from '@vercel/analytics';
 import cn from 'classnames';
+import { formatISO, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 // Cf. https://github.com/iamkun/dayjs/issues/297#issuecomment-1202327426
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { MoreHorizontal, Globe, Upload, SettingsIcon } from 'lucide-react';
+import {
+  MoreHorizontal,
+  Globe,
+  Upload,
+  SettingsIcon,
+  AlertCircle,
+  Check,
+  RefreshCw,
+  XOctagon,
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -37,8 +47,10 @@ import Button from '@/components/ui/Button';
 import { IndeterminateCheckbox } from '@/components/ui/Checkbox';
 import { SkeletonTable } from '@/components/ui/Skeletons';
 import { Tag } from '@/components/ui/Tag';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { deleteFiles } from '@/lib/api';
 import { useTrainingContext } from '@/lib/context/training';
+import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
@@ -65,10 +77,11 @@ import {
   getUrlPath,
   isUrl,
   pluralize,
+  timeout,
 } from '@/lib/utils';
 import { getNameForPath } from '@/lib/utils.nodeps';
 import { getFileTitle } from '@/lib/utils.non-edge';
-import { DbFile, DbSource } from '@/types/types';
+import { DbFile, DbSource, DbSyncQueueOverview, Project } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
@@ -135,14 +148,112 @@ const getBasePath = (pathWithFile: string) => {
   }
 };
 
+type SyncStatusIndicatorProps = {
+  syncQueue: DbSyncQueueOverview;
+};
+
+const SyncStatusIndicator: FC<SyncStatusIndicatorProps> = ({ syncQueue }) => {
+  switch (syncQueue.status) {
+    case 'running':
+      return (
+        <Tooltip
+          message={`Sync started at ${formatShortDateTimeInTimeZone(
+            parseISO(syncQueue.created_at),
+          )}`}
+        >
+          <RefreshCw className="h-4 w-4 animate-spin text-sky-600" />
+        </Tooltip>
+      );
+    case 'canceled':
+      return <XOctagon className="h-4 w-4 text-neutral-600" />;
+    case 'errored':
+      return <AlertCircle className="h-4 w-4 text-red-600" />;
+    case 'complete': {
+      let message = '';
+      if (syncQueue.ended_at) {
+        message = `Sync completed at ${formatShortDateTimeInTimeZone(
+          parseISO(syncQueue.ended_at),
+        )}`;
+      } else {
+        message = 'Sync completed';
+      }
+      return (
+        <Tooltip message={message}>
+          <Check className="h-4 w-4 text-green-600" />
+        </Tooltip>
+      );
+    }
+  }
+};
+
+type SourcesProps = {
+  projectId: Project['id'] | undefined;
+  onRemoveSelected: (source: DbSource) => void;
+};
+
+const Sources: FC<SourcesProps> = ({ projectId, onRemoveSelected }) => {
+  const { sources, syncQueues, mutateSyncQueues } = useSources();
+  return (
+    <>
+      {sources.map((source) => {
+        const syncQueue = syncQueues?.find((q) => q.source_id === source.id);
+        return (
+          <SourceItem
+            key={source.id}
+            source={source}
+            syncQueue={syncQueue}
+            onSyncSelected={async () => {
+              if (!projectId) {
+                return;
+              }
+
+              const integrationId = getIntegrationId(source);
+              if (!integrationId) {
+                return;
+              }
+
+              const otherSyncQueues = (syncQueues || []).filter(
+                (q) => q.source_id !== source.id,
+              );
+              const currentSyncQueue: DbSyncQueueOverview = syncQueue
+                ? {
+                    ...syncQueue,
+                    status: 'running',
+                  }
+                : {
+                    source_id: source.id,
+                    created_at: formatISO(new Date()),
+                    ended_at: null,
+                    status: 'running',
+                  };
+              mutateSyncQueues([...otherSyncQueues, currentSyncQueue]);
+
+              const connectionId = getConnectionId(source.id);
+
+              await triggerSync(projectId, integrationId, connectionId, [
+                getSyncId(integrationId),
+              ]);
+            }}
+            onRemoveSelected={() => {
+              onRemoveSelected(source);
+            }}
+          />
+        );
+      })}
+    </>
+  );
+};
+
 type SourceItemProps = {
   source: DbSource;
+  syncQueue: DbSyncQueueOverview | undefined;
   onSyncSelected: () => void;
   onRemoveSelected: () => void;
 };
 
 const SourceItem: FC<SourceItemProps> = ({
   source,
+  syncQueue,
   onSyncSelected,
   onRemoveSelected,
 }) => {
@@ -169,6 +280,7 @@ const SourceItem: FC<SourceItemProps> = ({
       <p className="flex-grow overflow-hidden truncate text-neutral-300">
         {getLabelForSource(source, false)}
       </p>
+      {syncQueue && <SyncStatusIndicator syncQueue={syncQueue} />}
       {AccessoryTag}
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
@@ -334,20 +446,20 @@ const Data = () => {
         header: () => <span>Path</span>,
         cell: (info) => {
           return (
-            <Tooltip.Provider>
-              <Tooltip.Root>
-                <Tooltip.Trigger asChild>
+            <ReactTooltip.Provider>
+              <ReactTooltip.Root>
+                <ReactTooltip.Trigger asChild>
                   <div className="cursor-default truncate">
                     {info.getValue()}
                   </div>
-                </Tooltip.Trigger>
-                <Tooltip.Portal>
-                  <Tooltip.Content className="tooltip-content">
+                </ReactTooltip.Trigger>
+                <ReactTooltip.Portal>
+                  <ReactTooltip.Content className="tooltip-content">
                     {info.getValue()}
-                  </Tooltip.Content>
-                </Tooltip.Portal>
-              </Tooltip.Root>
-            </Tooltip.Provider>
+                  </ReactTooltip.Content>
+                </ReactTooltip.Portal>
+              </ReactTooltip.Root>
+            </ReactTooltip.Provider>
           );
         },
         footer: (info) => info.column.id,
@@ -563,36 +675,10 @@ const Data = () => {
             <>
               <p className="text-xs font-medium text-neutral-500">Sources</p>
               <div className="mb-2 flex flex-col gap-2 pt-1 pb-4">
-                {sources.map((source) => {
-                  return (
-                    <SourceItem
-                      key={source.id}
-                      source={source}
-                      onSyncSelected={async () => {
-                        if (!project?.id) {
-                          return;
-                        }
-
-                        const integrationId = getIntegrationId(source);
-                        if (!integrationId) {
-                          return;
-                        }
-
-                        const connectionId = getConnectionId(source.id);
-
-                        await triggerSync(
-                          project.id,
-                          integrationId,
-                          connectionId,
-                          [getSyncId(integrationId)],
-                        );
-                      }}
-                      onRemoveSelected={() => {
-                        setSourceToRemove(source);
-                      }}
-                    />
-                  );
-                })}
+                <Sources
+                  projectId={project?.id}
+                  onRemoveSelected={setSourceToRemove}
+                />
               </div>
             </>
           )}

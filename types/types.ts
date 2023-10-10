@@ -340,4 +340,9 @@ export type CompletionsUsageInfo = {
 
 export type ChatOutputFormat = 'markdown' | 'slack';
 
+export type DbSyncQueueOverview = Pick<
+  DbSyncQueue,
+  'source_id' | 'created_at' | 'ended_at' | 'status'
+>;
+
 export type LogLevel = 'info' | 'debug' | 'error' | 'warn';

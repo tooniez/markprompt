@@ -1374,7 +1374,7 @@ create policy "Users can delete conversations associated to projects they have a
     )
   );
 
--- Conversations
+-- Query stats usage
 
 alter table query_stats_usage
   enable row level security;
@@ -1396,6 +1396,11 @@ create policy "Users can delete query stats usage associated to teams they are m
       and memberships.team_id = query_stats_usage.team_id
     )
   );
+
+-- Sync queues
+
+alter table sync_queues
+  enable row level security;
 
 -- Privileges
 

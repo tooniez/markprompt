@@ -54,8 +54,8 @@ import { GitHubIcon } from '../icons/GitHub';
 import { MotifIcon } from '../icons/Motif';
 import { SpinnerIcon } from '../icons/Spinner';
 import Button from '../ui/Button';
-import { InfoTooltip } from '../ui/InfoTooltip';
 import { PulseDot } from '../ui/PulseDot';
+import { InfoTooltip } from '../ui/Tooltip';
 
 const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
 

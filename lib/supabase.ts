@@ -601,7 +601,12 @@ export const updateSyncQueueStatus = async (
   id: DbSyncQueue['id'],
   status: DbSyncQueue['status'],
 ) => {
-  await supabase.from('sync_queues').update({ status }).eq('id', id);
+  let payload: Partial<DbSyncQueue> = { status };
+  // If status if a completion status, also append the ended_at timestamp
+  if (status === 'canceled' || status === 'errored' || status === 'complete') {
+    payload = { ...payload, ended_at: formatISO(new Date()) };
+  }
+  await supabase.from('sync_queues').update(payload).eq('id', id);
 };
 
 export const appendLogToSyncQueue = async (

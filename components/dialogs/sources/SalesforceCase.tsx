@@ -14,9 +14,9 @@ import { toast } from 'react-hot-toast';
 
 import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
-import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { NoAutoInput } from '@/components/ui/Input';
 import { NoAutoTextArea } from '@/components/ui/TextArea';
+import { InfoTooltip } from '@/components/ui/Tooltip';
 import { addSource, deleteSource } from '@/lib/api';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';

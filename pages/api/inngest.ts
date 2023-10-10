@@ -46,17 +46,19 @@ export type NangoSyncPayload = Pick<
   'providerConfigKey' | 'connectionId' | 'model' | 'queryTimeStamp'
 > & { syncQueueId?: DbSyncQueue['id'] };
 
+type FileTrainEventData = {
+  file: NangoFileWithMetadata;
+  projectId: Project['id'];
+  sourceId: DbSource['id'];
+  processorOptions: MarkdownProcessorOptions | undefined;
+};
+
 type Events = {
   'nango/sync': {
     data: NangoSyncPayload;
   };
   'markprompt/file.train': {
-    data: {
-      file: NangoFileWithMetadata;
-      projectId: Project['id'];
-      sourceId: DbSource['id'];
-      processorOptions: MarkdownProcessorOptions | undefined;
-    };
+    data: FileTrainEventData;
   };
   'markprompt/files.delete': {
     data: { ids: NangoFileWithMetadata['id'][]; sourceId: string };
@@ -139,7 +141,19 @@ const sync = inngest.createFunction(
 
     // Files to update
     if (trainEvents.length > 0) {
-      await step.sendEvent('train-files', trainEvents);
+      // If we have less than 1000 calls, we can use step parallelism,
+      // so that we can track the state using a Promise
+      if (trainEvents.length < 1000) {
+        const runPromises = trainEvents.map((event) => {
+          return step.run(`${event.name}-${event.data.file.id}`, async () =>
+            runTrainFile(event.data),
+          );
+        });
+
+        await Promise.all(runPromises);
+      } else {
+        await step.sendEvent('train-files', trainEvents);
+      }
     }
 
     await updateSyncQueue(supabase, syncQueueId, 'complete', {
@@ -155,6 +169,96 @@ const sync = inngest.createFunction(
   },
 );
 
+const runTrainFile = async (data: FileTrainEventData) => {
+  const file = data.file;
+  const sourceId = data.sourceId;
+  const projectId = data.projectId;
+
+  if (!file?.id) {
+    return;
+  }
+
+  const foundIds = await getFileIdsBySourceAndNangoId(
+    supabase,
+    sourceId,
+    file.id,
+  );
+
+  if (foundIds.length > 0) {
+    await batchDeleteFiles(supabase, foundIds);
+  }
+
+  let meta = await extractMeta(file.content, file.contentType);
+  const markdown = await convertToMarkdown(file.content, file.contentType);
+
+  const sections = (
+    await splitIntoSections(markdown, data.processorOptions, MAX_CHUNK_LENGTH)
+  ).filter((s) => {
+    // Filter out very short sections, to avoid noise
+    return s.content.length >= MIN_SECTION_CONTENT_LENGTH;
+  });
+
+  const ms = Date.now();
+  const embeddingsResponse = await bulkCreateSectionEmbeddings(
+    sections.map((s) => s.content),
+  );
+
+  const tokenCount = embeddingsResponse.tokenCount;
+  const sectionsWithEmbeddings = embeddingsResponse.embeddings.map((e, i) => {
+    return {
+      ...sections[i],
+      embedding: e,
+    };
+  });
+
+  const internalMetadata = {
+    nangoFileId: file.id,
+    ...(file.contentType
+      ? {
+          contentType: file.contentType,
+        }
+      : {}),
+  };
+
+  meta = { ...file.meta, ...meta };
+  if (file.title) {
+    meta = { title: file.title, ...meta };
+  }
+
+  const newFileId = await createFile(
+    supabase,
+    projectId,
+    sourceId,
+    file.path,
+    meta,
+    internalMetadata,
+    '',
+    file.content,
+    tokenCount,
+  );
+
+  if (!newFileId) {
+    return;
+  }
+
+  const sectionsData = sectionsWithEmbeddings.map<
+    Omit<FileSections, 'id' | 'token_count'>
+  >((section) => {
+    return {
+      file_id: newFileId,
+      content: section.content,
+      meta: (section.leadHeading
+        ? { leadHeading: section.leadHeading }
+        : undefined) as Json,
+      embedding: section.embedding as any,
+      cf_file_meta: meta as Json,
+      cf_project_id: projectId,
+    };
+  });
+
+  await batchStoreFileSections(supabase, sectionsData);
+};
+
 // The train function adheres to the OpenAI rate limits.
 const trainFile = inngest.createFunction(
   {
@@ -165,100 +269,8 @@ const trainFile = inngest.createFunction(
     },
   },
   { event: 'markprompt/file.train' },
-  async ({ event, logger }) => {
-    logger.debug('Train file', event.data.file.id);
-    const file = event.data.file;
-    const sourceId = event.data.sourceId;
-    const projectId = event.data.projectId;
-
-    if (!file?.id) {
-      return;
-    }
-
-    const foundIds = await getFileIdsBySourceAndNangoId(
-      supabase,
-      sourceId,
-      file.id,
-    );
-
-    if (foundIds.length > 0) {
-      await batchDeleteFiles(supabase, foundIds);
-    }
-
-    let meta = await extractMeta(file.content, file.contentType);
-    const markdown = await convertToMarkdown(file.content, file.contentType);
-
-    const sections = (
-      await splitIntoSections(
-        markdown,
-        event.data.processorOptions,
-        MAX_CHUNK_LENGTH,
-      )
-    ).filter((s) => {
-      // Filter out very short sections, to avoid noise
-      return s.content.length >= MIN_SECTION_CONTENT_LENGTH;
-    });
-
-    const ts = Date.now();
-    const embeddingsResponse = await bulkCreateSectionEmbeddings(
-      sections.map((s) => s.content),
-    );
-    logger.debug('Embeddings took', Date.now() - ts);
-
-    const tokenCount = embeddingsResponse.tokenCount;
-    const sectionsWithEmbeddings = embeddingsResponse.embeddings.map((e, i) => {
-      return {
-        ...sections[i],
-        embedding: e,
-      };
-    });
-
-    const internalMetadata = {
-      nangoFileId: file.id,
-      ...(file.contentType
-        ? {
-            contentType: file.contentType,
-          }
-        : {}),
-    };
-
-    meta = { ...file.meta, ...meta };
-    if (file.title) {
-      meta = { title: file.title, ...meta };
-    }
-
-    const newFileId = await createFile(
-      supabase,
-      projectId,
-      sourceId,
-      file.path,
-      meta,
-      internalMetadata,
-      '',
-      file.content,
-      tokenCount,
-    );
-
-    if (!newFileId) {
-      return;
-    }
-
-    const sectionsData = sectionsWithEmbeddings.map<
-      Omit<FileSections, 'id' | 'token_count'>
-    >((section) => {
-      return {
-        file_id: newFileId,
-        content: section.content,
-        meta: (section.leadHeading
-          ? { leadHeading: section.leadHeading }
-          : undefined) as Json,
-        embedding: section.embedding as any,
-        cf_file_meta: meta as Json,
-        cf_project_id: projectId,
-      };
-    });
-
-    await batchStoreFileSections(supabase, sectionsData);
+  async ({ event }) => {
+    return runTrainFile(event.data);
   },
 );
 
