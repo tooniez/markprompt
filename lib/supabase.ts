@@ -19,6 +19,8 @@ import {
   QueryFilterLogicalOperation,
   NangoSourceDataType,
   DbFile,
+  FileSectionHeading,
+  FileSections,
 } from '@/types/types';
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
@@ -465,44 +467,98 @@ export const getQueryStats = async (
   return { queries, error: null };
 };
 
-// Important: two files may have the same nangoId, in case where
-// the same source (e.g. Salesforce Knowledge) was added twice (say with
-// different filters). They are therefore distinguished by their sourceId.
-export const getFileBySourceAndNangoId = async (
+export const createFile = async (
   supabase: SupabaseClient<Database>,
+  // TODO: remove once migration is safely completed. We set an explicit
+  // value to prevent NULL values, because if a row has a NULL value,
+  // somehow it won't be returned in the inner joined filter query.
+  _projectId: Project['id'],
   sourceId: DbSource['id'],
-  nangoFileId: string,
-): Promise<DbFile | undefined> => {
-  const { data, error } = await supabase
+  path: string,
+  meta: any,
+  internalMetadata: any,
+  checksum: string,
+  rawContent: string,
+  tokenCount?: number,
+): Promise<DbFile['id'] | undefined> => {
+  const { error, data } = await supabase
     .from('files')
-    .select('*')
-    .eq('source_id', sourceId)
-    .eq('internal_metadata->>nangoId', nangoFileId)
+    .insert([
+      {
+        source_id: sourceId,
+        project_id: _projectId,
+        path,
+        meta,
+        internal_metadata: internalMetadata,
+        checksum,
+        raw_content: rawContent,
+        ...(tokenCount ? { token_count: tokenCount } : {}),
+      },
+    ])
+    .select('id')
+    .limit(1)
     .maybeSingle();
-
-  if (error || !data) {
-    return undefined;
+  if (error) {
+    throw error;
   }
+  return data?.id as DbFile['id'];
+};
 
-  return data;
+export const batchStoreFileSections = async (
+  supabase: SupabaseClient<Database>,
+  sections: Omit<FileSections, 'id'>[],
+) => {
+  const { error } = await supabase.from('file_sections').insert(sections);
+
+  if (error) {
+    // Too large? Attempt one embedding at a time.
+    for (const section of sections) {
+      await supabase.from('file_sections').insert([section]);
+    }
+  }
 };
 
 // Important: two files may have the same nangoId, in case where
 // the same source (e.g. Salesforce Knowledge) was added twice (say with
 // different filters). They are therefore distinguished by their sourceId.
-export const bacthDeleteFileBySourceAndNangoId = async (
+export const getFileIdsBySourceAndNangoId = async (
   supabase: SupabaseClient<Database>,
   sourceId: DbSource['id'],
-  nangoFileIds: string[],
+  nangoFileId: string,
+): Promise<DbFile['id'][]> => {
+  const { data, error } = await supabase
+    .from('files')
+    .select('id')
+    .eq('source_id', sourceId)
+    .eq('internal_metadata->>nangoFileId', nangoFileId);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data.map((f) => f.id);
+};
+
+export const batchDeleteFiles = async (
+  supabase: SupabaseClient<Database>,
+  ids: DbFile['id'][],
 ) => {
-  const { error } = await supabase
+  await supabase.from('files').delete().in('id', ids);
+};
+
+// Important: two files may have the same nangoId, in case where
+// the same source (e.g. Salesforce Knowledge) was added twice (say with
+// different filters). They are therefore distinguished by their sourceId.
+export const batchDeleteFilesBySourceAndNangoId = async (
+  supabase: SupabaseClient<Database>,
+  sourceId: DbSource['id'],
+  ids: string[],
+) => {
+  await supabase
     .from('files')
     .delete()
     .eq('source_id', sourceId)
-    .in('internal_metadata->>nangoId', nangoFileIds);
-  if (error) {
-    throw new Error(`${error}`);
-  }
+    .in('internal_metadata->>nangoFileId', ids);
 };
 
 export const getPublicAnonSupabase = () => {

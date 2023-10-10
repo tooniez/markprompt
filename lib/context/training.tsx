@@ -393,73 +393,73 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           }
           break;
         }
-        case 'nango': {
-          if (!project?.id) {
-            break;
-          }
+        // case 'nango': {
+        //   if (!project?.id) {
+        //     break;
+        //   }
 
-          const integrationId = getIntegrationId(source);
-          if (!integrationId) {
-            break;
-          }
+        //   const integrationId = getIntegrationId(source);
+        //   if (!integrationId) {
+        //     break;
+        //   }
 
-          const syncId = getSyncId(integrationId);
-          const connectionId = getConnectionId(source.id);
+        //   const syncId = getSyncId(integrationId);
+        //   const connectionId = getConnectionId(source.id);
 
-          await triggerSync(
-            project?.id,
-            integrationId,
-            connectionId,
-            syncId ? [syncId] : [],
-          );
+        //   await triggerSync(
+        //     project?.id,
+        //     integrationId,
+        //     connectionId,
+        //     syncId ? [syncId] : [],
+        //   );
 
-          const limit = 20;
+        //   const limit = 20;
 
-          const processChunk = async (index: number): Promise<boolean> => {
-            const fileData = await getRecords(
-              project.id,
-              integrationId,
-              connectionId,
-              'NangoFile',
-              undefined,
-              index * limit,
-              limit,
-              'id',
-              'asc',
-              undefined,
-            );
+        //   const processChunk = async (index: number): Promise<boolean> => {
+        //     const fileData = await getRecords(
+        //       project.id,
+        //       integrationId,
+        //       connectionId,
+        //       'NangoFile',
+        //       undefined,
+        //       index * limit,
+        //       limit,
+        //       'id',
+        //       'asc',
+        //       undefined,
+        //     );
 
-            if (fileData.length === 0) {
-              return true;
-            }
+        //     if (fileData.length === 0) {
+        //       return true;
+        //     }
 
-            console.info(
-              `Done fetching data. Now processing ${fileData.length} files...`,
-            );
+        //     console.info(
+        //       `Done fetching data. Now processing ${fileData.length} files...`,
+        //     );
 
-            await generateEmbeddings(
-              source.id,
-              'nango',
-              fileData.length,
-              forceRetrain,
-              (i) => fileData[i].path,
-              async (i) => fileData[i],
-              onFileProcessed,
-            );
+        //     await generateEmbeddings(
+        //       source.id,
+        //       'nango',
+        //       fileData.length,
+        //       forceRetrain,
+        //       (i) => fileData[i].path,
+        //       async (i) => fileData[i],
+        //       onFileProcessed,
+        //     );
 
-            return false;
-          };
+        //     return false;
+        //   };
 
-          let index = 0;
-          let done = await processChunk(index);
+        //   let index = 0;
+        //   let done = await processChunk(index);
 
-          while (!done) {
-            done = await processChunk(index);
-            index += 1;
-          }
+        //   while (!done) {
+        //     done = await processChunk(index);
+        //     index += 1;
+        //   }
 
-          break;
-        }
+        //   break;
+        // }
         case 'motif': {
           const data = source.data as MotifSourceDataType;
 

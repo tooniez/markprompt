@@ -30,10 +30,8 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
       req.nextUrl.pathname.startsWith(path),
     )
   ) {
-    console.log('NEXT', req.nextUrl.pathname);
     return NextResponse.next();
   }
-  console.log('MW', req.nextUrl.pathname);
 
   if (req.nextUrl.pathname.startsWith('/.well-known/')) {
     return NextResponse.next();

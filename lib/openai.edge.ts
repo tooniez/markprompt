@@ -6,6 +6,8 @@ import { CreateEmbeddingResponse, CreateModerationResponse } from 'openai';
 
 import { OpenAIErrorResponse } from '@/types/types';
 
+import { getResponseOrThrow } from './utils';
+
 export interface OpenAIStreamPayload {
   model: string;
   prompt: string;

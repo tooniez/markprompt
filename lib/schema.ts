@@ -3,13 +3,15 @@ import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 import { RemarkImageSourceRewriteOptions } from './remark/remark-image-source-rewrite';
 import { RemarkLinkRewriteOptions } from './remark/remark-link-rewrite';
 
+export type MarkdownProcessorOptions = {
+  imageSourceRewrite?: RemarkImageSourceRewriteOptions;
+  linkRewrite?: RemarkLinkRewriteOptions;
+};
+
 export type MarkpromptConfig = {
   include?: string[];
   exclude?: string[];
-  processorOptions?: {
-    linkRewrite?: RemarkLinkRewriteOptions;
-    imageSourceRewrite?: RemarkImageSourceRewriteOptions;
-  };
+  processorOptions?: MarkdownProcessorOptions;
   insightsMetadataFields?: string[];
 };
 

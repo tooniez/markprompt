@@ -4,7 +4,7 @@ export interface NangoFile {
   path: string;
   title: string;
   content: string;
-  contentType: string;
+  contentType: 'mdx' | 'mdoc' | 'md' | 'rst' | 'html' | 'txt';
   meta: any;
 }
 
