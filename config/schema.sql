@@ -183,6 +183,20 @@ create table public.query_stats_usage (
 );
 comment on table public.query_stats_usage is 'Usage.';
 
+-- Sync queues
+create type sync_status as enum ('running', 'errored', 'canceled', 'complete');
+
+-- Sync queues
+create table public.sync_queues (
+  id         uuid primary key default uuid_generate_v4(),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  ended_at   timestamp with time zone,
+  source_id  uuid references public.sources on delete cascade not null,
+  status     sync_status not null,
+  logs       jsonb[] not null default array[]::jsonb[]
+);
+comment on table public.sync_queues is 'Sync queues.';
+
 -- Functions
 
 create function public.handle_new_user()
@@ -726,6 +740,22 @@ begin
   set query_stat_id = null
   where query_stat_id = old.id;
   return old;
+end;
+$$;
+
+-- Append logs to sync queues
+
+create or replace function append_log_to_sync_queue(
+  id uuid,
+  entry jsonb
+)
+returns void
+language plpgsql
+as $$
+begin
+  update sync_queues
+    set logs = logs || append_log_to_sync_queue.entry
+    where sync_queues.id = append_log_to_sync_queue.id;
 end;
 $$;
 

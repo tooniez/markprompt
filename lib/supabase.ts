@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { PostgrestError, User, createClient } from '@supabase/supabase-js';
+import { formatISO } from 'date-fns';
 import { isPresent } from 'ts-is-present';
 
 import { Database, Json } from '@/types/supabase';
@@ -19,8 +20,9 @@ import {
   QueryFilterLogicalOperation,
   NangoSourceDataType,
   DbFile,
-  FileSectionHeading,
   FileSections,
+  DbSyncQueue,
+  LogLevel,
 } from '@/types/types';
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
@@ -559,6 +561,83 @@ export const batchDeleteFilesBySourceAndNangoId = async (
     .delete()
     .eq('source_id', sourceId)
     .in('internal_metadata->>nangoFileId', ids);
+};
+
+export const createSyncQueue = async (
+  supabase: SupabaseClient<Database>,
+  sourceId: DbSource['id'],
+): Promise<DbSyncQueue['id']> => {
+  const { error, data } = await supabase
+    .from('sync_queues')
+    .insert([{ source_id: sourceId, status: 'running' }])
+    .select('id')
+    .limit(1)
+    .maybeSingle();
+  if (error || !data?.id) {
+    throw error;
+  }
+  return data.id;
+};
+
+export const updateSyncQueue = async (
+  supabase: SupabaseClient<Database>,
+  id: DbSyncQueue['id'],
+  status: DbSyncQueue['status'],
+  log:
+    | {
+        message: string;
+        level: LogLevel;
+      }
+    | undefined,
+) => {
+  await updateSyncQueueStatus(supabase, id, status);
+  if (log) {
+    await appendLogToSyncQueue(supabase, id, log.message, log.level);
+  }
+};
+
+export const updateSyncQueueStatus = async (
+  supabase: SupabaseClient<Database>,
+  id: DbSyncQueue['id'],
+  status: DbSyncQueue['status'],
+) => {
+  await supabase.from('sync_queues').update({ status }).eq('id', id);
+};
+
+export const appendLogToSyncQueue = async (
+  supabase: SupabaseClient<Database>,
+  syncQueueId: DbSyncQueue['id'],
+  message: string,
+  level: LogLevel,
+) => {
+  await supabase.rpc('append_log_to_sync_queue', {
+    id: syncQueueId,
+    entry: {
+      timestamp: formatISO(new Date()),
+      message,
+      level,
+    },
+  });
+};
+
+export const getOrCreateRunningSyncQueueForSource = async (
+  supabase: SupabaseClient<Database>,
+  sourceId: DbSource['id'],
+): Promise<DbSyncQueue['id']> => {
+  const { data } = await supabase
+    .from('sync_queues')
+    .select('id')
+    .eq('source_id', sourceId)
+    .eq('status', 'running')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .select()
+    .maybeSingle();
+
+  if (data?.id) {
+    return data?.id;
+  }
+  return createSyncQueue(supabase, sourceId);
 };
 
 export const getPublicAnonSupabase = () => {

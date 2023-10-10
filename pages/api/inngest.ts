@@ -26,10 +26,14 @@ import {
   getFileIdsBySourceAndNangoId,
   batchDeleteFiles,
   batchDeleteFilesBySourceAndNangoId,
+  getOrCreateRunningSyncQueueForSource,
+  updateSyncQueue,
 } from '@/lib/supabase';
+import { pluralize } from '@/lib/utils';
 import { Json } from '@/types/supabase';
 import {
   DbSource,
+  DbSyncQueue,
   FileSections,
   NangoFileWithMetadata,
   Project,
@@ -40,7 +44,7 @@ import {
 export type NangoSyncPayload = Pick<
   NangoSyncWebhookBody,
   'providerConfigKey' | 'connectionId' | 'model' | 'queryTimeStamp'
->;
+> & { syncQueueId?: DbSyncQueue['id'] };
 
 type Events = {
   'nango/sync': {
@@ -75,6 +79,9 @@ const sync = inngest.createFunction(
   { event: 'nango/sync' },
   async ({ event, step, logger }) => {
     const sourceId = getSourceId(event.data.connectionId);
+    const syncQueueId =
+      event.data.syncQueueId ??
+      (await getOrCreateRunningSyncQueueForSource(supabase, sourceId));
 
     logger.debug('Calling getRecords');
 
@@ -88,6 +95,10 @@ const sync = inngest.createFunction(
     const projectId = await getProjectIdFromSource(supabase, sourceId);
 
     if (!projectId) {
+      await updateSyncQueue(supabase, syncQueueId, 'errored', {
+        message: 'Project not found',
+        level: 'error',
+      });
       return;
     }
 
@@ -126,13 +137,19 @@ const sync = inngest.createFunction(
       });
     }
 
-    const ts = Date.now();
     // Files to update
     if (trainEvents.length > 0) {
       await step.sendEvent('train-files', trainEvents);
     }
 
-    logger.debug('!!!!!!!!!!!!!!!!!!!!!!! Took', Date.now() - ts);
+    await updateSyncQueue(supabase, syncQueueId, 'complete', {
+      message: `Updated ${pluralize(
+        trainEvents.length,
+        'file',
+        'files',
+      )}. Deleted ${pluralize(filesToDelete.length, 'file', 'files')}`,
+      level: 'info',
+    });
 
     return { updated: trainEvents.length, deleted: filesToDelete.length };
   },

@@ -100,6 +100,7 @@ export type PromptConfig =
 export type DbQueryStat = Database['public']['Tables']['query_stats']['Row'];
 export type DbConversation =
   Database['public']['Tables']['conversations']['Row'];
+export type DbSyncQueue = Database['public']['Tables']['sync_queues']['Row'];
 
 export type Source = PartialBy<Pick<DbSource, 'type' | 'data'>, 'data'>;
 export type FileData = {
@@ -338,3 +339,5 @@ export type CompletionsUsageInfo = {
 };
 
 export type ChatOutputFormat = 'markdown' | 'slack';
+
+export type LogLevel = 'info' | 'debug' | 'error' | 'warn';
