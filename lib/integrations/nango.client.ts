@@ -7,7 +7,6 @@ import {
   Project,
 } from '@/types/types';
 
-import { NangoModel } from './salesforce';
 import { getResponseOrThrow } from '../utils';
 
 export const getNangoClientInstance = () => {
@@ -79,7 +78,7 @@ export const getRecords = async (
   projectId: Project['id'],
   integrationId: NangoIntegrationId,
   connectionId: string,
-  model: NangoModel,
+  model: string,
   delta: string | undefined,
   offset: number | undefined,
   limit: number | undefined,

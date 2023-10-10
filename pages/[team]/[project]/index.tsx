@@ -186,7 +186,7 @@ const SourceItem: FC<SourceItemProps> = ({
           >
             <DropdownMenu.Item asChild onSelect={() => onSyncSelected()}>
               <span className="dropdown-menu-item dropdown-menu-item-noindent block">
-                Sync
+                Sync now
               </span>
             </DropdownMenu.Item>
             <DropdownMenu.Item asChild onSelect={() => onRemoveSelected()}>
@@ -543,7 +543,7 @@ const Data = () => {
                   });
                 }}
               >
-                Train
+                Sync
               </Button>
             </div>
           )}

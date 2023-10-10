@@ -506,7 +506,7 @@ export const createFile = async (
 
 export const batchStoreFileSections = async (
   supabase: SupabaseClient<Database>,
-  sections: Omit<FileSections, 'id'>[],
+  sections: Omit<FileSections, 'id' | 'token_count'>[],
 ) => {
   const { error } = await supabase.from('file_sections').insert(sections);
 

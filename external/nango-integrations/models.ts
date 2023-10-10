@@ -8,6 +8,8 @@ export interface NangoFile {
   meta: any;
 }
 
+export const NangoModel = 'NangoFile';
+
 type LogLevel =
   | 'info'
   | 'debug'

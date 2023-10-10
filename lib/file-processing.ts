@@ -1,17 +1,13 @@
 import { backOff } from 'exponential-backoff';
 
-import { EMBEDDING_MODEL, MIN_SECTION_CONTENT_LENGTH } from './constants';
-import { createEmbedding } from './openai.edge';
+import { EMBEDDING_MODEL } from './constants';
+import { createEmbeddings } from './openai.edge';
 
 export const createSectionEmbedding = async (
   chunk: string,
 ): Promise<{ embedding: number[]; tokenCount: number } | undefined> => {
-  if (chunk.length < MIN_SECTION_CONTENT_LENGTH) {
-    return undefined;
-  }
-
   const embeddingResponse = await backOff(
-    () => createEmbedding(chunk, undefined, EMBEDDING_MODEL),
+    () => createEmbeddings(chunk, undefined, EMBEDDING_MODEL),
     {
       startingDelay: 10000,
       numOfAttempts: 10,
@@ -20,6 +16,20 @@ export const createSectionEmbedding = async (
 
   return {
     embedding: embeddingResponse.data[0].embedding,
+    tokenCount: embeddingResponse.usage.total_tokens ?? 0,
+  };
+};
+
+export const bulkCreateSectionEmbeddings = async (
+  sections: string[],
+): Promise<{ embeddings: number[][]; tokenCount: number }> => {
+  const embeddingResponse = await backOff(
+    () => createEmbeddings(sections, undefined, EMBEDDING_MODEL),
+    { startingDelay: 10000, numOfAttempts: 10 },
+  );
+
+  return {
+    embeddings: embeddingResponse.data.map((e) => e.embedding),
     tokenCount: embeddingResponse.usage.total_tokens ?? 0,
   };
 };

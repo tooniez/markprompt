@@ -2,8 +2,6 @@ import { NangoIntegrationId } from '@/types/types';
 
 export type SalesforceEnvironment = 'production' | 'sandbox';
 
-export type NangoModel = 'NangoFile';
-
 export type SalesforceNangoMetadata = {
   customFields: string[] | undefined;
   filters: string | undefined;

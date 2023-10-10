@@ -15,6 +15,11 @@ export const getSourceId = (connectionId: string): DbSource['id'] => {
   return connectionId;
 };
 
+// Currently, sync id and integration id are identical
+export const getSyncId = (integrationId: NangoIntegrationId): NangoSyncId => {
+  return integrationId;
+};
+
 export const getIntegrationId = (
   source: Pick<DbSource, 'type' | 'data'>,
 ): NangoIntegrationId | undefined => {
@@ -22,9 +27,4 @@ export const getIntegrationId = (
     return undefined;
   }
   return (source.data as NangoSourceDataType).integrationId;
-};
-
-// Currently, sync id and integration id are identical
-export const getSyncId = (integrationId: NangoIntegrationId): NangoSyncId => {
-  return integrationId;
 };

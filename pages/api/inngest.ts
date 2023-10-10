@@ -1,10 +1,14 @@
 import { NangoSyncWebhookBody } from '@nangohq/node';
 import { EventSchemas, Inngest } from 'inngest';
 import { serve } from 'inngest/next';
-import { isPresent } from 'ts-is-present';
 
-import { EMBEDDING_MODEL, MAX_CHUNK_LENGTH, OPENAI_RPM } from '@/lib/constants';
-import { createSectionEmbedding } from '@/lib/file-processing';
+import {
+  EMBEDDING_MODEL,
+  MAX_CHUNK_LENGTH,
+  MIN_SECTION_CONTENT_LENGTH,
+  OPENAI_RPM,
+} from '@/lib/constants';
+import { bulkCreateSectionEmbeddings } from '@/lib/file-processing';
 import { getSourceId } from '@/lib/integrations/nango';
 import { getNangoServerInstance } from '@/lib/integrations/nango.server';
 import {
@@ -31,8 +35,17 @@ import {
   Project,
 } from '@/types/types';
 
+// Payload for the webhook and manual sync bodies that we send
+// to Inngest.
+export type NangoSyncPayload = Pick<
+  NangoSyncWebhookBody,
+  'providerConfigKey' | 'connectionId' | 'model' | 'queryTimeStamp'
+>;
+
 type Events = {
-  'nango/sync': { data: NangoSyncWebhookBody };
+  'nango/sync': {
+    data: NangoSyncPayload;
+  };
   'markprompt/file.train': {
     data: {
       file: NangoFileWithMetadata;
@@ -60,8 +73,10 @@ export const inngest = new Inngest({
 const sync = inngest.createFunction(
   { id: 'sync-nango-records' },
   { event: 'nango/sync' },
-  async ({ event, step }) => {
+  async ({ event, step, logger }) => {
     const sourceId = getSourceId(event.data.connectionId);
+
+    logger.debug('Calling getRecords');
 
     const records = (await nango.getRecords<any>({
       providerConfigKey: event.data.providerConfigKey,
@@ -77,8 +92,6 @@ const sync = inngest.createFunction(
     }
 
     const config = await getProjectConfigData(supabase, projectId);
-
-    console.log('records', JSON.stringify(records, null, 2));
 
     const trainEvents = records
       .filter((record) => {
@@ -113,10 +126,13 @@ const sync = inngest.createFunction(
       });
     }
 
+    const ts = Date.now();
     // Files to update
     if (trainEvents.length > 0) {
       await step.sendEvent('train-files', trainEvents);
     }
+
+    logger.debug('!!!!!!!!!!!!!!!!!!!!!!! Took', Date.now() - ts);
 
     return { updated: trainEvents.length, deleted: filesToDelete.length };
   },
@@ -133,8 +149,7 @@ const trainFile = inngest.createFunction(
   },
   { event: 'markprompt/file.train' },
   async ({ event, logger }) => {
-    logger.debug('train-file', JSON.stringify(event, null, 2));
-
+    logger.debug('Train file', event.data.file.id);
     const file = event.data.file;
     const sourceId = event.data.sourceId;
     const projectId = event.data.projectId;
@@ -148,39 +163,38 @@ const trainFile = inngest.createFunction(
       sourceId,
       file.id,
     );
-    console.log('Found', JSON.stringify(foundIds, null, 2));
+
     if (foundIds.length > 0) {
-      logger.debug('train-file. Delete', foundIds);
-      // await batchDeleteFiles(supabase, foundIds);
-      await batchDeleteFilesBySourceAndNangoId(supabase, event.data.sourceId, [
-        file.id,
-      ]);
+      await batchDeleteFiles(supabase, foundIds);
     }
 
     let meta = await extractMeta(file.content, file.contentType);
     const markdown = await convertToMarkdown(file.content, file.contentType);
-    const sections = await splitIntoSections(
-      markdown,
-      event.data.processorOptions,
-      MAX_CHUNK_LENGTH,
-    );
 
-    const sectionsWithEmbeddings = (
-      await Promise.all(
-        sections.map(async (section) => {
-          const embedding = await createSectionEmbedding(section.content);
-          if (!embedding) {
-            return undefined;
-          }
-          return { ...section, ...embedding };
-        }),
+    const sections = (
+      await splitIntoSections(
+        markdown,
+        event.data.processorOptions,
+        MAX_CHUNK_LENGTH,
       )
-    ).filter(isPresent);
+    ).filter((s) => {
+      // Filter out very short sections, to avoid noise
+      return s.content.length >= MIN_SECTION_CONTENT_LENGTH;
+    });
 
-    const fileTokenCount = sectionsWithEmbeddings.reduce(
-      (acc, section) => acc + section.tokenCount,
-      0,
+    const ts = Date.now();
+    const embeddingsResponse = await bulkCreateSectionEmbeddings(
+      sections.map((s) => s.content),
     );
+    logger.debug('Embeddings took', Date.now() - ts);
+
+    const tokenCount = embeddingsResponse.tokenCount;
+    const sectionsWithEmbeddings = embeddingsResponse.embeddings.map((e, i) => {
+      return {
+        ...sections[i],
+        embedding: e,
+      };
+    });
 
     const internalMetadata = {
       nangoFileId: file.id,
@@ -196,11 +210,6 @@ const trainFile = inngest.createFunction(
       meta = { title: file.title, ...meta };
     }
 
-    logger.debug('train-file. Create file', file.path, {
-      ...file.meta,
-      ...meta,
-    });
-
     const newFileId = await createFile(
       supabase,
       projectId,
@@ -210,30 +219,29 @@ const trainFile = inngest.createFunction(
       internalMetadata,
       '',
       file.content,
-      fileTokenCount,
+      tokenCount,
     );
 
     if (!newFileId) {
       return;
     }
 
-    const dbSections = sectionsWithEmbeddings.map<Omit<FileSections, 'id'>>(
-      (section) => {
-        return {
-          file_id: newFileId,
-          content: section.content,
-          meta: (section.leadHeading
-            ? { leadHeading: section.leadHeading }
-            : undefined) as Json,
-          embedding: section.embedding as any,
-          token_count: section.tokenCount ?? 0,
-          cf_file_meta: meta as Json,
-          cf_project_id: projectId,
-        };
-      },
-    );
+    const sectionsData = sectionsWithEmbeddings.map<
+      Omit<FileSections, 'id' | 'token_count'>
+    >((section) => {
+      return {
+        file_id: newFileId,
+        content: section.content,
+        meta: (section.leadHeading
+          ? { leadHeading: section.leadHeading }
+          : undefined) as Json,
+        embedding: section.embedding as any,
+        cf_file_meta: meta as Json,
+        cf_project_id: projectId,
+      };
+    });
 
-    await batchStoreFileSections(supabase, dbSections);
+    await batchStoreFileSections(supabase, sectionsData);
   },
 );
 
@@ -241,8 +249,7 @@ const deleteFile = inngest.createFunction(
   { id: 'delete-files' },
   { event: 'markprompt/files.delete' },
   async ({ event, logger }) => {
-    logger.debug('delete-files', JSON.stringify(event, null, 2));
-
+    logger.debug('Delete files', event.data.ids);
     await batchDeleteFilesBySourceAndNangoId(
       supabase,
       event.data.sourceId,

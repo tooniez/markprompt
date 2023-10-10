@@ -21,11 +21,12 @@ import {
   UsageInfo,
 } from '@/types/types';
 
-import { createEmbedding, createModeration } from './openai.edge';
+import { createEmbeddings, createModeration } from './openai.edge';
 import {
   InsightsType,
   getNormalizedTokenCountForModelUsageInfos,
 } from './stripe/tiers';
+import { stringToLLMInfo } from './utils';
 import {
   byteSize,
   getChatCompletionsResponseText,
@@ -137,7 +138,7 @@ export const getMatchingSections = async (
     // too_many_requests.
     const modelId: OpenAIEmbeddingsModelId = 'text-embedding-ada-002';
     embeddingResult = await backOff(
-      () => createEmbedding(content, byoOpenAIKey, modelId),
+      () => createEmbeddings(content, byoOpenAIKey, modelId),
       {
         startingDelay: 10000,
         numOfAttempts: 10,

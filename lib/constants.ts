@@ -33,6 +33,12 @@ export const MARKPROMPT_JS_PACKAGE_VERSIONS = {
 
 export const EMBEDDING_MODEL = 'text-embedding-ada-002';
 
+// Requests per minute
 export const OPENAI_RPM = {
   'text-embedding-ada-002': 3000,
+};
+
+// Tokens per minute
+export const OPENAI_TPM = {
+  'text-embedding-ada-002': 1000000,
 };

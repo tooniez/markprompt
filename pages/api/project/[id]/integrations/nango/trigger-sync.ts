@@ -1,6 +1,6 @@
-import { NangoSyncWebhookBody } from '@nangohq/node';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { NangoModel } from '@/external/nango-integrations/models';
 import { getNangoServerInstance } from '@/lib/integrations/nango.server';
 import { withProjectAccess } from '@/lib/middleware/common';
 import { inngest } from '@/pages/api/inngest';
@@ -24,15 +24,21 @@ export default withProjectAccess(
         return res.status(400).json({ error: 'No connection id provided.' });
       }
 
-      try {
-        await nango.triggerSync(
-          req.body.integrationId,
-          req.body.connectionId,
-          req.body.syncIds,
-        );
-      } catch (e) {
-        console.error('Error triggering sync', e);
-      }
+      await nango.triggerSync(
+        req.body.integrationId,
+        req.body.connectionId,
+        req.body.syncIds,
+      );
+
+      await inngest.send({
+        name: 'nango/sync',
+        data: {
+          providerConfigKey: req.body.integrationId,
+          connectionId: req.body.connectionId,
+          model: NangoModel,
+          queryTimeStamp: null,
+        },
+      });
 
       return res.status(200).json({});
     }

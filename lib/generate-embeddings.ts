@@ -1,12 +1,8 @@
 import type { SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { backOff } from 'exponential-backoff';
 
-import {
-  CONTEXT_TOKENS_CUTOFF,
-  MAX_CHUNK_LENGTH,
-  MIN_SECTION_CONTENT_LENGTH,
-} from '@/lib/constants';
-import { createEmbedding } from '@/lib/openai.edge';
+import { MAX_CHUNK_LENGTH, MIN_SECTION_CONTENT_LENGTH } from '@/lib/constants';
+import { createEmbeddings } from '@/lib/openai.edge';
 import {
   createChecksum,
   getFileType,
@@ -291,7 +287,7 @@ export const generateFileEmbeddingsAndSaveFile = async (
       // Retry with exponential backoff in case of error. Typical cause is
       // too_many_requests.
       const embeddingResult = await backOff(
-        () => createEmbedding(input, byoOpenAIKey, model.value),
+        () => createEmbeddings(input, byoOpenAIKey, model.value),
         {
           startingDelay: 10000,
           numOfAttempts: 10,
