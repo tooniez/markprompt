@@ -33,7 +33,6 @@ import { pluralize } from '@/lib/utils';
 import { Json } from '@/types/supabase';
 import {
   DbSource,
-  DbSyncQueue,
   FileSections,
   NangoFileWithMetadata,
   Project,
@@ -44,7 +43,7 @@ import {
 export type NangoSyncPayload = Pick<
   NangoSyncWebhookBody,
   'providerConfigKey' | 'connectionId' | 'model' | 'queryTimeStamp'
-> & { syncQueueId?: DbSyncQueue['id'] };
+>;
 
 type FileTrainEventData = {
   file: NangoFileWithMetadata;
@@ -81,9 +80,10 @@ const sync = inngest.createFunction(
   { event: 'nango/sync' },
   async ({ event, step, logger }) => {
     const sourceId = getSourceId(event.data.connectionId);
-    const syncQueueId =
-      event.data.syncQueueId ??
-      (await getOrCreateRunningSyncQueueForSource(supabase, sourceId));
+    const syncQueueId = await getOrCreateRunningSyncQueueForSource(
+      supabase,
+      sourceId,
+    );
 
     logger.debug('Calling getRecords');
 
@@ -91,8 +91,10 @@ const sync = inngest.createFunction(
       providerConfigKey: event.data.providerConfigKey,
       connectionId: event.data.connectionId,
       model: event.data.model,
-      delta: event.data.queryTimeStamp || undefined,
+      // delta: event.data.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
+
+    console.log('records', JSON.stringify(records, null, 2));
 
     const projectId = await getProjectIdFromSource(supabase, sourceId);
 

@@ -47,6 +47,7 @@ integrations:
     notion-pages:
       type: sync
       runs: every day
+      track_deletes: true
       returns:
         - NangoFile
 models:

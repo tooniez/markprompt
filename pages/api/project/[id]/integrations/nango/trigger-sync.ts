@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { NangoModel } from '@/external/nango-integrations/models';
 import { getSourceId } from '@/lib/integrations/nango';
 import { getNangoServerInstance } from '@/lib/integrations/nango.server';
 import { withProjectAccess } from '@/lib/middleware/common';
@@ -9,7 +8,6 @@ import {
   createServiceRoleSupabaseClient,
   createSyncQueue,
 } from '@/lib/supabase';
-import { NangoSyncPayload, inngest } from '@/pages/api/inngest';
 
 type Data = {
   status?: string;
@@ -20,7 +18,7 @@ const allowedMethods = ['POST'];
 
 const nango = getNangoServerInstance();
 
-const supabase = createServiceRoleSupabaseClient();
+// const supabase = createServiceRoleSupabaseClient();
 
 export default withProjectAccess(
   allowedMethods,
@@ -32,32 +30,21 @@ export default withProjectAccess(
         return res.status(400).json({ error: 'No connection id provided.' });
       }
 
-      const sourceId = getSourceId(req.body.connectionId);
-      const syncQueueId = await createSyncQueue(supabase, sourceId);
+      // const sourceId = getSourceId(req.body.connectionId);
+      // const syncQueueId = await createSyncQueue(supabase, sourceId);
 
-      await appendLogToSyncQueue(
-        supabase,
-        syncQueueId,
-        'Importing data',
-        'info',
-      );
+      // await appendLogToSyncQueue(
+      //   supabase,
+      //   syncQueueId,
+      //   'Importing data',
+      //   'info',
+      // );
 
       await nango.triggerSync(
         req.body.integrationId,
         req.body.connectionId,
         req.body.syncIds,
       );
-
-      await inngest.send({
-        name: 'nango/sync',
-        data: {
-          providerConfigKey: req.body.integrationId,
-          connectionId: req.body.connectionId,
-          model: NangoModel,
-          queryTimeStamp: null,
-          syncQueueId,
-        },
-      });
 
       return res.status(200).json({});
     }

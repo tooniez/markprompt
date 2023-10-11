@@ -161,7 +161,7 @@ const SyncStatusIndicator: FC<SyncStatusIndicatorProps> = ({ syncQueue }) => {
             parseISO(syncQueue.created_at),
           )}`}
         >
-          <RefreshCw className="h-4 w-4 animate-spin text-sky-600" />
+          <RefreshCw className="h-4 w-4 animate-spin text-neutral-600" />
         </Tooltip>
       );
     case 'canceled':

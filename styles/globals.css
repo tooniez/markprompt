@@ -57,6 +57,10 @@ a {
   @apply rounded-md border border-neutral-900 p-3 text-xs;
 }
 
+.prose :where(thead):not(:where([class~='not-prose'] *)) {
+  @apply border-b border-neutral-800;
+}
+
 /*
  * To investigate: ReactMarkdown generates a <pre> within a <pre>
  * when using the custom {code} component mapping. We only want
