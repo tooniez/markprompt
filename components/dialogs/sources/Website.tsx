@@ -9,7 +9,6 @@ import {
   FormikValues,
 } from 'formik';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { ChangeEvent, FC, ReactNode, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
@@ -27,6 +26,8 @@ import { isWebsiteAccessible } from '@/lib/integrations/website';
 import { isCustomPageFetcherEnabled } from '@/lib/stripe/tiers';
 import { getLabelForSource, toNormalizedUrl } from '@/lib/utils';
 import { Project } from '@/types/types';
+
+import SourceDialog from './SourceDialog';
 
 const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
 
@@ -175,52 +176,34 @@ const WebsiteSource: FC<WebsiteSourceProps> = ({
 };
 
 const WebsiteAddSourceDialog = ({
-  onDidAddSource,
+  open,
+  onOpenChange,
   openPricingAsDialog,
+  onDidAddSource,
   children,
 }: {
-  onDidAddSource?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   openPricingAsDialog?: boolean;
-  children: ReactNode;
+  onDidAddSource?: () => void;
+  children?: ReactNode;
 }) => {
-  const { team } = useTeam();
-  const { project } = useProject();
-  const [websiteDialogOpen, setWebsiteDialogOpen] = useState(false);
-
   return (
-    <Dialog.Root open={websiteDialogOpen} onOpenChange={setWebsiteDialogOpen}>
-      <Dialog.Trigger asChild>{children}</Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-        <Dialog.Content className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[500px] flex-col border">
-          <Dialog.Title className="dialog-title flex-none">
-            Connect website
-          </Dialog.Title>
-          <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-            <p>
-              Sync pages from a website. You can specify which files to include
-              and exclude from the website in the{' '}
-              <Link
-                className="subtle-underline"
-                href={`/${team?.slug}/${project?.slug}/settings`}
-              >
-                project configuration
-              </Link>
-              .
-            </p>
-          </div>
-          <div className="flex-grow">
-            <WebsiteSource
-              openPricingAsDialog={openPricingAsDialog}
-              onDidAddSource={() => {
-                setWebsiteDialogOpen(false);
-                onDidAddSource?.();
-              }}
-            />
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+    <SourceDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      trigger={children && <Dialog.Trigger asChild>{children}</Dialog.Trigger>}
+      title="Connect website"
+      description="Sync pages from a website."
+    >
+      <WebsiteSource
+        openPricingAsDialog={openPricingAsDialog}
+        onDidAddSource={() => {
+          onOpenChange?.(false);
+          onDidAddSource?.();
+        }}
+      />
+    </SourceDialog>
   );
 };
 

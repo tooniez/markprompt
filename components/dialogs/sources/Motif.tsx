@@ -8,7 +8,6 @@ import {
   FormikErrors,
   FormikValues,
 } from 'formik';
-import Link from 'next/link';
 import { ChangeEvent, FC, ReactNode, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
@@ -18,7 +17,6 @@ import { NoAutoInput } from '@/components/ui/Input';
 import { addSource, deleteSource } from '@/lib/api';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
-import useTeam from '@/lib/hooks/use-team';
 import useUser from '@/lib/hooks/use-user';
 import {
   extractProjectDomain,
@@ -26,6 +24,8 @@ import {
 } from '@/lib/integrations/motif';
 import { getLabelForSource } from '@/lib/utils';
 import { Project } from '@/types/types';
+
+import SourceDialog from './SourceDialog';
 
 const _addSource = async (
   projectId: Project['id'],
@@ -156,49 +156,31 @@ const MotifSource: FC<MotifSourceProps> = ({
 };
 
 const MotifAddSourceDialog = ({
+  open,
+  onOpenChange,
   onDidAddSource,
   children,
 }: {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onDidAddSource?: () => void;
-  children: ReactNode;
+  children?: ReactNode;
 }) => {
-  const { team } = useTeam();
-  const { project } = useProject();
-  const [motifDialogOpen, setMotifDialogOpen] = useState(false);
-
   return (
-    <Dialog.Root open={motifDialogOpen} onOpenChange={setMotifDialogOpen}>
-      <Dialog.Trigger asChild>{children}</Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-        <Dialog.Content className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[500px] flex-col border">
-          <Dialog.Title className="dialog-title flex-none">
-            Connect Motif project
-          </Dialog.Title>
-          <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-            <p>
-              Sync all public pages from your Motif project. You can specify
-              which files to include and exclude from the repository in the{' '}
-              <Link
-                className="subtle-underline"
-                href={`/${team?.slug}/${project?.slug}/settings`}
-              >
-                project configuration
-              </Link>
-              .
-            </p>
-          </div>
-          <div className="flex-grow">
-            <MotifSource
-              onDidAddSource={() => {
-                setMotifDialogOpen(false);
-                onDidAddSource?.();
-              }}
-            />
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+    <SourceDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      trigger={children && <Dialog.Trigger asChild>{children}</Dialog.Trigger>}
+      title="Connect Motif project"
+      description="Sync public pages from your Motif project."
+    >
+      <MotifSource
+        onDidAddSource={() => {
+          onOpenChange?.(false);
+          onDidAddSource?.();
+        }}
+      />
+    </SourceDialog>
   );
 };
 

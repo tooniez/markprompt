@@ -9,7 +9,7 @@ import {
   FormikValues,
 } from 'formik';
 import dynamic from 'next/dynamic';
-import { FC, ReactNode, useCallback, useState } from 'react';
+import { FC, ReactNode, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 
 import Button from '@/components/ui/Button';
@@ -36,6 +36,8 @@ import {
   getKnowledgeIntegrationId,
 } from '@/lib/integrations/salesforce';
 import { getLabelForSource } from '@/lib/utils';
+
+import SourceDialog from './SourceDialog';
 
 const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
 
@@ -411,42 +413,34 @@ const SalesforceKnowledgeSource: FC<SalesforceKnowledgeSourceProps> = ({
 };
 
 const SalesforceKnowledgeAddSourceDialog = ({
+  open,
+  onOpenChange,
   openPricingAsDialog,
   onDidAddSource,
   children,
 }: {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   openPricingAsDialog?: boolean;
   onDidAddSource?: () => void;
-  children: ReactNode;
+  children?: ReactNode;
 }) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
-
   return (
-    <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
-      <Dialog.Trigger asChild>{children}</Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-        <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[720px] w-[90%] max-w-[500px] flex-col">
-          <div className="flex-none">
-            <Dialog.Title className="dialog-title flex-none">
-              Connect Salesforce Knowledge
-            </Dialog.Title>
-            <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-              <p>Sync content from a Salesforce Knowledge base.</p>
-            </div>
-          </div>
-          <div className="flex-grow overflow-y-hidden">
-            <SalesforceKnowledgeSource
-              openPricingAsDialog={openPricingAsDialog}
-              onDidAddSource={() => {
-                setDialogOpen(false);
-                onDidAddSource?.();
-              }}
-            />
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+    <SourceDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      trigger={children && <Dialog.Trigger asChild>{children}</Dialog.Trigger>}
+      title="Connect Salesforce Knowledge"
+      description="Sync content from a Salesforce Knowledge base."
+    >
+      <SalesforceKnowledgeSource
+        openPricingAsDialog={openPricingAsDialog}
+        onDidAddSource={() => {
+          onOpenChange?.(false);
+          onDidAddSource?.();
+        }}
+      />
+    </SourceDialog>
   );
 };
 

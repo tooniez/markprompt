@@ -33,8 +33,6 @@ import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
-import NotionPagesAddSourceDialog from '@/components/dialogs/sources/NotionPages';
-import SalesforceCaseAddSourceDialog from '@/components/dialogs/sources/SalesforceCase';
 import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import * as GitHub from '@/components/icons/GitHub';
@@ -77,11 +75,16 @@ import {
   getUrlPath,
   isUrl,
   pluralize,
-  timeout,
 } from '@/lib/utils';
 import { getNameForPath } from '@/lib/utils.nodeps';
 import { getFileTitle } from '@/lib/utils.non-edge';
-import { DbFile, DbSource, DbSyncQueueOverview, Project } from '@/types/types';
+import {
+  DbFile,
+  DbSource,
+  DbSyncQueueOverview,
+  NangoSourceDataType,
+  Project,
+} from '@/types/types';
 
 dayjs.extend(relativeTime);
 
@@ -94,6 +97,16 @@ const GitHubAddSourceDialog = dynamic(
 
 const SalesforceKnowledgeAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/SalesforceKnowledge'),
+  { loading: () => Loading },
+);
+
+const SalesforceCaseAddSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/SalesforceCase'),
+  { loading: () => Loading },
+);
+
+const NotionPagesAddSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/NotionPages'),
   { loading: () => Loading },
 );
 
@@ -234,6 +247,9 @@ const Sources: FC<SourcesProps> = ({ projectId, onRemoveSelected }) => {
                 getSyncId(integrationId),
               ]);
             }}
+            onConfigureSelected={() => {
+              // onConfigureSelected(source);
+            }}
             onRemoveSelected={() => {
               onRemoveSelected(source);
             }}
@@ -248,6 +264,7 @@ type SourceItemProps = {
   source: DbSource;
   syncQueue: DbSyncQueueOverview | undefined;
   onSyncSelected: () => void;
+  onConfigureSelected: () => void;
   onRemoveSelected: () => void;
 };
 
@@ -255,6 +272,7 @@ const SourceItem: FC<SourceItemProps> = ({
   source,
   syncQueue,
   onSyncSelected,
+  onConfigureSelected,
   onRemoveSelected,
 }) => {
   const Icon = getIconForSource(source);
@@ -299,6 +317,11 @@ const SourceItem: FC<SourceItemProps> = ({
             <DropdownMenu.Item asChild onSelect={() => onSyncSelected()}>
               <span className="dropdown-menu-item dropdown-menu-item-noindent block">
                 Sync now
+              </span>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item asChild onSelect={() => onConfigureSelected()}>
+              <span className="dropdown-menu-item dropdown-menu-item-noindent block">
+                Configure
               </span>
             </DropdownMenu.Item>
             <DropdownMenu.Item asChild onSelect={() => onRemoveSelected()}>
@@ -357,6 +380,19 @@ const Data = () => {
     undefined,
   );
   const [editorOpen, setEditorOpen] = useState<boolean>(false);
+  const [sourceDialogOpen, setSourceDialogOpen] = useState<
+    | {
+        // Add other IDs manually here until they are moved to Nango
+        dialogId:
+          | NangoSourceDataType['integrationId']
+          | 'motif'
+          | 'github'
+          | 'website'
+          | 'api-uploads';
+        sourceId?: DbSource['id'];
+      }
+    | undefined
+  >(undefined);
 
   const tier = team && getTier(team);
   const isEnterpriseTier = !tier || isEnterpriseOrCustomTier(tier);
@@ -690,129 +726,127 @@ const Data = () => {
               },
             )}
           >
-            <WebsiteAddSourceDialog>
-              <button
-                className={cn(
-                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                  {
-                    'pointer-events-none opacity-50': !canAddMoreContent,
-                  },
-                )}
-              >
-                <Globe className="h-4 w-4 flex-none text-neutral-500" />
-                <span className="truncate">Connect website</span>
-              </button>
-            </WebsiteAddSourceDialog>
-            <GitHubAddSourceDialog>
-              <button
-                className={cn(
-                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                  {
-                    'pointer-events-none opacity-50': !canAddMoreContent,
-                  },
-                )}
-              >
-                <GitHub.GitHubIcon className="h-4 w-4 flex-none text-neutral-500" />
-                <span className="truncate">Connect GitHub repo</span>
-              </button>
-            </GitHubAddSourceDialog>
-            <NotionPagesAddSourceDialog>
-              <button
-                className={cn(
-                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                  {
-                    'pointer-events-none opacity-50': !canAddMoreContent,
-                  },
-                )}
-              >
-                <NotionIcon className="h-4 w-4 flex-none text-neutral-500" />
-                <span className="flex-grow truncate">Connect Notion</span>
-              </button>
-            </NotionPagesAddSourceDialog>
-            <SalesforceKnowledgeAddSourceDialog>
-              <button
-                className={cn(
-                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                  {
-                    'pointer-events-none opacity-50': !canAddMoreContent,
-                  },
-                )}
-                {...(!isEnterpriseTier
-                  ? {
-                      onClick: (e) => {
-                        e.preventDefault();
-                        emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
-                      },
-                    }
-                  : {})}
-              >
-                <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
-                <span className="flex-grow truncate">
-                  Connect Salesforce Knowledge
-                </span>
+            <button
+              className={cn(
+                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                {
+                  'pointer-events-none opacity-50': !canAddMoreContent,
+                },
+              )}
+              onClick={() => {
+                setSourceDialogOpen({ dialogId: 'website' });
+              }}
+            >
+              <Globe className="h-4 w-4 flex-none text-neutral-500" />
+              <span className="truncate">Connect website</span>
+            </button>
+            <button
+              className={cn(
+                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                {
+                  'pointer-events-none opacity-50': !canAddMoreContent,
+                },
+              )}
+              onClick={() => {
+                setSourceDialogOpen({ dialogId: 'github' });
+              }}
+            >
+              <GitHub.GitHubIcon className="h-4 w-4 flex-none text-neutral-500" />
+              <span className="truncate">Connect GitHub repo</span>
+            </button>
+            <button
+              className={cn(
+                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                {
+                  'pointer-events-none opacity-50': !canAddMoreContent,
+                },
+              )}
+              onClick={() => {
+                setSourceDialogOpen({ dialogId: 'notion-pages' });
+              }}
+            >
+              <NotionIcon className="h-4 w-4 flex-none text-neutral-500" />
+              <span className="flex-grow truncate">Connect Notion</span>
+            </button>
+            <button
+              className={cn(
+                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                {
+                  'pointer-events-none opacity-50': !canAddMoreContent,
+                },
+              )}
+              onClick={(e) => {
+                if (!isEnterpriseTier) {
+                  e.preventDefault();
+                  emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
+                }
+                setSourceDialogOpen({ dialogId: 'salesforce-knowledge' });
+              }}
+            >
+              <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
+              <span className="flex-grow truncate">
+                Connect Salesforce Knowledge
+              </span>
 
-                {!isEnterpriseTier && (
-                  <div className="flex-nonw">
-                    <Tag>Enterprise</Tag>
-                  </div>
-                )}
-              </button>
-            </SalesforceKnowledgeAddSourceDialog>
-            <SalesforceCaseAddSourceDialog>
-              <button
-                className={cn(
-                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                  {
-                    'pointer-events-none opacity-50': !canAddMoreContent,
-                  },
-                )}
-                {...(!isEnterpriseTier
-                  ? {
-                      onClick: (e) => {
-                        e.preventDefault();
-                        emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
-                      },
-                    }
-                  : {})}
-              >
-                <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
-                <span className="flex-grow truncate">
-                  Connect Salesforce Case
-                </span>
-
-                {!isEnterpriseTier && (
-                  <div className="flex-nonw">
-                    <Tag>Enterprise</Tag>
-                  </div>
-                )}
-              </button>
-            </SalesforceCaseAddSourceDialog>
-            <MotifAddSourceDialog>
-              <button
-                className={cn(
-                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                  {
-                    'pointer-events-none opacity-50': !canAddMoreContent,
-                  },
-                )}
-              >
-                <MotifIcon className="h-4 w-4 flex-none text-neutral-500" />
-                <span className="truncate">Connect Motif project</span>
-              </button>
-            </MotifAddSourceDialog>
-            <FilesAddSourceDialog forceRetrain={forceRetrain}>
-              <button
-                className={cn(
-                  'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                  {
-                    'pointer-events-none opacity-50': !canAddMoreContent,
-                  },
-                )}
-              >
-                <Upload className="h-4 w-4 flex-none text-neutral-500" />
-                <span className="truncate">Upload files</span>
-              </button>
-            </FilesAddSourceDialog>
+              {!isEnterpriseTier && (
+                <div className="flex-nonw">
+                  <Tag>Enterprise</Tag>
+                </div>
+              )}
+            </button>
+            <button
+              className={cn(
+                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                {
+                  'pointer-events-none opacity-50': !canAddMoreContent,
+                },
+              )}
+              onClick={(e) => {
+                if (!isEnterpriseTier) {
+                  e.preventDefault();
+                  emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
+                }
+                setSourceDialogOpen({ dialogId: 'salesforce-case' });
+              }}
+            >
+              <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
+              <span className="flex-grow truncate">
+                Connect Salesforce Case
+              </span>
+              {!isEnterpriseTier && (
+                <div className="flex-nonw">
+                  <Tag>Enterprise</Tag>
+                </div>
+              )}
+            </button>
+            {/* <button
+              className={cn(
+                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                {
+                  'pointer-events-none opacity-50': !canAddMoreContent,
+                },
+              )}
+              onClick={() => {
+                setSourceDialogOpen({ dialogId: 'motif' });
+              }}
+            >
+              <MotifIcon className="h-4 w-4 flex-none text-neutral-500" />
+              <span className="truncate">Connect Motif project</span>
+            </button> */}
+            <button
+              className={cn(
+                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
+                {
+                  'pointer-events-none opacity-50': !canAddMoreContent,
+                },
+              )}
+              onClick={() => {
+                setSourceDialogOpen({ dialogId: 'api-uploads' });
+              }}
+            >
+              <Upload className="h-4 w-4 flex-none text-neutral-500" />
+              <span className="truncate">Upload files</span>
+            </button>
           </div>
         </div>
         <div className="sm:col-span-3">
@@ -966,6 +1000,62 @@ const Data = () => {
         setOpen={(open) => {
           if (!open) {
             setEditorOpen(false);
+          }
+        }}
+      />
+      <NotionPagesAddSourceDialog
+        open={sourceDialogOpen?.dialogId === 'notion-pages'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSourceDialogOpen(undefined);
+          }
+        }}
+      />
+      <GitHubAddSourceDialog
+        open={sourceDialogOpen?.dialogId === 'github'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSourceDialogOpen(undefined);
+          }
+        }}
+      />
+      <SalesforceKnowledgeAddSourceDialog
+        open={sourceDialogOpen?.dialogId === 'salesforce-knowledge'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSourceDialogOpen(undefined);
+          }
+        }}
+      />
+      <SalesforceCaseAddSourceDialog
+        open={sourceDialogOpen?.dialogId === 'salesforce-case'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSourceDialogOpen(undefined);
+          }
+        }}
+      />
+      <WebsiteAddSourceDialog
+        open={sourceDialogOpen?.dialogId === 'website'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSourceDialogOpen(undefined);
+          }
+        }}
+      />
+      <MotifAddSourceDialog
+        open={sourceDialogOpen?.dialogId === 'motif'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSourceDialogOpen(undefined);
+          }
+        }}
+      />
+      <FilesAddSourceDialog
+        open={sourceDialogOpen?.dialogId === 'api-uploads'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSourceDialogOpen(undefined);
           }
         }}
       />

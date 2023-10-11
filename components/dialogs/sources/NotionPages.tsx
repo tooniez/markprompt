@@ -7,10 +7,10 @@ import {
   FormikErrors,
   FormikValues,
 } from 'formik';
-import dynamic from 'next/dynamic';
-import { FC, ReactNode, useCallback, useState } from 'react';
+import { FC, ReactNode, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 
+import DocsLimit from '@/components/files/DocsLimit';
 import Button from '@/components/ui/Button';
 import { ErrorLabel } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
@@ -29,11 +29,7 @@ import {
 } from '@/lib/integrations/nango.client';
 import { getLabelForSource } from '@/lib/utils';
 
-const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
-
-const DocsLimit = dynamic(() => import('@/components/files/DocsLimit'), {
-  loading: () => Loading,
-});
+import SourceDialog from './SourceDialog';
 
 const nango = getNangoClientInstance();
 
@@ -203,42 +199,34 @@ const NotionPagesSource: FC<NotionPagesSourceProps> = ({ onDidAddSource }) => {
 };
 
 const NotionPagesAddSourceDialog = ({
+  open,
+  onOpenChange,
   openPricingAsDialog,
   onDidAddSource,
   children,
 }: {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   openPricingAsDialog?: boolean;
   onDidAddSource?: () => void;
-  children: ReactNode;
+  children?: ReactNode;
 }) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
-
   return (
-    <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
-      <Dialog.Trigger asChild>{children}</Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-        <Dialog.Content className="animate-dialog-slide-in dialog-content flex w-[90%] max-w-[500px] flex-col">
-          <div className="flex-none">
-            <Dialog.Title className="dialog-title flex-none">
-              Connect Notion
-            </Dialog.Title>
-            <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-              <p>Sync pages from a Notion workspace.</p>
-            </div>
-          </div>
-          <div className="flex-grow overflow-y-hidden">
-            <NotionPagesSource
-              openPricingAsDialog={openPricingAsDialog}
-              onDidAddSource={() => {
-                setDialogOpen(false);
-                onDidAddSource?.();
-              }}
-            />
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+    <SourceDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      trigger={children && <Dialog.Trigger asChild>{children}</Dialog.Trigger>}
+      title="Connect Notion"
+      description="Sync pages from a Notion workspace."
+    >
+      <NotionPagesSource
+        openPricingAsDialog={openPricingAsDialog}
+        onDidAddSource={() => {
+          onOpenChange?.(false);
+          onDidAddSource?.();
+        }}
+      />
+    </SourceDialog>
   );
 };
 
