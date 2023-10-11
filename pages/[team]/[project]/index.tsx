@@ -27,18 +27,17 @@ import {
   Check,
   RefreshCw,
   XOctagon,
+  Plus,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { FC, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { isPresent } from 'ts-is-present';
 
+import NotionPagesOnboardingDialog from '@/components/dialogs/sources/onboarding/NotionPages';
+import SourcesDialog from '@/components/dialogs/sources/SourcesDialog';
 import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
-import * as GitHub from '@/components/icons/GitHub';
-import { MotifIcon } from '@/components/icons/Motif';
-import { NotionIcon } from '@/components/icons/Notion';
-import { SalesforceIcon } from '@/components/icons/Salesforce';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Onboarding from '@/components/onboarding/Onboarding';
 import Button from '@/components/ui/Button';
@@ -207,7 +206,7 @@ type SourcesProps = {
 const Sources: FC<SourcesProps> = ({ projectId, onRemoveSelected }) => {
   const { sources, syncQueues, mutateSyncQueues } = useSources();
   return (
-    <>
+    <div className="flex flex-col gap-2">
       {sources.map((source) => {
         const syncQueue = syncQueues?.find((q) => q.source_id === source.id);
         return (
@@ -256,7 +255,7 @@ const Sources: FC<SourcesProps> = ({ projectId, onRemoveSelected }) => {
           />
         );
       })}
-    </>
+    </div>
   );
 };
 
@@ -699,8 +698,8 @@ const Data = () => {
         </div>
       }
     >
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-4">
-        <div className="flex w-full flex-col gap-2">
+      <div className="grid grid-cols-1 gap-8 sm:grid-cols-12">
+        <div className="flex w-full flex-col gap-2 sm:col-span-3 md:col-span-2">
           {!loadingFiles && !canAddMoreContent && (
             <UpgradeNote className="mb-4" showDialog>
               You have reached your quota of indexed content (
@@ -710,8 +709,10 @@ const Data = () => {
           )}
           {sources.length > 0 && (
             <>
-              <p className="text-xs font-medium text-neutral-500">Sources</p>
-              <div className="mb-2 flex flex-col gap-2 pt-1 pb-4">
+              <p className="mb-2 text-xs font-medium text-neutral-500">
+                Connected sources
+              </p>
+              <div className="mb-8">
                 <Sources
                   projectId={project?.id}
                   onRemoveSelected={setSourceToRemove}
@@ -719,7 +720,16 @@ const Data = () => {
               </div>
             </>
           )}
-          <div
+          <SourcesDialog
+            onSourceSelected={(integrationId) =>
+              setSourceDialogOpen({ dialogId: integrationId })
+            }
+          >
+            <Button variant="cta" Icon={Plus}>
+              Connect source
+            </Button>
+          </SourcesDialog>
+          {/* <div
             className={cn(
               'flex flex-col gap-2 rounded-md border border-dashed border-neutral-800 p-4',
               {
@@ -820,7 +830,7 @@ const Data = () => {
                 </div>
               )}
             </button>
-            {/* <button
+            <button
               className={cn(
                 'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
                 {
@@ -833,7 +843,7 @@ const Data = () => {
             >
               <MotifIcon className="h-4 w-4 flex-none text-neutral-500" />
               <span className="truncate">Connect Motif project</span>
-            </button> */}
+            </button>
             <button
               className={cn(
                 'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
@@ -848,10 +858,10 @@ const Data = () => {
               <Upload className="h-4 w-4 flex-none text-neutral-500" />
               <span className="truncate">Upload files</span>
             </button>
-          </div>
+          </div> */}
         </div>
-        <div className="sm:col-span-3">
-          {loadingFiles && (
+        <div className="sm:col-span-9 md:col-span-10">
+          {/* {loadingFiles && (
             <div className="relative min-h-[200px]">
               <SkeletonTable onDark loading />
             </div>
@@ -962,7 +972,7 @@ const Data = () => {
                 })}
               </tbody>
             </table>
-          )}
+          )} */}
           <div className="flex flex-row gap-2 py-4">
             <Button
               variant="plain"
@@ -1004,7 +1014,7 @@ const Data = () => {
           }
         }}
       />
-      <NotionPagesAddSourceDialog
+      <NotionPagesOnboardingDialog
         open={sourceDialogOpen?.dialogId === 'notion-pages'}
         onOpenChange={(open) => {
           if (!open) {

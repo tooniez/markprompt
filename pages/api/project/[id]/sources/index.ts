@@ -14,7 +14,7 @@ type Data =
   | DbSource[]
   | DbSource;
 
-const allowedMethods = ['POST', 'GET', 'DELETE'];
+const allowedMethods = ['POST', 'PATCH', 'GET', 'DELETE'];
 
 export default withProjectAccess(
   allowedMethods,
@@ -38,10 +38,10 @@ export default withProjectAccess(
       const sourceType = req.body.type as SourceType;
       const data = req.body.data as any;
 
-      const source = await getSource(supabase, projectId, sourceType, data);
-      if (source) {
-        return res.status(400).json({ error: 'Source already exists' });
-      }
+      // const source = await getSource(supabase, projectId, sourceType, data);
+      // if (source) {
+      //   return res.status(400).json({ error: 'Source already exists' });
+      // }
 
       const { error, data: newSource } = await supabase
         .from('sources')
@@ -65,6 +65,17 @@ export default withProjectAccess(
       }
 
       return res.status(200).json(newSource);
+    } else if (req.method === 'PATCH') {
+      const sourceId = req.body.sourceId as string;
+      const data = req.body.data as any;
+
+      if (!sourceId) {
+        return res.status(400).json({ error: 'Please provide a source id' });
+      }
+
+      await supabase.from('sources').update({ data }).eq('id', sourceId);
+
+      return res.status(200).json({ status: 'ok' });
     } else if (req.method === 'DELETE') {
       const { error } = await supabase
         .from('sources')

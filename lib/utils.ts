@@ -639,6 +639,19 @@ export const getGitHubOwnerRepoString = (url: string) => {
   return `${info.owner}/${info.repo}`;
 };
 
+const getIntegrationDisplayName = (
+  integrationId: NangoSourceDataType['integrationId'],
+) => {
+  switch (integrationId) {
+    case 'notion-pages':
+      return 'Notion';
+    case 'salesforce-case':
+      return 'Salesforce Case';
+    case 'salesforce-knowledge':
+      return 'Salesforce Knowledge';
+  }
+};
+
 export const getLabelForSource = (source: Source, inline: boolean) => {
   switch (source.type) {
     case 'github': {
@@ -658,7 +671,8 @@ export const getLabelForSource = (source: Source, inline: boolean) => {
     case 'api-upload':
       return 'API uploads';
     case 'nango': {
-      return (source.data as NangoSourceDataType).identifier;
+      const data = source.data as NangoSourceDataType;
+      return data.displayName || getIntegrationDisplayName(data.integrationId);
     }
     default:
       return 'Unknown source';

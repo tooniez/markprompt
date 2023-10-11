@@ -21,7 +21,7 @@ const SourceDialog = ({
       {trigger && <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>}
       <Dialog.Portal>
         <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-        <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[720px] w-[90%] max-w-[500px] flex-col">
+        <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[720px] w-[90%] max-w-[640px] flex-col">
           <div className="flex-none">
             <Dialog.Title className="dialog-title flex-none">
               {title}
@@ -30,7 +30,7 @@ const SourceDialog = ({
               <p>{description}</p>
             </div>
           </div>
-          <div className="flex-grow overflow-y-hidden">{children}</div>
+          <div className="flex-grow overflow-y-auto">{children}</div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

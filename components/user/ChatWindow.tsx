@@ -186,7 +186,7 @@ export const ContactWindow = ({
                   </Button>
                 </CTABar>
                 <div className="flex flex-row items-center gap-4 border-t border-neutral-900 px-4 py-4">
-                  <p className="mb-1 flex-grow text-xs font-medium text-neutral-300">
+                  <p className="mb-1 flex-grow text-xs text-neutral-300">
                     Want to skip the form and speak with an expert?
                   </p>
                   <Button

@@ -41,67 +41,11 @@ type NotionPagesSourceProps = {
 
 const identifierRegex = /^[a-zA-Z0-9-]+$/;
 
-const INTEGRATION_ID = 'notion-pages';
-
 const NotionPagesSource: FC<NotionPagesSourceProps> = ({ onDidAddSource }) => {
   const { project } = useProject();
   const { user } = useUser();
   const { mutate: mutateSources } = useSources();
   const { isInfiniteEmbeddingsTokensAllowance } = useUsage();
-
-  const connectAndAddSource = useCallback(
-    async (identifier: string) => {
-      if (!project?.id) {
-        return;
-      }
-
-      try {
-        const newSource = await addSource(project.id, 'nango', {
-          integrationId: INTEGRATION_ID,
-          identifier,
-        });
-
-        if (!newSource.id) {
-          throw new Error('Unable to create source');
-        }
-
-        // Create the Nango connection. Note that nango.yaml specifies
-        // `auto_start: false` to give us a chance to set the metadata
-        // first.
-        try {
-          const connectionId = getConnectionId(newSource.id);
-          const result = await nango.auth(INTEGRATION_ID, connectionId);
-
-          if ('message' in result) {
-            // Nango AuthError
-            throw new Error(result.message);
-          }
-
-          // Now that the metadata is set, we are ready to sync.
-          await triggerSync(project.id, INTEGRATION_ID, connectionId, [
-            getSyncId(INTEGRATION_ID),
-          ]);
-
-          await mutateSources();
-
-          toast.success(
-            `The source ${getLabelForSource(
-              newSource,
-              true,
-            )} has been added to the project.`,
-          );
-        } catch (e: any) {
-          // If there is an error, make sure to delete the connection
-          await deleteConnection(project.id, INTEGRATION_ID, newSource.id);
-          await deleteSource(project.id, newSource.id);
-          toast.error(`Error connecting to Notion: ${e.message || e}.`);
-        }
-      } catch (e: any) {
-        toast.error(`Error connecting to Notion: ${e.message || e}.`);
-      }
-    },
-    [mutateSources, project?.id],
-  );
 
   if (!user) {
     return <></>;
@@ -141,7 +85,7 @@ const NotionPagesSource: FC<NotionPagesSourceProps> = ({ onDidAddSource }) => {
           }
           setSubmitting(true);
           const identifier = values.identifier.replace(/[^a-zA-Z0-9-]/g, '');
-          await connectAndAddSource(identifier);
+          // await connectAndAddSource(identifier);
           setSubmitting(false);
           onDidAddSource();
         }}
@@ -170,14 +114,6 @@ const NotionPagesSource: FC<NotionPagesSourceProps> = ({ onDidAddSource }) => {
                 />
               </div>
               <ErrorMessage name="identifier" component={ErrorLabel} />
-            </div>
-            <div className="flex-none">
-              <ErrorMessage name="common" component={ErrorLabel} />
-              {!isInfiniteEmbeddingsTokensAllowance && (
-                <div className="mt-2 rounded-md border border-neutral-900">
-                  <DocsLimit />
-                </div>
-              )}
             </div>
             <div className="gap-2 border-t border-neutral-900 bg-neutral-1000 p-4">
               <Button

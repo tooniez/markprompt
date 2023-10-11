@@ -20,6 +20,8 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
+  console.log('[NANGO] Webhook called');
+
   await inngest.send({
     name: 'nango/sync',
     data: req.body as NangoSyncPayload,

@@ -37,7 +37,10 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
       onCTAClick={async () => {
         setLoading(true);
         try {
+          let ts = Date.now();
           await deleteSource(projectId, source.id);
+          console.log('Delete source took', Date.now() - ts);
+          ts = Date.now();
 
           // For Nango integrations, make sure to delete the connection to
           // avoid subsequent syncs.
@@ -51,10 +54,7 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
               }
             }
           }
-
-          await mutateSources();
-          await mutateFiles();
-          await mutateFileStats();
+          console.log('Delete integration', Date.now() - ts);
 
           toast.success(
             `The source ${getLabelForSource(
@@ -62,12 +62,16 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
               true,
             )} has been removed from the project.`,
           );
+
+          setLoading(false);
+          onComplete();
+
+          await mutateSources();
+          await mutateFiles();
+          await mutateFileStats();
         } catch (e) {
           console.error(e);
           toast.error('Error removing source.');
-        } finally {
-          setLoading(false);
-          onComplete();
         }
       }}
     />

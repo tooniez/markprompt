@@ -8,9 +8,9 @@ import type { AppProps } from 'next/app';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { ReactNode, useState } from 'react';
+import { Toaster } from 'sonner';
 import { SWRConfig } from 'swr';
 
-import { Toaster } from '@/components/ui/Toaster';
 import { ManagedAppContext } from '@/lib/context/app';
 import { ManagedConfigContext } from '@/lib/context/config';
 import { ManagedTrainingContext } from '@/lib/context/training';

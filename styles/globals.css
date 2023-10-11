@@ -374,7 +374,7 @@ textarea {
 }
 
 .dialog-overlay {
-  @apply fixed inset-0 bg-black/80;
+  @apply fixed inset-0 z-20 bg-black/80;
 }
 
 .dialog-content {

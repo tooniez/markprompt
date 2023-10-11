@@ -276,6 +276,19 @@ export const addSource = async (
   return getResponseOrThrow<DbSource>(res);
 };
 
+export const setSourceData = async (
+  projectId: Project['id'],
+  sourceId: DbSource['id'],
+  data: any,
+): Promise<void> => {
+  const res = await fetch(`/api/project/${projectId}/sources`, {
+    method: 'PATCH',
+    body: JSON.stringify({ sourceId, data }),
+    headers: { 'Content-Type': 'application/json', accept: 'application/json' },
+  });
+  return getResponseOrThrow<void>(res);
+};
+
 export const deleteSource = async (
   projectId: Project['id'],
   id: DbSource['id'],
