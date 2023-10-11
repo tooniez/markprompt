@@ -1,9 +1,9 @@
-import { Application } from '@splinetool/runtime';
+import Spline from '@splinetool/react-spline';
 import cn from 'classnames';
 import { ChevronsUpDown, SearchIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
 
 import { AngeListIcon } from '@/components/icons/AngelList';
@@ -27,7 +27,6 @@ import StepsSection from './sections/Steps';
 import VideoSection from './sections/Video';
 import { SharedHead } from './SharedHead';
 import { InsightsExample } from '../examples/insights';
-import { SearchExample } from '../examples/search';
 import { CernIcon } from '../icons/Cern';
 import { DiscordIcon } from '../icons/Discord';
 import { ListItem } from '../ui/ListItem';
@@ -153,14 +152,6 @@ const formatNumStars = (stars: number) => {
 };
 
 const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
-  useEffect(() => {
-    const canvas: any = document.getElementById('animation-canvas');
-    if (canvas) {
-      const app = new Application(canvas);
-      app.load('https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode');
-    }
-  }, []);
-
   return (
     <>
       <SharedHead title="Markprompt | AI infrastructure for customer experience teams" />
@@ -232,7 +223,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             </div>
             <div className="z-0 col-span-2 hidden h-full sm:block">
               <div className="animate-scale-bounce relative ml-[-100px] mt-[5%] block h-[90%] w-[calc(100%+200px)] transform-gpu">
-                <canvas id="animation-canvas" />
+                <Spline scene="https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode" />
               </div>
             </div>
           </div>

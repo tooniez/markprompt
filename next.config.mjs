@@ -1,5 +1,11 @@
+import analyze from '@next/bundle-analyzer';
 import nextMdx from '@next/mdx';
 import remarkGfm from 'remark-gfm';
+
+const withBundleAnalyzer = analyze({
+  enabled: process.env.ANALYZE === 'true',
+  defaultSizes: 'gzip',
+});
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 // const withMDX = require('@next/mdx')({
@@ -56,4 +62,4 @@ const nextConfig = {
   },
 };
 
-export default withMDX(nextConfig);
+export default withBundleAnalyzer(withMDX(nextConfig));
