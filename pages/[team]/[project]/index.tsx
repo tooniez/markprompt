@@ -324,6 +324,7 @@ const SourceItem: FC<SourceItemProps> = ({
                 Configure
               </span>
             </DropdownMenu.Item>
+            <DropdownMenu.Separator className="dropdown-menu-separator" />
             <DropdownMenu.Item asChild onSelect={() => onRemoveSelected()}>
               <span className="dropdown-menu-item dropdown-menu-item-noindent block">
                 Remove
