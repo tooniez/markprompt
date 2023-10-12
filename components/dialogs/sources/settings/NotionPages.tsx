@@ -7,13 +7,14 @@ import { ErrorLabel } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
 import { setSourceData } from '@/lib/api';
 import useSources from '@/lib/hooks/use-sources';
-import { DbSource, Project } from '@/types/types';
+import { DbSource, NangoSourceDataType, Project } from '@/types/types';
 
 type NotionPagesSettingsProps = {
   projectId: Project['id'];
   source: DbSource | undefined;
   forceDisabled?: boolean;
   showSkip?: boolean;
+  showOptional?: boolean;
   onDidCompletedOrSkip?: () => void;
 };
 
@@ -22,13 +23,16 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
   source,
   forceDisabled,
   showSkip,
+  showOptional,
   onDidCompletedOrSkip,
 }) => {
   const { mutate: mutateSources } = useSources();
 
   return (
     <Formik
-      initialValues={{ displayName: '' }}
+      initialValues={{
+        displayName: (source?.data as NangoSourceDataType)?.displayName || '',
+      }}
       validateOnMount
       onSubmit={async (values, { setSubmitting }) => {
         if (!projectId || !source) {
@@ -47,11 +51,11 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
       }}
     >
       {({ isSubmitting, isValid }) => (
-        <Form className="flex h-full flex-col gap-4">
+        <Form className="flex h-full flex-col gap-2">
           <div className="flex flex-col gap-1">
             <div className="flex flex-row items-center gap-2">
               <p className="text-sm font-medium text-neutral-300">
-                Display name (optional)
+                Display name{showOptional && ' (optional)'}
               </p>
             </div>
             <div className="flex flex-row gap-2">

@@ -1,6 +1,7 @@
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 
 import { NotionIcon } from '@/components/icons/Notion';
+import useSources from '@/lib/hooks/use-sources';
 import { DbSource, Project, SourceConfigurationView } from '@/types/types';
 
 import { BaseConfigurationDialog } from './BaseConfiguration';
@@ -8,7 +9,7 @@ import { NotionPagesSettings } from '../settings/NotionPages';
 
 type NotionPagesConfigurationDialogProps = {
   projectId: Project['id'];
-  source?: DbSource;
+  sourceId?: DbSource['id'];
   defaultView?: SourceConfigurationView;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -16,7 +17,13 @@ type NotionPagesConfigurationDialogProps = {
 
 const NotionPagesConfigurationDialog: FC<
   NotionPagesConfigurationDialogProps
-> = ({ projectId, source, defaultView, open, onOpenChange }) => {
+> = ({ projectId, sourceId, defaultView, open, onOpenChange }) => {
+  const { sources } = useSources();
+
+  const source = useMemo(() => {
+    return sources?.find((s) => s.id === sourceId);
+  }, [sources, sourceId]);
+
   return (
     <BaseConfigurationDialog
       source={source}
@@ -30,6 +37,7 @@ const NotionPagesConfigurationDialog: FC<
         source={source}
         forceDisabled={false}
         showSkip={false}
+        showOptional={false}
       />
     </BaseConfigurationDialog>
   );

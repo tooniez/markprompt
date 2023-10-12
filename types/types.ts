@@ -102,6 +102,10 @@ export type DbConversation =
   Database['public']['Tables']['conversations']['Row'];
 export type DbSyncQueue = Database['public']['Tables']['sync_queues']['Row'];
 
+export type NangoSource = Omit<DbSource, 'data'> & {
+  data: NangoSourceDataType;
+};
+
 export type Source = PartialBy<Pick<DbSource, 'type' | 'data'>, 'data'>;
 export type FileData = {
   path: string;

@@ -100,6 +100,7 @@ const ConfigureStep = ({
         source={source}
         forceDisabled={state === 'not_started'}
         showSkip={true}
+        showOptional={true}
         onDidCompletedOrSkip={onCompletedOrSkipped}
       />
     </Step>

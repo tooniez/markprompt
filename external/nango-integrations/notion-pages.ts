@@ -19,10 +19,6 @@ export default async function fetchData(nango: NangoSync) {
     const pagesWithPlainText = await Promise.all(
       batchOfPages.map(async (page: any) => mapPage(nango, page)),
     );
-    console.log(
-      'pagesWithPlainText',
-      JSON.stringify(pagesWithPlainText, null, 2),
-    );
     await nango.batchSave(pagesWithPlainText, 'NangoFile');
   }
 }

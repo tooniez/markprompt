@@ -1170,12 +1170,11 @@ const Data = () => {
             projectId={project?.id}
             open={configureSourceDialogOpen?.dialogId === 'notion-pages'}
             onOpenChange={(open) => {
-              console.log('onOpenChange', JSON.stringify(open, null, 2));
               if (!open) {
                 setConfigureSourceDialogOpen(undefined);
               }
             }}
-            source={configureSourceDialogOpen?.source}
+            sourceId={configureSourceDialogOpen?.source?.id}
             defaultView={configureSourceDialogOpen?.view}
           />
         </>
