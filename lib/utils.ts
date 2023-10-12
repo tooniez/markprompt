@@ -474,6 +474,10 @@ export const isSKTestKey = (key: string | null) => {
   return key?.startsWith(SK_TEST_PREFIX);
 };
 
+export const generateConnectionId = () => {
+  return generateKey();
+};
+
 export const stringToLLMInfo = (
   model?:
     | OpenAIChatCompletionsModelId

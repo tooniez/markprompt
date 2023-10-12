@@ -6,27 +6,24 @@ import { SalesforceFullIcon } from '@/components/icons/Salesforce';
 import Button from '@/components/ui/Button';
 import { CTABar } from '@/components/ui/SettingsCard';
 import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
-import { NangoSourceDataType } from '@/types/types';
+import { getIntegrationName } from '@/lib/integrations/nango';
+import { NangoIntegrationId } from '@/types/types';
 
 type SourceSpec = {
-  name: string;
-  integrationId: NangoSourceDataType['integrationId'];
+  integrationId: NangoIntegrationId;
   Icon: JSXElementConstructor<any>;
 };
 
 const sources: SourceSpec[] = [
   {
-    name: 'Notion',
     integrationId: 'notion-pages',
     Icon: NotionIcon,
   },
   {
-    name: 'Salesforce Knowledge',
     integrationId: 'salesforce-knowledge',
     Icon: SalesforceFullIcon,
   },
   {
-    name: 'Salesforce Case',
     integrationId: 'salesforce-case',
     Icon: SalesforceFullIcon,
   },
@@ -38,7 +35,7 @@ const SourceButton: FC<
   } & {
     onSelected: () => void;
   }
-> = ({ source: { name, Icon }, onSelected }) => {
+> = ({ source: { integrationId, Icon }, onSelected }) => {
   return (
     <button
       className="button-ring group flex flex-col items-center justify-start gap-4 rounded-md px-2 py-4 transition hover:bg-neutral-900"
@@ -46,7 +43,7 @@ const SourceButton: FC<
     >
       <Icon className="h-10 w-10 flex-none text-neutral-300 group-hover:text-neutral-100 group-focus:text-neutral-100" />
       <p className="flex flex-grow items-center text-sm font-medium text-neutral-300 group-hover:text-neutral-100">
-        {name}
+        {getIntegrationName(integrationId)}
       </p>
     </button>
   );
@@ -56,9 +53,7 @@ const SourcesDialog = ({
   onSourceSelected,
   children,
 }: {
-  onSourceSelected: (
-    integrationId: NangoSourceDataType['integrationId'],
-  ) => void;
+  onSourceSelected: (integrationId: NangoIntegrationId) => void;
   children: ReactNode;
 }) => {
   const [open, setOpen] = useState(false);

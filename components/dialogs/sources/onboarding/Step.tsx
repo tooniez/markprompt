@@ -16,7 +16,7 @@ export const Step = ({
   children?: ReactNode;
 }) => {
   return (
-    <div className="relative flex flex-col gap-2 py-8 pl-12 pr-4">
+    <div className="relative flex flex-col gap-2 py-8 pl-12 pr-8">
       <div className="absolute inset-y-0 left-[24px] w-px bg-neutral-900" />
       <div
         className={cn('absolute left-[19px] top-[39px] rounded-full border-2', {

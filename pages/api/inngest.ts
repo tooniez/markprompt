@@ -9,8 +9,10 @@ import {
   OPENAI_RPM,
 } from '@/lib/constants';
 import { bulkCreateSectionEmbeddings } from '@/lib/file-processing';
-import { getSourceId } from '@/lib/integrations/nango';
-import { getNangoServerInstance } from '@/lib/integrations/nango.server';
+import {
+  getNangoServerInstance,
+  getSourceId,
+} from '@/lib/integrations/nango.server';
 import {
   convertToMarkdown,
   extractMeta,
@@ -79,7 +81,12 @@ const sync = inngest.createFunction(
   { id: 'sync-nango-records' },
   { event: 'nango/sync' },
   async ({ event, step, logger }) => {
-    const sourceId = getSourceId(event.data.connectionId);
+    const sourceId = await getSourceId(supabase, event.data.connectionId);
+
+    if (!sourceId) {
+      return;
+    }
+
     const syncQueueId = await getOrCreateRunningSyncQueueForSource(
       supabase,
       sourceId,

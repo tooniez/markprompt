@@ -6,8 +6,6 @@ export default async function fetchData(nango: NangoSync) {
     await paginate(nango, 'post', '/v1/search', 'Notion pages', 100, true)
   ).filter((result: any) => result.object === 'page');
 
-  console.log('pages', JSON.stringify(pages, null, 2));
-
   const batchSize = 10;
   await nango.log(`Found ${pages.length} new/updated Notion pages to sync.`);
 

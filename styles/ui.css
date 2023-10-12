@@ -26,3 +26,35 @@
 .Label {
   @apply cursor-pointer select-none text-sm text-neutral-300;
 }
+
+.TabsRoot {
+  @apply flex flex-col;
+}
+
+.TabsList {
+  @apply flex shrink-0 border-b border-neutral-900;
+}
+
+.TabsTrigger {
+  @apply flex flex-1 select-none flex-row items-center justify-center overflow-hidden truncate border-b-2 border-transparent border-white px-4 py-2 text-sm font-medium outline-none transition;
+}
+
+.TabsTrigger:hover {
+  @apply bg-neutral-900/30 text-neutral-300;
+}
+
+.TabsTrigger:not([data-state='active']) {
+  @apply border-transparent text-neutral-500;
+}
+
+.TabsTrigger[data-state='active'] {
+  @apply border-neutral-900 bg-neutral-900 text-neutral-100;
+}
+
+.TabsTrigger:focus {
+  @apply border-neutral-100;
+}
+
+.TabsContent {
+  @apply flex-grow outline-none;
+}

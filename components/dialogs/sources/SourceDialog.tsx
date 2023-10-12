@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { ReactNode } from 'react';
+import { JSXElementConstructor, ReactNode } from 'react';
 
 const SourceDialog = ({
   title,
@@ -7,13 +7,15 @@ const SourceDialog = ({
   open,
   onOpenChange,
   trigger,
+  Icon,
   children,
 }: {
   title: string;
-  description: string;
+  description?: string;
   open?: boolean;
   onOpenChange?(open: boolean): void;
-  trigger: ReactNode;
+  trigger?: ReactNode;
+  Icon?: JSXElementConstructor<any>;
   children: ReactNode;
 }) => {
   return (
@@ -22,12 +24,15 @@ const SourceDialog = ({
       <Dialog.Portal>
         <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
         <Dialog.Content className="animate-dialog-slide-in dialog-content flex h-[90%] max-h-[720px] w-[90%] max-w-[640px] flex-col">
-          <div className="flex-none">
-            <Dialog.Title className="dialog-title flex-none">
-              {title}
-            </Dialog.Title>
-            <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-              <p>{description}</p>
+          <div className="flex flex-none flex-row items-center gap-4 border-b border-neutral-900 px-4 py-4">
+            {Icon && <Icon className="h-6 w-6 flex-none text-neutral-100" />}
+            <div className="flex flex-grow flex-col gap-1">
+              <Dialog.Title className="flex-none text-base font-bold text-neutral-100">
+                {title}
+              </Dialog.Title>
+              {description && (
+                <p className="text-sm text-neutral-500">{description}</p>
+              )}
             </div>
           </div>
           <div className="flex-grow overflow-y-auto">{children}</div>

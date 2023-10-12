@@ -2,54 +2,53 @@ import type Nango from '@nangohq/frontend';
 import { FC, useCallback } from 'react';
 
 import Button from '@/components/ui/Button';
-import { addSource, deleteSource } from '@/lib/api';
-import { getConnectionId, getSyncId } from '@/lib/integrations/nango';
+import { addSource } from '@/lib/api';
+import { getSyncId } from '@/lib/integrations/nango';
 import { deleteConnection, triggerSync } from '@/lib/integrations/nango.client';
-import { DbSource, NangoSourceDataType, Project } from '@/types/types';
+import { generateConnectionId } from '@/lib/utils';
+import { DbSource, NangoIntegrationId, Project } from '@/types/types';
 
 import { Step, ConnectSourceStepState } from './Step';
 
 export const addSourceAndNangoConnection = async (
   nango: Nango,
   projectId: Project['id'],
-  integrationId: NangoSourceDataType['integrationId'],
+  integrationId: NangoIntegrationId,
 ): Promise<DbSource | undefined> => {
-  const newSource = await addSource(projectId, 'nango', {
-    integrationId,
-  });
-
-  if (!newSource.id) {
-    throw new Error('Unable to create source');
-  }
-
   // Create the Nango connection. Note that nango.yaml specifies
   // `auto_start: false` to give us a chance to set the metadata
   // before we trigger the first sync.
+  const connectionId = generateConnectionId();
+
   try {
-    const connectionId = getConnectionId(newSource.id);
+    await nango.auth(integrationId, connectionId);
 
-    // Authorize
-    const result = await nango.auth(integrationId, connectionId);
+    const newSource = await addSource(projectId, 'nango', {
+      integrationId,
+      connectionId,
+    });
 
-    if ('message' in result) {
-      // Nango AuthError
-      throw new Error(result.message);
+    if (!newSource.id) {
+      throw new Error('Unable to create source');
     }
 
     return newSource;
   } catch (e) {
-    // If there is an error, make sure to delete the connection
-    await deleteConnection(projectId, integrationId, newSource.id);
-    await deleteSource(projectId, newSource.id);
+    // If there is an error, make sure to delete the Nango connection
+    try {
+      deleteConnection(projectId, integrationId, connectionId);
+    } catch {
+      // No nothing
+    }
+    // Throw error from nango.auth to catch on the client side.
     throw e;
   }
-
   return undefined;
 };
 
 type SyncStepProps = {
   projectId: Project['id'];
-  integrationId: NangoSourceDataType['integrationId'];
+  integrationId: NangoIntegrationId;
   connectionId?: string;
   state: ConnectSourceStepState;
 };
@@ -60,7 +59,7 @@ export const SyncStep: FC<SyncStepProps> = ({
   connectionId,
   state,
 }) => {
-  const trigger = useCallback(async () => {
+  const startSyncing = useCallback(async () => {
     if (!connectionId) {
       return;
     }
@@ -75,7 +74,7 @@ export const SyncStep: FC<SyncStepProps> = ({
       <Button
         variant="cta"
         buttonSize="sm"
-        onClick={trigger}
+        onClick={startSyncing}
         disabled={state === 'not_started'}
       >
         Start sync

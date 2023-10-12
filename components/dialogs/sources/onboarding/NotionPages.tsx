@@ -1,12 +1,8 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { ReactNode, useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import Button from '@/components/ui/Button';
-import { ErrorLabel } from '@/components/ui/Forms';
-import { NoAutoInput } from '@/components/ui/Input';
-import { setSourceData } from '@/lib/api';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import { getConnectionId } from '@/lib/integrations/nango';
@@ -15,6 +11,7 @@ import { DbSource, Project } from '@/types/types';
 
 import { SyncStep, addSourceAndNangoConnection } from './shared';
 import { Step, ConnectSourceStepState } from './Step';
+import { NotionPagesSettings } from '../settings/NotionPages';
 import SourceDialog from '../SourceDialog';
 
 const nango = getNangoClientInstance();
@@ -29,23 +26,36 @@ const ConnectStep = ({
   onDidConnect: (source: DbSource) => void;
 }) => {
   const { mutate: mutateSources } = useSources();
+  const [isLoading, setLoading] = useState(false);
 
   const connect = useCallback(async () => {
     try {
+      setLoading(true);
       const newSource = await addSourceAndNangoConnection(
         nango,
         projectId,
         'notion-pages',
       );
+
+      setLoading(false);
+
       if (!newSource) {
-        toast.error('Error connecting Notion');
+        toast.error('Error connecting to Notion');
         return;
       }
-      toast.success('Connected to Notion');
+
       await mutateSources();
       onDidConnect(newSource);
+      toast.success('Connected to Notion');
     } catch (e: any) {
-      toast.error(`Error connecting to Notion: ${e.message || e}.`);
+      setLoading(false);
+      if (e?.type === 'callback_err') {
+        // This is the error that is thrown when the user closes or
+        // cancels the auth popup. No need to show an error here
+        toast.error(`Connection canceled`);
+        return;
+      }
+      toast.error(`Error connecting to Notion`);
     }
   }, [onDidConnect, projectId, mutateSources]);
 
@@ -59,6 +69,7 @@ const ConnectStep = ({
         variant="cta"
         buttonSize="sm"
         onClick={connect}
+        loading={isLoading}
         disabled={state === 'not_started' || state === 'complete'}
       >
         {state === 'complete' ? 'Authorized' : 'Authorize Notion'}
@@ -71,87 +82,26 @@ const ConfigureStep = ({
   projectId,
   source,
   state,
-  onSkipClicked,
+  onCompletedOrSkipped,
 }: {
   projectId: Project['id'];
   source: DbSource | undefined;
   state: ConnectSourceStepState;
-  onSkipClicked: () => void;
+  onCompletedOrSkipped: () => void;
 }) => {
-  const { mutate: mutateSources } = useSources();
-
   return (
     <Step
       title="Configure"
       description="Configure the source. You can always change the configuration later."
       state={state}
     >
-      <Formik
-        initialValues={{ displayName: '' }}
-        validateOnMount
-        onSubmit={async (values, { setSubmitting }) => {
-          if (!projectId || !source) {
-            return;
-          }
-
-          setSubmitting(true);
-          await setSourceData(projectId, source.id, {
-            ...(source.data as any),
-            displayName: values.displayName,
-          });
-          setSubmitting(false);
-          toast.success('Source configuration updated');
-          await mutateSources();
-        }}
-      >
-        {({ isSubmitting, isValid }) => (
-          <Form className="flex h-full flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <div className="flex flex-row items-center gap-2">
-                <p className="text-sm font-medium text-neutral-300">
-                  Display name (optional)
-                </p>
-              </div>
-              <div className="flex flex-row gap-2">
-                <Field
-                  className="flex-grow"
-                  type="text"
-                  name="displayName"
-                  inputSize="sm"
-                  as={NoAutoInput}
-                  disabled={isSubmitting || state === 'not_started'}
-                />
-              </div>
-              <ErrorMessage name="identifier" component={ErrorLabel} />
-            </div>
-            <div className="flex flex-row gap-2">
-              <Button
-                className="flex-none"
-                disabled={!isValid || state === 'not_started'}
-                loading={isSubmitting}
-                variant="plain"
-                buttonSize="sm"
-                type="submit"
-              >
-                Save
-              </Button>
-              <Button
-                className="flex-none"
-                disabled={state === 'not_started'}
-                variant="ghost"
-                buttonSize="sm"
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onSkipClicked();
-                }}
-              >
-                Skip
-              </Button>
-            </div>
-          </Form>
-        )}
-      </Formik>
+      <NotionPagesSettings
+        projectId={projectId}
+        source={source}
+        forceDisabled={state === 'not_started'}
+        showSkip={true}
+        onDidCompletedOrSkip={onCompletedOrSkipped}
+      />
     </Step>
   );
 };
@@ -162,8 +112,8 @@ const NotionPagesOnboardingDialog = ({
   source: defaultSource,
   children,
 }: {
-  open?: boolean;
   source?: DbSource;
+  open?: boolean;
   onOpenChange?: (open: boolean) => void;
   openPricingAsDialog?: boolean;
   onDidAddSource?: () => void;
@@ -171,7 +121,8 @@ const NotionPagesOnboardingDialog = ({
 }) => {
   const { project } = useProject();
   const [source, setSource] = useState<DbSource | undefined>(undefined);
-  const [didSkipConfiguration, setDidSkipConfiguration] = useState(false);
+  const [didCompleteConfiguration, setDidCompleteConfiguration] =
+    useState(false);
 
   useEffect(() => {
     setSource(defaultSource);
@@ -181,7 +132,7 @@ const NotionPagesOnboardingDialog = ({
     return <></>;
   }
 
-  const connectionId = source?.id ? getConnectionId(source.id) : undefined;
+  const connectionId = source?.id ? getConnectionId(source) : undefined;
 
   return (
     <SourceDialog
@@ -199,16 +150,24 @@ const NotionPagesOnboardingDialog = ({
       <ConfigureStep
         projectId={project.id}
         source={source}
-        state={source ? 'in_progress' : 'not_started'}
-        onSkipClicked={() => {
-          setDidSkipConfiguration;
+        state={
+          didCompleteConfiguration
+            ? 'complete'
+            : source
+            ? 'in_progress'
+            : 'not_started'
+        }
+        onCompletedOrSkipped={() => {
+          setDidCompleteConfiguration(true);
         }}
       />
       <SyncStep
         projectId={project.id}
         integrationId="notion-pages"
         connectionId={connectionId}
-        state={source && didSkipConfiguration ? 'in_progress' : 'not_started'}
+        state={
+          source && didCompleteConfiguration ? 'in_progress' : 'not_started'
+        }
       />
     </SourceDialog>
   );

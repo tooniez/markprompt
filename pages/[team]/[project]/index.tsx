@@ -6,7 +6,6 @@ import * as ReactTooltip from '@radix-ui/react-tooltip';
 import {
   SortingState,
   createColumnHelper,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
@@ -20,8 +19,6 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import {
   MoreHorizontal,
-  Globe,
-  Upload,
   SettingsIcon,
   AlertCircle,
   Check,
@@ -31,24 +28,20 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { FC, useMemo, useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { isPresent } from 'ts-is-present';
 
-import NotionPagesOnboardingDialog from '@/components/dialogs/sources/onboarding/NotionPages';
-import SourcesDialog from '@/components/dialogs/sources/SourcesDialog';
 import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Onboarding from '@/components/onboarding/Onboarding';
 import Button from '@/components/ui/Button';
 import { IndeterminateCheckbox } from '@/components/ui/Checkbox';
-import { SkeletonTable } from '@/components/ui/Skeletons';
 import { Tag } from '@/components/ui/Tag';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { deleteFiles } from '@/lib/api';
 import { useTrainingContext } from '@/lib/context/training';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
-import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
@@ -81,13 +74,20 @@ import {
   DbFile,
   DbSource,
   DbSyncQueueOverview,
+  NangoIntegrationId,
   NangoSourceDataType,
   Project,
+  SourceConfigurationView,
 } from '@/types/types';
 
 dayjs.extend(relativeTime);
 
-const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
+const Loading = <></>;
+
+const SourcesDialog = dynamic(
+  () => import('@/components/dialogs/sources/SourcesDialog'),
+  { loading: () => Loading },
+);
 
 const GitHubAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/GitHub'),
@@ -104,8 +104,8 @@ const SalesforceCaseAddSourceDialog = dynamic(
   { loading: () => Loading },
 );
 
-const NotionPagesAddSourceDialog = dynamic(
-  () => import('@/components/dialogs/sources/NotionPages'),
+const NotionPagesOnboardingDialog = dynamic(
+  () => import('@/components/dialogs/sources/onboarding/NotionPages'),
   { loading: () => Loading },
 );
 
@@ -121,6 +121,11 @@ const WebsiteAddSourceDialog = dynamic(
 
 const FilesAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Files'),
+  { loading: () => Loading },
+);
+
+const NotionPagesConfigurationDialog = dynamic(
+  () => import('@/components/dialogs/sources/configuration/NotionPages'),
   { loading: () => Loading },
 );
 
@@ -161,11 +166,11 @@ const getBasePath = (pathWithFile: string) => {
 };
 
 type SyncStatusIndicatorProps = {
-  syncQueue: DbSyncQueueOverview;
+  syncQueue?: DbSyncQueueOverview;
 };
 
 const SyncStatusIndicator: FC<SyncStatusIndicatorProps> = ({ syncQueue }) => {
-  switch (syncQueue.status) {
+  switch (syncQueue?.status) {
     case 'running':
       return (
         <Tooltip
@@ -195,20 +200,39 @@ const SyncStatusIndicator: FC<SyncStatusIndicatorProps> = ({ syncQueue }) => {
         </Tooltip>
       );
     }
+    default:
+      return (
+        <Tag color="orange" size="xs">
+          Not synced
+        </Tag>
+      );
   }
 };
 
 type SourcesProps = {
   projectId: Project['id'] | undefined;
+  onConfigureSelected: (
+    source: DbSource,
+    view: SourceConfigurationView,
+  ) => void;
   onRemoveSelected: (source: DbSource) => void;
 };
 
-const Sources: FC<SourcesProps> = ({ projectId, onRemoveSelected }) => {
+const Sources: FC<SourcesProps> = ({
+  projectId,
+  onConfigureSelected,
+  onRemoveSelected,
+}) => {
   const { sources, syncQueues, mutateSyncQueues } = useSources();
   return (
     <div className="flex flex-col gap-2">
       {sources.map((source) => {
         const syncQueue = syncQueues?.find((q) => q.source_id === source.id);
+        const connectionId = getConnectionId(source);
+        if (!connectionId) {
+          return <></>;
+        }
+
         return (
           <SourceItem
             key={source.id}
@@ -240,14 +264,12 @@ const Sources: FC<SourcesProps> = ({ projectId, onRemoveSelected }) => {
                   };
               mutateSyncQueues([...otherSyncQueues, currentSyncQueue]);
 
-              const connectionId = getConnectionId(source.id);
-
               await triggerSync(projectId, integrationId, connectionId, [
                 getSyncId(integrationId),
               ]);
             }}
-            onConfigureSelected={() => {
-              // onConfigureSelected(source);
+            onConfigureSelected={(view) => {
+              onConfigureSelected(source, view);
             }}
             onRemoveSelected={() => {
               onRemoveSelected(source);
@@ -263,7 +285,7 @@ type SourceItemProps = {
   source: DbSource;
   syncQueue: DbSyncQueueOverview | undefined;
   onSyncSelected: () => void;
-  onConfigureSelected: () => void;
+  onConfigureSelected: (view: SourceConfigurationView) => void;
   onRemoveSelected: () => void;
 };
 
@@ -274,6 +296,7 @@ const SourceItem: FC<SourceItemProps> = ({
   onConfigureSelected,
   onRemoveSelected,
 }) => {
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
   const Icon = getIconForSource(source);
   const accessory = getAccessoryLabelForSource(source);
   let AccessoryTag = <></>;
@@ -292,18 +315,41 @@ const SourceItem: FC<SourceItemProps> = ({
   }
 
   return (
-    <div className="flex w-full cursor-default flex-row items-center gap-2 text-sm">
-      <Icon className="h-4 w-4 flex-none text-neutral-500" />
-      <p className="flex-grow overflow-hidden truncate text-neutral-300">
-        {getLabelForSource(source, false)}
-      </p>
-      {syncQueue && <SyncStatusIndicator syncQueue={syncQueue} />}
-      {AccessoryTag}
-      <DropdownMenu.Root>
+    <div
+      className={cn(
+        '-ml-2 flex w-[calc(100%+16px)] gap-2 rounded-md px-2 py-1 text-sm outline-none transition hover:bg-neutral-900',
+        {
+          'bg-neutral-1000': isDropdownOpen,
+        },
+      )}
+    >
+      <button
+        className={cn(
+          'flex flex-grow cursor-pointer flex-row items-center gap-2 text-sm outline-none ',
+          { 'bg-neutral-1000': isDropdownOpen },
+        )}
+        onClick={() => {
+          onConfigureSelected('configuration');
+        }}
+      >
+        <Icon className="h-4 w-4 flex-none text-left text-neutral-500" />
+        <p className="flex-grow overflow-hidden truncate text-left text-neutral-100">
+          {getLabelForSource(source, false)}
+        </p>
+        <SyncStatusIndicator syncQueue={syncQueue} />
+        {/* {AccessoryTag} */}
+      </button>
+      <DropdownMenu.Root open={isDropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenu.Trigger asChild>
           <button
-            className="flex-none select-none p-1 text-neutral-500 opacity-50 outline-none transition hover:opacity-100"
+            className={cn(
+              'flex-none select-none rounded-md p-1 text-neutral-500 opacity-50 outline-none transition hover:bg-neutral-800 hover:opacity-100',
+              {
+                'bg-neutral-800': isDropdownOpen,
+              },
+            )}
             aria-label="Source options"
+            onClick={(e) => e.stopPropagation()}
           >
             <MoreHorizontal className="h-4 w-4" />
           </button>
@@ -318,13 +364,36 @@ const SourceItem: FC<SourceItemProps> = ({
                 Sync now
               </span>
             </DropdownMenu.Item>
-            <DropdownMenu.Item asChild onSelect={() => onConfigureSelected()}>
+            <DropdownMenu.Item
+              asChild
+              onSelect={() => {
+                setDropdownOpen(false);
+                onConfigureSelected('configuration');
+              }}
+            >
               <span className="dropdown-menu-item dropdown-menu-item-noindent block">
                 Configure
               </span>
             </DropdownMenu.Item>
+            <DropdownMenu.Item
+              asChild
+              onSelect={() => {
+                setDropdownOpen(false);
+                onConfigureSelected('logs');
+              }}
+            >
+              <span className="dropdown-menu-item dropdown-menu-item-noindent block">
+                Show logs
+              </span>
+            </DropdownMenu.Item>
             <DropdownMenu.Separator className="dropdown-menu-separator" />
-            <DropdownMenu.Item asChild onSelect={() => onRemoveSelected()}>
+            <DropdownMenu.Item
+              asChild
+              onSelect={() => {
+                setDropdownOpen(false);
+                onRemoveSelected();
+              }}
+            >
               <span className="dropdown-menu-item dropdown-menu-item-noindent block">
                 Remove
               </span>
@@ -380,16 +449,29 @@ const Data = () => {
     undefined,
   );
   const [editorOpen, setEditorOpen] = useState<boolean>(false);
-  const [sourceDialogOpen, setSourceDialogOpen] = useState<
+  const [connectSourceDialogOpen, setConnectSourceDialogOpen] = useState<
     | {
         // Add other IDs manually here until they are moved to Nango
         dialogId:
-          | NangoSourceDataType['integrationId']
+          | NangoIntegrationId
           | 'motif'
           | 'github'
           | 'website'
           | 'api-uploads';
-        sourceId?: DbSource['id'];
+      }
+    | undefined
+  >(undefined);
+  const [configureSourceDialogOpen, setConfigureSourceDialogOpen] = useState<
+    | {
+        // Add other IDs manually here until they are moved to Nango
+        dialogId:
+          | NangoIntegrationId
+          | 'motif'
+          | 'github'
+          | 'website'
+          | 'api-uploads';
+        source: DbSource;
+        view?: SourceConfigurationView;
       }
     | undefined
   >(undefined);
@@ -715,6 +797,18 @@ const Data = () => {
               <div className="mb-8">
                 <Sources
                   projectId={project?.id}
+                  onConfigureSelected={(source, view) => {
+                    if (source.type !== 'nango') {
+                      toast.error('This source cannot be configured');
+                      return;
+                    }
+                    const data = source.data as NangoSourceDataType;
+                    setConfigureSourceDialogOpen({
+                      dialogId: data.integrationId,
+                      source: source,
+                      view: view,
+                    });
+                  }}
                   onRemoveSelected={setSourceToRemove}
                 />
               </div>
@@ -722,10 +816,10 @@ const Data = () => {
           )}
           <SourcesDialog
             onSourceSelected={(integrationId) =>
-              setSourceDialogOpen({ dialogId: integrationId })
+              setConnectSourceDialogOpen({ dialogId: integrationId })
             }
           >
-            <Button variant="cta" Icon={Plus}>
+            <Button variant="cta" buttonSize="sm" Icon={Plus}>
               Connect source
             </Button>
           </SourcesDialog>
@@ -1005,71 +1099,87 @@ const Data = () => {
           />
         )}
       </Dialog.Root>
-      <EditorDialog
-        filePath={openFilePath}
-        open={editorOpen}
-        setOpen={(open) => {
-          if (!open) {
-            setEditorOpen(false);
-          }
-        }}
-      />
-      <NotionPagesOnboardingDialog
-        open={sourceDialogOpen?.dialogId === 'notion-pages'}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSourceDialogOpen(undefined);
-          }
-        }}
-      />
-      <GitHubAddSourceDialog
-        open={sourceDialogOpen?.dialogId === 'github'}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSourceDialogOpen(undefined);
-          }
-        }}
-      />
-      <SalesforceKnowledgeAddSourceDialog
-        open={sourceDialogOpen?.dialogId === 'salesforce-knowledge'}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSourceDialogOpen(undefined);
-          }
-        }}
-      />
-      <SalesforceCaseAddSourceDialog
-        open={sourceDialogOpen?.dialogId === 'salesforce-case'}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSourceDialogOpen(undefined);
-          }
-        }}
-      />
-      <WebsiteAddSourceDialog
-        open={sourceDialogOpen?.dialogId === 'website'}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSourceDialogOpen(undefined);
-          }
-        }}
-      />
-      <MotifAddSourceDialog
-        open={sourceDialogOpen?.dialogId === 'motif'}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSourceDialogOpen(undefined);
-          }
-        }}
-      />
-      <FilesAddSourceDialog
-        open={sourceDialogOpen?.dialogId === 'api-uploads'}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSourceDialogOpen(undefined);
-          }
-        }}
-      />
+      {project?.id && (
+        <>
+          <EditorDialog
+            filePath={openFilePath}
+            open={editorOpen}
+            setOpen={(open) => {
+              if (!open) {
+                setEditorOpen(false);
+              }
+            }}
+          />
+          <NotionPagesOnboardingDialog
+            open={connectSourceDialogOpen?.dialogId === 'notion-pages'}
+            onOpenChange={(open) => {
+              if (!open) {
+                setConnectSourceDialogOpen(undefined);
+              }
+            }}
+          />
+          <GitHubAddSourceDialog
+            open={connectSourceDialogOpen?.dialogId === 'github'}
+            onOpenChange={(open) => {
+              if (!open) {
+                setConnectSourceDialogOpen(undefined);
+              }
+            }}
+          />
+          <SalesforceKnowledgeAddSourceDialog
+            open={connectSourceDialogOpen?.dialogId === 'salesforce-knowledge'}
+            onOpenChange={(open) => {
+              if (!open) {
+                setConnectSourceDialogOpen(undefined);
+              }
+            }}
+          />
+          <SalesforceCaseAddSourceDialog
+            open={connectSourceDialogOpen?.dialogId === 'salesforce-case'}
+            onOpenChange={(open) => {
+              if (!open) {
+                setConnectSourceDialogOpen(undefined);
+              }
+            }}
+          />
+          <WebsiteAddSourceDialog
+            open={connectSourceDialogOpen?.dialogId === 'website'}
+            onOpenChange={(open) => {
+              if (!open) {
+                setConnectSourceDialogOpen(undefined);
+              }
+            }}
+          />
+          <MotifAddSourceDialog
+            open={connectSourceDialogOpen?.dialogId === 'motif'}
+            onOpenChange={(open) => {
+              if (!open) {
+                setConnectSourceDialogOpen(undefined);
+              }
+            }}
+          />
+          <FilesAddSourceDialog
+            open={connectSourceDialogOpen?.dialogId === 'api-uploads'}
+            onOpenChange={(open) => {
+              if (!open) {
+                setConnectSourceDialogOpen(undefined);
+              }
+            }}
+          />
+          <NotionPagesConfigurationDialog
+            projectId={project?.id}
+            open={configureSourceDialogOpen?.dialogId === 'notion-pages'}
+            onOpenChange={(open) => {
+              console.log('onOpenChange', JSON.stringify(open, null, 2));
+              if (!open) {
+                setConfigureSourceDialogOpen(undefined);
+              }
+            }}
+            source={configureSourceDialogOpen?.source}
+            defaultView={configureSourceDialogOpen?.view}
+          />
+        </>
+      )}
     </ProjectSettingsLayout>
   );
 };

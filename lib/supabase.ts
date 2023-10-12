@@ -166,13 +166,13 @@ export const getProjectIdFromSource = async (
   return data?.project_id || undefined;
 };
 
-export const getOrCreateSource = async (
+export const getOrCreateUploadOrAPISource = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
-  type: SourceType,
-  data: any | undefined,
+  type: 'file-upload' | 'api-upload',
 ): Promise<DbSource['id']> => {
-  const source = await getSource(supabase, projectId, type, data);
+  // const source = await getFileOrAPISource(supabase, projectId, type, data);
+  const source = await getFileOrAPISource(supabase, projectId, type);
 
   if (source?.id) {
     return source.id;
@@ -188,11 +188,11 @@ export const getOrCreateSource = async (
   return newSourceData!.id;
 };
 
-export const getSource = async (
+export const getFileOrAPISource = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
-  sourceType: SourceType,
-  data: any,
+  sourceType: 'file-upload' | 'api-upload',
+  // data: any,
 ): Promise<DbSource | undefined> => {
   const { data: sources, error } = await supabase
     .from('sources')
@@ -207,30 +207,30 @@ export const getSource = async (
     case 'file-upload':
     case 'api-upload':
       return sources[0];
-    case 'github':
-      return sources.find((s) => {
-        const _data = s.data as GitHubSourceDataType;
-        return _data.url === data.url && _data.branch === data.branch;
-      });
-    case 'nango':
-      return sources.find((s) => {
-        const _data = s.data as NangoSourceDataType;
-        return _data.identifier === data.identifier;
-      });
-    case 'motif': {
-      return sources.find((s) => {
-        const _data = s.data as MotifSourceDataType;
-        return (
-          _data.projectDomain && _data.projectDomain === data.projectDomain
-        );
-      });
-    }
-    case 'website': {
-      return sources.find((s) => {
-        const _data = s.data as WebsiteSourceDataType;
-        return _data.url && _data.url === data.url;
-      });
-    }
+    // case 'github':
+    //   return sources.find((s) => {
+    //     const _data = s.data as GitHubSourceDataType;
+    //     return _data.url === data.url && _data.branch === data.branch;
+    //   });
+    // case 'nango':
+    //   return sources.find((s) => {
+    //     const _data = s.data as NangoSourceDataType;
+    //     return _data.identifier === data.identifier;
+    //   });
+    // case 'motif': {
+    //   return sources.find((s) => {
+    //     const _data = s.data as MotifSourceDataType;
+    //     return (
+    //       _data.projectDomain && _data.projectDomain === data.projectDomain
+    //     );
+    //   });
+    // }
+    // case 'website': {
+    //   return sources.find((s) => {
+    //     const _data = s.data as WebsiteSourceDataType;
+    //     return _data.url && _data.url === data.url;
+    //   });
+    // }
   }
 };
 

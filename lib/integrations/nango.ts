@@ -5,14 +5,11 @@ import {
   NangoSyncId,
 } from '@/types/types';
 
-// Currently, we use the source ID as connection ID.
-export const getConnectionId = (sourceId: DbSource['id']): string => {
-  return sourceId;
-};
-
-// Currently, we use the source ID as connection ID.
-export const getSourceId = (connectionId: string): DbSource['id'] => {
-  return connectionId;
+export const getConnectionId = (source: DbSource): string | undefined => {
+  if (source.type !== 'nango') {
+    return undefined;
+  }
+  return (source.data as NangoSourceDataType).connectionId;
 };
 
 // Currently, sync id and integration id are identical
@@ -27,4 +24,30 @@ export const getIntegrationId = (
     return undefined;
   }
   return (source.data as NangoSourceDataType).integrationId;
+};
+
+export const integrationRequiresAuth = (integrationId: NangoIntegrationId) => {
+  switch (integrationId) {
+    case 'notion-pages':
+    case 'salesforce-case':
+    case 'salesforce-case-sandbox':
+    case 'salesforce-knowledge':
+    case 'salesforce-knowledge-sandbox':
+      return true;
+  }
+};
+
+export const getIntegrationName = (integrationId: NangoIntegrationId) => {
+  switch (integrationId) {
+    case 'notion-pages':
+      return 'Notion';
+    case 'salesforce-case':
+      return 'Salesforce Case';
+    case 'salesforce-case-sandbox':
+      return 'salesforce-Case Sandbox';
+    case 'salesforce-knowledge':
+      return 'Salesforce Knowledge';
+    case 'salesforce-knowledge-sandbox':
+      return 'salesforce-Knowledge Sandbox';
+  }
 };

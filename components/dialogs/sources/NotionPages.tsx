@@ -68,8 +68,12 @@ const NotionPagesSource: FC<NotionPagesSourceProps> = ({ onDidAddSource }) => {
         // Create the Nango connection. Note that nango.yaml specifies
         // `auto_start: false` to give us a chance to set the metadata
         // first.
+        const connectionId = getConnectionId(newSource);
         try {
-          const connectionId = getConnectionId(newSource.id);
+          if (!connectionId) {
+            throw new Error('Not a connected source');
+          }
+
           const result = await nango.auth(INTEGRATION_ID, connectionId);
 
           if ('message' in result) {
@@ -92,7 +96,9 @@ const NotionPagesSource: FC<NotionPagesSourceProps> = ({ onDidAddSource }) => {
           );
         } catch (e: any) {
           // If there is an error, make sure to delete the connection
-          await deleteConnection(project.id, INTEGRATION_ID, newSource.id);
+          if (connectionId) {
+            await deleteConnection(project.id, INTEGRATION_ID, connectionId);
+          }
           await deleteSource(project.id, newSource.id);
           toast.error(`Error connecting to Notion: ${e.message || e}.`);
         }

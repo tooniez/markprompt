@@ -1,13 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSourceId } from '@/lib/integrations/nango';
 import { getNangoServerInstance } from '@/lib/integrations/nango.server';
 import { withProjectAccess } from '@/lib/middleware/common';
-import {
-  appendLogToSyncQueue,
-  createServiceRoleSupabaseClient,
-  createSyncQueue,
-} from '@/lib/supabase';
 
 type Data = {
   status?: string;
@@ -29,16 +23,6 @@ export default withProjectAccess(
       } else if (!req.body.connectionId) {
         return res.status(400).json({ error: 'No connection id provided.' });
       }
-
-      // const sourceId = getSourceId(req.body.connectionId);
-      // const syncQueueId = await createSyncQueue(supabase, sourceId);
-
-      // await appendLogToSyncQueue(
-      //   supabase,
-      //   syncQueueId,
-      //   'Importing data',
-      //   'info',
-      // );
 
       await nango.triggerSync(
         req.body.integrationId,

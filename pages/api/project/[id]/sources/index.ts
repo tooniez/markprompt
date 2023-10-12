@@ -2,7 +2,6 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { withProjectAccess } from '@/lib/middleware/common';
-import { getSource } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 import { Project, DbSource, SourceType } from '@/types/types';
 
@@ -37,11 +36,6 @@ export default withProjectAccess(
     } else if (req.method === 'POST') {
       const sourceType = req.body.type as SourceType;
       const data = req.body.data as any;
-
-      // const source = await getSource(supabase, projectId, sourceType, data);
-      // if (source) {
-      //   return res.status(400).json({ error: 'Source already exists' });
-      // }
 
       const { error, data: newSource } = await supabase
         .from('sources')

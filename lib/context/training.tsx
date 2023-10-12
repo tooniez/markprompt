@@ -393,28 +393,28 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
           }
           break;
         }
-        case 'nango': {
-          if (!project?.id) {
-            break;
-          }
+        // case 'nango': {
+        //   if (!project?.id) {
+        //     break;
+        //   }
 
-          const integrationId = getIntegrationId(source);
-          if (!integrationId) {
-            break;
-          }
+        //   const integrationId = getIntegrationId(source);
+        //   if (!integrationId) {
+        //     break;
+        //   }
 
-          const syncId = getSyncId(integrationId);
-          const connectionId = getConnectionId(source.id);
+        //   const syncId = getSyncId(integrationId);
+        //   const connectionId = getConnectionId(source.id);
 
-          await triggerSync(
-            project?.id,
-            integrationId,
-            connectionId,
-            syncId ? [syncId] : [],
-          );
+        //   await triggerSync(
+        //     project?.id,
+        //     integrationId,
+        //     connectionId,
+        //     syncId ? [syncId] : [],
+        //   );
 
-          break;
-        }
+        //   break;
+        // }
         case 'motif': {
           const data = source.data as MotifSourceDataType;
 

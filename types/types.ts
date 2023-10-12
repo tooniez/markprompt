@@ -202,7 +202,7 @@ export type NangoFileWithMetadata = NangoFile & {
 
 export type NangoSourceDataType = {
   integrationId: NangoIntegrationId;
-  identifier: string;
+  connectionId: string;
   displayName: string;
 };
 
@@ -347,3 +347,5 @@ export type DbSyncQueueOverview = Pick<
 >;
 
 export type LogLevel = 'info' | 'debug' | 'error' | 'warn';
+
+export type SourceConfigurationView = 'configuration' | 'logs';

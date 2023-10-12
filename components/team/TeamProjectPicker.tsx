@@ -333,5 +333,3 @@ export const TeamProjectPicker = () => {
     </>
   );
 };
-
-export default TeamProjectPicker;

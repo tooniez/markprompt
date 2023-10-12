@@ -11,7 +11,7 @@ import {
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
-import { getOrCreateSource } from '@/lib/supabase';
+import { getOrCreateUploadOrAPISource } from '@/lib/supabase';
 import { SUPPORTED_EXTENSIONS, readTextFileAsync } from '@/lib/utils';
 import { FileData } from '@/types/types';
 
@@ -85,11 +85,10 @@ const FileDnd: FC<FileDndProps> = ({
       return;
     }
 
-    const sourceId = await getOrCreateSource(
+    const sourceId = await getOrCreateUploadOrAPISource(
       supabase,
       project.id,
       'file-upload',
-      undefined,
     );
 
     if (!sourceId) {
