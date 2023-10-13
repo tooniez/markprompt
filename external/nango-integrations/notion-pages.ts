@@ -3,7 +3,7 @@ import type { NangoSync, NangoFile } from './models';
 
 export default async function fetchData(nango: NangoSync) {
   const pages = (
-    await paginate(nango, 'post', '/v1/search', 'Notion pages', 100, true)
+    await paginate(nango, 'post', '/v1/search', 'Notion pages', 100, false)
   ).filter((result: any) => result.object === 'page');
 
   const batchSize = 10;
@@ -43,6 +43,7 @@ const fetchBlocks = async (nango: NangoSync, id: string) => {
     `/v1/blocks/${id}/children`,
     'Notion blocks',
     100,
+    false,
   );
 };
 
@@ -51,8 +52,8 @@ const paginate = async (
   method: 'get' | 'post',
   endpoint: string,
   desc: string,
-  pageSize = 100,
-  incremental = false,
+  pageSize: number,
+  incremental: boolean,
 ) => {
   let cursor: string | undefined;
   let pageCounter = 0;
