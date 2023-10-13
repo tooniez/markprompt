@@ -223,11 +223,20 @@ const Sources: FC<SourcesProps> = ({
   onConfigureSelected,
   onRemoveSelected,
 }) => {
-  const { sources, syncQueues, mutateSyncQueues } = useSources();
+  const {
+    sources,
+    syncQueues,
+    mutateSyncQueues,
+    getSortedSyncQueuesForSource,
+  } = useSources();
   return (
     <div className="flex flex-col gap-2">
       {sources.map((source) => {
-        const syncQueue = syncQueues?.find((q) => q.source_id === source.id);
+        const syncQueuesForSource = getSortedSyncQueuesForSource(source.id);
+        const lastSyncQueue =
+          syncQueuesForSource?.length > 0
+            ? syncQueuesForSource[syncQueuesForSource.length - 1]
+            : undefined;
         const connectionId = getConnectionId(source);
         if (!connectionId) {
           return <></>;
@@ -237,7 +246,7 @@ const Sources: FC<SourcesProps> = ({
           <SourceItem
             key={source.id}
             source={source}
-            syncQueue={syncQueue}
+            syncQueue={lastSyncQueue}
             onSyncSelected={async () => {
               if (!projectId) {
                 return;
@@ -251,9 +260,9 @@ const Sources: FC<SourcesProps> = ({
               const otherSyncQueues = (syncQueues || []).filter(
                 (q) => q.source_id !== source.id,
               );
-              const currentSyncQueue: DbSyncQueueOverview = syncQueue
+              const currentSyncQueue: DbSyncQueueOverview = lastSyncQueue
                 ? {
-                    ...syncQueue,
+                    ...lastSyncQueue,
                     status: 'running',
                   }
                 : {
@@ -262,6 +271,7 @@ const Sources: FC<SourcesProps> = ({
                     ended_at: null,
                     status: 'running',
                   };
+
               mutateSyncQueues([...otherSyncQueues, currentSyncQueue]);
 
               await triggerSync(projectId, integrationId, connectionId, [

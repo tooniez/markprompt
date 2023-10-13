@@ -350,6 +350,14 @@ export type DbSyncQueueOverview = Pick<
   'source_id' | 'created_at' | 'ended_at' | 'status'
 >;
 
+export type DbSyncQueueWithDate = Omit<
+  DbSyncQueueOverview,
+  'created_at' | 'ended_at'
+> & {
+  createdAt: Date;
+  endedAt?: Date | undefined;
+};
+
 export type LogLevel = 'info' | 'debug' | 'error' | 'warn';
 
 export type SourceConfigurationView = 'configuration' | 'logs';

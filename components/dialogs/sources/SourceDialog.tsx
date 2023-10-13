@@ -7,6 +7,7 @@ const SourceDialog = ({
   open,
   onOpenChange,
   trigger,
+  Accessory,
   Icon,
   children,
 }: {
@@ -15,6 +16,7 @@ const SourceDialog = ({
   open?: boolean;
   onOpenChange?(open: boolean): void;
   trigger?: ReactNode;
+  Accessory?: ReactNode | undefined;
   Icon?: JSXElementConstructor<any>;
   children: ReactNode;
 }) => {
@@ -34,6 +36,7 @@ const SourceDialog = ({
                 <p className="text-sm text-neutral-500">{description}</p>
               )}
             </div>
+            {Accessory && <div className="flex-none">{Accessory}</div>}
           </div>
           <div className="flex-grow overflow-y-auto">{children}</div>
         </Dialog.Content>
