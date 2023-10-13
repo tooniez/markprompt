@@ -6,6 +6,7 @@ import * as ReactTooltip from '@radix-ui/react-tooltip';
 import {
   SortingState,
   createColumnHelper,
+  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
@@ -79,6 +80,7 @@ import {
   Project,
   SourceConfigurationView,
 } from '@/types/types';
+import { SkeletonTable } from '@/components/ui/Skeletons';
 
 dayjs.extend(relativeTime);
 
@@ -965,7 +967,7 @@ const Data = () => {
           </div> */}
         </div>
         <div className="sm:col-span-9 md:col-span-10">
-          {/* {loadingFiles && (
+          {loadingFiles && (
             <div className="relative min-h-[200px]">
               <SkeletonTable onDark loading />
             </div>
@@ -1076,7 +1078,7 @@ const Data = () => {
                 })}
               </tbody>
             </table>
-          )} */}
+          )}
           <div className="flex flex-row gap-2 py-4">
             <Button
               variant="plain"
