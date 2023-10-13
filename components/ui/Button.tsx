@@ -11,7 +11,9 @@ export type ButtonVariant =
   | 'danger'
   | 'ghost'
   | 'text'
+  | 'textDanger'
   | 'plain'
+  | 'plainDanger'
   | 'bordered'
   | 'bordered-dashed'
   | 'fuchsia'
@@ -122,6 +124,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     variant === 'danger',
                   'border-neutral-800 bg-neutral-900 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
                     variant === 'plain',
+                  'border-neutral-800 bg-neutral-900 text-rose-600 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
+                    variant === 'plainDanger',
                   'border-neutral-800 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
                     variant === 'bordered' || variant === 'bordered-dashed',
                   'border-dashed': variant === 'bordered-dashed',
@@ -131,6 +135,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     variant === 'ghost',
                   'border-transparent text-neutral-100 disabled:text-neutral-500':
                     variant === 'text',
+                  'border-transparent text-rose-700 disabled:text-neutral-500':
+                    variant === 'textDanger',
                   'border-fuchsia-400/20 text-fuchsia-400 hover:bg-fuchsia-900/20 hover:text-fuchsia-100 disabled:border-transparent disabled:text-fuchsia-500 hover:disabled:bg-opacity-100':
                     variant === 'borderedFuchsia',
                   'text-sm': size === 'base' || size === 'sm',

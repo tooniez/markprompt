@@ -378,7 +378,7 @@ textarea {
 }
 
 .dialog-content {
-  @apply fixed top-[50%] left-[50%] z-40 translate-x-[-50%] translate-y-[-50%] rounded-lg border border-neutral-900 bg-neutral-1000 shadow-2xl;
+  @apply fixed top-[50%] left-[50%] z-20 translate-x-[-50%] translate-y-[-50%] rounded-lg border border-neutral-900 bg-neutral-1000 shadow-2xl;
 }
 
 .dialog-title {

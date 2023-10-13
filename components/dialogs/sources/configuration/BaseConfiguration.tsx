@@ -1,5 +1,7 @@
+import * as Dialog from '@radix-ui/react-dialog';
 import * as Tabs from '@radix-ui/react-tabs';
 import { parseISO } from 'date-fns';
+import dynamic from 'next/dynamic';
 import { FC, JSXElementConstructor, ReactNode, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -25,6 +27,10 @@ import {
 import { SyncQueueLogs, getTagForSyncQueue } from './SyncQueueLogs';
 import SourceDialog from '../SourceDialog';
 
+const RemoveSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/RemoveSource'),
+);
+
 type BaseConfigurationDialogProps = {
   source?: DbSource;
   defaultView?: SourceConfigurationView;
@@ -45,6 +51,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   const { project } = useProject();
   const { getSortedSyncQueuesForSource } = useSources();
   const [syncStarted, setSyncStarted] = useState(false);
+  const [showRemoveSourceDialog, setShowRemoveSourceDialog] = useState(false);
 
   const sortedSyncQueues = useMemo(() => {
     if (!source?.id) {
@@ -115,6 +122,16 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
             value="configuration"
           >
             {children}
+            <div className="mt-12 border-t border-neutral-900 pt-8" />
+            <Button
+              buttonSize="sm"
+              variant="plainDanger"
+              onClick={() => {
+                setShowRemoveSourceDialog(true);
+              }}
+            >
+              Remove source
+            </Button>
           </Tabs.Content>
           <Tabs.Content
             className="TabsContent flex-grow overflow-y-auto"
@@ -166,6 +183,16 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
           </CTABar>
         </div>
       </div>
+      <Dialog.Root
+        open={!!showRemoveSourceDialog}
+        onOpenChange={() => setShowRemoveSourceDialog(false)}
+      >
+        <RemoveSourceDialog
+          projectId={project.id}
+          source={source}
+          onComplete={() => setShowRemoveSourceDialog(false)}
+        />
+      </Dialog.Root>
     </SourceDialog>
   );
 };
