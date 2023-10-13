@@ -38,6 +38,7 @@ import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayou
 import Onboarding from '@/components/onboarding/Onboarding';
 import Button from '@/components/ui/Button';
 import { IndeterminateCheckbox } from '@/components/ui/Checkbox';
+import { SkeletonTable } from '@/components/ui/Skeletons';
 import { Tag } from '@/components/ui/Tag';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { deleteFiles } from '@/lib/api';
@@ -80,7 +81,6 @@ import {
   Project,
   SourceConfigurationView,
 } from '@/types/types';
-import { SkeletonTable } from '@/components/ui/Skeletons';
 
 dayjs.extend(relativeTime);
 
