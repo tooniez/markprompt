@@ -37,7 +37,7 @@ export default async function handler(
     }
 
     const limit = Math.min(safeParseInt(req.query.limit as string, 50), 50);
-    const page = safeParseInt(req.query.page as string, 0);
+    const page = Math.max(safeParseInt(req.query.page as string, 0), 0);
     const { queries, error } = await getQueryStats(
       supabaseAdmin,
       projectId,
