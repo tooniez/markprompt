@@ -563,6 +563,26 @@ export const batchDeleteFilesBySourceAndNangoId = async (
     .in('internal_metadata->>nangoFileId', ids);
 };
 
+export const getOrCreateRunningSyncQueueForSource = async (
+  supabase: SupabaseClient<Database>,
+  sourceId: DbSource['id'],
+): Promise<DbSyncQueue['id']> => {
+  const { data } = await supabase
+    .from('sync_queues')
+    .select('id')
+    .eq('source_id', sourceId)
+    .eq('status', 'running')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .select()
+    .maybeSingle();
+
+  if (data?.id) {
+    return data?.id;
+  }
+  return createSyncQueue(supabase, sourceId);
+};
+
 export const createSyncQueue = async (
   supabase: SupabaseClient<Database>,
   sourceId: DbSource['id'],
@@ -609,7 +629,7 @@ export const updateSyncQueueStatus = async (
   await supabase.from('sync_queues').update(payload).eq('id', id);
 };
 
-export const appendLogToSyncQueue = async (
+const appendLogToSyncQueue = async (
   supabase: SupabaseClient<Database>,
   syncQueueId: DbSyncQueue['id'],
   message: string,
@@ -623,26 +643,6 @@ export const appendLogToSyncQueue = async (
       level,
     },
   });
-};
-
-export const getOrCreateRunningSyncQueueForSource = async (
-  supabase: SupabaseClient<Database>,
-  sourceId: DbSource['id'],
-): Promise<DbSyncQueue['id']> => {
-  const { data } = await supabase
-    .from('sync_queues')
-    .select('id')
-    .eq('source_id', sourceId)
-    .eq('status', 'running')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .select()
-    .maybeSingle();
-
-  if (data?.id) {
-    return data?.id;
-  }
-  return createSyncQueue(supabase, sourceId);
 };
 
 export const getPublicAnonSupabase = () => {

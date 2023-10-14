@@ -80,7 +80,7 @@ export const inngest = new Inngest({
 const sync = inngest.createFunction(
   { id: 'sync-nango-records' },
   { event: 'nango/sync' },
-  async ({ event, step, logger }) => {
+  async ({ event, step }) => {
     const sourceId = await getSourceId(supabase, event.data.connectionId);
 
     if (!sourceId) {
@@ -92,13 +92,11 @@ const sync = inngest.createFunction(
       sourceId,
     );
 
-    logger.debug('Calling getRecords');
-
     const records = (await nango.getRecords<any>({
       providerConfigKey: event.data.providerConfigKey,
       connectionId: event.data.connectionId,
       model: event.data.model,
-      // delta: event.data.queryTimeStamp || undefined,
+      delta: event.data.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
 
     console.log('records', JSON.stringify(records, null, 2));

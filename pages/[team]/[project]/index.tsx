@@ -227,7 +227,7 @@ const Sources: FC<SourcesProps> = ({
     getSortedSyncQueuesForSource,
   } = useSources();
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       {sources.map((source) => {
         const syncQueuesForSource = getSortedSyncQueuesForSource(source.id);
         const lastSyncQueue =

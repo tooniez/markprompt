@@ -25,11 +25,9 @@ export default withProjectAccess(
 
     const projectId = req.query.id as Project['id'];
 
-    const { data } = await supabase
-      .from('sync_queues')
-      .select('source_id,created_at,ended_at,status,sources(projects(id))')
-      .eq('sources.projects.id', projectId)
-      .order('created_at', { ascending: false });
+    const { data } = await supabase.rpc('get_latest_sync_queues', {
+      project_id: projectId,
+    });
 
     return res.status(200).json(data || []);
   },
