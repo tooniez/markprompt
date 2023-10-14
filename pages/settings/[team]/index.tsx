@@ -106,11 +106,9 @@ const TeamSettingsPage = () => {
             }}
           >
             {({ isSubmitting, isValid }) => (
-              <Form>
-                <div className="flex flex-col gap-1 p-4">
-                  <p className="mb-1 text-xs font-medium text-neutral-300">
-                    Name
-                  </p>
+              <Form className="FormRoot">
+                <div className="FormField px-4 pt-4">
+                  <p className="FormLabel">Name</p>
                   <Field
                     type="text"
                     name="name"
@@ -119,9 +117,9 @@ const TeamSettingsPage = () => {
                     disabled={isSubmitting}
                   />
                   <ErrorMessage name="name" component={ErrorLabel} />
-                  <p className="mb-1 mt-4 text-xs font-medium text-neutral-300">
-                    Slug
-                  </p>
+                </div>
+                <div className="FormField px-4 pb-4">
+                  <p className="FormLabel">Slug</p>
                   <Field
                     type="text"
                     name="slug"

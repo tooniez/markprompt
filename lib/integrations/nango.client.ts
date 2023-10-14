@@ -1,12 +1,9 @@
 import Nango from '@nangohq/frontend';
+import { isPresent } from 'ts-is-present';
 
-import {
-  FileData,
-  NangoIntegrationId,
-  NangoSyncId,
-  Project,
-} from '@/types/types';
+import { DbSource, FileData, NangoIntegrationId, Project } from '@/types/types';
 
+import { getConnectionId, getIntegrationId, getSyncId } from './nango';
 import { getResponseOrThrow } from '../utils';
 
 export const getNangoClientInstance = () => {
@@ -54,17 +51,31 @@ export const deleteConnection = async (
   return getResponseOrThrow<void>(res);
 };
 
-export const triggerSync = async (
+export const triggerSyncs = async (
   projectId: Project['id'],
-  integrationId: NangoIntegrationId,
-  connectionId: string,
-  syncIds?: NangoSyncId[],
+  sources: DbSource[],
 ) => {
+  const _sources = sources
+    .map((source) => {
+      const connectionId = getConnectionId(source);
+      const integrationId = getIntegrationId(source);
+      if (!connectionId || !integrationId) {
+        return undefined;
+      }
+      const syncIds = [getSyncId(integrationId)];
+      return {
+        connectionId,
+        integrationId,
+        syncIds,
+      };
+    })
+    .filter(isPresent);
+
   const res = await fetch(
-    `/api/project/${projectId}/integrations/nango/trigger-sync`,
+    `/api/project/${projectId}/integrations/nango/trigger-syncs`,
     {
       method: 'POST',
-      body: JSON.stringify({ integrationId, connectionId, syncIds }),
+      body: JSON.stringify({ sources: _sources }),
       headers: {
         'Content-Type': 'application/json',
         accept: 'application/json',

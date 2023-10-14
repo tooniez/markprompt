@@ -135,7 +135,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     variant === 'ghost',
                   'border-transparent text-neutral-100 disabled:text-neutral-500':
                     variant === 'text',
-                  'border-transparent text-rose-700 hover:text-rose-600 disabled:text-neutral-500':
+                  'border-transparent text-rose-700 hover:text-rose-600 active:outline-none active:ring-0 disabled:text-neutral-500':
                     variant === 'textDanger',
                   'border-fuchsia-400/20 text-fuchsia-400 hover:bg-fuchsia-900/20 hover:text-fuchsia-100 disabled:border-transparent disabled:text-fuchsia-500 hover:disabled:bg-opacity-100':
                     variant === 'borderedFuchsia',

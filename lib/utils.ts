@@ -49,7 +49,7 @@ import {
 } from '@/types/types';
 
 import { MIN_SLUG_LENGTH } from './constants';
-import { getIntegrationId } from './integrations/nango';
+import { getIntegrationId, getIntegrationName } from './integrations/nango';
 import { removeSchema } from './utils.edge';
 
 const lookup = [
@@ -643,19 +643,6 @@ export const getGitHubOwnerRepoString = (url: string) => {
   return `${info.owner}/${info.repo}`;
 };
 
-const getIntegrationDisplayName = (
-  integrationId: NangoSourceDataType['integrationId'],
-) => {
-  switch (integrationId) {
-    case 'notion-pages':
-      return 'Notion';
-    case 'salesforce-case':
-      return 'Salesforce Case';
-    case 'salesforce-knowledge':
-      return 'Salesforce Knowledge';
-  }
-};
-
 export const getLabelForSource = (source: Source, inline: boolean) => {
   switch (source.type) {
     case 'github': {
@@ -676,7 +663,7 @@ export const getLabelForSource = (source: Source, inline: boolean) => {
       return 'API uploads';
     case 'nango': {
       const data = source.data as NangoSourceDataType;
-      return data.displayName || getIntegrationDisplayName(data.integrationId);
+      return data.displayName || getIntegrationName(data.integrationId);
     }
     default:
       return 'Unknown source';

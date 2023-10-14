@@ -42,12 +42,10 @@ export const getIntegrationName = (integrationId: NangoIntegrationId) => {
     case 'notion-pages':
       return 'Notion';
     case 'salesforce-case':
-      return 'Salesforce Case';
     case 'salesforce-case-sandbox':
-      return 'salesforce-Case Sandbox';
+      return 'Salesforce Case';
     case 'salesforce-knowledge':
-      return 'Salesforce Knowledge';
     case 'salesforce-knowledge-sandbox':
-      return 'salesforce-Knowledge Sandbox';
+      return 'Salesforce Knowledge';
   }
 };

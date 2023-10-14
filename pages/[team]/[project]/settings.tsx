@@ -144,11 +144,9 @@ const ProjectSettingsPage = () => {
             }}
           >
             {({ isSubmitting, isValid }) => (
-              <Form>
-                <div className="flex flex-col gap-1 p-4">
-                  <p className="mb-1 text-xs font-medium text-neutral-300">
-                    Name
-                  </p>
+              <Form className="FormRoot">
+                <div className="FormField px-4 pt-4">
+                  <p className="FormLabel">Name</p>
                   <Field
                     type="text"
                     name="name"
@@ -157,9 +155,9 @@ const ProjectSettingsPage = () => {
                     disabled={isSubmitting}
                   />
                   <ErrorMessage name="name" component={ErrorLabel} />
-                  <p className="mb-1 mt-4 text-xs font-medium text-neutral-300">
-                    Slug
-                  </p>
+                </div>
+                <div className="FormField px-4 pb-4">
+                  <p className="FormLabel">Slug</p>
                   <Field
                     type="text"
                     name="slug"
@@ -499,10 +497,8 @@ const ProjectSettingsPage = () => {
             >
               {({ isSubmitting }) => (
                 <Form>
-                  <div className="flex flex-col gap-1 p-4">
-                    <p className="mb-1 text-xs font-medium text-neutral-300">
-                      OpenAI API key
-                    </p>
+                  <div className="FormField p-4">
+                    <p className="FormLabel">OpenAI API key</p>
                     <Field
                       type="text"
                       name="openai_key"

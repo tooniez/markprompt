@@ -58,3 +58,17 @@
 .TabsContent {
   @apply flex-grow outline-none;
 }
+
+/* Forms */
+
+.FormRoot {
+  @apply flex flex-col gap-4;
+}
+
+.FormField {
+  @apply flex flex-col gap-2;
+}
+
+.FormLabel {
+  @apply text-xs font-medium text-neutral-300;
+}

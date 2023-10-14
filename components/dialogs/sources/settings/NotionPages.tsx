@@ -52,11 +52,9 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
     >
       {({ isSubmitting, isValid }) => (
         <Form className="flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <div className="flex flex-row items-center gap-2">
-              <p className="text-sm font-medium text-neutral-300">
-                Display name{showOptional && ' (optional)'}
-              </p>
+          <div className="FormField">
+            <div className="FormLabel">
+              Display name{showOptional && ' (optional)'}
             </div>
             <div className="flex flex-row gap-2">
               <Field

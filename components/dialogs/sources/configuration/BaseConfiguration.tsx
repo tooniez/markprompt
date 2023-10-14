@@ -4,6 +4,7 @@ import { parseISO } from 'date-fns';
 import dynamic from 'next/dynamic';
 import { FC, JSXElementConstructor, ReactNode, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 
 import Button from '@/components/ui/Button';
 import { CTABar } from '@/components/ui/SettingsCard';
@@ -17,9 +18,10 @@ import {
   getIntegrationName,
   getSyncId,
 } from '@/lib/integrations/nango';
-import { triggerSync } from '@/lib/integrations/nango.client';
+import { fetcher, getIconForSource } from '@/lib/utils';
 import {
   DbSource,
+  DbSyncQueue,
   NangoSourceDataType,
   SourceConfigurationView,
 } from '@/types/types';
@@ -49,34 +51,29 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   children,
 }) => {
   const { project } = useProject();
-  const { getSortedSyncQueuesForSource } = useSources();
+  const { latestSyncQueues } = useSources();
   const [syncStarted, setSyncStarted] = useState(false);
   const [showRemoveSourceDialog, setShowRemoveSourceDialog] = useState(false);
 
-  const sortedSyncQueues = useMemo(() => {
-    if (!source?.id) {
-      return [];
-    }
-    return getSortedSyncQueuesForSource(source.id);
-  }, [getSortedSyncQueuesForSource, source]);
+  const { data: allSyncQueuesForSource, error } = useSWR(
+    project?.id && source?.id
+      ? `/api/project/${project.id}/sources/syncs/${source?.id}`
+      : null,
+    fetcher<DbSyncQueue[]>,
+  );
 
-  const { lastSyncQueue, lastSuccessfulSyncQueue } = useMemo(() => {
-    if (!source?.id) {
-      return { lastSyncQueue: undefined, lastSuccessfulSyncQueue: undefined };
-    }
-    const lastSyncQueue =
-      sortedSyncQueues?.length > 0
-        ? sortedSyncQueues[sortedSyncQueues.length - 1]
-        : undefined;
-    const successfulSyncs = sortedSyncQueues.filter(
-      (s) => s.status === 'complete',
-    );
-    const lastSuccessfulSyncQueue =
-      successfulSyncs?.length > 0
-        ? successfulSyncs[successfulSyncs.length - 1]
-        : undefined;
-    return { lastSyncQueue, lastSuccessfulSyncQueue };
-  }, [sortedSyncQueues, source]);
+  const currentStatus = useMemo(() => {
+    return latestSyncQueues?.find((q) => q.source_id === source?.id)?.status;
+  }, [latestSyncQueues, source?.id]);
+
+  const loadingSyncQueues = !allSyncQueuesForSource && !error;
+
+  const lastCompletedSyncDate = useMemo(() => {
+    return allSyncQueuesForSource?.find((q) => q.status === 'complete')
+      ?.ended_at;
+  }, [allSyncQueuesForSource]);
+
+  const lastSyncQueue = allSyncQueuesForSource?.[0];
 
   const title = useMemo(() => {
     if (source?.type !== 'nango') {
@@ -90,15 +87,16 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
     return <></>;
   }
 
+  const integrationId = getIntegrationId(source);
+
   return (
     <SourceDialog
       open={open}
       onOpenChange={onOpenChange}
       title={title}
-      Icon={Icon}
       Accessory={
-        lastSyncQueue ? (
-          getTagForSyncQueue(lastSyncQueue)
+        currentStatus ? (
+          getTagForSyncQueue(currentStatus)
         ) : (
           <Tag color="orange">Not synced</Tag>
         )
@@ -121,6 +119,19 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
             className="TabsContent flex-grow overflow-y-auto px-4 py-8"
             value="configuration"
           >
+            {integrationId && (
+              <div className="FormField mb-8">
+                <p className="FormLabel">Source</p>
+                <div className="flex flex-row items-center gap-2 overflow-hidden">
+                  {Icon && (
+                    <Icon className="h-5 w-5 flex-none text-neutral-500" />
+                  )}
+                  <div className="flex-grow overflow-hidden truncate text-sm text-neutral-300">
+                    {getIntegrationName(integrationId)}
+                  </div>
+                </div>
+              </div>
+            )}
             {children}
             <div className="mt-12 border-t border-neutral-900 pt-8" />
             <Button
@@ -140,21 +151,26 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
             value="logs"
           >
             <div className="TabsContent flex-grow overflow-y-auto">
-              <SyncQueueLogs sourceId={source.id} />
+              <SyncQueueLogs
+                loading={loadingSyncQueues}
+                syncQueues={allSyncQueuesForSource}
+              />
             </div>
           </Tabs.Content>
         </Tabs.Root>
         <div className="flex-none">
           <CTABar>
             <div className="flex flex-grow flex-row items-center gap-2">
-              {lastSuccessfulSyncQueue?.ended_at && (
-                <p className="flex-grow text-xs text-neutral-500">
-                  Last sync completed on{' '}
-                  {formatShortDateTimeInTimeZone(
-                    parseISO(lastSuccessfulSyncQueue.ended_at),
-                  )}
-                </p>
-              )}
+              <div className="flex-grow">
+                {lastCompletedSyncDate && (
+                  <p className="animate-fade-in text-xs text-neutral-500">
+                    Last sync completed on{' '}
+                    {formatShortDateTimeInTimeZone(
+                      parseISO(lastCompletedSyncDate),
+                    )}
+                  </p>
+                )}
+              </div>
               <Button
                 className="flex-none"
                 loading={syncStarted}
@@ -162,19 +178,17 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
                 variant="cta"
                 buttonSize="sm"
                 onClick={async () => {
-                  const integrationId = getIntegrationId(source);
-                  const connectionId = getConnectionId(source);
-
-                  if (!integrationId || !connectionId) {
-                    return;
-                  }
-
-                  setSyncStarted(true);
-                  await triggerSync(project.id, integrationId, connectionId, [
-                    getSyncId(integrationId),
-                  ]);
-                  setSyncStarted(false);
-                  toast.success('Sync initiated');
+                  // const integrationId = getIntegrationId(source);
+                  // const connectionId = getConnectionId(source);
+                  // if (!integrationId || !connectionId) {
+                  //   return;
+                  // }
+                  // setSyncStarted(true);
+                  // await triggerSync(project.id, integrationId, connectionId, [
+                  //   getSyncId(integrationId),
+                  // ]);
+                  // setSyncStarted(false);
+                  // toast.success('Sync initiated');
                 }}
               >
                 {lastSyncQueue?.status === 'running'

@@ -220,70 +220,71 @@ const Sources: FC<SourcesProps> = ({
   onConfigureSelected,
   onRemoveSelected,
 }) => {
-  const {
-    sources,
-    syncQueues,
-    mutateSyncQueues,
-    getSortedSyncQueuesForSource,
-  } = useSources();
+  const { sources, latestSyncQueues } = useSources();
+
   return (
     <div className="flex flex-col gap-1">
-      {sources.map((source) => {
-        const syncQueuesForSource = getSortedSyncQueuesForSource(source.id);
-        const lastSyncQueue =
-          syncQueuesForSource?.length > 0
-            ? syncQueuesForSource[syncQueuesForSource.length - 1]
-            : undefined;
-        const connectionId = getConnectionId(source);
-        if (!connectionId) {
-          return <></>;
-        }
+      {sources
+        .map((source) => {
+          const latestSyncQueue = latestSyncQueues?.find(
+            (q) => q.source_id === source.id,
+          );
 
-        return (
-          <SourceItem
-            key={source.id}
-            source={source}
-            syncQueue={lastSyncQueue}
-            onSyncSelected={async () => {
-              if (!projectId) {
-                return;
-              }
+          if (!latestSyncQueue) {
+            return undefined;
+          }
+          // const syncQueuesForSource = getSortedSyncQueuesForSource(source.id);
+          // const lastSyncQueue =
+          //   syncQueuesForSource?.length > 0
+          //     ? syncQueuesForSource[syncQueuesForSource.length - 1]
+          //     : undefined;
+          // const connectionId = getConnectionId(source);
+          // if (!connectionId) {
+          //   return <></>;
+          // }
 
-              const integrationId = getIntegrationId(source);
-              if (!integrationId) {
-                return;
-              }
-
-              const otherSyncQueues = (syncQueues || []).filter(
-                (q) => q.source_id !== source.id,
-              );
-              const currentSyncQueue: DbSyncQueueOverview = lastSyncQueue
-                ? {
-                    ...lastSyncQueue,
-                    status: 'running',
-                  }
-                : {
-                    source_id: source.id,
-                    created_at: formatISO(new Date()),
-                    ended_at: null,
-                    status: 'running',
-                  };
-
-              mutateSyncQueues([...otherSyncQueues, currentSyncQueue]);
-
-              await triggerSync(projectId, integrationId, connectionId, [
-                getSyncId(integrationId),
-              ]);
-            }}
-            onConfigureSelected={(view) => {
-              onConfigureSelected(source, view);
-            }}
-            onRemoveSelected={() => {
-              onRemoveSelected(source);
-            }}
-          />
-        );
-      })}
+          return (
+            <SourceItem
+              key={source.id}
+              source={source}
+              syncQueue={latestSyncQueue}
+              onSyncSelected={async () => {
+                // if (!projectId) {
+                //   return;
+                // }
+                // const integrationId = getIntegrationId(source);
+                // if (!integrationId) {
+                //   return;
+                // }
+                // const otherSyncQueues = (syncQueues || []).filter(
+                //   (q) => q.source_id !== source.id,
+                // );
+                // const currentSyncQueue: DbSyncQueueOverview = lastSyncQueue
+                //   ? {
+                //       ...lastSyncQueue,
+                //       status: 'running',
+                //     }
+                //   : {
+                //       source_id: source.id,
+                //       created_at: formatISO(new Date()),
+                //       ended_at: null,
+                //       status: 'running',
+                //     };
+                // mutateSyncQueues([...otherSyncQueues, currentSyncQueue]);
+                // await triggerSync(projectId, integrationId, connectionId, [
+                //   getSyncId(integrationId),
+                // ]);
+              }}
+              onConfigureSelected={(view) => {
+                onConfigureSelected(source, view);
+              }}
+              onRemoveSelected={() => {
+                onRemoveSelected(source);
+              }}
+            />
+          );
+        })
+        .filter(isPresent)}
     </div>
   );
 };

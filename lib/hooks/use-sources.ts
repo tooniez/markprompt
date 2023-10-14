@@ -1,16 +1,10 @@
-import { formatISO, parseISO } from 'date-fns';
 import { useCallback, useMemo } from 'react';
 import useSWR from 'swr';
 
 import { DbSource, DbSyncQueueOverview } from '@/types/types';
 
 import useProject from './use-project';
-import {
-  getConnectionId,
-  getIntegrationId,
-  getSyncId,
-} from '../integrations/nango';
-import { triggerSync } from '../integrations/nango.client';
+import { triggerSyncs } from '../integrations/nango.client';
 import { fetcher } from '../utils';
 
 export default function useSources() {
@@ -36,61 +30,56 @@ export default function useSources() {
     return !!latestSyncQueues?.some((q) => q.status === 'running');
   }, [latestSyncQueues]);
 
-  const syncSource = useCallback(
-    async (source: DbSource, mutate: boolean) => {
+  const syncSources = useCallback(
+    async (sources: DbSource[]) => {
       if (!project?.id) {
         return;
       }
 
-      const connectionId = getConnectionId(source);
-      const integrationId = getIntegrationId(source);
+      // if (mutate) {
+      //   const syncQueuesForSource = getSortedSyncQueuesForSource(source.id);
+      //   const lastSyncQueue =
+      //     syncQueuesForSource?.length > 0
+      //       ? syncQueuesForSource[syncQueuesForSource.length - 1]
+      //       : undefined;
 
-      if (!connectionId || !integrationId) {
-        return;
-      }
+      //   const currentSyncQueue: DbSyncQueueOverview = lastSyncQueue
+      //     ? {
+      //         ...lastSyncQueue,
+      //         status: 'running',
+      //       }
+      //     : {
+      //         source_id: source.id,
+      //         created_at: formatISO(new Date()),
+      //         ended_at: null,
+      //         status: 'running',
+      //       };
 
-      if (mutate) {
-        const syncQueuesForSource = getSortedSyncQueuesForSource(source.id);
-        const lastSyncQueue =
-          syncQueuesForSource?.length > 0
-            ? syncQueuesForSource[syncQueuesForSource.length - 1]
-            : undefined;
+      //   const otherSyncQueues = (syncQueues || []).filter(
+      //     (q) => q.source_id !== source.id,
+      //   );
 
-        const currentSyncQueue: DbSyncQueueOverview = lastSyncQueue
-          ? {
-              ...lastSyncQueue,
-              status: 'running',
-            }
-          : {
-              source_id: source.id,
-              created_at: formatISO(new Date()),
-              ended_at: null,
-              status: 'running',
-            };
+      //   mutateSyncQueues([...otherSyncQueues, currentSyncQueue]);
+      // }
 
-        const otherSyncQueues = (syncQueues || []).filter(
-          (q) => q.source_id !== source.id,
-        );
-
-        mutateSyncQueues([...otherSyncQueues, currentSyncQueue]);
-      }
-
-      await triggerSync(project.id, integrationId, connectionId, [
-        getSyncId(integrationId),
-      ]);
+      await triggerSyncs(project.id, sources);
     },
-    [getSortedSyncQueuesForSource, mutateSyncQueues, project?.id, syncQueues],
+    [project?.id],
   );
 
-  const syncAllSources = useCallback(async () => {}, []);
+  const syncAllSources = useCallback(async () => {
+    if (!sources || sources.length === 0) {
+      return;
+    }
+    return syncSources(sources);
+  }, [sources, syncSources]);
 
   return {
     sources: (sources || []) as DbSource[],
-    syncQueues,
-    syncSource,
+    syncSources,
     syncAllSources,
+    latestSyncQueues,
     mutateSyncQueues,
-    getSortedSyncQueuesForSource,
     isOneSourceSyncing,
     loading,
     mutate,
