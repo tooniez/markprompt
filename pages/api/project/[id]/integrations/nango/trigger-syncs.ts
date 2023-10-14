@@ -35,12 +35,6 @@ const triggerSyncForSource = async (data: SyncData) => {
 
   await getOrCreateRunningSyncQueueForSource(supabase, sourceId);
 
-  console.log(
-    'Trigger sync',
-    data.integrationId,
-    data.connectionId,
-    data.syncIds,
-  );
   await nango.triggerSync(data.integrationId, data.connectionId, data.syncIds);
 };
 

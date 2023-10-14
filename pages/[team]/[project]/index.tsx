@@ -458,22 +458,18 @@ const Data = () => {
   }, [latestSyncQueues]);
 
   useEffect(() => {
-    console.log('isOneSourceSyncing', isOneSourceSyncing);
     const refresh = async () => {
-      console.log('REFRESH');
       mutateFiles();
       mutateFileStats();
     };
 
     if (!isOneSourceSyncing) {
-      console.log('IN HERE 1');
       refresh();
       return;
     }
 
     // If a source is syncing, refresh files regularly
     const refreshInterval = window.setInterval(() => {
-      console.log('IN HERE 2');
       refresh();
     }, 5000);
 

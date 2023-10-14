@@ -3,19 +3,22 @@ import { toast } from 'sonner';
 import useSWR from 'swr';
 import { isPresent } from 'ts-is-present';
 
-import { DbSource, DbSyncQueueOverview } from '@/types/types';
+import {
+  DbSource,
+  DbSyncQueueOverview,
+  NangoIntegrationId,
+  NangoSourceDataType,
+} from '@/types/types';
 
 import useFiles from './use-files';
 import useProject from './use-project';
 import useUsage from './use-usage';
-import { getSyncData } from '../integrations/nango';
+import { getIntegrationName, getSyncData } from '../integrations/nango';
 import { triggerSyncs } from '../integrations/nango.client';
 import { fetcher } from '../utils';
 
 export default function useSources() {
   const { project } = useProject();
-  const { mutate: mutateFiles } = useFiles();
-  const { mutate: mutateFileStats } = useUsage();
   const {
     data: sources,
     mutate,
@@ -68,12 +71,41 @@ export default function useSources() {
     [project?.id],
   );
 
+  const isNameAvailable = useCallback(
+    (name: string) => {
+      return !sources?.find(
+        (s) =>
+          s.type === 'nango' && (s.data as NangoSourceDataType).name === name,
+      );
+    },
+    [sources],
+  );
+
+  const generateUniqueName = useCallback(
+    (integrationId: NangoIntegrationId) => {
+      const baseName = getIntegrationName(integrationId);
+      if (isNameAvailable(baseName)) {
+        return baseName;
+      }
+      let c = 1;
+      let candidateName = `${baseName} ${c}`;
+      while (!isNameAvailable(candidateName)) {
+        c = c + 1;
+        candidateName = `${baseName} ${c}`;
+      }
+      return candidateName;
+    },
+    [isNameAvailable],
+  );
+
   return {
     sources: (sources || []) as DbSource[],
     syncAllSources,
     syncSources,
     latestSyncQueues,
     mutateSyncQueues,
+    isNameAvailable,
+    generateUniqueName,
     loading,
     mutate,
   };

@@ -23,7 +23,6 @@ export default withProjectAccess(
     const projectId = req.query.id as Project['id'];
 
     if (req.method === 'GET') {
-      console.log('FETCH FILES');
       // Note: if a column is a reference to another table, e.g.
       // project_id, and the value is null, somehow the following
       // join with filter does not include these rows. This looks

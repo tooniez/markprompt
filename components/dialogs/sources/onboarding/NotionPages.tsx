@@ -25,16 +25,19 @@ const ConnectStep = ({
   state: ConnectSourceStepState;
   onDidConnect: (source: DbSource) => void;
 }) => {
-  const { mutate: mutateSources } = useSources();
+  const { mutate: mutateSources, generateUniqueName } = useSources();
   const [isLoading, setLoading] = useState(false);
 
   const connect = useCallback(async () => {
     try {
       setLoading(true);
+      const integrationId = 'notion-pages';
+      const name = generateUniqueName(integrationId);
       const newSource = await addSourceAndNangoConnection(
         nango,
         projectId,
-        'notion-pages',
+        integrationId,
+        name,
       );
 
       setLoading(false);
@@ -57,7 +60,7 @@ const ConnectStep = ({
       }
       toast.error('Error connecting to Notion');
     }
-  }, [onDidConnect, projectId, mutateSources]);
+  }, [generateUniqueName, projectId, mutateSources, onDidConnect]);
 
   return (
     <Step
@@ -99,8 +102,6 @@ const ConfigureStep = ({
         projectId={projectId}
         source={source}
         forceDisabled={state === 'not_started'}
-        showSkip={true}
-        showOptional={true}
         onDidCompletedOrSkip={onCompletedOrSkipped}
       />
     </Step>
@@ -146,7 +147,9 @@ const NotionPagesOnboardingDialog = ({
       <ConnectStep
         projectId={project.id}
         state={source ? 'complete' : 'in_progress'}
-        onDidConnect={(source) => setSource(source)}
+        onDidConnect={(source) => {
+          setSource(source);
+        }}
       />
       <ConfigureStep
         projectId={project.id}

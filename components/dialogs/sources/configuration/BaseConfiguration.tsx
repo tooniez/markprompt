@@ -80,7 +80,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
       return 'Configuration';
     }
     const data = source?.data as NangoSourceDataType;
-    return data?.displayName || getIntegrationName(data.integrationId);
+    return data?.name || getIntegrationName(data.integrationId);
   }, [source]);
 
   if (!project?.id || !source) {

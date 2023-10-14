@@ -1,4 +1,11 @@
-import { ErrorMessage, Field, Form, Formik } from 'formik';
+import {
+  ErrorMessage,
+  Field,
+  Form,
+  Formik,
+  FormikErrors,
+  FormikValues,
+} from 'formik';
 import { FC } from 'react';
 import { toast } from 'sonner';
 
@@ -22,14 +29,28 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
   forceDisabled,
   onDidCompletedOrSkip,
 }) => {
-  const { mutate: mutateSources } = useSources();
+  const { mutate: mutateSources, isNameAvailable } = useSources();
 
   return (
     <Formik
       initialValues={{
-        displayName: (source?.data as NangoSourceDataType)?.displayName || '',
+        name: (source?.data as NangoSourceDataType)?.name || '',
       }}
+      enableReinitialize
       validateOnMount
+      validate={async (values) => {
+        const errors: FormikErrors<FormikValues> = {};
+        if (!values.name || values.name.trim().length === 0) {
+          errors.identifier = 'Please enter a name';
+        } else if (
+          values.name !== (source?.data as NangoSourceDataType).name &&
+          !isNameAvailable(values.name)
+        ) {
+          errors.identifier = 'This name is already taken';
+        }
+
+        return errors;
+      }}
       onSubmit={async (values, { setSubmitting }) => {
         if (!projectId || !source) {
           return;
@@ -38,7 +59,7 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
         setSubmitting(true);
         await setSourceData(projectId, source.id, {
           ...(source.data as any),
-          displayName: values.displayName,
+          name: values.name,
         });
         setSubmitting(false);
         toast.success('Configuration has been updated');
@@ -54,7 +75,7 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
               <Field
                 className="flex-grow"
                 type="text"
-                name="displayName"
+                name="name"
                 inputSize="sm"
                 as={NoAutoInput}
                 disabled={isSubmitting || forceDisabled}

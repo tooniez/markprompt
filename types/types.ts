@@ -207,7 +207,7 @@ export type NangoFileWithMetadata = NangoFile & {
 export type NangoSourceDataType = {
   integrationId: NangoIntegrationId;
   connectionId: string;
-  displayName: string;
+  name: string;
 };
 
 export type RobotsTxtInfo = { sitemap?: string; disallowedPaths: string[] };

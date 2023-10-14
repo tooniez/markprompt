@@ -663,7 +663,7 @@ export const getLabelForSource = (source: Source, inline: boolean) => {
       return 'API uploads';
     case 'nango': {
       const data = source.data as NangoSourceDataType;
-      return data.displayName || getIntegrationName(data.integrationId);
+      return data.name || getIntegrationName(data.integrationId);
     }
     default:
       return 'Unknown source';
