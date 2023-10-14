@@ -72,7 +72,8 @@ const SourcesDialog = ({
               Connect source
             </Dialog.Title>
             <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-              <p>Setup a sync to your content sources.</p>
+              Once you connect a source, you can start using it as context for
+              your agents and chatbots.
             </div>
           </div>
           <div className="grid grid-cols-4 gap-2 overflow-y-auto px-4 pt-4 pb-12">

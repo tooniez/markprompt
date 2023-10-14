@@ -432,7 +432,7 @@ const Data = () => {
     hasMorePages,
     mutateCount,
   } = useFiles();
-  const { sources } = useSources();
+  const { sources, isOneSourceSyncing } = useSources();
   const {
     stopGeneratingEmbeddings,
     state: trainingState,
@@ -978,33 +978,42 @@ const Data = () => {
               <SkeletonTable onDark loading />
             </div>
           )}
-          {!loadingFiles && (!sources || sources.length === 0) && !hasFiles && (
-            <div className="flex h-[400px] flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-neutral-800 bg-neutral-1100 text-center">
-              <p className="text-base font-semibold text-neutral-300">
-                Start by connecting a source
-              </p>
-              <p className="max-w-[400px] text-sm text-neutral-500">
-                <Balancer>
-                  Once you connect a source, you can start using it as context
-                  for your agents and chatbots.
-                </Balancer>
-              </p>
-            </div>
-          )}
-          {!loadingFiles && sources && sources.length > 0 && !hasFiles && (
-            <div className="flex h-[400px] flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-neutral-800 bg-neutral-1100 text-center">
-              <p className="text-base font-semibold text-neutral-300">
-                Sync {sources.length > 1 ? 'sources' : 'source'}
-              </p>
-              <p className="mb-4 max-w-[400px] text-sm text-neutral-500">
-                <Balancer>
-                  Once you connect a source, you can start using it as context
-                  for your agents and chatbots.
-                </Balancer>
-              </p>
-              <Button variant="cta" buttonSize="sm">
-                Sync now
-              </Button>
+          {!loadingFiles && !hasFiles && (
+            <div className="flex h-[400px] flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-neutral-800 text-center">
+              {!loadingFiles &&
+              (!sources || sources.length === 0) &&
+              !hasFiles ? (
+                <>
+                  <p className="text-base font-semibold text-neutral-300">
+                    Start by connecting a source
+                  </p>
+                  <p className="max-w-[400px] text-sm text-neutral-500">
+                    <Balancer>
+                      Once you connect a source, you can start using it as
+                      context for your agents and chatbots.
+                    </Balancer>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-base font-semibold text-neutral-300">
+                    Sync {sources.length > 1 ? 'sources' : 'source'}
+                  </p>
+                  <p className="mb-4 max-w-[400px] text-sm text-neutral-500">
+                    <Balancer>
+                      Once a source is synced, you can start using it as context
+                      for your agents and chatbots.
+                    </Balancer>
+                  </p>
+                  <Button
+                    variant="cta"
+                    buttonSize="sm"
+                    loading={isOneSourceSyncing}
+                  >
+                    Sync now
+                  </Button>
+                </>
+              )}
             </div>
           )}
           {!loadingFiles && hasFiles && (

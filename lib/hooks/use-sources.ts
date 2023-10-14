@@ -1,5 +1,5 @@
 import { parseISO } from 'date-fns';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import useSWR from 'swr';
 
 import { DbSource, DbSyncQueueOverview } from '@/types/types';
@@ -38,11 +38,16 @@ export default function useSources() {
     [syncQueues],
   );
 
+  const isOneSourceSyncing = useMemo(() => {
+    return !!syncQueues?.some((q) => q.status === 'running');
+  }, [syncQueues]);
+
   return {
     sources: (sources || []) as DbSource[],
     syncQueues,
     mutateSyncQueues,
     getSortedSyncQueuesForSource,
+    isOneSourceSyncing,
     loading,
     mutate,
   };
