@@ -68,7 +68,7 @@ export const SyncQueueLogs: FC<SyncQueueLogsProps> = ({ sourceId }) => {
       .filter((q) => q.source_id === sourceId)
       .sort(
         (a, b) =>
-          parseISO(a.created_at).getTime() - parseISO(b.created_at).getTime(),
+          parseISO(b.created_at).getTime() - parseISO(b.created_at).getTime(),
       );
   }, [sourceId, syncQueues]);
 

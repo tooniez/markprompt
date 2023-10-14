@@ -1,8 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import * as Popover from '@radix-ui/react-popover';
-import * as Switch from '@radix-ui/react-switch';
-import * as ReactTooltip from '@radix-ui/react-tooltip';
 import {
   SortingState,
   createColumnHelper,
@@ -12,7 +9,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { track } from '@vercel/analytics';
 import cn from 'classnames';
 import { formatISO, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
@@ -20,7 +16,6 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import {
   MoreHorizontal,
-  SettingsIcon,
   AlertCircle,
   Check,
   RefreshCw,
@@ -29,10 +24,10 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { FC, useMemo, useState } from 'react';
+import Balancer from 'react-wrap-balancer';
 import { toast } from 'sonner';
 import { isPresent } from 'ts-is-present';
 
-import StatusMessage from '@/components/files/StatusMessage';
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Onboarding from '@/components/onboarding/Onboarding';
@@ -449,7 +444,7 @@ const Data = () => {
     canAddMoreContent,
   } = useUsage();
   const [rowSelection, setRowSelection] = useState({});
-  const [forceRetrain, setForceRetrain] = useState(false);
+  // const [forceRetrain, setForceRetrain] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [sourceToRemove, setSourceToRemove] = useState<DbSource | undefined>(
     undefined,
@@ -571,29 +566,29 @@ const Data = () => {
           return nameA.localeCompare(nameB);
         },
       }),
-      columnHelper.accessor((row) => row.path, {
-        id: 'path',
-        header: () => <span>Path</span>,
-        cell: (info) => {
-          return (
-            <ReactTooltip.Provider>
-              <ReactTooltip.Root>
-                <ReactTooltip.Trigger asChild>
-                  <div className="cursor-default truncate">
-                    {info.getValue()}
-                  </div>
-                </ReactTooltip.Trigger>
-                <ReactTooltip.Portal>
-                  <ReactTooltip.Content className="tooltip-content">
-                    {info.getValue()}
-                  </ReactTooltip.Content>
-                </ReactTooltip.Portal>
-              </ReactTooltip.Root>
-            </ReactTooltip.Provider>
-          );
-        },
-        footer: (info) => info.column.id,
-      }),
+      // columnHelper.accessor((row) => row.path, {
+      //   id: 'path',
+      //   header: () => <span>Path</span>,
+      //   cell: (info) => {
+      //     return (
+      //       <ReactTooltip.Provider>
+      //         <ReactTooltip.Root>
+      //           <ReactTooltip.Trigger asChild>
+      //             <div className="cursor-default truncate">
+      //               {info.getValue()}
+      //             </div>
+      //           </ReactTooltip.Trigger>
+      //           <ReactTooltip.Portal>
+      //             <ReactTooltip.Content className="tooltip-content">
+      //               {info.getValue()}
+      //             </ReactTooltip.Content>
+      //           </ReactTooltip.Portal>
+      //         </ReactTooltip.Root>
+      //       </ReactTooltip.Provider>
+      //     );
+      //   },
+      //   footer: (info) => info.column.id,
+      // }),
       columnHelper.accessor((row) => row.source_id, {
         id: 'source',
         header: () => <span>Source</span>,
@@ -601,7 +596,16 @@ const Data = () => {
           const value = info.getValue();
           const source = sources.find((s) => s.id === value);
           if (source) {
-            return getLabelForSource(source, false);
+            const Icon = getIconForSource(source);
+            const label = getLabelForSource(source, false);
+            return (
+              <div className="flex flex-row items-center gap-2">
+                <Icon className="h-4 w-4 flex-none text-neutral-500" />
+                <p className="ovrflow-hidden flex-grow truncate whitespace-nowrap text-neutral-500">
+                  {label}
+                </p>
+              </div>
+            );
           } else {
             return '';
           }
@@ -654,14 +658,14 @@ const Data = () => {
       RightHeading={
         <div className="flex w-full items-center gap-4">
           <div className="flex-grow" />
-          <StatusMessage
+          {/* <StatusMessage
             trainingState={trainingState}
             isDeleting={isDeleting}
             numFiles={numFiles || 0}
             numSelected={numSelected}
             playgroundPath={`/${team?.slug}/${project?.slug}/playground`}
-          />
-          {trainingState.state !== 'idle' && (
+          /> */}
+          {/* {trainingState.state !== 'idle' && (
             <p
               className={cn('whitespace-nowrap text-xs text-neutral-500', {
                 'subtle-underline cursor-pointer':
@@ -673,7 +677,7 @@ const Data = () => {
                 ? 'Cancelling...'
                 : 'Stop training'}
             </p>
-          )}
+          )} */}
           {numSelected > 0 && (
             <Dialog.Root>
               <Dialog.Trigger asChild>
@@ -715,7 +719,7 @@ const Data = () => {
               />
             </Dialog.Root>
           )}
-          {numSelected === 0 && canTrain && (
+          {/* {numSelected === 0 && canTrain && (
             <div className="flex flex-row items-center gap-2">
               <Popover.Root>
                 <Popover.Trigger asChild>
@@ -788,7 +792,7 @@ const Data = () => {
                 Sync
               </Button>
             </div>
-          )}
+          )} */}
         </div>
       }
     >
@@ -803,9 +807,7 @@ const Data = () => {
           )}
           {sources.length > 0 && (
             <>
-              <p className="mb-2 text-xs font-medium text-neutral-500">
-                Connected sources
-              </p>
+              <p className="mb-2 text-xs text-neutral-500">Connected sources</p>
               <div className="mb-8">
                 <Sources
                   projectId={project?.id}
@@ -831,7 +833,11 @@ const Data = () => {
               setConnectSourceDialogOpen({ dialogId: integrationId })
             }
           >
-            <Button variant="cta" buttonSize="sm" Icon={Plus}>
+            <Button
+              variant={sources && sources.length > 0 ? 'plain' : 'cta'}
+              buttonSize="sm"
+              Icon={Plus}
+            >
               Connect source
             </Button>
           </SourcesDialog>
@@ -972,36 +978,47 @@ const Data = () => {
               <SkeletonTable onDark loading />
             </div>
           )}
-
-          {!loadingFiles && !hasFiles && (
-            <div className="h-[400px] rounded-lg border border-dashed border-neutral-800 bg-neutral-1100">
-              <FileDnd
-                isOnEmptyStateDataPanel
-                forceRetrain={forceRetrain}
-                onTrainingComplete={() => {
-                  toast.success('Processing complete.', {
-                    id: 'processing-complete',
-                  });
-                }}
-              />
+          {!loadingFiles && (!sources || sources.length === 0) && !hasFiles && (
+            <div className="flex h-[400px] flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-neutral-800 bg-neutral-1100 text-center">
+              <p className="text-base font-semibold text-neutral-300">
+                Start by connecting a source
+              </p>
+              <p className="max-w-[400px] text-sm text-neutral-500">
+                <Balancer>
+                  Once you connect a source, you can start using it as context
+                  for your agents and chatbots.
+                </Balancer>
+              </p>
             </div>
           )}
-
+          {!loadingFiles && sources && sources.length > 0 && !hasFiles && (
+            <div className="flex h-[400px] flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-neutral-800 bg-neutral-1100 text-center">
+              <p className="text-base font-semibold text-neutral-300">
+                Sync {sources.length > 1 ? 'sources' : 'source'}
+              </p>
+              <p className="mb-4 max-w-[400px] text-sm text-neutral-500">
+                <Balancer>
+                  Once you connect a source, you can start using it as context
+                  for your agents and chatbots.
+                </Balancer>
+              </p>
+              <Button variant="cta" buttonSize="sm">
+                Sync now
+              </Button>
+            </div>
+          )}
           {!loadingFiles && hasFiles && (
             <table className="w-full max-w-full table-fixed border-collapse">
               <colgroup>
                 <col className={pageHasSelectableItems ? 'w-[32px]' : 'w-0'} />
-                <col className="w-[calc(50%-172px)]" />
-                <col className="w-[30%]" />
+                <col className="w-[calc(80%-172px)]" />
+                {/* <col className="w-[30%]" /> */}
                 <col className="w-[20%]" />
                 <col className="w-[140px]" />
               </colgroup>
               <thead>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <tr
-                    key={headerGroup.id}
-                    className="border-b border-neutral-800"
-                  >
+                  <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
                       return (
                         <th
@@ -1060,7 +1077,7 @@ const Data = () => {
                                 'font-medium text-neutral-300':
                                   cell.column.id === 'name',
                                 'text-neutral-500':
-                                  cell.column.id === 'path' ||
+                                  // cell.column.id === 'path' ||
                                   cell.column.id === 'source' ||
                                   cell.column.id === 'updated',
                               },
@@ -1079,24 +1096,26 @@ const Data = () => {
               </tbody>
             </table>
           )}
-          <div className="flex flex-row gap-2 py-4">
-            <Button
-              variant="plain"
-              buttonSize="xs"
-              onClick={() => setPage(page - 1)}
-              disabled={page === 0 || loadingFiles}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="plain"
-              buttonSize="xs"
-              onClick={() => setPage(page + 1)}
-              disabled={!hasMorePages || loadingFiles}
-            >
-              Next
-            </Button>
-          </div>
+          {paginatedFiles && paginatedFiles.length > 0 && (
+            <div className="flex flex-row gap-2 py-4">
+              <Button
+                variant="plain"
+                buttonSize="xs"
+                onClick={() => setPage(page - 1)}
+                disabled={page === 0 || loadingFiles}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="plain"
+                buttonSize="xs"
+                onClick={() => setPage(page + 1)}
+                disabled={!hasMorePages || loadingFiles}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       </div>
       <Dialog.Root

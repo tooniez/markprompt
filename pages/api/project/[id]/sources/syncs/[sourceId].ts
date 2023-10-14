@@ -29,7 +29,8 @@ export default withProjectAccess(
       .from('sync_queues')
       .select('*')
       .eq('source_id', sourceId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(50);
 
     return res.status(200).json(data || []);
   },

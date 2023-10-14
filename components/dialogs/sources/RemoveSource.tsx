@@ -30,7 +30,7 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
   return (
     <ConfirmDialog
       title={`Remove ${getLabelForSource(source, true)}?`}
-      description={<>All associated files and training data will be deleted.</>}
+      description={<>All associated files and data will be deleted.</>}
       cta="Remove"
       variant="danger"
       loading={loading}

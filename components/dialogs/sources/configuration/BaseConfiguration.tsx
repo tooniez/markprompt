@@ -125,7 +125,9 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
             <div className="mt-12 border-t border-neutral-900 pt-8" />
             <Button
               buttonSize="sm"
-              variant="plainDanger"
+              variant="textDanger"
+              noPadding
+              light
               onClick={() => {
                 setShowRemoveSourceDialog(true);
               }}
