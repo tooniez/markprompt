@@ -9,7 +9,7 @@ import {
   createServiceRoleSupabaseClient,
   getOrCreateRunningSyncQueueForSource,
 } from '@/lib/supabase';
-import { NangoIntegrationId, NangoSyncId } from '@/types/types';
+import { SyncData } from '@/types/types';
 
 type Data = {
   status?: string;
@@ -22,18 +22,12 @@ const nango = getNangoServerInstance();
 
 const supabase = createServiceRoleSupabaseClient();
 
-type SourceInfo = {
-  integrationId: NangoIntegrationId;
-  connectionId: string;
-  syncIds?: NangoSyncId[];
-};
-
-const triggerSyncForSource = async (sourceInfo: SourceInfo) => {
-  if (!sourceInfo.integrationId || !sourceInfo.connectionId) {
+const triggerSyncForSource = async (data: SyncData) => {
+  if (!data.integrationId || !data.connectionId) {
     return;
   }
 
-  const sourceId = await getSourceId(supabase, sourceInfo.connectionId);
+  const sourceId = await getSourceId(supabase, data.connectionId);
 
   if (!sourceId) {
     throw new Error('Source not found.');
@@ -41,25 +35,31 @@ const triggerSyncForSource = async (sourceInfo: SourceInfo) => {
 
   await getOrCreateRunningSyncQueueForSource(supabase, sourceId);
 
-  await nango.triggerSync(
-    sourceInfo.integrationId,
-    sourceInfo.connectionId,
-    sourceInfo.syncIds,
+  console.log(
+    'Trigger sync',
+    data.integrationId,
+    data.connectionId,
+    data.syncIds,
   );
+  await nango.triggerSync(data.integrationId, data.connectionId, data.syncIds);
 };
 
 export default withProjectAccess(
   allowedMethods,
   async (req: NextApiRequest, res: NextApiResponse<Data>) => {
     if (req.method === 'POST') {
-      return res.status(200).json({});
-    }
+      const data = req.body.data as SyncData[];
+      await Promise.all(
+        data.map(async (d) => {
+          try {
+            await triggerSyncForSource(d);
+          } catch {
+            // Do nothing
+          }
+        }),
+      );
 
-    const sources = req.body.sources as SourceInfo[];
-    try {
-      await Promise.all(sources.map(triggerSyncForSource));
-    } catch {
-      // Do nothing
+      return res.status(200).json({ status: 'ok' });
     }
 
     return res.status(400).end();

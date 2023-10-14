@@ -61,15 +61,10 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
           setLoading(false);
           onComplete();
 
-          toast.success(
-            `The source ${getLabelForSource(
-              source,
-              true,
-            )} has been removed from the project.`,
-          );
+          toast.success(`${getLabelForSource(source, true)} has been removed`);
         } catch (e) {
           console.error(e);
-          toast.error('Error removing source.');
+          toast.error('Error removing source');
         }
       }}
     />

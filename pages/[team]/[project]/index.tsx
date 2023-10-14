@@ -23,7 +23,7 @@ import {
   Plus,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { FC, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
 import { toast } from 'sonner';
 import { isPresent } from 'ts-is-present';
@@ -171,6 +171,7 @@ const SyncStatusIndicator: FC<SyncStatusIndicatorProps> = ({ syncQueue }) => {
     case 'running':
       return (
         <Tooltip
+          as="span"
           message={`Sync started at ${formatShortDateTimeInTimeZone(
             parseISO(syncQueue.created_at),
           )}`}
@@ -192,7 +193,7 @@ const SyncStatusIndicator: FC<SyncStatusIndicatorProps> = ({ syncQueue }) => {
         message = 'Sync completed';
       }
       return (
-        <Tooltip message={message}>
+        <Tooltip as="span" message={message}>
           <Check className="h-4 w-4 text-green-600" />
         </Tooltip>
       );
@@ -216,11 +217,10 @@ type SourcesProps = {
 };
 
 const Sources: FC<SourcesProps> = ({
-  projectId,
   onConfigureSelected,
   onRemoveSelected,
 }) => {
-  const { sources, latestSyncQueues } = useSources();
+  const { sources, latestSyncQueues, syncSources } = useSources();
 
   return (
     <div className="flex flex-col gap-1">
@@ -230,51 +230,12 @@ const Sources: FC<SourcesProps> = ({
             (q) => q.source_id === source.id,
           );
 
-          if (!latestSyncQueue) {
-            return undefined;
-          }
-          // const syncQueuesForSource = getSortedSyncQueuesForSource(source.id);
-          // const lastSyncQueue =
-          //   syncQueuesForSource?.length > 0
-          //     ? syncQueuesForSource[syncQueuesForSource.length - 1]
-          //     : undefined;
-          // const connectionId = getConnectionId(source);
-          // if (!connectionId) {
-          //   return <></>;
-          // }
-
           return (
             <SourceItem
               key={source.id}
               source={source}
               syncQueue={latestSyncQueue}
-              onSyncSelected={async () => {
-                // if (!projectId) {
-                //   return;
-                // }
-                // const integrationId = getIntegrationId(source);
-                // if (!integrationId) {
-                //   return;
-                // }
-                // const otherSyncQueues = (syncQueues || []).filter(
-                //   (q) => q.source_id !== source.id,
-                // );
-                // const currentSyncQueue: DbSyncQueueOverview = lastSyncQueue
-                //   ? {
-                //       ...lastSyncQueue,
-                //       status: 'running',
-                //     }
-                //   : {
-                //       source_id: source.id,
-                //       created_at: formatISO(new Date()),
-                //       ended_at: null,
-                //       status: 'running',
-                //     };
-                // mutateSyncQueues([...otherSyncQueues, currentSyncQueue]);
-                // await triggerSync(projectId, integrationId, connectionId, [
-                //   getSyncId(integrationId),
-                // ]);
-              }}
+              onSyncSelected={() => syncSources([source])}
               onConfigureSelected={(view) => {
                 onConfigureSelected(source, view);
               }}
@@ -344,8 +305,13 @@ const SourceItem: FC<SourceItemProps> = ({
         <p className="flex-grow overflow-hidden truncate text-left text-neutral-100">
           {getLabelForSource(source, false)}
         </p>
-        <SyncStatusIndicator syncQueue={syncQueue} />
-        {/* {AccessoryTag} */}
+        {/* While we wait for proper sync status endpoints, we only show the
+        sync status when it is running (on Inngest), so that users are not
+        confused e.g. with a 'complete' indicator when we don't know what is
+        going on on the Nango end. */}
+        {syncQueue?.status === 'running' && (
+          <SyncStatusIndicator syncQueue={syncQueue} />
+        )}
       </button>
       <DropdownMenu.Root open={isDropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenu.Trigger asChild>
@@ -433,7 +399,7 @@ const Data = () => {
     hasMorePages,
     mutateCount,
   } = useFiles();
-  const { sources, isOneSourceSyncing } = useSources();
+  const { sources, latestSyncQueues, syncSources } = useSources();
   const {
     stopGeneratingEmbeddings,
     state: trainingState,
@@ -451,7 +417,7 @@ const Data = () => {
     undefined,
   );
   const [sorting, setSorting] = useState<SortingState>([
-    { id: 'path', desc: false },
+    { id: 'updated', desc: true },
   ]);
   const [openFilePath, setOpenFilePath] = useState<string | undefined>(
     undefined,
@@ -486,6 +452,36 @@ const Data = () => {
 
   const tier = team && getTier(team);
   const isEnterpriseTier = !tier || isEnterpriseOrCustomTier(tier);
+
+  const isOneSourceSyncing = useMemo(() => {
+    return !!latestSyncQueues?.some((q) => q.status === 'running');
+  }, [latestSyncQueues]);
+
+  useEffect(() => {
+    console.log('isOneSourceSyncing', isOneSourceSyncing);
+    const refresh = async () => {
+      console.log('REFRESH');
+      mutateFiles();
+      mutateFileStats();
+    };
+
+    if (!isOneSourceSyncing) {
+      console.log('IN HERE 1');
+      refresh();
+      return;
+    }
+
+    // If a source is syncing, refresh files regularly
+    const refreshInterval = window.setInterval(() => {
+      console.log('IN HERE 2');
+      refresh();
+    }, 5000);
+
+    return () => {
+      window.clearInterval(refreshInterval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOneSourceSyncing]);
 
   const columnHelper = createColumnHelper<{
     id: DbFile['id'];
@@ -714,7 +710,7 @@ const Data = () => {
                   setRowSelection([]);
                   setIsDeleting(false);
                   toast.success(
-                    `${pluralize(fileIds.length, 'file', 'files')} deleted.`,
+                    `${pluralize(fileIds.length, 'file', 'files')} deleted`,
                   );
                 }}
               />
@@ -1010,6 +1006,7 @@ const Data = () => {
                     variant="cta"
                     buttonSize="sm"
                     loading={isOneSourceSyncing}
+                    onClick={() => syncSources(sources)}
                   >
                     Sync now
                   </Button>
@@ -1021,10 +1018,10 @@ const Data = () => {
             <table className="w-full max-w-full table-fixed border-collapse">
               <colgroup>
                 <col className={pageHasSelectableItems ? 'w-[32px]' : 'w-0'} />
-                <col className="w-[calc(80%-172px)]" />
+                <col className="w-[calc(80%-152px)]" />
                 {/* <col className="w-[30%]" /> */}
                 <col className="w-[20%]" />
-                <col className="w-[140px]" />
+                <col className="w-[160px]" />
               </colgroup>
               <thead>
                 {table.getHeaderGroups().map((headerGroup) => (

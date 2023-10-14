@@ -1,7 +1,14 @@
 import Nango from '@nangohq/frontend';
 import { isPresent } from 'ts-is-present';
 
-import { DbSource, FileData, NangoIntegrationId, Project } from '@/types/types';
+import {
+  DbSource,
+  FileData,
+  NangoIntegrationId,
+  NangoSyncId,
+  Project,
+  SyncData,
+} from '@/types/types';
 
 import { getConnectionId, getIntegrationId, getSyncId } from './nango';
 import { getResponseOrThrow } from '../utils';
@@ -53,29 +60,13 @@ export const deleteConnection = async (
 
 export const triggerSyncs = async (
   projectId: Project['id'],
-  sources: DbSource[],
+  data: SyncData[],
 ) => {
-  const _sources = sources
-    .map((source) => {
-      const connectionId = getConnectionId(source);
-      const integrationId = getIntegrationId(source);
-      if (!connectionId || !integrationId) {
-        return undefined;
-      }
-      const syncIds = [getSyncId(integrationId)];
-      return {
-        connectionId,
-        integrationId,
-        syncIds,
-      };
-    })
-    .filter(isPresent);
-
   const res = await fetch(
     `/api/project/${projectId}/integrations/nango/trigger-syncs`,
     {
       method: 'POST',
-      body: JSON.stringify({ sources: _sources }),
+      body: JSON.stringify({ data }),
       headers: {
         'Content-Type': 'application/json',
         accept: 'application/json',

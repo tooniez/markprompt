@@ -3,6 +3,7 @@ import {
   NangoIntegrationId,
   NangoSourceDataType,
   NangoSyncId,
+  SyncData,
 } from '@/types/types';
 
 export const getConnectionId = (source: DbSource): string | undefined => {
@@ -48,4 +49,18 @@ export const getIntegrationName = (integrationId: NangoIntegrationId) => {
     case 'salesforce-knowledge-sandbox':
       return 'Salesforce Knowledge';
   }
+};
+
+export const getSyncData = (source: DbSource): SyncData | undefined => {
+  const integrationId = getIntegrationId(source);
+  const connectionId = getConnectionId(source);
+  if (!integrationId || !connectionId) {
+    return undefined;
+  }
+  const syncId = getSyncId(integrationId);
+  return {
+    integrationId,
+    connectionId,
+    syncIds: [syncId],
+  };
 };

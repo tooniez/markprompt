@@ -13,12 +13,12 @@ import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import {
-  getConnectionId,
   getIntegrationId,
   getIntegrationName,
-  getSyncId,
+  getSyncData,
 } from '@/lib/integrations/nango';
-import { fetcher, getIconForSource } from '@/lib/utils';
+import { triggerSyncs } from '@/lib/integrations/nango.client';
+import { fetcher } from '@/lib/utils';
 import {
   DbSource,
   DbSyncQueue,
@@ -51,7 +51,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   children,
 }) => {
   const { project } = useProject();
-  const { latestSyncQueues } = useSources();
+  const { latestSyncQueues, syncSources } = useSources();
   const [syncStarted, setSyncStarted] = useState(false);
   const [showRemoveSourceDialog, setShowRemoveSourceDialog] = useState(false);
 
@@ -133,7 +133,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
               </div>
             )}
             {children}
-            <div className="mt-12 border-t border-neutral-900 pt-8" />
+            <div className="mt-12 border-t border-neutral-900 pt-4" />
             <Button
               buttonSize="sm"
               variant="textDanger"
@@ -177,22 +177,10 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
                 disabled={lastSyncQueue?.status === 'running'}
                 variant="cta"
                 buttonSize="sm"
-                onClick={async () => {
-                  // const integrationId = getIntegrationId(source);
-                  // const connectionId = getConnectionId(source);
-                  // if (!integrationId || !connectionId) {
-                  //   return;
-                  // }
-                  // setSyncStarted(true);
-                  // await triggerSync(project.id, integrationId, connectionId, [
-                  //   getSyncId(integrationId),
-                  // ]);
-                  // setSyncStarted(false);
-                  // toast.success('Sync initiated');
-                }}
+                onClick={() => syncSources([source], setSyncStarted)}
               >
                 {lastSyncQueue?.status === 'running'
-                  ? 'Syncing...'
+                  ? 'Initiating sync...'
                   : 'Sync now'}
               </Button>
             </div>

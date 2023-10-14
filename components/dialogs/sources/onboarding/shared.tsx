@@ -4,7 +4,10 @@ import { FC, useCallback } from 'react';
 import Button from '@/components/ui/Button';
 import { addSource } from '@/lib/api';
 import { getSyncId } from '@/lib/integrations/nango';
-import { deleteConnection, triggerSync } from '@/lib/integrations/nango.client';
+import {
+  deleteConnection,
+  triggerSyncs,
+} from '@/lib/integrations/nango.client';
 import { generateConnectionId } from '@/lib/utils';
 import { DbSource, NangoIntegrationId, Project } from '@/types/types';
 
@@ -14,6 +17,7 @@ export const addSourceAndNangoConnection = async (
   nango: Nango,
   projectId: Project['id'],
   integrationId: NangoIntegrationId,
+  name: string,
 ): Promise<DbSource | undefined> => {
   // Create the Nango connection. Note that nango.yaml specifies
   // `auto_start: false` to give us a chance to set the metadata
@@ -26,6 +30,7 @@ export const addSourceAndNangoConnection = async (
     const newSource = await addSource(projectId, 'nango', {
       integrationId,
       connectionId,
+      name,
     });
 
     if (!newSource.id) {
@@ -64,8 +69,8 @@ export const SyncStep: FC<SyncStepProps> = ({
       return;
     }
 
-    await triggerSync(projectId, integrationId, connectionId, [
-      getSyncId(integrationId),
+    await triggerSyncs(projectId, [
+      { integrationId, connectionId, syncIds: [getSyncId(integrationId)] },
     ]);
   }, [projectId, integrationId, connectionId]);
 

@@ -13,8 +13,6 @@ type NotionPagesSettingsProps = {
   projectId: Project['id'];
   source: DbSource | undefined;
   forceDisabled?: boolean;
-  showSkip?: boolean;
-  showOptional?: boolean;
   onDidCompletedOrSkip?: () => void;
 };
 
@@ -22,8 +20,6 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
   projectId,
   source,
   forceDisabled,
-  showSkip,
-  showOptional,
   onDidCompletedOrSkip,
 }) => {
   const { mutate: mutateSources } = useSources();
@@ -45,7 +41,7 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
           displayName: values.displayName,
         });
         setSubmitting(false);
-        toast.success('Configuration updated');
+        toast.success('Configuration has been updated');
         onDidCompletedOrSkip?.();
         await mutateSources();
       }}
@@ -53,9 +49,7 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
       {({ isSubmitting, isValid }) => (
         <Form className="flex flex-col gap-2">
           <div className="FormField">
-            <div className="FormLabel">
-              Display name{showOptional && ' (optional)'}
-            </div>
+            <div className="FormLabel">Name</div>
             <div className="flex flex-row gap-2">
               <Field
                 className="flex-grow"
@@ -68,7 +62,7 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
             </div>
             <ErrorMessage name="identifier" component={ErrorLabel} />
           </div>
-          <div className="flex flex-row gap-2">
+          <div className="mt-2 flex flex-row gap-2">
             <Button
               className="flex-none"
               disabled={!isValid || forceDisabled}
@@ -79,21 +73,6 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
             >
               Save
             </Button>
-            {showSkip && (
-              <Button
-                className="flex-none"
-                disabled={forceDisabled}
-                variant="ghost"
-                buttonSize="sm"
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onDidCompletedOrSkip?.();
-                }}
-              >
-                Skip
-              </Button>
-            )}
           </div>
         </Form>
       )}

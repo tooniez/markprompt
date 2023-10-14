@@ -96,7 +96,7 @@ const sync = inngest.createFunction(
       providerConfigKey: event.data.providerConfigKey,
       connectionId: event.data.connectionId,
       model: event.data.model,
-      delta: event.data.queryTimeStamp || undefined,
+      // delta: event.data.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
 
     console.log('records', JSON.stringify(records, null, 2));
@@ -205,7 +205,6 @@ const runTrainFile = async (data: FileTrainEventData) => {
     return s.content.length >= MIN_SECTION_CONTENT_LENGTH;
   });
 
-  const ms = Date.now();
   const embeddingsResponse = await bulkCreateSectionEmbeddings(
     sections.map((s) => s.content),
   );
@@ -281,7 +280,7 @@ const trainFile = inngest.createFunction(
   },
 );
 
-const deleteFile = inngest.createFunction(
+const deleteFiles = inngest.createFunction(
   { id: 'delete-files' },
   { event: 'markprompt/files.delete' },
   async ({ event, logger }) => {
@@ -296,5 +295,5 @@ const deleteFile = inngest.createFunction(
 
 export default serve({
   client: inngest,
-  functions: [sync, trainFile, deleteFile],
+  functions: [sync, trainFile, deleteFiles],
 });

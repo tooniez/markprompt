@@ -55,7 +55,7 @@ const ConnectStep = ({
         toast.error(`Connection canceled`);
         return;
       }
-      toast.error(`Error connecting to Notion`);
+      toast.error('Error connecting to Notion');
     }
   }, [onDidConnect, projectId, mutateSources]);
 
@@ -152,7 +152,7 @@ const NotionPagesOnboardingDialog = ({
         projectId={project.id}
         source={source}
         state={
-          didCompleteConfiguration
+          source && didCompleteConfiguration
             ? 'complete'
             : source
             ? 'in_progress'

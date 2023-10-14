@@ -1,14 +1,21 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
 import useSWR from 'swr';
+import { isPresent } from 'ts-is-present';
 
 import { DbSource, DbSyncQueueOverview } from '@/types/types';
 
+import useFiles from './use-files';
 import useProject from './use-project';
+import useUsage from './use-usage';
+import { getSyncData } from '../integrations/nango';
 import { triggerSyncs } from '../integrations/nango.client';
 import { fetcher } from '../utils';
 
 export default function useSources() {
   const { project } = useProject();
+  const { mutate: mutateFiles } = useFiles();
+  const { mutate: mutateFileStats } = useUsage();
   const {
     data: sources,
     mutate,
@@ -26,61 +33,47 @@ export default function useSources() {
 
   const loading = !sources && !error;
 
-  const isOneSourceSyncing = useMemo(() => {
-    return !!latestSyncQueues?.some((q) => q.status === 'running');
-  }, [latestSyncQueues]);
+  const syncAllSources = useCallback(async () => {
+    if (!project?.id || !sources || sources.length === 0) {
+      return;
+    }
+    return triggerSyncs(
+      project.id,
+      sources.map((d) => getSyncData(d)).filter(isPresent),
+    );
+  }, [project?.id, sources]);
 
   const syncSources = useCallback(
-    async (sources: DbSource[]) => {
+    (sources: DbSource[], onSyncStateUpdate?: (started: boolean) => void) => {
       if (!project?.id) {
         return;
       }
-
-      // if (mutate) {
-      //   const syncQueuesForSource = getSortedSyncQueuesForSource(source.id);
-      //   const lastSyncQueue =
-      //     syncQueuesForSource?.length > 0
-      //       ? syncQueuesForSource[syncQueuesForSource.length - 1]
-      //       : undefined;
-
-      //   const currentSyncQueue: DbSyncQueueOverview = lastSyncQueue
-      //     ? {
-      //         ...lastSyncQueue,
-      //         status: 'running',
-      //       }
-      //     : {
-      //         source_id: source.id,
-      //         created_at: formatISO(new Date()),
-      //         ended_at: null,
-      //         status: 'running',
-      //       };
-
-      //   const otherSyncQueues = (syncQueues || []).filter(
-      //     (q) => q.source_id !== source.id,
-      //   );
-
-      //   mutateSyncQueues([...otherSyncQueues, currentSyncQueue]);
-      // }
-
-      await triggerSyncs(project.id, sources);
+      const data = sources.map((s) => getSyncData(s)).filter(isPresent);
+      if (data.length === 0) {
+        return;
+      }
+      onSyncStateUpdate?.(true);
+      const triggerSyncPromise = triggerSyncs(project.id, data);
+      toast.promise(triggerSyncPromise, {
+        loading: 'Initiating sync...',
+        success: () => {
+          return 'Sync has been initiated';
+        },
+        error: 'Error initiating sync',
+        finally: () => {
+          onSyncStateUpdate?.(false);
+        },
+      });
     },
     [project?.id],
   );
 
-  const syncAllSources = useCallback(async () => {
-    if (!sources || sources.length === 0) {
-      return;
-    }
-    return syncSources(sources);
-  }, [sources, syncSources]);
-
   return {
     sources: (sources || []) as DbSource[],
-    syncSources,
     syncAllSources,
+    syncSources,
     latestSyncQueues,
     mutateSyncQueues,
-    isOneSourceSyncing,
     loading,
     mutate,
   };

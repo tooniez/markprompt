@@ -361,3 +361,9 @@ export type DbSyncQueueWithDate = Omit<
 export type LogLevel = 'info' | 'debug' | 'error' | 'warn';
 
 export type SourceConfigurationView = 'configuration' | 'logs';
+
+export type SyncData = {
+  integrationId: NangoIntegrationId;
+  connectionId: string;
+  syncIds: NangoSyncId[];
+};

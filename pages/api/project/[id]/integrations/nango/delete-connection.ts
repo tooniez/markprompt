@@ -22,6 +22,11 @@ export default withProjectAccess(
         return res.status(400).json({ error: 'No connection id provided.' });
       }
 
+      console.log(
+        'delete connection',
+        req.body.integrationId,
+        req.body.connectionId,
+      );
       await nango.deleteConnection(
         req.body.integrationId,
         req.body.connectionId,
