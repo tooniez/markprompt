@@ -15,7 +15,7 @@ export const getTagForSyncQueue = (status: DbSyncQueueOverview['status']) => {
     case 'errored':
       return <Tag color="red">Errored</Tag>;
     case 'running':
-      return <Tag color="fuchsia">Running</Tag>;
+      return <Tag color="fuchsia">Syncing</Tag>;
   }
 };
 

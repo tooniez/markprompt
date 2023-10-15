@@ -40,14 +40,13 @@ const ConnectStep = ({
         name,
       );
 
-      setLoading(false);
-
       if (!newSource) {
         toast.error('Error connecting to Notion');
         return;
       }
 
       await mutateSources();
+      setLoading(false);
       onDidConnect(newSource);
       toast.success('Connected to Notion');
     } catch (e: any) {
@@ -111,14 +110,10 @@ const ConfigureStep = ({
 const NotionPagesOnboardingDialog = ({
   open,
   onOpenChange,
-  source: defaultSource,
   children,
 }: {
-  source?: DbSource;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  openPricingAsDialog?: boolean;
-  onDidAddSource?: () => void;
   children?: ReactNode;
 }) => {
   const { project } = useProject();
@@ -126,20 +121,25 @@ const NotionPagesOnboardingDialog = ({
   const [didCompleteConfiguration, setDidCompleteConfiguration] =
     useState(false);
 
-  useEffect(() => {
-    setSource(defaultSource);
-  }, [defaultSource]);
+  const reset = useCallback(() => {
+    // Reset state on close
+    setDidCompleteConfiguration(false);
+    setSource(undefined);
+  }, []);
 
   if (!project?.id) {
     return <></>;
   }
 
-  const connectionId = source?.id ? getConnectionId(source) : undefined;
-
   return (
     <SourceDialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(open) => {
+        if (!open) {
+          reset();
+        }
+        onOpenChange?.(open);
+      }}
       trigger={children && <Dialog.Trigger asChild>{children}</Dialog.Trigger>}
       title="Connect Notion"
       description="Select pages to sync from your Notion workspaces."
@@ -166,12 +166,14 @@ const NotionPagesOnboardingDialog = ({
         }}
       />
       <SyncStep
-        projectId={project.id}
-        integrationId="notion-pages"
-        connectionId={connectionId}
+        source={source}
         state={
           source && didCompleteConfiguration ? 'in_progress' : 'not_started'
         }
+        onComplete={() => {
+          reset();
+          onOpenChange?.(false);
+        }}
       />
     </SourceDialog>
   );

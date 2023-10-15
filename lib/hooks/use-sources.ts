@@ -47,7 +47,10 @@ export default function useSources() {
   }, [project?.id, sources]);
 
   const syncSources = useCallback(
-    (sources: DbSource[], onSyncStateUpdate?: (started: boolean) => void) => {
+    (
+      sources: Pick<DbSource, 'type' | 'data'>[],
+      onIsMessageLoading?: (started: boolean) => void,
+    ) => {
       if (!project?.id) {
         return;
       }
@@ -55,7 +58,7 @@ export default function useSources() {
       if (data.length === 0) {
         return;
       }
-      onSyncStateUpdate?.(true);
+      onIsMessageLoading?.(true);
       const triggerSyncPromise = triggerSyncs(project.id, data);
       toast.promise(triggerSyncPromise, {
         loading: 'Initiating sync...',
@@ -64,7 +67,7 @@ export default function useSources() {
         },
         error: 'Error initiating sync',
         finally: () => {
-          onSyncStateUpdate?.(false);
+          onIsMessageLoading?.(false);
         },
       });
     },

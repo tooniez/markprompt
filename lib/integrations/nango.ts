@@ -6,7 +6,9 @@ import {
   SyncData,
 } from '@/types/types';
 
-export const getConnectionId = (source: DbSource): string | undefined => {
+export const getConnectionId = (
+  source: Pick<DbSource, 'type' | 'data'>,
+): string | undefined => {
   if (source.type !== 'nango') {
     return undefined;
   }
@@ -51,7 +53,9 @@ export const getIntegrationName = (integrationId: NangoIntegrationId) => {
   }
 };
 
-export const getSyncData = (source: DbSource): SyncData | undefined => {
+export const getSyncData = (
+  source: Pick<DbSource, 'type' | 'data'>,
+): SyncData | undefined => {
   const integrationId = getIntegrationId(source);
   const connectionId = getConnectionId(source);
   if (!integrationId || !connectionId) {

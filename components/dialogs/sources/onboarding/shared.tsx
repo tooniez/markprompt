@@ -1,13 +1,10 @@
 import type Nango from '@nangohq/frontend';
-import { FC, useCallback } from 'react';
+import { FC, useCallback, useState } from 'react';
 
 import Button from '@/components/ui/Button';
 import { addSource } from '@/lib/api';
-import { getSyncId } from '@/lib/integrations/nango';
-import {
-  deleteConnection,
-  triggerSyncs,
-} from '@/lib/integrations/nango.client';
+import useSources from '@/lib/hooks/use-sources';
+import { deleteConnection } from '@/lib/integrations/nango.client';
 import { generateConnectionId } from '@/lib/utils';
 import { DbSource, NangoIntegrationId, Project } from '@/types/types';
 
@@ -52,27 +49,26 @@ export const addSourceAndNangoConnection = async (
 };
 
 type SyncStepProps = {
-  projectId: Project['id'];
-  integrationId: NangoIntegrationId;
-  connectionId?: string;
+  source: DbSource | undefined;
   state: ConnectSourceStepState;
+  onComplete: () => void;
 };
 
-export const SyncStep: FC<SyncStepProps> = ({
-  projectId,
-  integrationId,
-  connectionId,
-  state,
-}) => {
+export const SyncStep: FC<SyncStepProps> = ({ source, state, onComplete }) => {
+  const { syncSources } = useSources();
+  const [syncStarted, setSyncStarted] = useState(false);
+
   const startSyncing = useCallback(async () => {
-    if (!connectionId) {
+    if (!source) {
       return;
     }
-
-    await triggerSyncs(projectId, [
-      { integrationId, connectionId, syncIds: [getSyncId(integrationId)] },
-    ]);
-  }, [projectId, integrationId, connectionId]);
+    syncSources([source], (started) => {
+      setSyncStarted(started);
+      if (!started) {
+        onComplete();
+      }
+    });
+  }, [source, syncSources, onComplete]);
 
   return (
     <Step title="Sync" description="Start syncing your content." state={state}>
@@ -81,6 +77,7 @@ export const SyncStep: FC<SyncStepProps> = ({
         buttonSize="sm"
         onClick={startSyncing}
         disabled={state === 'not_started'}
+        loading={syncStarted}
       >
         Start sync
       </Button>

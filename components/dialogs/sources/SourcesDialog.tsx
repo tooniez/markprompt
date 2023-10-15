@@ -1,4 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import dynamic from 'next/dynamic';
 import { FC, JSXElementConstructor, ReactNode, useState } from 'react';
 
 import { NotionIcon } from '@/components/icons/Notion';
@@ -13,6 +14,10 @@ type SourceSpec = {
   integrationId: NangoIntegrationId;
   Icon: JSXElementConstructor<any>;
 };
+
+const NotionPagesOnboardingDialog = dynamic(
+  () => import('@/components/dialogs/sources/onboarding/NotionPages'),
+);
 
 const sources: SourceSpec[] = [
   {
@@ -50,63 +55,87 @@ const SourceButton: FC<
 };
 
 const SourcesDialog = ({
-  onSourceSelected,
+  // onSourceSelected,
   children,
 }: {
-  onSourceSelected: (integrationId: NangoIntegrationId) => void;
+  // onSourceSelected: (integrationId: NangoIntegrationId) => void;
   children: ReactNode;
 }) => {
   const [open, setOpen] = useState(false);
+  const [connectSourceDialogOpen, setConnectSourceDialogOpen] = useState<
+    | {
+        // Add other IDs manually here until they are moved to Nango
+        dialogId:
+          | NangoIntegrationId
+          | 'motif'
+          | 'github'
+          | 'website'
+          | 'api-uploads';
+      }
+    | undefined
+  >(undefined);
 
   return (
-    <Dialog.Root open={open} onOpenChange={(open) => setOpen(open)}>
-      <Dialog.Trigger asChild>{children}</Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
-        <Dialog.Content
-          className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[500px] flex-col"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-        >
-          <div className="flex-none">
-            <Dialog.Title className="dialog-title flex-none">
-              Connect source
-            </Dialog.Title>
-            <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
-              Once you connect a source, you can start using it as context for
-              your agents and chatbots.
+    <>
+      <Dialog.Root open={open} onOpenChange={(open) => setOpen(open)}>
+        <Dialog.Trigger asChild>{children}</Dialog.Trigger>
+        <Dialog.Portal>
+          <Dialog.Overlay className="animate-overlay-appear dialog-overlay" />
+          <Dialog.Content
+            className="animate-dialog-slide-in dialog-content flex max-h-[90%] w-[90%] max-w-[500px] flex-col"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+          >
+            <div className="flex-none">
+              <Dialog.Title className="dialog-title flex-none">
+                Connect source
+              </Dialog.Title>
+              <div className="dialog-description flex flex-none flex-col gap-2 border-b border-neutral-900 pb-4">
+                Once you connect a source, you can start using it as context for
+                your agents and chatbots.
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-4 gap-2 overflow-y-auto px-4 pt-4 pb-12">
-            {sources.map((source, i) => (
-              <SourceButton
-                key={`source-${source.integrationId}-${i}`}
-                source={source}
-                onSelected={() => {
-                  setOpen(false);
-                  onSourceSelected(source.integrationId);
-                }}
-              />
-            ))}
-          </div>
-          <CTABar>
-            <div className="flex w-full flex-grow flex-row items-center justify-start gap-4">
-              <p className="flex-grow text-xs text-neutral-500">
-                Need another source?
-              </p>
-              <Button
-                variant="plain"
-                buttonSize="sm"
-                onClick={() => {
-                  emitter.emit(EVENT_OPEN_CONTACT);
-                }}
-              >
-                Request source
-              </Button>
+            <div className="grid grid-cols-4 gap-2 overflow-y-auto px-4 pt-4 pb-12">
+              {sources.map((source, i) => (
+                <SourceButton
+                  key={`source-${source.integrationId}-${i}`}
+                  source={source}
+                  onSelected={() => {
+                    setOpen(false);
+                    setConnectSourceDialogOpen({
+                      dialogId: source.integrationId,
+                    });
+                  }}
+                />
+              ))}
             </div>
-          </CTABar>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+            <CTABar>
+              <div className="flex w-full flex-grow flex-row items-center justify-start gap-4">
+                <p className="flex-grow text-xs text-neutral-500">
+                  Need another source?
+                </p>
+                <Button
+                  variant="plain"
+                  buttonSize="sm"
+                  onClick={() => {
+                    emitter.emit(EVENT_OPEN_CONTACT);
+                  }}
+                >
+                  Request source
+                </Button>
+              </div>
+            </CTABar>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+      <NotionPagesOnboardingDialog
+        open={connectSourceDialogOpen?.dialogId === 'notion-pages'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConnectSourceDialogOpen(undefined);
+          }
+        }}
+      />
+    </>
   );
 };
 

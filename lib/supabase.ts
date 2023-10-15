@@ -18,6 +18,7 @@ import {
   FileSections,
   DbSyncQueue,
   LogLevel,
+  DbFileSignature,
 } from '@/types/types';
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
@@ -518,14 +519,14 @@ export const batchStoreFileSections = async (
 // Important: two files may have the same nangoId, in case where
 // the same source (e.g. Salesforce Knowledge) was added twice (say with
 // different filters). They are therefore distinguished by their sourceId.
-export const getFileIdsBySourceAndNangoId = async (
+export const getFilesIdAndCheksumBySourceAndNangoId = async (
   supabase: SupabaseClient<Database>,
   sourceId: DbSource['id'],
   nangoFileId: string,
-): Promise<DbFile['id'][]> => {
+): Promise<DbFileSignature[]> => {
   const { data, error } = await supabase
     .from('files')
-    .select('id')
+    .select('id,meta,path,checksum')
     .eq('source_id', sourceId)
     .eq('internal_metadata->>nangoFileId', nangoFileId);
 
@@ -533,7 +534,7 @@ export const getFileIdsBySourceAndNangoId = async (
     return [];
   }
 
-  return data.map((f) => f.id);
+  return data;
 };
 
 export const batchDeleteFiles = async (

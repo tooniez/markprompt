@@ -101,10 +101,10 @@ const SalesforceCaseAddSourceDialog = dynamic(
   { loading: () => Loading },
 );
 
-const NotionPagesOnboardingDialog = dynamic(
-  () => import('@/components/dialogs/sources/onboarding/NotionPages'),
-  { loading: () => Loading },
-);
+// const NotionPagesOnboardingDialog = dynamic(
+//   () => import('@/components/dialogs/sources/onboarding/NotionPages'),
+//   { loading: () => Loading },
+// );
 
 const MotifAddSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/Motif'),
@@ -423,18 +423,18 @@ const Data = () => {
     undefined,
   );
   const [editorOpen, setEditorOpen] = useState<boolean>(false);
-  const [connectSourceDialogOpen, setConnectSourceDialogOpen] = useState<
-    | {
-        // Add other IDs manually here until they are moved to Nango
-        dialogId:
-          | NangoIntegrationId
-          | 'motif'
-          | 'github'
-          | 'website'
-          | 'api-uploads';
-      }
-    | undefined
-  >(undefined);
+  // const [connectSourceDialogOpen, setConnectSourceDialogOpen] = useState<
+  //   | {
+  //       // Add other IDs manually here until they are moved to Nango
+  //       dialogId:
+  //         | NangoIntegrationId
+  //         | 'motif'
+  //         | 'github'
+  //         | 'website'
+  //         | 'api-uploads';
+  //     }
+  //   | undefined
+  // >(undefined);
   const [configureSourceDialogOpen, setConfigureSourceDialogOpen] = useState<
     | {
         // Add other IDs manually here until they are moved to Nango
@@ -822,9 +822,9 @@ const Data = () => {
             </>
           )}
           <SourcesDialog
-            onSourceSelected={(integrationId) =>
-              setConnectSourceDialogOpen({ dialogId: integrationId })
-            }
+          // onSourceSelected={(integrationId) =>
+          //   setConnectSourceDialogOpen({ dialogId: integrationId })
+          // }
           >
             <Button
               variant={sources && sources.length > 0 ? 'plain' : 'cta'}
@@ -1144,7 +1144,7 @@ const Data = () => {
               }
             }}
           />
-          <NotionPagesOnboardingDialog
+          {/* <NotionPagesOnboardingDialog
             open={connectSourceDialogOpen?.dialogId === 'notion-pages'}
             onOpenChange={(open) => {
               if (!open) {
@@ -1199,7 +1199,7 @@ const Data = () => {
                 setConnectSourceDialogOpen(undefined);
               }
             }}
-          />
+          /> */}
           <NotionPagesConfigurationDialog
             projectId={project?.id}
             open={configureSourceDialogOpen?.dialogId === 'notion-pages'}

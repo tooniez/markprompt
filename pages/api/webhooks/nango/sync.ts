@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { NangoSyncPayload, inngest } from '../../inngest';
+import { inngest } from '../../inngest';
+import type { NangoSyncPayload } from '../../inngest';
 
 type Data =
   | {
@@ -20,7 +21,7 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
-  console.debug('[NANGO] Webhook called');
+  console.debug('[NANGO] Webhook called', JSON.stringify(req.body));
 
   await inngest.send({
     name: 'nango/sync',

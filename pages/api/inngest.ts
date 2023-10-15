@@ -1,6 +1,7 @@
 import { NangoSyncWebhookBody } from '@nangohq/node';
 import { EventSchemas, Inngest } from 'inngest';
 import { serve } from 'inngest/next';
+import { isEqual } from 'lodash-es';
 
 import {
   EMBEDDING_MODEL,
@@ -25,15 +26,17 @@ import {
   getProjectConfigData,
   createFile,
   batchStoreFileSections,
-  getFileIdsBySourceAndNangoId,
   batchDeleteFiles,
   batchDeleteFilesBySourceAndNangoId,
   getOrCreateRunningSyncQueueForSource,
   updateSyncQueue,
+  getFilesIdAndCheksumBySourceAndNangoId,
 } from '@/lib/supabase';
-import { pluralize } from '@/lib/utils';
+import { createChecksum, pluralize } from '@/lib/utils';
 import { Json } from '@/types/supabase';
 import {
+  DbFile,
+  DbFileSignature,
   DbSource,
   FileSections,
   NangoFileWithMetadata,
@@ -132,24 +135,24 @@ const sync = inngest.createFunction(
         };
       });
 
-    const filesToDelete = records
+    const filesIdsToDelete = records
       .filter((record) => {
         return record._nango_metadata.last_action === 'DELETED';
       })
       .map((record) => record.id);
 
     // Files to delete
-    if (filesToDelete.length > 0) {
+    if (filesIdsToDelete.length > 0) {
       await step.sendEvent('delete-files', {
         name: 'markprompt/files.delete',
-        data: { ids: filesToDelete, sourceId },
+        data: { ids: filesIdsToDelete, sourceId },
       });
     }
 
     // Files to update
     if (trainEvents.length > 0) {
-      // If we have less than 1000 calls, we can use step parallelism,
-      // so that we can track the state using a Promise
+      // If we have less than 1000 calls (Vercel limit), we can use step
+      // parallelism, so that we can track the state using a Promise.
       if (trainEvents.length < 1000) {
         const runPromises = trainEvents.map((event) => {
           return step.run(`${event.name}-${event.data.file.id}`, async () =>
@@ -168,13 +171,37 @@ const sync = inngest.createFunction(
         trainEvents.length,
         'file',
         'files',
-      )}. Deleted ${pluralize(filesToDelete.length, 'file', 'files')}`,
+      )}. Deleted ${pluralize(filesIdsToDelete.length, 'file', 'files')}`,
       level: 'info',
     });
 
-    return { updated: trainEvents.length, deleted: filesToDelete.length };
+    return { updated: trainEvents.length, deleted: filesIdsToDelete.length };
   },
 );
+
+const isFileChanged = (
+  newFile: Omit<DbFileSignature, 'id'>,
+  storedFile: Omit<DbFileSignature, 'id'>,
+) => {
+  return (
+    newFile.path !== storedFile.path ||
+    newFile.checksum !== storedFile.checksum ||
+    !isEqual(newFile.meta, storedFile.meta)
+  );
+};
+
+// Meta is built from the Markdown frontmatter, and from additional
+// data, such as Notion properties.
+const createFullMeta = async (file: NangoFileWithMetadata) => {
+  let meta = await extractMeta(file.content, file.contentType);
+
+  meta = { ...file.meta, ...meta };
+  if (file.title) {
+    meta = { title: file.title, ...meta };
+  }
+
+  return meta;
+};
 
 const runTrainFile = async (data: FileTrainEventData) => {
   const file = data.file;
@@ -185,18 +212,45 @@ const runTrainFile = async (data: FileTrainEventData) => {
     return;
   }
 
-  const foundIds = await getFileIdsBySourceAndNangoId(
+  const foundFiles = await getFilesIdAndCheksumBySourceAndNangoId(
     supabase,
     sourceId,
     file.id,
   );
 
-  if (foundIds.length > 0) {
-    await batchDeleteFiles(supabase, foundIds);
+  let foundFile: DbFileSignature | undefined = undefined;
+
+  if (foundFiles.length > 0) {
+    foundFile = foundFiles[0];
+    if (foundFiles.length > 1) {
+      // There should not be any files with the same source id and
+      // Nango id, but if there is exceptionally, purge them
+      await batchDeleteFiles(
+        supabase,
+        foundFiles.slice(1).map((f) => f.id),
+      );
+    }
   }
 
-  let meta = await extractMeta(file.content, file.contentType);
+  const meta = await createFullMeta(file);
   const markdown = await convertToMarkdown(file.content, file.contentType);
+  const checksum = createChecksum(markdown);
+
+  if (foundFile) {
+    if (
+      !isFileChanged({ path: file.path, meta: meta || {}, checksum }, foundFile)
+    ) {
+      // If checksums match on the Markdown, skip. Note that we don't compare
+      // on the raw content, since two different raw versions chould still have
+      // the same Markdown, in which case we don't need to recreate the
+      // embeddings.
+      return;
+    } else {
+      // File is found with new content, so delete it (which also clear
+      // associated sections).
+      await batchDeleteFiles(supabase, [foundFile.id]);
+    }
+  }
 
   const sections = (
     await splitIntoSections(markdown, data.processorOptions, MAX_CHUNK_LENGTH)
@@ -226,11 +280,6 @@ const runTrainFile = async (data: FileTrainEventData) => {
       : {}),
   };
 
-  meta = { ...file.meta, ...meta };
-  if (file.title) {
-    meta = { title: file.title, ...meta };
-  }
-
   const newFileId = await createFile(
     supabase,
     projectId,
@@ -238,7 +287,7 @@ const runTrainFile = async (data: FileTrainEventData) => {
     file.path,
     meta,
     internalMetadata,
-    '',
+    checksum,
     file.content,
     tokenCount,
   );

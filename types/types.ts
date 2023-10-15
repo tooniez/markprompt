@@ -367,3 +367,5 @@ export type SyncData = {
   connectionId: string;
   syncIds: NangoSyncId[];
 };
+
+export type DbFileSignature = Pick<DbFile, 'id' | 'meta' | 'path' | 'checksum'>;
