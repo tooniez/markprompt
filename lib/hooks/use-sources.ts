@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 import { isPresent } from 'ts-is-present';
@@ -10,9 +10,7 @@ import {
   NangoSourceDataType,
 } from '@/types/types';
 
-import useFiles from './use-files';
 import useProject from './use-project';
-import useUsage from './use-usage';
 import { getIntegrationName, getSyncData } from '../integrations/nango';
 import { triggerSyncs } from '../integrations/nango.client';
 import { fetcher } from '../utils';
@@ -54,15 +52,18 @@ export default function useSources() {
       if (!project?.id) {
         return;
       }
+
       const data = sources.map((s) => getSyncData(s)).filter(isPresent);
       if (data.length === 0) {
         return;
       }
+
       onIsMessageLoading?.(true);
       const triggerSyncPromise = triggerSyncs(project.id, data);
       toast.promise(triggerSyncPromise, {
         loading: 'Initiating sync...',
         success: () => {
+          mutateSyncQueues();
           return 'Sync has been initiated';
         },
         error: 'Error initiating sync',
@@ -71,7 +72,7 @@ export default function useSources() {
         },
       });
     },
-    [project?.id],
+    [project?.id, mutateSyncQueues],
   );
 
   const isNameAvailable = useCallback(

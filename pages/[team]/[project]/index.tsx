@@ -220,7 +220,12 @@ const Sources: FC<SourcesProps> = ({
   onConfigureSelected,
   onRemoveSelected,
 }) => {
-  const { sources, latestSyncQueues, syncSources } = useSources();
+  const {
+    sources,
+    latestSyncQueues,
+    syncSources,
+    loading: loadingSources,
+  } = useSources();
 
   return (
     <div className="flex flex-col gap-1">
@@ -399,7 +404,12 @@ const Data = () => {
     hasMorePages,
     mutateCount,
   } = useFiles();
-  const { sources, latestSyncQueues, syncSources } = useSources();
+  const {
+    sources,
+    syncSources,
+    latestSyncQueues,
+    loading: loadingSources,
+  } = useSources();
   const {
     stopGeneratingEmbeddings,
     state: trainingState,
@@ -821,19 +831,21 @@ const Data = () => {
               </div>
             </>
           )}
-          <SourcesDialog
-          // onSourceSelected={(integrationId) =>
-          //   setConnectSourceDialogOpen({ dialogId: integrationId })
-          // }
-          >
-            <Button
-              variant={sources && sources.length > 0 ? 'plain' : 'cta'}
-              buttonSize="sm"
-              Icon={Plus}
+          {!loadingSources && (
+            <SourcesDialog
+            // onSourceSelected={(integrationId) =>
+            //   setConnectSourceDialogOpen({ dialogId: integrationId })
+            // }
             >
-              Connect source
-            </Button>
-          </SourcesDialog>
+              <Button
+                variant={sources && sources.length > 0 ? 'plain' : 'cta'}
+                buttonSize="sm"
+                Icon={Plus}
+              >
+                Connect source
+              </Button>
+            </SourcesDialog>
+          )}
           {/* <div
             className={cn(
               'flex flex-col gap-2 rounded-md border border-dashed border-neutral-800 p-4',

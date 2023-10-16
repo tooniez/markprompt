@@ -35,7 +35,6 @@ import {
 import { createChecksum, pluralize } from '@/lib/utils';
 import { Json } from '@/types/supabase';
 import {
-  DbFile,
   DbFileSignature,
   DbSource,
   FileSections,
@@ -87,7 +86,7 @@ const sync = inngest.createFunction(
     const sourceId = await getSourceId(supabase, event.data.connectionId);
 
     if (!sourceId) {
-      return;
+      return { updated: 0, deleted: 0 };
     }
 
     const syncQueueId = await getOrCreateRunningSyncQueueForSource(
@@ -111,7 +110,7 @@ const sync = inngest.createFunction(
         message: 'Project not found',
         level: 'error',
       });
-      return;
+      return { updated: 0, deleted: 0 };
     }
 
     const config = await getProjectConfigData(supabase, projectId);
@@ -142,29 +141,33 @@ const sync = inngest.createFunction(
       .map((record) => record.id);
 
     // Files to delete
-    if (filesIdsToDelete.length > 0) {
-      await step.sendEvent('delete-files', {
-        name: 'markprompt/files.delete',
-        data: { ids: filesIdsToDelete, sourceId },
-      });
-    }
+    // if (filesIdsToDelete.length > 0) {
+    await step.sendEvent('delete-files', {
+      name: 'markprompt/files.delete',
+      data: { ids: filesIdsToDelete, sourceId },
+    });
+    // }
 
-    // Files to update
-    if (trainEvents.length > 0) {
-      // If we have less than 1000 calls (Vercel limit), we can use step
-      // parallelism, so that we can track the state using a Promise.
-      if (trainEvents.length < 1000) {
-        const runPromises = trainEvents.map((event) => {
-          return step.run(`${event.name}-${event.data.file.id}`, async () =>
-            runTrainFile(event.data),
-          );
-        });
+    await step.sendEvent('train-files', trainEvents);
+    // // Files to update
+    // if (trainEvents.length > 0) {
+    //   // If we have less than 1000 calls (Vercel limit), we can use step
+    //   // parallelism, so that we can track the state using a Promise.
+    //   if (trainEvents.length < 1000) {
+    //     const ms = Date.now();
+    //     console.log('Start');
+    //     const runPromises = trainEvents.map(async (event) => {
+    //       return step.run(`${event.name}-${event.data.file.id}`, async () =>
+    //         runTrainFile(event.data),
+    //       );
+    //     });
 
-        await Promise.all(runPromises);
-      } else {
-        await step.sendEvent('train-files', trainEvents);
-      }
-    }
+    //     await Promise.all(runPromises);
+    //     console.log('Done in', Date.now() - ms);
+    //   } else {
+    //     await step.sendEvent('train-files', trainEvents);
+    //   }
+    // }
 
     await updateSyncQueue(supabase, syncQueueId, 'complete', {
       message: `Updated ${pluralize(
@@ -223,8 +226,8 @@ const runTrainFile = async (data: FileTrainEventData) => {
   if (foundFiles.length > 0) {
     foundFile = foundFiles[0];
     if (foundFiles.length > 1) {
-      // There should not be any files with the same source id and
-      // Nango id, but if there is exceptionally, purge them
+      // There should not be more than one file with the same source id and
+      // Nango id, but if there is exceptionally, purge all but the first.
       await batchDeleteFiles(
         supabase,
         foundFiles.slice(1).map((f) => f.id),
@@ -236,20 +239,15 @@ const runTrainFile = async (data: FileTrainEventData) => {
   const markdown = await convertToMarkdown(file.content, file.contentType);
   const checksum = createChecksum(markdown);
 
-  if (foundFile) {
-    if (
-      !isFileChanged({ path: file.path, meta: meta || {}, checksum }, foundFile)
-    ) {
-      // If checksums match on the Markdown, skip. Note that we don't compare
-      // on the raw content, since two different raw versions chould still have
-      // the same Markdown, in which case we don't need to recreate the
-      // embeddings.
-      return;
-    } else {
-      // File is found with new content, so delete it (which also clear
-      // associated sections).
-      await batchDeleteFiles(supabase, [foundFile.id]);
-    }
+  if (
+    foundFile &&
+    !isFileChanged({ path: file.path, meta: meta || {}, checksum }, foundFile)
+  ) {
+    // If checksums match on the Markdown, skip. Note that we don't compare
+    // on the raw content, since two different raw versions chould still have
+    // the same Markdown, in which case we don't need to recreate the
+    // embeddings.
+    return;
   }
 
   const sections = (
@@ -312,6 +310,12 @@ const runTrainFile = async (data: FileTrainEventData) => {
   });
 
   await batchStoreFileSections(supabase, sectionsData);
+
+  // If previous file existed, delete it here (i.e. once its replacement has
+  // been fully indexed, so we avoid a time where the content is not available).
+  if (foundFile) {
+    await batchDeleteFiles(supabase, [foundFile.id]);
+  }
 };
 
 // The train function adheres to the OpenAI rate limits.
