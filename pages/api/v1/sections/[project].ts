@@ -63,8 +63,7 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
-  const params = req.body;
-  const prompt = params.prompt as string;
+  const prompt = (req.query.prompt || req.body.prompt) as string;
   const pathname = req.url || '';
   const projectId = req.query.project as Project['id'];
 
@@ -109,8 +108,9 @@ export default async function handler(
   try {
     const sectionsResponse = await getMatchingSections(
       sanitizedQuery,
-      params.sectionsMatchThreshold,
-      params.sectionsMatchCount,
+      req.query.sectionsMatchThreshold ||
+        req.body.params.sectionsMatchThreshold,
+      req.query.sectionsMatchCount || req.body.params.sectionsMatchCount,
       projectId,
       byoOpenAIKey,
       'completions',

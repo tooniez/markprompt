@@ -73,7 +73,10 @@ export default async function MatchSectionsMiddleware(req: NextRequest) {
 
   track(projectId, 'get sections', { projectId });
 
+  // We pass the query string as part of the rewritten response.
+  // This is the only way I found to pass along GET query params to the
+  // API handler function.
   return NextResponse.rewrite(
-    new URL(`/api/v1/sections/${projectId}`, req.url),
+    new URL(`/api/v1/sections/${projectId}${req.nextUrl.search}`, req.url),
   );
 }
