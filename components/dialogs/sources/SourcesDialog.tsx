@@ -19,6 +19,10 @@ const NotionPagesOnboardingDialog = dynamic(
   () => import('@/components/dialogs/sources/onboarding/NotionPages'),
 );
 
+const SalesforceKnowledgeOnboardingDialog = dynamic(
+  () => import('@/components/dialogs/sources/onboarding/SalesforceKnowledge'),
+);
+
 const sources: SourceSpec[] = [
   {
     integrationId: 'notion-pages',
@@ -129,6 +133,17 @@ const SourcesDialog = ({
       </Dialog.Root>
       <NotionPagesOnboardingDialog
         open={connectSourceDialogOpen?.dialogId === 'notion-pages'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConnectSourceDialogOpen(undefined);
+          }
+        }}
+      />
+      <SalesforceKnowledgeOnboardingDialog
+        open={
+          connectSourceDialogOpen?.dialogId === 'salesforce-knowledge' ||
+          connectSourceDialogOpen?.dialogId === 'salesforce-knowledge-sandbox'
+        }
         onOpenChange={(open) => {
           if (!open) {
             setConnectSourceDialogOpen(undefined);

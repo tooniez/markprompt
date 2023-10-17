@@ -90,7 +90,7 @@ textarea {
 }
 
 .input-base {
-  @apply flex appearance-none rounded-md border bg-neutral-900 text-neutral-100 transition duration-200 placeholder:text-neutral-500;
+  @apply flex appearance-none rounded-md border bg-neutral-900 text-neutral-100 transition duration-200 placeholder:text-neutral-500 disabled:cursor-not-allowed disabled:text-neutral-500;
 }
 
 .input-base-noborder {

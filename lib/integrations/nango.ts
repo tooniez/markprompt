@@ -6,6 +6,8 @@ import {
   SyncData,
 } from '@/types/types';
 
+import { SalesforceEnvironment } from './salesforce';
+
 export const getConnectionId = (
   source: Pick<DbSource, 'type' | 'data'>,
 ): string | undefined => {
@@ -50,6 +52,32 @@ export const getIntegrationName = (integrationId: NangoIntegrationId) => {
     case 'salesforce-knowledge':
     case 'salesforce-knowledge-sandbox':
       return 'Salesforce Knowledge';
+  }
+};
+
+export const getIntegrationEnvironment = (
+  integrationId: NangoIntegrationId,
+): SalesforceEnvironment | undefined => {
+  switch (integrationId) {
+    case 'salesforce-case':
+    case 'salesforce-knowledge':
+      return 'production';
+    case 'salesforce-case-sandbox':
+    case 'salesforce-knowledge-sandbox':
+      return 'sandbox';
+    default:
+      return undefined;
+  }
+};
+
+export const getIntegrationEnvironmentName = (
+  environment: SalesforceEnvironment,
+): string => {
+  switch (environment) {
+    case 'production':
+      return 'Production';
+    case 'sandbox':
+      return 'Sandbox';
   }
 };
 

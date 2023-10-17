@@ -208,6 +208,10 @@ export type NangoSourceDataType = {
   integrationId: NangoIntegrationId;
   connectionId: string;
   name: string;
+  connectionConfig?: {
+    instance_url?: string;
+  };
+  nangoMetadata?: any;
 };
 
 export type RobotsTxtInfo = { sitemap?: string; disallowedPaths: string[] };

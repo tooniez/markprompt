@@ -15,6 +15,7 @@ export const addSourceAndNangoConnection = async (
   projectId: Project['id'],
   integrationId: NangoIntegrationId,
   name: string,
+  params?: Record<string, string>,
 ): Promise<DbSource | undefined> => {
   // Create the Nango connection. Note that nango.yaml specifies
   // `auto_start: false` to give us a chance to set the metadata
@@ -22,12 +23,13 @@ export const addSourceAndNangoConnection = async (
   const connectionId = generateConnectionId();
 
   try {
-    await nango.auth(integrationId, connectionId);
+    await nango.auth(integrationId, connectionId, params);
 
     const newSource = await addSource(projectId, 'nango', {
       integrationId,
       connectionId,
       name,
+      connectionConfig: params,
     });
 
     if (!newSource.id) {

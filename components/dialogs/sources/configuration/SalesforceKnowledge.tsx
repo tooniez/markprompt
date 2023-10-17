@@ -1,13 +1,13 @@
 import { FC, useMemo } from 'react';
 
-import { NotionIcon } from '@/components/icons/Notion';
+import { SalesforceIcon } from '@/components/icons/Salesforce';
 import useSources from '@/lib/hooks/use-sources';
 import { DbSource, Project, SourceConfigurationView } from '@/types/types';
 
 import { BaseConfigurationDialog } from './BaseConfiguration';
-import { NotionPagesSettings } from '../settings/NotionPages';
+import { SalesforceKnowledgeSettings } from '../settings/SalesforceKnowledge';
 
-type NotionPagesConfigurationDialogProps = {
+type SalesforceKnowledgeConfigurationDialogProps = {
   projectId: Project['id'];
   sourceId?: DbSource['id'];
   defaultView?: SourceConfigurationView;
@@ -15,8 +15,8 @@ type NotionPagesConfigurationDialogProps = {
   onOpenChange?: (open: boolean) => void;
 };
 
-const NotionPagesConfigurationDialog: FC<
-  NotionPagesConfigurationDialogProps
+const SalesforceKnowledgeConfigurationDialog: FC<
+  SalesforceKnowledgeConfigurationDialogProps
 > = ({ projectId, sourceId, defaultView, open, onOpenChange }) => {
   const { sources } = useSources();
 
@@ -30,9 +30,9 @@ const NotionPagesConfigurationDialog: FC<
       defaultView={defaultView}
       open={open}
       onOpenChange={onOpenChange}
-      Icon={NotionIcon}
+      Icon={SalesforceIcon}
     >
-      <NotionPagesSettings
+      <SalesforceKnowledgeSettings
         projectId={projectId}
         source={source}
         forceDisabled={false}
@@ -41,4 +41,4 @@ const NotionPagesConfigurationDialog: FC<
   );
 };
 
-export default NotionPagesConfigurationDialog;
+export default SalesforceKnowledgeConfigurationDialog;

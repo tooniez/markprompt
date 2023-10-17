@@ -1,11 +1,10 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { ReactNode, useCallback, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import Button from '@/components/ui/Button';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
-import { getConnectionId } from '@/lib/integrations/nango';
 import { getNangoClientInstance } from '@/lib/integrations/nango.client';
 import { DbSource, Project } from '@/types/types';
 

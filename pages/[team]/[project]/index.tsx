@@ -126,6 +126,12 @@ const NotionPagesConfigurationDialog = dynamic(
   { loading: () => Loading },
 );
 
+const SalesforceKnowledgeConfigurationDialog = dynamic(
+  () =>
+    import('@/components/dialogs/sources/configuration/SalesforceKnowledge'),
+  { loading: () => Loading },
+);
+
 const EditorDialog = dynamic(() => import('@/components/files/EditorDialog'), {
   loading: () => Loading,
 });
@@ -1215,6 +1221,21 @@ const Data = () => {
           <NotionPagesConfigurationDialog
             projectId={project?.id}
             open={configureSourceDialogOpen?.dialogId === 'notion-pages'}
+            onOpenChange={(open) => {
+              if (!open) {
+                setConfigureSourceDialogOpen(undefined);
+              }
+            }}
+            sourceId={configureSourceDialogOpen?.source?.id}
+            defaultView={configureSourceDialogOpen?.view}
+          />
+          <SalesforceKnowledgeConfigurationDialog
+            projectId={project?.id}
+            open={
+              configureSourceDialogOpen?.dialogId === 'salesforce-knowledge' ||
+              configureSourceDialogOpen?.dialogId ===
+                'salesforce-knowledge-sandbox'
+            }
             onOpenChange={(open) => {
               if (!open) {
                 setConfigureSourceDialogOpen(undefined);

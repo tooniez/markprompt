@@ -68,7 +68,7 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
       }}
     >
       {({ isSubmitting, isValid }) => (
-        <Form className="flex flex-col gap-2">
+        <Form className="FormRoot">
           <div className="FormField">
             <div className="FormLabel">Name</div>
             <div className="flex flex-row gap-2">
@@ -83,18 +83,16 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
             </div>
             <ErrorMessage name="identifier" component={ErrorLabel} />
           </div>
-          <div className="mt-2 flex flex-row gap-2">
-            <Button
-              className="flex-none"
-              disabled={!isValid || forceDisabled}
-              loading={isSubmitting}
-              variant="plain"
-              buttonSize="sm"
-              type="submit"
-            >
-              Save
-            </Button>
-          </div>
+          <Button
+            className="place-self-start"
+            disabled={!isValid || forceDisabled}
+            loading={isSubmitting}
+            variant="plain"
+            buttonSize="sm"
+            type="submit"
+          >
+            Save
+          </Button>
         </Form>
       )}
     </Formik>

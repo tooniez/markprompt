@@ -13,6 +13,8 @@ import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import {
+  getIntegrationEnvironment,
+  getIntegrationEnvironmentName,
   getIntegrationId,
   getIntegrationName,
   getSyncData,
@@ -88,6 +90,8 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   }
 
   const integrationId = getIntegrationId(source);
+  const integrationEnvironment =
+    integrationId && getIntegrationEnvironment(integrationId);
 
   return (
     <SourceDialog
@@ -120,25 +124,45 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
             value="configuration"
           >
             {integrationId && (
-              <div className="FormField mb-8">
-                <p className="FormLabel">Source</p>
-                <div className="flex flex-row items-center gap-2 overflow-hidden">
-                  {Icon && (
-                    <Icon className="h-5 w-5 flex-none text-neutral-500" />
-                  )}
-                  <div className="flex-grow overflow-hidden truncate text-sm text-neutral-300">
-                    {getIntegrationName(integrationId)}
+              <div className="FormRoot mb-6 border-b border-neutral-900 pb-6">
+                <div className="FormField">
+                  <p className="FormLabel">Source</p>
+                  <div className="flex flex-row items-center gap-2 overflow-hidden">
+                    {Icon && (
+                      <Icon className="h-5 w-5 flex-none text-neutral-500" />
+                    )}
+                    <div className="flex-grow overflow-hidden truncate text-sm text-neutral-300">
+                      {getIntegrationName(integrationId)}
+                    </div>
                   </div>
                 </div>
+                {integrationEnvironment && (
+                  <div className="FormField">
+                    <p className="FormLabel">Environment</p>
+                    <div className="truncate text-sm text-neutral-300">
+                      {getIntegrationEnvironmentName(integrationEnvironment)}
+                    </div>
+                  </div>
+                )}
+                {(source.data as NangoSourceDataType)?.connectionConfig
+                  ?.instance_url && (
+                  <div className="FormField">
+                    <p className="FormLabel">Instance URL</p>
+                    <div className="truncate text-sm text-neutral-300">
+                      {
+                        (source.data as NangoSourceDataType)?.connectionConfig
+                          ?.instance_url
+                      }
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             {children}
-            <div className="mt-12 border-t border-neutral-900 pt-4" />
+            <div className="mt-8 border-t border-neutral-900 pt-8" />
             <Button
               buttonSize="sm"
-              variant="textDanger"
-              noPadding
-              light
+              variant="plainDanger"
               onClick={() => {
                 setShowRemoveSourceDialog(true);
               }}
