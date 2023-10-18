@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 
 import { SalesforceIcon } from '@/components/icons/Salesforce';
 import useSources from '@/lib/hooks/use-sources';
@@ -23,6 +23,10 @@ const SalesforceKnowledgeConfigurationDialog: FC<
   const source = useMemo(() => {
     return sources?.find((s) => s.id === sourceId);
   }, [sources, sourceId]);
+
+  useEffect(() => {
+    console.log('CREATE');
+  }, []);
 
   return (
     <BaseConfigurationDialog

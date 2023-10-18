@@ -579,6 +579,7 @@ const ProjectSettingsPage = () => {
                     type="text"
                     name="markprompt_config"
                     className="h-[220px] font-mono"
+                    textAreaSize="sm"
                     as={NoAutoTextArea}
                     disabled={isSubmitting}
                   />

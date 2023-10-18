@@ -123,13 +123,11 @@ const FilesAddSourceDialog = dynamic(
 
 const NotionPagesConfigurationDialog = dynamic(
   () => import('@/components/dialogs/sources/configuration/NotionPages'),
-  { loading: () => Loading },
 );
 
 const SalesforceKnowledgeConfigurationDialog = dynamic(
   () =>
     import('@/components/dialogs/sources/configuration/SalesforceKnowledge'),
-  { loading: () => Loading },
 );
 
 const EditorDialog = dynamic(() => import('@/components/files/EditorDialog'), {

@@ -300,7 +300,7 @@ const SalesforceKnowledgeSource: FC<SalesforceKnowledgeSourceProps> = ({
                   type="text"
                   name="customFields"
                   placeholder={`Example: Language, IsPrivate, ArticleBody, UrlName`}
-                  inputSize="sm"
+                  textAreaSize="sm"
                   as={NoAutoTextArea}
                   disabled={isSubmitting}
                 />
@@ -324,7 +324,7 @@ const SalesforceKnowledgeSource: FC<SalesforceKnowledgeSourceProps> = ({
                   type="text"
                   name="filters"
                   placeholder={`Example: Language = 'en_US' AND IsPrivate = false`}
-                  inputSize="sm"
+                  textAreaSize="sm"
                   as={NoAutoTextArea}
                   disabled={isSubmitting}
                 />
@@ -379,7 +379,7 @@ const SalesforceKnowledgeSource: FC<SalesforceKnowledgeSourceProps> = ({
                   type="text"
                   name="metadataFields"
                   placeholder={`Example: Id, Language`}
-                  inputSize="sm"
+                  textAreaSize="sm"
                   as={NoAutoTextArea}
                   disabled={isSubmitting}
                 />

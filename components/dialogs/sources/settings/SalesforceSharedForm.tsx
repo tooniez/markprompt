@@ -41,7 +41,7 @@ export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
           type="text"
           name="customFields"
           placeholder={`Example: Language, IsPrivate, ArticleBody, UrlName`}
-          inputSize="sm"
+          textAreaSize="sm"
           as={NoAutoTextArea}
           disabled={isSubmitting}
         />
@@ -65,7 +65,7 @@ export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
           type="text"
           name="filters"
           placeholder={`Example: Language = 'en_US' AND IsPrivate = false`}
-          inputSize="sm"
+          textAreaSize="sm"
           as={NoAutoTextArea}
           disabled={isSubmitting}
         />
@@ -120,7 +120,7 @@ export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
         type="text"
         name="metadataFields"
         placeholder={`Example: Id, Language`}
-        inputSize="sm"
+        textAreaSize="sm"
         as={NoAutoTextArea}
         disabled={isSubmitting}
       />
