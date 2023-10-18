@@ -50,10 +50,10 @@ const ConnectStep = ({
       toast.success('Connected to Notion');
     } catch (e: any) {
       setLoading(false);
-      if (e?.type === 'callback_err') {
+      if (e?.type === 'callback_err' || e?.type === 'windowClosed') {
         // This is the error that is thrown when the user closes or
         // cancels the auth popup. No need to show an error here
-        toast.error(`Connection canceled`);
+        toast.error('Connection canceled');
         return;
       }
       toast.error('Error connecting to Notion');
