@@ -1,16 +1,7 @@
 import Nango from '@nangohq/frontend';
-import { isPresent } from 'ts-is-present';
 
-import {
-  DbSource,
-  FileData,
-  NangoIntegrationId,
-  NangoSyncId,
-  Project,
-  SyncData,
-} from '@/types/types';
+import { FileData, NangoIntegrationId, Project, SyncData } from '@/types/types';
 
-import { getConnectionId, getIntegrationId, getSyncId } from './nango';
 import { getResponseOrThrow } from '../utils';
 
 export const getNangoClientInstance = () => {

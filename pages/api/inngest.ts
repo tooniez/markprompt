@@ -98,10 +98,10 @@ const sync = inngest.createFunction(
       providerConfigKey: event.data.providerConfigKey,
       connectionId: event.data.connectionId,
       model: event.data.model,
-      // delta: event.data.queryTimeStamp || undefined,
+      delta: event.data.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
 
-    // console.log('records', JSON.stringify(records, null, 2));
+    console.log('records', JSON.stringify(records, null, 2));
 
     const projectId = await getProjectIdFromSource(supabase, sourceId);
 

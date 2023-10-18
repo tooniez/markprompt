@@ -1010,8 +1010,8 @@ const Data = () => {
                   </p>
                   <p className="mb-4 max-w-[400px] text-sm text-neutral-500">
                     <Balancer>
-                      Once a source is synced, you can start using it as context
-                      for your agents and chatbots.
+                      Once a source is synced, it will appear here and you can
+                      start using it as context for your agents and chatbots.
                     </Balancer>
                   </p>
                   <Button
