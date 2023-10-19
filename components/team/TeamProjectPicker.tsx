@@ -29,6 +29,7 @@ import Button from '../ui/Button';
 import { ErrorLabel } from '../ui/Forms';
 import { NoAutoInput } from '../ui/Input';
 import { CTABar } from '../ui/SettingsCard';
+import { SkeletonPanel } from '../ui/Skeletons';
 import { Slash } from '../ui/Slash';
 import { Tag } from '../ui/Tag';
 
@@ -157,9 +158,9 @@ const ProjectPicker = () => {
   const { project } = useProject();
   const [isOpen, setOpen] = useState(false);
 
-  if (loading || !team || !project) {
-    return <></>;
-  }
+  // if (loading || !team || !project) {
+  //   return <></>;
+  // }
 
   return (
     <DropdownMenu.Root open={isOpen} onOpenChange={setOpen}>
@@ -171,7 +172,7 @@ const ProjectPicker = () => {
           aria-label="Select team"
         >
           <span className="overflow-hidden truncate whitespace-nowrap">
-            {project.name}
+            {project?.name}
           </span>
           <ChevronsUpDown className="h-3 w-3 flex-none" />
         </button>
@@ -199,7 +200,9 @@ const ProjectPicker = () => {
                         <Check className="h-3 w-3" />
                       </DropdownMenu.ItemIndicator>
                     )}
-                    <Link href={`/${team.slug}/${p.slug}`}>{p.name}</Link>
+                    {team && (
+                      <Link href={`/${team.slug}/${p.slug}`}>{p.name}</Link>
+                    )}
                   </>
                 </DropdownMenu.CheckboxItem>
               );
@@ -207,9 +210,11 @@ const ProjectPicker = () => {
           </div>
           <DropdownMenu.Separator className="dropdown-menu-separator" />
           <DropdownMenu.Item className="dropdown-menu-item dropdown-menu-item-indent">
-            <Link href={`/settings/${team.slug}/projects/new`}>
-              Create new project
-            </Link>
+            {team && (
+              <Link href={`/settings/${team.slug}/projects/new`}>
+                Create new project
+              </Link>
+            )}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
@@ -220,17 +225,16 @@ const ProjectPicker = () => {
 export const TeamProjectPicker = () => {
   const router = useRouter();
   const session = useSession();
-  const { teams, mutate: mutateTeams, loading: loadingTeams } = useTeams();
+  const { teams, mutate: mutateTeams } = useTeams();
   const { team } = useTeam();
   const { project, loading: loadingProject } = useProject();
   const [isNewTeamDialogOpen, setNewTeamDialogOpen] = useState(false);
 
-  if (loadingTeams || !teams || !team) {
-    return <></>;
-  }
-
   const isNewProjectRoute =
-    router.asPath === `/settings/${team.slug}/projects/new`;
+    team && router.asPath === `/settings/${team.slug}/projects/new`;
+  const hasProjectPath = !!router.query?.project;
+
+  console.log('TEAM', team);
 
   return (
     <>
@@ -241,13 +245,15 @@ export const TeamProjectPicker = () => {
         {team ? (
           <TeamPicker onNewTeamClick={() => setNewTeamDialogOpen(true)} />
         ) : (
-          <></>
+          <SkeletonPanel onDark loading className="mr-2 ml-2 h-6 w-32" />
         )}
-        {!loadingProject && team && project && (
+        {hasProjectPath && <Slash size="md" />}
+        {!loadingProject && team && project ? (
           <>
-            <Slash size="md" />
             <ProjectPicker />
           </>
+        ) : (
+          <SkeletonPanel onDark loading className="ml-2 h-6 w-24" />
         )}
         {isNewProjectRoute && (
           <>

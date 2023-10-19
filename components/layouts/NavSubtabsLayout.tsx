@@ -37,7 +37,7 @@ export const NavSubtabsLayout: FC<NavSubtabsLayoutProps> = ({
         <title>{`${title} | Markprompt`}</title>
       </Head>
       <NavLayout>
-        {!!user?.has_completed_onboarding && !loadingUser && (
+        {!!user?.has_completed_onboarding && (
           <>
             <div className="fixed inset-x-0 top-[var(--app-navbar-height)] z-10 h-[var(--app-tabbar-height)] bg-neutral-1100">
               {subTabItems && <SubTabs items={subTabItems} />}
