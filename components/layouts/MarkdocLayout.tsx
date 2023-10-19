@@ -126,6 +126,7 @@ export const imageNode = {
     src: { type: String },
     alt: { type: String },
     title: { type: String },
+    className: { type: String },
   },
 };
 

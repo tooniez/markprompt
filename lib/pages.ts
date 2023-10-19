@@ -33,6 +33,7 @@ export const getMarkdocStaticProps = async (pageId: string) => {
       collapsegroup: collapseGroupTag,
       collapse: collapseTag,
       video: videoTag,
+      img: imageNode,
       ...iconTags,
     },
     variables: {
