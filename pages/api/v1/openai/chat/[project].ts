@@ -205,32 +205,32 @@ const buildInitMessages = (
  */
 const capMessages = (
   initMessages: ChatCompletionRequestMessage[],
-  contextMessages: ChatCompletionRequestMessage[],
+  conversationMessages: ChatCompletionRequestMessage[],
   maxCompletionTokenCount: number,
   modelId: OpenAIChatCompletionsModelId,
   tokenizer: Tiktoken,
 ) => {
   const maxTotalTokenCount = getMaxTokenCount(modelId);
-  const cappedContextMessages = [...contextMessages];
+  const cappedConversationMessages = [...conversationMessages];
   let tokenCount =
     getChatRequestTokenCount(
-      [...initMessages, ...cappedContextMessages],
+      [...initMessages, ...cappedConversationMessages],
       modelId,
       tokenizer,
     ) + maxCompletionTokenCount;
 
   // Remove earlier context messages until we fit
   while (tokenCount >= maxTotalTokenCount) {
-    cappedContextMessages.shift();
+    cappedConversationMessages.shift();
     tokenCount =
       getChatRequestTokenCount(
-        [...initMessages, ...cappedContextMessages],
+        [...initMessages, ...cappedConversationMessages],
         modelId,
         tokenizer,
       ) + maxCompletionTokenCount;
   }
 
-  return [...initMessages, ...cappedContextMessages];
+  return [...initMessages, ...cappedConversationMessages];
 };
 
 const isLegacyTemplate = (systemPrompt: string) => {
@@ -307,7 +307,7 @@ export default async function handler(req: NextRequest) {
       });
     }
 
-    const contextMessages: ChatCompletionRequestMessage[] = messages
+    const conversationMessages: ChatCompletionRequestMessage[] = messages
       .map(({ role, content }) => {
         if (
           ![
@@ -322,9 +322,10 @@ export default async function handler(req: NextRequest) {
       })
       .filter((m) => m.content);
 
-    const userMessages: ChatCompletionRequestMessage[] = contextMessages.filter(
-      ({ role }) => role === ChatCompletionRequestMessageRoleEnum.User,
-    );
+    const userMessages: ChatCompletionRequestMessage[] =
+      conversationMessages.filter(
+        ({ role }) => role === ChatCompletionRequestMessageRoleEnum.User,
+      );
 
     const [userMessage] = userMessages.slice(-1);
 
@@ -349,7 +350,7 @@ export default async function handler(req: NextRequest) {
     );
 
     // Moderate the content to comply with OpenAI T&C
-    for (const message of contextMessages) {
+    for (const message of conversationMessages) {
       const moderationResponse = await createModeration(
         message.content as string,
         byoOpenAIKey,
@@ -507,7 +508,7 @@ export default async function handler(req: NextRequest) {
     const tokenizer = await getTokenizer();
     const cappedMessages: ChatCompletionRequestMessage[] = capMessages(
       initMessages,
-      contextMessages,
+      conversationMessages,
       maxCompletionTokenCount,
       modelId,
       tokenizer,
