@@ -74,12 +74,33 @@ export const checkEmbeddingsRateLimits = async (
   return { result, ...getResetTime(result) };
 };
 
+const getCompletionsPerMinuteRateLimitPerIdType = (
+  identifier: RateLimitIdType['type'],
+) => {
+  switch (identifier) {
+    case 'ip':
+      // A given IP can only perform 10 completions requests per minute
+      return 10;
+    case 'hostname':
+    case 'projectId':
+    case 'projectKey':
+    case 'token':
+      // A hostname/project/token can only perform 200 completions requests
+      // per minute
+      return 200;
+  }
+};
+
 export const checkCompletionsRateLimits = async (
   identifier: RateLimitIdType,
 ) => {
   // For now, impose a hard limit of 10 completions per minute
   // per hostname. Later, tie it to the plan associated to a team/project.
-  const result = await getRateLimit(rateLimitTypeToKey(identifier), 10, '30 s');
+  const result = await getRateLimit(
+    rateLimitTypeToKey(identifier),
+    getCompletionsPerMinuteRateLimitPerIdType(identifier.type),
+    '1 m',
+  );
   return { result, ...getResetTime(result) };
 };
 

@@ -3,7 +3,7 @@ import {
   FileSectionReference,
   OpenAIChatCompletionsModelId,
 } from '@markprompt/core';
-import { codeBlock, oneLine, stripIndent } from 'common-tags';
+import { codeBlock, oneLine } from 'common-tags';
 import {
   createParser,
   ParsedEvent,
@@ -27,6 +27,7 @@ import {
   DEFAULT_TEMPLATE_IDK_TAG,
   DEFAULT_TEMPLATE_PROMPT_TAG,
   I_DONT_KNOW,
+  MAX_PROMPT_LENGTH,
 } from '@/lib/constants';
 import { createModeration } from '@/lib/openai.edge';
 import { DEFAULT_SYSTEM_PROMPT } from '@/lib/prompt';
@@ -50,6 +51,7 @@ import {
   buildSectionReferenceFromMatchResult,
   getChatCompletionsResponseText,
   getChatCompletionsUrl,
+  truncate,
 } from '@/lib/utils';
 import { isRequestFromMarkprompt } from '@/lib/utils.edge';
 import { isFalsyQueryParam, isTruthyQueryParam } from '@/lib/utils.nodeps';
@@ -317,8 +319,11 @@ export default async function handler(req: NextRequest) {
         ) {
           throw new Error(`Invalid message role '${role}'.`);
         }
-
-        return { role, content: content?.trim() };
+        let trimmedContent = content?.trim() || '';
+        if (role === ChatCompletionRequestMessageRoleEnum.User) {
+          trimmedContent = truncate(trimmedContent, MAX_PROMPT_LENGTH);
+        }
+        return { role, content: trimmedContent };
       })
       .filter((m) => m.content);
 
