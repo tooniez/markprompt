@@ -437,32 +437,18 @@ const Data = () => {
     undefined,
   );
   const [editorOpen, setEditorOpen] = useState<boolean>(false);
-  // const [connectSourceDialogOpen, setConnectSourceDialogOpen] = useState<
-  //   | {
-  //       // Add other IDs manually here until they are moved to Nango
-  //       dialogId:
-  //         | NangoIntegrationId
-  //         | 'motif'
-  //         | 'github'
-  //         | 'website'
-  //         | 'api-uploads';
-  //     }
-  //   | undefined
-  // >(undefined);
-  const [configureSourceDialogOpen, setConfigureSourceDialogOpen] = useState<
-    | {
-        // Add other IDs manually here until they are moved to Nango
-        dialogId:
-          | NangoIntegrationId
-          | 'motif'
-          | 'github'
-          | 'website'
-          | 'api-uploads';
-        source: DbSource;
-        view?: SourceConfigurationView;
-      }
-    | undefined
-  >(undefined);
+  const [configureSourceDialogOpen, setConfigureSourceDialogOpen] = useState<{
+    open: boolean;
+    // Add other IDs manually here until they are moved to Nango
+    dialogId?:
+      | NangoIntegrationId
+      | 'motif'
+      | 'github'
+      | 'website'
+      | 'api-uploads';
+    source?: DbSource;
+    view?: SourceConfigurationView;
+  }>({ open: false });
 
   const tier = team && getTier(team);
   const isEnterpriseTier = !tier || isEnterpriseOrCustomTier(tier);
@@ -825,6 +811,7 @@ const Data = () => {
                     }
                     const data = source.data as NangoSourceDataType;
                     setConfigureSourceDialogOpen({
+                      open: true,
                       dialogId: data.integrationId,
                       source: source,
                       view: view,
@@ -1218,10 +1205,18 @@ const Data = () => {
           /> */}
           <NotionPagesConfigurationDialog
             projectId={project?.id}
-            open={configureSourceDialogOpen?.dialogId === 'notion-pages'}
+            open={
+              configureSourceDialogOpen.open &&
+              configureSourceDialogOpen?.dialogId === 'notion-pages'
+            }
             onOpenChange={(open) => {
               if (!open) {
-                setConfigureSourceDialogOpen(undefined);
+                // Do not set to undefined, as this will cause flicker when
+                // data in nulled and the fields in the dialog get reset.
+                setConfigureSourceDialogOpen((s) => ({
+                  ...s,
+                  open: false,
+                }));
               }
             }}
             sourceId={configureSourceDialogOpen?.source?.id}
@@ -1230,13 +1225,14 @@ const Data = () => {
           <SalesforceKnowledgeConfigurationDialog
             projectId={project?.id}
             open={
-              configureSourceDialogOpen?.dialogId === 'salesforce-knowledge' ||
-              configureSourceDialogOpen?.dialogId ===
-                'salesforce-knowledge-sandbox'
+              configureSourceDialogOpen.open &&
+              (configureSourceDialogOpen?.dialogId === 'salesforce-knowledge' ||
+                configureSourceDialogOpen?.dialogId ===
+                  'salesforce-knowledge-sandbox')
             }
             onOpenChange={(open) => {
               if (!open) {
-                setConfigureSourceDialogOpen(undefined);
+                setConfigureSourceDialogOpen((s) => ({ ...s, open: false }));
               }
             }}
             sourceId={configureSourceDialogOpen?.source?.id}

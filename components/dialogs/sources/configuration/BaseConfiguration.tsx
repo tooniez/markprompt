@@ -3,7 +3,6 @@ import * as Tabs from '@radix-ui/react-tabs';
 import { parseISO } from 'date-fns';
 import dynamic from 'next/dynamic';
 import { FC, JSXElementConstructor, ReactNode, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 import useSWR from 'swr';
 
 import Button from '@/components/ui/Button';
@@ -17,9 +16,7 @@ import {
   getIntegrationEnvironmentName,
   getIntegrationId,
   getIntegrationName,
-  getSyncData,
 } from '@/lib/integrations/nango';
-import { triggerSyncs } from '@/lib/integrations/nango.client';
 import { fetcher } from '@/lib/utils';
 import {
   DbSource,
@@ -85,11 +82,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
     return data?.name || getIntegrationName(data.integrationId);
   }, [source]);
 
-  if (!project?.id || !source) {
-    return <></>;
-  }
-
-  const integrationId = getIntegrationId(source);
+  const integrationId = source && getIntegrationId(source);
   const integrationEnvironment =
     integrationId && getIntegrationEnvironment(integrationId);
 
@@ -123,41 +116,39 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
             className="TabsContent flex-grow overflow-y-auto px-4 py-8"
             value="configuration"
           >
-            {integrationId && (
-              <div className="FormRoot mb-6 border-b border-neutral-900 pb-6">
-                <div className="FormField">
-                  <p className="FormLabel">Source</p>
-                  <div className="flex flex-row items-center gap-2 overflow-hidden">
-                    {Icon && (
-                      <Icon className="h-5 w-5 flex-none text-neutral-500" />
-                    )}
-                    <div className="flex-grow overflow-hidden truncate text-sm text-neutral-300">
-                      {getIntegrationName(integrationId)}
-                    </div>
+            <div className="FormRoot mb-6 border-b border-neutral-900 pb-6">
+              <div className="FormField">
+                <p className="FormLabel">Source</p>
+                <div className="flex flex-row items-center gap-2 overflow-hidden">
+                  {Icon && (
+                    <Icon className="h-5 w-5 flex-none text-neutral-500" />
+                  )}
+                  <div className="flex-grow overflow-hidden truncate text-sm text-neutral-300">
+                    {integrationId ? getIntegrationName(integrationId) : ''}
                   </div>
                 </div>
-                {integrationEnvironment && (
-                  <div className="FormField">
-                    <p className="FormLabel">Environment</p>
-                    <div className="truncate text-sm text-neutral-300">
-                      {getIntegrationEnvironmentName(integrationEnvironment)}
-                    </div>
-                  </div>
-                )}
-                {(source.data as NangoSourceDataType)?.connectionConfig
-                  ?.instance_url && (
-                  <div className="FormField">
-                    <p className="FormLabel">Instance URL</p>
-                    <div className="truncate text-sm text-neutral-300">
-                      {
-                        (source.data as NangoSourceDataType)?.connectionConfig
-                          ?.instance_url
-                      }
-                    </div>
-                  </div>
-                )}
               </div>
-            )}
+              {integrationEnvironment && (
+                <div className="FormField">
+                  <p className="FormLabel">Environment</p>
+                  <div className="truncate text-sm text-neutral-300">
+                    {getIntegrationEnvironmentName(integrationEnvironment)}
+                  </div>
+                </div>
+              )}
+              {(source?.data as NangoSourceDataType)?.connectionConfig
+                ?.instance_url && (
+                <div className="FormField">
+                  <p className="FormLabel">Instance URL</p>
+                  <div className="truncate text-sm text-neutral-300">
+                    {
+                      (source?.data as NangoSourceDataType)?.connectionConfig
+                        ?.instance_url
+                    }
+                  </div>
+                </div>
+              )}
+            </div>
             {children}
             <div className="mt-8 border-t border-neutral-900 pt-8" />
             <Button
@@ -201,7 +192,12 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
                 disabled={lastSyncQueue?.status === 'running'}
                 variant="cta"
                 buttonSize="sm"
-                onClick={() => syncSources([source], setSyncStarted)}
+                onClick={() => {
+                  if (!source) {
+                    return;
+                  }
+                  syncSources([source], setSyncStarted);
+                }}
               >
                 {lastSyncQueue?.status === 'running'
                   ? 'Initiating sync...'
@@ -211,16 +207,18 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
           </CTABar>
         </div>
       </div>
-      <Dialog.Root
-        open={!!showRemoveSourceDialog}
-        onOpenChange={() => setShowRemoveSourceDialog(false)}
-      >
-        <RemoveSourceDialog
-          projectId={project.id}
-          source={source}
-          onComplete={() => setShowRemoveSourceDialog(false)}
-        />
-      </Dialog.Root>
+      {project?.id && source && (
+        <Dialog.Root
+          open={!!showRemoveSourceDialog}
+          onOpenChange={() => setShowRemoveSourceDialog(false)}
+        >
+          <RemoveSourceDialog
+            projectId={project.id}
+            source={source}
+            onComplete={() => setShowRemoveSourceDialog(false)}
+          />
+        </Dialog.Root>
+      )}
     </SourceDialog>
   );
 };

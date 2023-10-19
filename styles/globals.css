@@ -207,7 +207,7 @@ textarea {
 .accordion-content-alt[data-state='closed'] {
   animation-name: expand-height;
   animation-direction: reverse;
-  animation-duration: 300ms;
+  animation-duration: 400ms;
   animation-fill-mode: both;
   transition-timing-function: ease-in-out;
 }
@@ -531,12 +531,12 @@ textarea {
 }
 
 .animate-menu-up[data-state='open'] {
-  animation-duration: 150ms;
+  animation-duration: 300ms;
   animation-name: menu-slide-up;
 }
 
 .animate-menu-up[data-state='closed'] {
-  animation-duration: 300ms;
+  animation-duration: 400ms;
   animation-name: menu-slide-up-reverse;
 }
 
@@ -551,7 +551,7 @@ textarea {
 }
 
 .animate-overlay-appear[data-state='closed'] {
-  animation-duration: 300ms;
+  animation-duration: 400ms;
   animation-name: opacity-reverse;
 }
 
@@ -566,7 +566,7 @@ textarea {
 }
 
 .animate-dialog-slide-in[data-state='closed'] {
-  animation-duration: 300ms;
+  animation-duration: 400ms;
   animation-name: dialog-slide-in-reverse;
 }
 
@@ -588,7 +588,7 @@ textarea {
 }
 .animate-chat-window[data-state='closed'] {
   animation-name: slide-up-scale-reverse;
-  animation-duration: 300ms;
+  animation-duration: 400ms;
 }
 
 .animate-slide-down-delayed {
