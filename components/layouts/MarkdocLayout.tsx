@@ -195,6 +195,15 @@ export const videoTag = {
   },
 };
 
+export const youtubeTag = {
+  render: 'YouTube',
+  children: ['paragraph', 'tag', 'list'],
+  attributes: {
+    src: { type: String },
+    className: { type: String },
+  },
+};
+
 export const collapseGroupTag = {
   render: 'CollapseGroup',
   children: ['paragraph', 'tag', 'list'],

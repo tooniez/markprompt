@@ -23,6 +23,7 @@ import { Heading } from '../ui/Heading';
 import { Note } from '../ui/Note';
 import { Pattern } from '../ui/Pattern';
 import { Video } from '../ui/Video';
+import { YouTube } from '../ui/YouTube';
 
 dayjs.extend(localizedFormat);
 
@@ -218,6 +219,7 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
                     Heading,
                     Note,
                     Video,
+                    YouTube,
                   },
                 })}
               </ProseContainer>

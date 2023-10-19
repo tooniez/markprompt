@@ -19,6 +19,7 @@ import { Key } from '../ui/Key';
 import { Note } from '../ui/Note';
 import { Pattern } from '../ui/Pattern';
 import { Video } from '../ui/Video';
+import { YouTube } from '../ui/YouTube';
 
 export const MarkdocContext = createContext<any>(undefined);
 
@@ -87,6 +88,7 @@ export const DocsLayout: FC<DocsLayoutProps> = ({ content, toc }: any) => {
                     Heading,
                     Note,
                     Video,
+                    YouTube,
                   },
                 })}
               </ProseContainer>

@@ -13,6 +13,7 @@ import {
   imageNode,
   noteTag,
   videoTag,
+  youtubeTag,
 } from '@/components/layouts/MarkdocLayout';
 
 import { DEFAULT_SYSTEM_PROMPT } from './prompt';
@@ -33,6 +34,7 @@ export const getMarkdocStaticProps = async (pageId: string) => {
       collapsegroup: collapseGroupTag,
       collapse: collapseTag,
       video: videoTag,
+      youtube: youtubeTag,
       img: imageNode,
       ...iconTags,
     },

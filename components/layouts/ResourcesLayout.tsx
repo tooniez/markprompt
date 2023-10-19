@@ -26,6 +26,7 @@ import { Heading } from '../ui/Heading';
 import { Note } from '../ui/Note';
 import { Pattern } from '../ui/Pattern';
 import { Video } from '../ui/Video';
+import { YouTube } from '../ui/YouTube';
 
 type ResourcesLayoutProps = {
   content: RenderableTreeNode;
@@ -58,6 +59,7 @@ const ResourcesProseContainer = ({
           Heading,
           Note,
           Video,
+          YouTube,
           IconCombine: () => (
             <Combine className="mt-8 block h-5 w-5 text-fuchsia-500" />
           ),
