@@ -38,6 +38,7 @@ const unique = (arr: string[]) => {
 
 const fetchPageAndUrls =
   (
+    crawlerRoot: string,
     requestHeaders: { [key: string]: string } | undefined,
     include: string[] | undefined,
     exclude: string[] | undefined,
@@ -50,7 +51,13 @@ const fetchPageAndUrls =
     // be imported).
     const pageRes = await fetch(process.env.CUSTOM_PAGE_FETCH_SERVICE_URL!, {
       method: 'POST',
-      body: JSON.stringify({ url, requestHeaders, include, exclude }),
+      body: JSON.stringify({
+        url,
+        crawlerRoot,
+        requestHeaders,
+        include,
+        exclude,
+      }),
       headers: {
         Authorization: `Bearer ${process.env.MARKPROMPT_API_TOKEN}`,
         'Content-Type': 'application/json',
@@ -84,17 +91,19 @@ const fetchPageAndUrls =
   };
 
 const parallelFetchPagesReturnUniqueExtractedUrls = async (
+  crawlerRoot: string,
   urls: string[],
   requestHeaders: { [key: string]: string } | undefined,
   include: string[] | undefined,
   exclude: string[] | undefined,
 ): Promise<NangoFileWithNextUrls[]> => {
   return Promise.all(
-    urls.map(fetchPageAndUrls(requestHeaders, include, exclude)),
+    urls.map(fetchPageAndUrls(crawlerRoot, requestHeaders, include, exclude)),
   );
 };
 
 const fetchAndStorePagesReturnUniqueExtractedUrls = async (
+  crawlerRoot: string,
   urls: string[],
   requestHeaders: { [key: string]: string } | undefined,
   include: string[] | undefined,
@@ -108,6 +117,7 @@ const fetchAndStorePagesReturnUniqueExtractedUrls = async (
 
   for (const urlChunk of urlChunks) {
     const filesWithUrls = await parallelFetchPagesReturnUniqueExtractedUrls(
+      crawlerRoot,
       urlChunk,
       requestHeaders,
       include,
@@ -126,6 +136,23 @@ export default async function fetchData(nango: NangoSync) {
   const { baseUrl, include, exclude, requestHeaders } =
     await nango.getMetadata<Metadata>();
 
+  const res = await fetch(
+    'https://markprompt.com/api/integrations/nango/website-pages/get-connection-infos',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        connectionId: nango.connectionId,
+      }),
+      headers: {
+        Authorization: `Bearer ${process.env.MARKPROMPT_API_TOKEN}`,
+      },
+    },
+  );
+
+  if (!res.ok) {
+    return;
+  }
+
   const filesToSave: NangoFile[] = [];
 
   const normalizedBaseUrl = removeTrailingSlashQueryParamsAndHash(baseUrl);
@@ -136,6 +163,7 @@ export default async function fetchData(nango: NangoSync) {
     try {
       const { files, nextUrls } =
         await fetchAndStorePagesReturnUniqueExtractedUrls(
+          baseUrl,
           linksToProcess,
           requestHeaders,
           include,
