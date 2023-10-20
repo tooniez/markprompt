@@ -37,6 +37,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
 ) {
+  console.error('[STRIPE] Got request');
   if (!req.method || !allowedMethods.includes(req.method)) {
     res.setHeader('Allow', allowedMethods);
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
@@ -49,15 +50,24 @@ export default async function handler(
 
   try {
     if (!sig || !webhookSecret) {
+      console.error(
+        '[STRIPE] Stop:',
+        'sig',
+        sig?.slice(0, 5),
+        'webhookSecret',
+        webhookSecret?.slice(0, 5),
+      );
       return;
     }
 
     event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
   } catch (e: any) {
+    console.error('[STRIPE] Error', e.message);
     console.error('Subscriptions webhook error:', e.message);
     return res.status(400).send(`Error: ${e.message}`);
   }
 
+  console.error('[STRIPE] Event', event.type);
   if (relevantEvents.has(event.type)) {
     try {
       // When adding a new event type here, make sure to add them to the
@@ -75,6 +85,7 @@ export default async function handler(
           }
 
           if (!checkoutSession.customer) {
+            console.error('[STRIPE] Invalid customer');
             throw new Error('Invalid customer.');
           }
           // Stripe knows the team id as it's been associated to
@@ -88,6 +99,7 @@ export default async function handler(
             })
             .eq('id', teamId);
           if (error) {
+            console.error('[STRIPE] Error sessions completed', error.message);
             console.error('Error session completed', error.message);
             throw new Error(
               `Unable to update customer in database: ${error.message}`,
@@ -107,6 +119,7 @@ export default async function handler(
             })
             .eq('stripe_customer_id', stripeCustomerId);
           if (error) {
+            console.error('[STRIPE] Error price updated', error.message);
             throw new Error(`Error updating price: ${error.message}`);
           }
           break;
@@ -122,6 +135,10 @@ export default async function handler(
               billing_cycle_start: null,
             })
             .eq('stripe_customer_id', stripeCustomerId);
+          console.error(
+            '[STRIPE] Subscription deleted. Error?',
+            error?.message,
+          );
           if (error) {
             throw new Error(`Error deleting subscription: ${error.message}`);
           }
