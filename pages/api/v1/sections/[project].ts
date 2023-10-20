@@ -108,9 +108,9 @@ export default async function handler(
   try {
     const sectionsResponse = await getMatchingSections(
       sanitizedQuery,
-      req.query.sectionsMatchThreshold ||
-        req.body.params.sectionsMatchThreshold,
-      req.query.sectionsMatchCount || req.body.params.sectionsMatchCount,
+      req.query?.sectionsMatchThreshold ||
+        req.body.params?.sectionsMatchThreshold,
+      req.query?.sectionsMatchCount || req.body.params?.sectionsMatchCount,
       projectId,
       byoOpenAIKey,
       'completions',
