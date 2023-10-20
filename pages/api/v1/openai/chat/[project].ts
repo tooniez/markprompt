@@ -14,6 +14,7 @@ import {
   ChatCompletionRequestMessage,
   ChatCompletionRequestMessageRoleEnum,
 } from 'openai';
+import { isPresent } from 'ts-is-present';
 
 import {
   getHeaders,
@@ -431,6 +432,47 @@ export default async function handler(req: NextRequest) {
       } else {
         return new Response(`${e}`, { status: 400, headers });
       }
+    }
+
+    try {
+      // Pick the three previous messages for potential additional context
+      const previousUserMessages = userMessages
+        .slice(-4, -1)
+        .map((m) => m.content?.trim().replace('\n', ' '))
+        .filter(isPresent)
+        .join(' ');
+
+      if (previousUserMessages.length > 0) {
+        const previousMessageMatches = await getMatchingSections(
+          previousUserMessages,
+          params.sectionsMatchThreshold,
+          10,
+          projectId,
+          byoOpenAIKey,
+          'completions',
+          false,
+          supabaseAdmin,
+        );
+
+        // Among the 10 fetched, extract the 3 that are not already present.
+        const previousUniqueMatchingSections =
+          previousMessageMatches.fileSections
+            .filter((ps) => {
+              return !fileSections.find(
+                (s) => s.file_sections_content === ps.file_sections_content,
+              );
+            })
+            .slice(0, 3);
+
+        // Put them right after the 3 first sections from the user query
+        fileSections = [
+          ...fileSections.slice(0, 3),
+          ...previousUniqueMatchingSections,
+          ...fileSections.slice(3),
+        ];
+      }
+    } catch (e) {
+      // Do nothing
     }
 
     const sectionsDelta = Date.now() - sectionsTs;
