@@ -94,12 +94,29 @@ const syncNangoRecords = inngest.createFunction(
       sourceId,
     );
 
-    const records = (await nango.getRecords<any>({
+    const recordIncludingErrors = (await nango.getRecords<any>({
       providerConfigKey: event.data.providerConfigKey,
       connectionId: event.data.connectionId,
       model: event.data.model,
       delta: event.data.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
+
+    const records = recordIncludingErrors.filter((r) => !r.error);
+
+    const errorRecordPaths = recordIncludingErrors
+      .filter((r) => r.error)
+      .map((r) => r.path);
+
+    if (errorRecordPaths.length > 0) {
+      await updateSyncQueue(supabase, syncQueueId, 'running', {
+        message: `Error processing ${pluralize(
+          errorRecordPaths.length,
+          'file',
+          'files',
+        )}: ${JSON.stringify(errorRecordPaths, null, 2)}`,
+        level: 'error',
+      });
+    }
 
     console.log('records', JSON.stringify(records, null, 2));
 

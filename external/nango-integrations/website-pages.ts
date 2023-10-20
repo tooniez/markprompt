@@ -133,25 +133,12 @@ const fetchAndStorePagesReturnUniqueExtractedUrls = async (
 };
 
 export default async function fetchData(nango: NangoSync) {
-  const { baseUrl, include, exclude, requestHeaders } =
-    await nango.getMetadata<Metadata>();
-
-  const res = await fetch(
-    'https://markprompt.com/api/integrations/nango/website-pages/get-connection-infos',
-    {
-      method: 'POST',
-      body: JSON.stringify({
-        connectionId: nango.connectionId,
-      }),
-      headers: {
-        Authorization: `Bearer ${process.env.MARKPROMPT_API_TOKEN}`,
-      },
-    },
-  );
-
-  if (!res.ok) {
+  if (!nango.connectionId) {
     return;
   }
+
+  const { baseUrl, include, exclude, requestHeaders } =
+    await nango.getMetadata<Metadata>();
 
   const filesToSave: NangoFile[] = [];
 
@@ -159,8 +146,13 @@ export default async function fetchData(nango: NangoSync) {
   const processedUrls: string[] = [];
   let linksToProcess = [normalizedBaseUrl];
 
+  const maxAllowedPages = 10000;
+  let numProcessedLinks = 0;
+
   while (linksToProcess.length > 0) {
     try {
+      numProcessedLinks += linksToProcess.length;
+
       const { files, nextUrls } =
         await fetchAndStorePagesReturnUniqueExtractedUrls(
           baseUrl,
@@ -173,7 +165,9 @@ export default async function fetchData(nango: NangoSync) {
       filesToSave.concat(files);
       processedUrls.concat(linksToProcess);
 
-      linksToProcess = nextUrls.filter((url) => !processedUrls.includes(url));
+      linksToProcess = nextUrls
+        .filter((url) => !processedUrls.includes(url))
+        .slice(0, Math.max(0, maxAllowedPages - numProcessedLinks));
     } catch (e) {
       break;
     }
