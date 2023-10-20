@@ -20,15 +20,15 @@ import { DbSource, NangoSourceDataType, Project } from '@/types/types';
 
 import { SalesforceSharedForm, prepareFields } from './SalesforceSharedForm';
 
-type SalesforceKnowledgeSettingsProps = {
+type SalesforceDatabaseSettingsProps = {
   projectId: Project['id'];
   source: DbSource | undefined;
   forceDisabled?: boolean;
   onDidCompletedOrSkip?: () => void;
 };
 
-export const SalesforceKnowledgeSettings: FC<
-  SalesforceKnowledgeSettingsProps
+export const SalesforceDatabaseSettings: FC<
+  SalesforceDatabaseSettingsProps
 > = ({ projectId, source, forceDisabled, onDidCompletedOrSkip }) => {
   const { mutate: mutateSources, isNameAvailable } = useSources();
 

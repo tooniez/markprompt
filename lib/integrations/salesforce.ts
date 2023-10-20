@@ -1,6 +1,7 @@
 import { NangoIntegrationId } from '@/types/types';
 
 export type SalesforceEnvironment = 'production' | 'sandbox';
+export type SalesforceDatabaseType = 'knowledge' | 'case';
 
 export type SalesforceNangoMetadata = {
   customFields: string[] | undefined;
@@ -13,18 +14,18 @@ export type SalesforceNangoMetadata = {
   metadataFields: string[] | undefined;
 };
 
-export const getKnowledgeIntegrationId = (
+export const getSalesforceDatabaseIntegrationId = (
+  databaseType: SalesforceDatabaseType,
   environment: SalesforceEnvironment,
 ): NangoIntegrationId => {
-  return environment === 'production'
-    ? 'salesforce-knowledge'
-    : 'salesforce-knowledge-sandbox';
-};
-
-export const getCaseIntegrationId = (
-  environment: SalesforceEnvironment,
-): NangoIntegrationId => {
-  return environment === 'production'
-    ? 'salesforce-case'
-    : 'salesforce-case-sandbox';
+  switch (databaseType) {
+    case 'knowledge':
+      return environment === 'production'
+        ? 'salesforce-knowledge'
+        : 'salesforce-knowledge-sandbox';
+    case 'case':
+      return environment === 'production'
+        ? 'salesforce-case'
+        : 'salesforce-case-sandbox';
+  }
 };

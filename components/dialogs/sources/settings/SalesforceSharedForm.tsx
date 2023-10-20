@@ -30,9 +30,7 @@ export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
     <>
       <div className="FormHeadingGroup">
         <p className="FormHeading">SOQL query</p>
-        <p className="FormSubheading">
-          Specify how to query your Knowledge base.
-        </p>
+        <p className="FormSubheading">Specify how to query the database.</p>
       </div>
       <div className="FormField">
         <p className="FormLabel">Custom fields (comma separated)</p>

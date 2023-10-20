@@ -19,8 +19,8 @@ const NotionPagesOnboardingDialog = dynamic(
   () => import('@/components/dialogs/sources/onboarding/NotionPages'),
 );
 
-const SalesforceKnowledgeOnboardingDialog = dynamic(
-  () => import('@/components/dialogs/sources/onboarding/SalesforceKnowledge'),
+const SalesforceDatabaseOnboardingDialog = dynamic(
+  () => import('@/components/dialogs/sources/onboarding/SalesforceDatabase'),
 );
 
 const sources: SourceSpec[] = [
@@ -139,10 +139,23 @@ const SourcesDialog = ({
           }
         }}
       />
-      <SalesforceKnowledgeOnboardingDialog
+      <SalesforceDatabaseOnboardingDialog
+        databaseType="knowledge"
         open={
           connectSourceDialogOpen?.dialogId === 'salesforce-knowledge' ||
           connectSourceDialogOpen?.dialogId === 'salesforce-knowledge-sandbox'
+        }
+        onOpenChange={(open) => {
+          if (!open) {
+            setConnectSourceDialogOpen(undefined);
+          }
+        }}
+      />
+      <SalesforceDatabaseOnboardingDialog
+        databaseType="case"
+        open={
+          connectSourceDialogOpen?.dialogId === 'salesforce-case' ||
+          connectSourceDialogOpen?.dialogId === 'salesforce-case-sandbox'
         }
         onOpenChange={(open) => {
           if (!open) {

@@ -1,6 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import * as RadioGroup from '@radix-ui/react-radio-group';
-import cn from 'classnames';
 import {
   ErrorMessage,
   Field,
@@ -19,25 +18,28 @@ import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import { getNangoClientInstance } from '@/lib/integrations/nango.client';
 import {
-  getKnowledgeIntegrationId,
   SalesforceEnvironment,
+  getSalesforceDatabaseIntegrationId,
 } from '@/lib/integrations/salesforce';
+import type { SalesforceDatabaseType } from '@/lib/integrations/salesforce';
 import { isUrl } from '@/lib/utils';
 import { DbSource, Project } from '@/types/types';
 
 import { SyncStep, addSourceAndNangoConnection } from './shared';
 import { Step, ConnectSourceStepState } from './Step';
-import { SalesforceKnowledgeSettings } from '../settings/SalesforceKnowledge';
+import { SalesforceDatabaseSettings } from '../settings/SalesforceDatabase';
 import SourceDialog from '../SourceDialog';
 
 const nango = getNangoClientInstance();
 
 const ConnectStep = ({
   projectId,
+  databaseType,
   state,
   onDidConnect,
 }: {
   projectId: Project['id'];
+  databaseType: SalesforceDatabaseType;
   state: ConnectSourceStepState;
   onDidConnect: (source: DbSource) => void;
 }) => {
@@ -46,7 +48,10 @@ const ConnectStep = ({
   const connect = useCallback(
     async (environment: SalesforceEnvironment, instanceUrl: string) => {
       try {
-        const integrationId = getKnowledgeIntegrationId(environment);
+        const integrationId = getSalesforceDatabaseIntegrationId(
+          databaseType,
+          environment,
+        );
         const name = generateUniqueName(integrationId);
         const newSource = await addSourceAndNangoConnection(
           nango,
@@ -72,7 +77,7 @@ const ConnectStep = ({
         toast.error('Error connecting to Salesforce');
       }
     },
-    [generateUniqueName, projectId, mutateSources, onDidConnect],
+    [databaseType, generateUniqueName, projectId, mutateSources, onDidConnect],
   );
 
   const isEditingState = !(state === 'not_started' || state === 'complete');
@@ -204,7 +209,7 @@ const ConfigureStep = ({
       description="Configure the source. You can always change the configuration later."
       state={state}
     >
-      <SalesforceKnowledgeSettings
+      <SalesforceDatabaseSettings
         projectId={projectId}
         source={source}
         forceDisabled={state === 'not_started'}
@@ -214,11 +219,13 @@ const ConfigureStep = ({
   );
 };
 
-const SalesforceKnowledgeOnboardingDialog = ({
+const SalesforceDatabaseOnboardingDialog = ({
+  databaseType,
   open,
   onOpenChange,
   children,
 }: {
+  databaseType: SalesforceDatabaseType;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   children?: ReactNode;
@@ -248,11 +255,16 @@ const SalesforceKnowledgeOnboardingDialog = ({
         onOpenChange?.(open);
       }}
       trigger={children && <Dialog.Trigger asChild>{children}</Dialog.Trigger>}
-      title="Connect Salesforce Knowledge"
-      description="Specify the Knowledge articles to index."
+      title={
+        databaseType === 'knowledge'
+          ? 'Connect Salesforce Knowledge'
+          : 'Connect Salesforce Case'
+      }
+      description="Specify how to query your Salesforce database"
     >
       <ConnectStep
         projectId={project.id}
+        databaseType={databaseType}
         state={source ? 'complete' : 'in_progress'}
         onDidConnect={(source) => {
           setSource(source);
@@ -286,4 +298,4 @@ const SalesforceKnowledgeOnboardingDialog = ({
   );
 };
 
-export default SalesforceKnowledgeOnboardingDialog;
+export default SalesforceDatabaseOnboardingDialog;

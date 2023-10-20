@@ -5,9 +5,9 @@ import useSources from '@/lib/hooks/use-sources';
 import { DbSource, Project, SourceConfigurationView } from '@/types/types';
 
 import { BaseConfigurationDialog } from './BaseConfiguration';
-import { SalesforceKnowledgeSettings } from '../settings/SalesforceKnowledge';
+import { SalesforceDatabaseSettings } from '../settings/SalesforceDatabase';
 
-type SalesforceKnowledgeConfigurationDialogProps = {
+type SalesforceDatabaseConfigurationDialogProps = {
   projectId: Project['id'];
   sourceId?: DbSource['id'];
   defaultView?: SourceConfigurationView;
@@ -15,8 +15,8 @@ type SalesforceKnowledgeConfigurationDialogProps = {
   onOpenChange?: (open: boolean) => void;
 };
 
-const SalesforceKnowledgeConfigurationDialog: FC<
-  SalesforceKnowledgeConfigurationDialogProps
+const SalesforceDatabaseConfigurationDialog: FC<
+  SalesforceDatabaseConfigurationDialogProps
 > = ({ projectId, sourceId, defaultView, open, onOpenChange }) => {
   const { sources } = useSources();
 
@@ -32,7 +32,7 @@ const SalesforceKnowledgeConfigurationDialog: FC<
       onOpenChange={onOpenChange}
       Icon={SalesforceIcon}
     >
-      <SalesforceKnowledgeSettings
+      <SalesforceDatabaseSettings
         projectId={projectId}
         source={source}
         forceDisabled={false}
@@ -41,4 +41,4 @@ const SalesforceKnowledgeConfigurationDialog: FC<
   );
 };
 
-export default SalesforceKnowledgeConfigurationDialog;
+export default SalesforceDatabaseConfigurationDialog;
