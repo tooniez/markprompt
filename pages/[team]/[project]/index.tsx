@@ -824,11 +824,7 @@ const Data = () => {
           )}
 
           {project && (
-            <SourcesDialog
-            // onSourceSelected={(integrationId) =>
-            //   setConnectSourceDialogOpen({ dialogId: integrationId })
-            // }
-            >
+            <SourcesDialog>
               <Button
                 variant={
                   loadingSources || (sources && sources.length) > 0

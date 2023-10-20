@@ -51,7 +51,6 @@ export default function useOAuth() {
 
   const showAuthPopup = useCallback(
     async (provider: OAuthProvider, state: string) => {
-      console.log('showAuthPopup');
       if (!user?.email) {
         return;
       }

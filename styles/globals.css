@@ -566,7 +566,7 @@ textarea {
 }
 
 .animate-dialog-slide-in[data-state='closed'] {
-  animation-duration: 400ms;
+  animation-duration: 300ms;
   animation-name: dialog-slide-in-reverse;
 }
 
@@ -588,7 +588,7 @@ textarea {
 }
 .animate-chat-window[data-state='closed'] {
   animation-name: slide-up-scale-reverse;
-  animation-duration: 400ms;
+  animation-duration: 300ms;
 }
 
 .animate-slide-down-delayed {

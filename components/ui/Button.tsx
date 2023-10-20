@@ -122,7 +122,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     variant === 'fuchsia',
                   'border-transparent bg-rose-800 text-white hover:bg-rose-900':
                     variant === 'danger',
-                  'border-neutral-800 bg-neutral-900 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
+                  'border-neutral-800 bg-neutral-900 text-neutral-100 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-600 hover:disabled:bg-opacity-100':
                     variant === 'plain',
                   'border-neutral-800 bg-neutral-900 text-rose-700 hover:bg-neutral-1000 disabled:border-transparent disabled:text-neutral-500 hover:disabled:bg-opacity-100':
                     variant === 'plainDanger',

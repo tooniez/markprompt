@@ -154,13 +154,9 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
 
 const ProjectPicker = () => {
   const { team } = useTeam();
-  const { projects, loading } = useProjects();
+  const { projects } = useProjects();
   const { project } = useProject();
   const [isOpen, setOpen] = useState(false);
-
-  // if (loading || !team || !project) {
-  //   return <></>;
-  // }
 
   return (
     <DropdownMenu.Root open={isOpen} onOpenChange={setOpen}>

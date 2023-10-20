@@ -16,8 +16,6 @@ export const useLocalStorage = <T>(
       return;
     }
 
-    console.log('useLocalStorage');
-
     if (typeof window === 'undefined') {
       return setStoredOrDefaultValue(undefined);
     }
