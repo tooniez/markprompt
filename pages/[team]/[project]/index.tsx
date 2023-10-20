@@ -10,7 +10,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import cn from 'classnames';
-import { formatISO, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 // Cf. https://github.com/iamkun/dayjs/issues/297#issuecomment-1202327426
 import relativeTime from 'dayjs/plugin/relativeTime';

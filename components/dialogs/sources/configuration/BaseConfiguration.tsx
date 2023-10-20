@@ -141,10 +141,9 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
                 <div className="FormField">
                   <p className="FormLabel">Instance URL</p>
                   <div className="truncate text-sm text-neutral-300">
-                    {
-                      (source?.data as NangoSourceDataType)?.connectionConfig
-                        ?.instance_url
-                    }
+                    {(
+                      source?.data as NangoSourceDataType
+                    )?.connectionConfig?.instance_url?.replace(/\/+$/, '')}
                   </div>
                 </div>
               )}

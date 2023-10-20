@@ -27,7 +27,7 @@ import { DbSource, Project } from '@/types/types';
 
 import { SyncStep, addSourceAndNangoConnection } from './shared';
 import { Step, ConnectSourceStepState } from './Step';
-import { NotionPagesSettings } from '../settings/NotionPages';
+import { SalesforceKnowledgeSettings } from '../settings/SalesforceKnowledge';
 import SourceDialog from '../SourceDialog';
 
 const nango = getNangoClientInstance();
@@ -169,7 +169,7 @@ const ConnectStep = ({
               </div>
               <ErrorMessage name="instanceUrl" component={ErrorLabel} />
             </div>
-            <div className="mt-2 flex flex-row gap-2">
+            <div className="flex flex-row gap-2">
               <Button
                 variant="cta"
                 buttonSize="sm"
@@ -204,7 +204,7 @@ const ConfigureStep = ({
       description="Configure the source. You can always change the configuration later."
       state={state}
     >
-      <NotionPagesSettings
+      <SalesforceKnowledgeSettings
         projectId={projectId}
         source={source}
         forceDisabled={state === 'not_started'}

@@ -27,17 +27,17 @@ export default async function fetchData(nango: NangoSync) {
 
   const filters = metadata?.filters;
 
-  let didSetWhere = false;
+  // let didSetWhere = false;
   if (filters?.length > 0) {
-    didSetWhere = true;
+    // didSetWhere = true;
     query += ` WHERE (${filters})`;
   }
 
-  if (nango.lastSyncDate) {
-    query += ` ${
-      didSetWhere ? 'AND' : 'WHERE'
-    } LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
-  }
+  // if (nango.lastSyncDate) {
+  //   query += ` ${
+  //     didSetWhere ? 'AND' : 'WHERE'
+  //   } LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
+  // }
 
   let endpoint = '/services/data/v53.0/query';
 
