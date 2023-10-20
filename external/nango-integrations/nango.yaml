@@ -51,6 +51,14 @@ integrations:
       auto_start: false
       returns:
         - NangoFile
+  website-pages:
+    website-pages:
+      type: sync
+      runs: every day
+      track_deletes: true
+      auto_start: false
+      returns:
+        - NangoFile
 models:
   NangoFile:
     id: string

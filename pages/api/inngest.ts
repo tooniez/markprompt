@@ -79,7 +79,7 @@ export const inngest = new Inngest({
   schemas: new EventSchemas().fromRecord<Events>(),
 });
 
-const sync = inngest.createFunction(
+const syncNangoRecords = inngest.createFunction(
   { id: 'sync-nango-records' },
   { event: 'nango/sync' },
   async ({ event, step }) => {
@@ -141,33 +141,12 @@ const sync = inngest.createFunction(
       .map((record) => record.id);
 
     // Files to delete
-    // if (filesIdsToDelete.length > 0) {
     await step.sendEvent('delete-files', {
       name: 'markprompt/files.delete',
       data: { ids: filesIdsToDelete, sourceId },
     });
-    // }
 
     await step.sendEvent('train-files', trainEvents);
-    // // Files to update
-    // if (trainEvents.length > 0) {
-    //   // If we have less than 1000 calls (Vercel limit), we can use step
-    //   // parallelism, so that we can track the state using a Promise.
-    //   if (trainEvents.length < 1000) {
-    //     const ms = Date.now();
-    //     console.log('Start');
-    //     const runPromises = trainEvents.map(async (event) => {
-    //       return step.run(`${event.name}-${event.data.file.id}`, async () =>
-    //         runTrainFile(event.data),
-    //       );
-    //     });
-
-    //     await Promise.all(runPromises);
-    //     console.log('Done in', Date.now() - ms);
-    //   } else {
-    //     await step.sendEvent('train-files', trainEvents);
-    //   }
-    // }
 
     await updateSyncQueue(supabase, syncQueueId, 'complete', {
       message: `Updated ${pluralize(
@@ -348,5 +327,5 @@ const deleteFiles = inngest.createFunction(
 
 export default serve({
   client: inngest,
-  functions: [sync, trainFile, deleteFiles],
+  functions: [syncNangoRecords, trainFile, deleteFiles],
 });

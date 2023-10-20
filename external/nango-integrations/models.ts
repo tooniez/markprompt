@@ -2,10 +2,11 @@
 export interface NangoFile {
   id: string;
   path: string;
-  title: string;
+  title: string | undefined;
   content: string;
   contentType: 'mdx' | 'mdoc' | 'md' | 'rst' | 'html' | 'txt';
-  meta: any;
+  meta?: any;
+  error?: string;
 }
 
 export const NangoModel = 'NangoFile';
@@ -18,12 +19,15 @@ type LogLevel =
   | 'http'
   | 'verbose'
   | 'silly';
+
 interface ParamEncoder {
   (value: any, defaultEncoder: (value: any) => any): any;
 }
+
 interface GenericFormData {
   append(name: string, value: any, options?: any): any;
 }
+
 interface SerializerVisitor {
   (
     this: GenericFormData,
@@ -33,24 +37,29 @@ interface SerializerVisitor {
     helpers: FormDataVisitorHelpers,
   ): boolean;
 }
+
 interface CustomParamsSerializer {
   (params: Record<string, any>, options?: ParamsSerializerOptions): string;
 }
+
 interface FormDataVisitorHelpers {
   defaultVisitor: SerializerVisitor;
   convertValue: (value: any) => any;
   isVisitable: (value: any) => boolean;
 }
+
 interface SerializerOptions {
   visitor?: SerializerVisitor;
   dots?: boolean;
   metaTokens?: boolean;
   indexes?: boolean | null;
 }
+
 interface ParamsSerializerOptions extends SerializerOptions {
   encode?: ParamEncoder;
   serialize?: CustomParamsSerializer;
 }
+
 interface AxiosResponse<T = any, D = any> {
   data: T;
   status: number;
@@ -59,6 +68,7 @@ interface AxiosResponse<T = any, D = any> {
   config: D;
   request?: any;
 }
+
 interface ProxyConfiguration {
   endpoint: string;
   providerConfigKey?: string;
@@ -81,44 +91,53 @@ interface ProxyConfiguration {
   retries?: number;
   baseUrlOverride?: string;
 }
+
 declare enum AuthModes {
   OAuth1 = 'OAUTH1',
   OAuth2 = 'OAUTH2',
   Basic = 'BASIC',
   ApiKey = 'API_KEY',
 }
+
 interface BasicApiCredentials {
   type?: AuthModes.Basic;
   username: string;
   password: string;
 }
+
 interface ApiKeyCredentials {
   type?: AuthModes.ApiKey;
   apiKey: string;
 }
+
 interface CredentialsCommon<T = Record<string, any>> {
   type: AuthModes;
   raw: T;
 }
+
 interface OAuth2Credentials extends CredentialsCommon {
   type: AuthModes.OAuth2;
   access_token: string;
   refresh_token?: string;
   expires_at?: Date | undefined;
 }
+
 interface OAuth1Credentials extends CredentialsCommon {
   type: AuthModes.OAuth1;
   oauth_token: string;
   oauth_token_secret: string;
 }
+
 type AuthCredentials =
   | OAuth2Credentials
   | OAuth1Credentials
   | BasicApiCredentials
   | ApiKeyCredentials;
+
 interface Metadata {
   [key: string]: string | Record<string, string>;
 }
+
 interface Connection {
   id?: number;
   created_at?: string;
@@ -132,6 +151,7 @@ interface Connection {
   credentials_tag?: string | null;
   credentials: AuthCredentials;
 }
+
 interface NangoProps {
   host?: string;
   secretKey: string;
@@ -146,9 +166,11 @@ interface NangoProps {
   dryRun?: boolean;
   track_deletes?: boolean;
 }
+
 interface UserLogParameters {
   level?: LogLevel;
 }
+
 export declare class NangoSync {
   private nango;
   activityLogId?: number;
