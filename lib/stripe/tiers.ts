@@ -288,6 +288,9 @@ const isProOrCustomTier = (teamTierInfo: TeamTierInfo): boolean => {
   if (customSubscribedTier) {
     return true;
   }
+  if ((teamTierInfo.plan_details as any)?.trial) {
+    return true;
+  }
   const defaultTier = getTier(teamTierInfo);
   if (defaultTier) {
     return defaultTier.id === 'pro';
