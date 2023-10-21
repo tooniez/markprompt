@@ -90,7 +90,7 @@ const fetchPageAndUrls =
     };
   };
 
-const parallelFetchPagesReturnUniqueExtractedUrls = async (
+const parallelFetchPages = async (
   crawlerRoot: string,
   urls: string[],
   requestHeaders: { [key: string]: string } | undefined,
@@ -102,7 +102,7 @@ const parallelFetchPagesReturnUniqueExtractedUrls = async (
   );
 };
 
-const fetchAndStorePagesReturnUniqueExtractedUrls = async (
+const fetchPages = async (
   crawlerRoot: string,
   urls: string[],
   requestHeaders: { [key: string]: string } | undefined,
@@ -116,7 +116,7 @@ const fetchAndStorePagesReturnUniqueExtractedUrls = async (
   const urlChunks = chunkArray(urls, parallelization);
 
   for (const urlChunk of urlChunks) {
-    const filesWithUrls = await parallelFetchPagesReturnUniqueExtractedUrls(
+    const filesWithUrls = await parallelFetchPages(
       crawlerRoot,
       urlChunk,
       requestHeaders,
@@ -153,14 +153,13 @@ export default async function fetchData(nango: NangoSync) {
     try {
       numProcessedLinks += linksToProcess.length;
 
-      const { files, nextUrls } =
-        await fetchAndStorePagesReturnUniqueExtractedUrls(
-          baseUrl,
-          linksToProcess,
-          requestHeaders,
-          include,
-          exclude,
-        );
+      const { files, nextUrls } = await fetchPages(
+        baseUrl,
+        linksToProcess,
+        requestHeaders,
+        include,
+        exclude,
+      );
 
       filesToSave.concat(files);
       processedUrls.concat(linksToProcess);

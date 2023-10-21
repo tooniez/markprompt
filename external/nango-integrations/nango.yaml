@@ -54,7 +54,7 @@ integrations:
   website-pages:
     website-pages:
       type: sync
-      runs: every day
+      runs: every week
       track_deletes: true
       auto_start: false
       returns:
