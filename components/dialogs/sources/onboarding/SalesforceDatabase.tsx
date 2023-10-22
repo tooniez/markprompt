@@ -198,12 +198,12 @@ const ConfigureStep = ({
   projectId,
   source,
   state,
-  onCompletedOrSkipped,
+  onDidCompleteOrSkip,
 }: {
   projectId: Project['id'];
   source: DbSource | undefined;
   state: ConnectSourceStepState;
-  onCompletedOrSkipped: () => void;
+  onDidCompleteOrSkip: () => void;
 }) => {
   return (
     <Step
@@ -215,7 +215,7 @@ const ConfigureStep = ({
         projectId={projectId}
         source={source}
         forceDisabled={state === 'not_started'}
-        onDidCompletedOrSkip={onCompletedOrSkipped}
+        onDidCompletedOrSkip={onDidCompleteOrSkip}
       />
     </Step>
   );
@@ -282,7 +282,7 @@ const SalesforceDatabaseOnboardingDialog = ({
             ? 'in_progress'
             : 'not_started'
         }
-        onCompletedOrSkipped={() => {
+        onDidCompleteOrSkip={() => {
           setDidCompleteConfiguration(true);
         }}
       />

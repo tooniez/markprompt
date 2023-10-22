@@ -112,14 +112,14 @@ const ConnectStep = ({
                   name="url"
                   inputSize="sm"
                   as={NoAutoInput}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || state === 'complete'}
                 />
               </div>
               <ErrorMessage name="url" component={ErrorLabel} />
             </div>
             <Button
               className="place-self-start"
-              disabled={!isValid}
+              disabled={!isValid || state === 'complete'}
               loading={isSubmitting}
               variant="cta"
               buttonSize="sm"
@@ -138,12 +138,12 @@ const ConfigureStep = ({
   projectId,
   source,
   state,
-  onCompletedOrSkipped,
+  onDidCompleteOrSkip,
 }: {
   projectId: Project['id'];
   source: DbSource | undefined;
   state: ConnectSourceStepState;
-  onCompletedOrSkipped: () => void;
+  onDidCompleteOrSkip: () => void;
 }) => {
   return (
     <Step
@@ -155,7 +155,7 @@ const ConfigureStep = ({
         projectId={projectId}
         source={source}
         forceDisabled={state === 'not_started'}
-        onDidCompletedOrSkip={onCompletedOrSkipped}
+        onDidCompletedOrSkip={onDidCompleteOrSkip}
       />
     </Step>
   );
@@ -215,15 +215,13 @@ const WebsitePagesOnboardingDialog = ({
             ? 'in_progress'
             : 'not_started'
         }
-        onCompletedOrSkipped={() => {
+        onDidCompleteOrSkip={() => {
           setDidCompleteConfiguration(true);
         }}
       />
       <SyncStep
         source={source}
-        state={
-          source && didCompleteConfiguration ? 'in_progress' : 'not_started'
-        }
+        state={source ? 'in_progress' : 'not_started'}
         onComplete={() => {
           reset();
           onOpenChange?.(false);

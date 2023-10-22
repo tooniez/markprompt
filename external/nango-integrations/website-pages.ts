@@ -12,13 +12,6 @@ type NangoFileWithNextUrls = {
   nextUrls: string[];
 };
 
-const removeTrailingSlashQueryParamsAndHash = (url: string) => {
-  const urlObj = new URL(url);
-  urlObj.search = '';
-  urlObj.hash = '';
-  return urlObj.toString().replace(/\/+$/, '');
-};
-
 const chunkArray = (arr: string[], chunkSize: number) => {
   const chunks = [];
   for (let i = 0; i < arr.length; i += chunkSize) {
@@ -184,16 +177,24 @@ export default async function fetchData(nango: NangoSync) {
 
   const filesToSave: NangoFile[] = [];
 
-  const normalizedBaseUrl = removeTrailingSlashQueryParamsAndHash(baseUrl);
   const processedUrls: string[] = [];
-  let linksToProcess = [normalizedBaseUrl];
+  let linksToProcess = [baseUrl];
 
   const maxAllowedPages = 10000;
   let numProcessedLinks = 0;
 
+  const response = await nango.get({
+    endpoint: 'https://markprompt.com',
+  });
+  console.log('Response', JSON.stringify(response, null, 2));
+
   while (linksToProcess.length > 0) {
     try {
       numProcessedLinks += linksToProcess.length;
+
+      await nango.log(
+        `[website-pages] fetch: ${JSON.stringify(linksToProcess)}`,
+      );
 
       const { files, nextUrls } = await fetchPages(
         pageFetcherServiceUrl,
@@ -217,9 +218,12 @@ export default async function fetchData(nango: NangoSync) {
         .filter((url) => !processedUrls.includes(url))
         .slice(0, Math.max(0, maxAllowedPages - numProcessedLinks));
     } catch (e) {
+      await nango.log(`[website-pages] ERROR: ${e}`);
       break;
     }
   }
+
+  await nango.log(`Files to save: ${filesToSave.length}`);
 
   await nango.batchSave(filesToSave, 'NangoFile');
 }
