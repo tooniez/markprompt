@@ -20,6 +20,10 @@ import { createEmbedding, createModeration } from './openai.edge';
 import { InsightsType } from './stripe/tiers';
 import { recordProjectTokenCount } from './tinybird';
 import { stringToLLMInfo } from './utils';
+import {
+  getChatCompletionsResponseText,
+  getChatCompletionsUrl,
+} from './utils.nodeps';
 
 export type PromptNoResponseReason = 'no_sections' | 'idk' | 'api_error';
 
@@ -334,4 +338,75 @@ export const storePromptOrPlaceholder = async (
     );
     return { conversationId, promptId };
   }
+};
+
+// Given a list of user messages, generate a standalone message that
+// captures the information of the previous messages, if they are
+// related to the last message. This allows for more precise context
+// retrieval, especially when the last message is a follow-up question
+// with little to no context included (e.g. "Show me an example of this").
+export const generateStandaloneMessage = async (
+  lastMessage: string,
+  previousMessages: string[],
+  byoOpenAIKey: string | undefined,
+  includeLastMessageVerbatim: boolean,
+) => {
+  if (previousMessages.length === 0 && includeLastMessageVerbatim) {
+    return lastMessage;
+  }
+
+  const previousMessagesFormatted = previousMessages
+    .slice(-5)
+    .map((m, i) => {
+      return `Question ${i + 1}:\n${m.replace(/\\n/gi, ' ').trim()}`;
+    })
+    .join('\n---\n');
+
+  const res = await fetch(getChatCompletionsUrl(), {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${
+        (byoOpenAIKey || process.env.OPENAI_API_KEY) ?? ''
+      }`,
+    },
+    method: 'POST',
+    body: JSON.stringify({
+      model: 'gpt-3.5-turbo',
+      temperature: 0.1,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+      max_tokens: 200,
+      stream: false,
+      n: 1,
+      messages: [
+        {
+          role: 'user',
+          content: `The following is a list of questions, with the last question being the most important one. Please create a new standalone question from the last one, combining the previous ones if relevant. If the previous questions have nothing to do with the latest ones, don't include them. The standalone question must capture the meaning of all the questions, if they are related to the last one.
+
+---
+${previousMessagesFormatted}
+---
+Last question (most important one):
+${lastMessage}
+---
+
+Standalone question:`,
+        },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    return lastMessage;
+  }
+
+  const json = await res.json();
+  const standaloneMessage = getChatCompletionsResponseText(json);
+
+  if (includeLastMessageVerbatim) {
+    return `${lastMessage}\n${standaloneMessage}`;
+  }
+
+  return standaloneMessage;
 };

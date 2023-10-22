@@ -46,7 +46,7 @@ export default withProjectAccess(
             ...record.meta,
           },
           contentType: record.contentType,
-        };
+        } as FileData;
       });
 
       return res.status(200).json({ fileData });
