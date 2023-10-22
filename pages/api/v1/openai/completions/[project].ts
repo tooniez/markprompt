@@ -39,12 +39,12 @@ import { recordProjectTokenCount } from '@/lib/tinybird';
 import {
   buildSectionReferenceFromMatchResult,
   getCompletionsResponseText,
-  getCompletionsUrl,
   stringToLLMInfo,
 } from '@/lib/utils';
 import { isRequestFromMarkprompt, safeParseInt } from '@/lib/utils.edge';
 import {
   approximatedTokenCount,
+  getCompletionsUrl,
   isFalsyQueryParam,
   isTruthyQueryParam,
 } from '@/lib/utils.nodeps';

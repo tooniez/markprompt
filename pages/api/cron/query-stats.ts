@@ -10,8 +10,9 @@ import {
   getProjectConfigData,
 } from '@/lib/supabase';
 import { recordProjectTokenCount } from '@/lib/tinybird';
-import { getCompletionsResponseText, getCompletionsUrl } from '@/lib/utils';
+import { getCompletionsResponseText } from '@/lib/utils';
 import { safeParseInt } from '@/lib/utils.edge';
+import { getCompletionsUrl } from '@/lib/utils.nodeps';
 import {
   OpenAIModelIdWithType,
   Project,

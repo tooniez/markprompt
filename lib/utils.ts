@@ -516,21 +516,6 @@ export const stringToLLMInfo = (
   }
 };
 
-export const getCompletionsUrl = (model: OpenAIModelIdWithType) => {
-  switch (model.type) {
-    case 'chat_completions': {
-      return getChatCompletionsUrl();
-    }
-    default: {
-      return 'https://api.openai.com/v1/completions';
-    }
-  }
-};
-
-export const getChatCompletionsUrl = () => {
-  return 'https://api.openai.com/v1/chat/completions';
-};
-
 export const getCompletionsResponseText = (
   response: any,
   model: OpenAIModelIdWithType,

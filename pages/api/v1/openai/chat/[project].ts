@@ -19,6 +19,7 @@ import { isPresent } from 'ts-is-present';
 import {
   getHeaders,
   getMatchingSections,
+  generateStandaloneMessage,
   storePromptOrPlaceholder,
   updatePrompt,
 } from '@/lib/completions';
@@ -51,11 +52,14 @@ import {
 import {
   buildSectionReferenceFromMatchResult,
   getChatCompletionsResponseText,
-  getChatCompletionsUrl,
   truncate,
 } from '@/lib/utils';
 import { isRequestFromMarkprompt } from '@/lib/utils.edge';
-import { isFalsyQueryParam, isTruthyQueryParam } from '@/lib/utils.nodeps';
+import {
+  getChatCompletionsUrl,
+  isFalsyQueryParam,
+  isTruthyQueryParam,
+} from '@/lib/utils.nodeps';
 import {
   ApiError,
   DEFAULT_CHAT_COMPLETION_MODEL,
@@ -356,7 +360,7 @@ export default async function handler(req: NextRequest) {
     );
 
     // Moderate the content to comply with OpenAI T&C
-    for (const message of conversationMessages) {
+    for (const message of userMessages) {
       const moderationResponse = await createModeration(
         message.content as string,
         byoOpenAIKey,
@@ -397,8 +401,23 @@ export default async function handler(req: NextRequest) {
     const sanitizedUserMessage = userMessage.content.trim().replace('\n', ' ');
 
     try {
+      let messageForContextSectionRetrieval = sanitizedUserMessage;
+
+      if (userMessages.length > 1) {
+        // Include previous messages for context retrieval.
+        messageForContextSectionRetrieval = await generateStandaloneMessage(
+          sanitizedUserMessage,
+          userMessages
+            .slice(0, -1)
+            .map((m) => m.content)
+            .filter(isPresent),
+          byoOpenAIKey,
+          true,
+        );
+      }
+
       const matches = await getMatchingSections(
-        sanitizedUserMessage,
+        messageForContextSectionRetrieval,
         params.sectionsMatchThreshold,
         params.sectionsMatchCount,
         projectId,
@@ -432,47 +451,6 @@ export default async function handler(req: NextRequest) {
       } else {
         return new Response(`${e}`, { status: 400, headers });
       }
-    }
-
-    try {
-      // Pick the three previous messages for potential additional context
-      const previousUserMessages = userMessages
-        .slice(-4, -1)
-        .map((m) => m.content?.trim().replace('\n', ' '))
-        .filter(isPresent)
-        .join(' ');
-
-      if (previousUserMessages.length > 0) {
-        const previousMessageMatches = await getMatchingSections(
-          previousUserMessages,
-          params.sectionsMatchThreshold,
-          10,
-          projectId,
-          byoOpenAIKey,
-          'completions',
-          false,
-          supabaseAdmin,
-        );
-
-        // Among the 10 fetched, extract the 3 that are not already present.
-        const previousUniqueMatchingSections =
-          previousMessageMatches.fileSections
-            .filter((ps) => {
-              return !fileSections.find(
-                (s) => s.file_sections_content === ps.file_sections_content,
-              );
-            })
-            .slice(0, 3);
-
-        // Put them right after the 3 first sections from the user query
-        fileSections = [
-          ...fileSections.slice(0, 3),
-          ...previousUniqueMatchingSections,
-          ...fileSections.slice(3),
-        ];
-      }
-    } catch (e) {
-      // Do nothing
     }
 
     const sectionsDelta = Date.now() - sectionsTs;

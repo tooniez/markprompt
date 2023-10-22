@@ -1,6 +1,6 @@
 // Utilities that run without dependencies on any runtime, like
 // edge, node or browser. Anything in here can run anywhere.
-import { DbSource, Source } from '@/types/types';
+import { DbSource, OpenAIModelIdWithType, Source } from '@/types/types';
 
 import { APPROX_CHARS_PER_TOKEN } from './constants';
 
@@ -104,4 +104,37 @@ export const arrayEquals = <T>(
   return arr1.every((item) =>
     includesWithComparison(arr2, item, comparisonFunction),
   );
+};
+
+export const getCompletionsUrl = (model: OpenAIModelIdWithType) => {
+  switch (model.type) {
+    case 'chat_completions': {
+      return getChatCompletionsUrl();
+    }
+    default: {
+      return 'https://api.openai.com/v1/completions';
+    }
+  }
+};
+
+export const getChatCompletionsUrl = () => {
+  return 'https://api.openai.com/v1/chat/completions';
+};
+
+export const getCompletionsResponseText = (
+  response: any,
+  model: OpenAIModelIdWithType,
+): string => {
+  switch (model.type) {
+    case 'chat_completions': {
+      return getChatCompletionsResponseText(response);
+    }
+    default: {
+      return response.choices[0].text;
+    }
+  }
+};
+
+export const getChatCompletionsResponseText = (response: any): string => {
+  return response.choices[0].message.content;
 };
