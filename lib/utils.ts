@@ -50,7 +50,7 @@ import {
 
 import { MIN_SLUG_LENGTH } from './constants';
 import { getIntegrationId, getIntegrationName } from './integrations/nango';
-import { removeSchema } from './utils.edge';
+import { removeSchema } from './utils.nodeps';
 
 const lookup = [
   { value: 1, symbol: '' },
@@ -580,7 +580,7 @@ export const shouldIncludeFileWithPath = (
     // Both are equivalent as URLs, so a given glob pattern should be
     // checked against both.
     if (path.endsWith('/')) {
-      pathVariants.push(path.replace(/\/+$/, ''));
+      pathVariants.push(removeTrailingSlash(path));
     } else {
       pathVariants.push(path + '/');
     }
@@ -766,11 +766,10 @@ export const toNormalizedUrl = (url: string, useInsecureSchema?: boolean) => {
 
   try {
     const parsedUrl = new URL(url);
-    return `${parsedUrl.protocol}//${parsedUrl.hostname}${parsedUrl.pathname}`.replace(
-      /\/+$/,
-      '',
+    return removeTrailingSlash(
+      `${parsedUrl.protocol}//${parsedUrl.hostname}${parsedUrl.pathname}`,
     );
-  } catch {
+  } catch (e) {
     // Do nothing, just return the URL as is.
     return url;
   }
@@ -780,7 +779,11 @@ export const removeTrailingSlashQueryParamsAndHash = (url: string) => {
   const urlObj = new URL(url);
   urlObj.search = '';
   urlObj.hash = '';
-  return urlObj.toString().replace(/\/+$/, '');
+  return removeTrailingSlash(urlObj.toString());
+};
+
+export const removeTrailingSlash = (url: string) => {
+  return url.replace(/\/+$/, '');
 };
 
 export const getUrlHostname = (url: string) => {

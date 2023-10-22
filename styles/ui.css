@@ -67,11 +67,11 @@
 }
 
 .TabsTrigger[data-state='active'] {
-  @apply border-neutral-900 bg-neutral-900 text-neutral-100;
+  @apply border-neutral-500 bg-neutral-900 text-neutral-100;
 }
 
 .TabsTrigger:focus {
-  @apply border-neutral-100;
+  @apply border-neutral-500;
 }
 
 .TabsContent {

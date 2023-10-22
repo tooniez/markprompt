@@ -28,7 +28,7 @@ import {
   ThemeDimensions,
 } from '@/lib/themes';
 import { pruneEmpty, propsObjectToJSXPropsString } from '@/lib/utils.browser';
-import { getAppOrigin } from '@/lib/utils.edge';
+import { getAppOrigin } from '@/lib/utils.nodeps';
 import { Project, SerializableMarkpromptOptions, DbTeam } from '@/types/types';
 
 import { getRootTextSize } from './prose';

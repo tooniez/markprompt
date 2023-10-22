@@ -1,13 +1,13 @@
+import { Globe } from 'lucide-react';
 import { FC, useMemo } from 'react';
 
-import { SalesforceIcon } from '@/components/icons/Salesforce';
 import useSources from '@/lib/hooks/use-sources';
 import { DbSource, Project, SourceConfigurationView } from '@/types/types';
 
 import { BaseConfigurationDialog } from './BaseConfiguration';
-import { SalesforceDatabaseSettings } from '../settings-panes/SalesforceDatabase';
+import { WebsitePagesSettings } from '../settings-panes/WebsitePages';
 
-type SalesforceDatabaseConfigurationDialogProps = {
+type WebsitePagesConfigurationDialogProps = {
   projectId: Project['id'];
   sourceId?: DbSource['id'];
   defaultView?: SourceConfigurationView;
@@ -15,8 +15,8 @@ type SalesforceDatabaseConfigurationDialogProps = {
   onOpenChange?: (open: boolean) => void;
 };
 
-const SalesforceDatabaseConfigurationDialog: FC<
-  SalesforceDatabaseConfigurationDialogProps
+const WebsitePagesConfigurationDialog: FC<
+  WebsitePagesConfigurationDialogProps
 > = ({ projectId, sourceId, defaultView, open, onOpenChange }) => {
   const { sources } = useSources();
 
@@ -30,9 +30,9 @@ const SalesforceDatabaseConfigurationDialog: FC<
       defaultView={defaultView}
       open={open}
       onOpenChange={onOpenChange}
-      Icon={SalesforceIcon}
+      Icon={(props) => <Globe {...props} strokeWidth={1.5} />}
     >
-      <SalesforceDatabaseSettings
+      <WebsitePagesSettings
         projectId={projectId}
         source={source}
         forceDisabled={false}
@@ -41,4 +41,4 @@ const SalesforceDatabaseConfigurationDialog: FC<
   );
 };
 
-export default SalesforceDatabaseConfigurationDialog;
+export default WebsitePagesConfigurationDialog;

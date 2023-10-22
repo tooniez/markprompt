@@ -230,8 +230,6 @@ export const TeamProjectPicker = () => {
     team && router.asPath === `/settings/${team.slug}/projects/new`;
   const hasProjectPath = !!router.query?.project;
 
-  console.log('TEAM', team);
-
   return (
     <>
       {/* Keep overflow hidden for truncating, and translate to prevent cutting the slash */}

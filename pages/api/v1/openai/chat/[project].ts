@@ -57,10 +57,10 @@ import {
   getChatCompletionsResponseText,
   truncate,
 } from '@/lib/utils';
-import { isRequestFromMarkprompt } from '@/lib/utils.edge';
 import {
   getChatCompletionsUrl,
   isFalsyQueryParam,
+  isRequestFromMarkprompt,
   isTruthyQueryParam,
 } from '@/lib/utils.nodeps';
 import {

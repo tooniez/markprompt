@@ -2,12 +2,15 @@ import type { NangoSync, NangoFile } from './models';
 
 interface Metadata {
   baseUrl: string;
-  include?: string[];
-  exclude?: string[];
+  includeGlobs?: string[];
+  excludeGlobs?: string[];
   requestHeaders?: { [key: string]: string };
 }
 
-type NangoFileWithNextUrls = { file: NangoFile; nextUrls: string[] };
+type NangoFileWithNextUrls = {
+  file: Omit<NangoFile, 'last_modified'>;
+  nextUrls: string[];
+};
 
 const removeTrailingSlashQueryParamsAndHash = (url: string) => {
   const urlObj = new URL(url);
@@ -28,8 +31,9 @@ const unique = (arr: string[]) => {
   const result: string[] = [];
 
   for (let i = 0; i < arr.length; i++) {
-    if (result.indexOf(arr[i]) === -1) {
-      result.push(arr[i]);
+    const v = arr[i] as string;
+    if (result.indexOf(v) === -1) {
+      result.push(v);
     }
   }
 
@@ -38,10 +42,12 @@ const unique = (arr: string[]) => {
 
 const fetchPageAndUrls =
   (
+    pageFetcherServiceUrl: string,
+    pageFetcherServiceAPIToken: string,
     crawlerRoot: string,
     requestHeaders: { [key: string]: string } | undefined,
-    include: string[] | undefined,
-    exclude: string[] | undefined,
+    includeGlobs: string[] | undefined,
+    excludeGlobs: string[] | undefined,
   ) =>
   async (url: string): Promise<NangoFileWithNextUrls> => {
     // Note that this endpoint returns FULL urls. That is, it has resolved
@@ -49,17 +55,19 @@ const fetchPageAndUrls =
     // base URL prepended. It has also applied the glob filters if provided
     // (since doing it here is practically impossible, as `minimatch` cannot
     // be imported).
-    const pageRes = await fetch(process.env.CUSTOM_PAGE_FETCH_SERVICE_URL!, {
+    console.log('Fetching', url);
+    const pageRes = await fetch(pageFetcherServiceUrl, {
       method: 'POST',
       body: JSON.stringify({
         url,
         crawlerRoot,
+        includePageUrls: true,
         requestHeaders,
-        include,
-        exclude,
+        includeGlobs,
+        excludeGlobs,
       }),
       headers: {
-        Authorization: `Bearer ${process.env.MARKPROMPT_API_TOKEN}`,
+        Authorization: `Bearer ${pageFetcherServiceAPIToken}`,
         'Content-Type': 'application/json',
         accept: 'application/json',
       },
@@ -84,6 +92,7 @@ const fetchPageAndUrls =
         title: undefined,
         content: content,
         contentType: 'html',
+        meta: undefined,
         error,
       },
       nextUrls,
@@ -91,23 +100,36 @@ const fetchPageAndUrls =
   };
 
 const parallelFetchPages = async (
+  pageFetcherServiceUrl: string,
+  pageFetcherServiceAPIToken: string,
   crawlerRoot: string,
   urls: string[],
   requestHeaders: { [key: string]: string } | undefined,
-  include: string[] | undefined,
-  exclude: string[] | undefined,
+  includeGlobs: string[] | undefined,
+  excludeGlobs: string[] | undefined,
 ): Promise<NangoFileWithNextUrls[]> => {
   return Promise.all(
-    urls.map(fetchPageAndUrls(crawlerRoot, requestHeaders, include, exclude)),
+    urls.map(
+      fetchPageAndUrls(
+        pageFetcherServiceUrl,
+        pageFetcherServiceAPIToken,
+        crawlerRoot,
+        requestHeaders,
+        includeGlobs,
+        excludeGlobs,
+      ),
+    ),
   );
 };
 
 const fetchPages = async (
+  pageFetcherServiceUrl: string,
+  pageFetcherServiceAPIToken: string,
   crawlerRoot: string,
   urls: string[],
   requestHeaders: { [key: string]: string } | undefined,
-  include: string[] | undefined,
-  exclude: string[] | undefined,
+  includeGlobs: string[] | undefined,
+  excludeGlobs: string[] | undefined,
 ): Promise<{ files: NangoFile[]; nextUrls: string[] }> => {
   const files: NangoFile[] = [];
   const nextUrls: string[] = [];
@@ -117,16 +139,24 @@ const fetchPages = async (
 
   for (const urlChunk of urlChunks) {
     const filesWithUrls = await parallelFetchPages(
+      pageFetcherServiceUrl,
+      pageFetcherServiceAPIToken,
       crawlerRoot,
       urlChunk,
       requestHeaders,
-      include,
-      exclude,
+      includeGlobs,
+      excludeGlobs,
     );
-    const newFiles = filesWithUrls.flatMap((f) => f.file);
-    const nextUrlsForChunk = filesWithUrls.flatMap((f) => f.nextUrls);
-    nextUrls.concat(nextUrlsForChunk);
-    files.concat(newFiles);
+    filesWithUrls
+      .flatMap((f) => f.file)
+      .forEach((f) => {
+        files.push(f);
+      });
+    filesWithUrls
+      .flatMap((f) => f.nextUrls)
+      .forEach((url) => {
+        nextUrls.push(url);
+      });
   }
 
   return { files, nextUrls: unique(nextUrls) };
@@ -137,8 +167,20 @@ export default async function fetchData(nango: NangoSync) {
     return;
   }
 
-  const { baseUrl, include, exclude, requestHeaders } =
+  const { baseUrl, includeGlobs, excludeGlobs, requestHeaders } =
     await nango.getMetadata<Metadata>();
+
+  const envVariables = await nango.getEnvironmentVariables();
+  const pageFetcherServiceUrl = envVariables?.find(
+    (v) => v.name === 'CUSTOM_PAGE_FETCH_SERVICE_URL',
+  )?.value;
+  const pageFetcherServiceAPIToken = envVariables?.find(
+    (v) => v.name === 'MARKPROMPT_API_TOKEN',
+  )?.value;
+
+  if (!pageFetcherServiceUrl || !pageFetcherServiceAPIToken) {
+    throw new Error('Missing page fetcher service URL or API token.');
+  }
 
   const filesToSave: NangoFile[] = [];
 
@@ -154,15 +196,22 @@ export default async function fetchData(nango: NangoSync) {
       numProcessedLinks += linksToProcess.length;
 
       const { files, nextUrls } = await fetchPages(
+        pageFetcherServiceUrl,
+        pageFetcherServiceAPIToken,
         baseUrl,
         linksToProcess,
         requestHeaders,
-        include,
-        exclude,
+        includeGlobs,
+        excludeGlobs,
       );
 
-      filesToSave.concat(files);
-      processedUrls.concat(linksToProcess);
+      files.forEach((file) => {
+        filesToSave.push(file);
+      });
+
+      linksToProcess.forEach((url) => {
+        processedUrls.push(url);
+      });
 
       linksToProcess = nextUrls
         .filter((url) => !processedUrls.includes(url))

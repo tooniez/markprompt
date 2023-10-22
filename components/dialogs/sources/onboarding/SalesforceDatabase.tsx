@@ -27,7 +27,7 @@ import { DbSource, Project } from '@/types/types';
 
 import { SyncStep, addSourceAndNangoConnection } from './shared';
 import { Step, ConnectSourceStepState } from './Step';
-import { SalesforceDatabaseSettings } from '../settings/SalesforceDatabase';
+import { SalesforceDatabaseSettings } from '../settings-panes/SalesforceDatabase';
 import SourceDialog from '../SourceDialog';
 
 const nango = getNangoClientInstance();
@@ -59,6 +59,8 @@ const ConnectStep = ({
           integrationId,
           name,
           { instance_url: instanceUrl },
+          undefined,
+          true,
         );
         if (!newSource) {
           toast.error('Error connecting to Salesforce');

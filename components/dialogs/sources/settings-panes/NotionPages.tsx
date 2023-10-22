@@ -41,12 +41,12 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
       validate={async (values) => {
         const errors: FormikErrors<FormikValues> = {};
         if (!values.name || values.name.trim().length === 0) {
-          errors.identifier = 'Please enter a name';
+          errors.name = 'Please enter a name';
         } else if (
           values.name !== (source?.data as NangoSourceDataType).name &&
           !isNameAvailable(values.name)
         ) {
-          errors.identifier = 'This name is already taken';
+          errors.name = 'This name is already taken';
         }
 
         return errors;
@@ -81,7 +81,7 @@ export const NotionPagesSettings: FC<NotionPagesSettingsProps> = ({
                 disabled={isSubmitting || forceDisabled}
               />
             </div>
-            <ErrorMessage name="identifier" component={ErrorLabel} />
+            <ErrorMessage name="name" component={ErrorLabel} />
           </div>
           <Button
             className="place-self-start"

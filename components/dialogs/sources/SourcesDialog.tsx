@@ -1,4 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import { Globe } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { FC, JSXElementConstructor, ReactNode, useState } from 'react';
 
@@ -15,12 +16,16 @@ type SourceSpec = {
   Icon: JSXElementConstructor<any>;
 };
 
+const SalesforceDatabaseOnboardingDialog = dynamic(
+  () => import('@/components/dialogs/sources/onboarding/SalesforceDatabase'),
+);
+
 const NotionPagesOnboardingDialog = dynamic(
   () => import('@/components/dialogs/sources/onboarding/NotionPages'),
 );
 
-const SalesforceDatabaseOnboardingDialog = dynamic(
-  () => import('@/components/dialogs/sources/onboarding/SalesforceDatabase'),
+const WebsitePagesOnboardingDialog = dynamic(
+  () => import('@/components/dialogs/sources/onboarding/WebsitePages'),
 );
 
 const sources: SourceSpec[] = [
@@ -35,6 +40,10 @@ const sources: SourceSpec[] = [
   {
     integrationId: 'salesforce-case',
     Icon: SalesforceFullIcon,
+  },
+  {
+    integrationId: 'website-pages',
+    Icon: (props) => <Globe {...props} strokeWidth={1.5} />,
   },
 ];
 
@@ -131,14 +140,6 @@ const SourcesDialog = ({
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
-      <NotionPagesOnboardingDialog
-        open={connectSourceDialogOpen?.dialogId === 'notion-pages'}
-        onOpenChange={(open) => {
-          if (!open) {
-            setConnectSourceDialogOpen(undefined);
-          }
-        }}
-      />
       <SalesforceDatabaseOnboardingDialog
         databaseType="knowledge"
         open={
@@ -157,6 +158,22 @@ const SourcesDialog = ({
           connectSourceDialogOpen?.dialogId === 'salesforce-case' ||
           connectSourceDialogOpen?.dialogId === 'salesforce-case-sandbox'
         }
+        onOpenChange={(open) => {
+          if (!open) {
+            setConnectSourceDialogOpen(undefined);
+          }
+        }}
+      />
+      <NotionPagesOnboardingDialog
+        open={connectSourceDialogOpen?.dialogId === 'notion-pages'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConnectSourceDialogOpen(undefined);
+          }
+        }}
+      />
+      <WebsitePagesOnboardingDialog
+        open={connectSourceDialogOpen?.dialogId === 'website-pages'}
         onOpenChange={(open) => {
           if (!open) {
             setConnectSourceDialogOpen(undefined);

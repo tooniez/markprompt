@@ -5,6 +5,17 @@ import { RobotsTxtInfo } from '@/types/types';
 
 import { removeTrailingSlashQueryParamsAndHash } from '../utils';
 
+export type RequestHeader = { key: string; value: string };
+
+export type WebsitePagesNangoMetadata = {
+  baseUrl: string;
+  includeGlobs?: string[];
+  excludeGlobs?: string[];
+  requestHeaders?: RequestHeader[];
+  targetSelectors?: string;
+  excludeSelectors?: string;
+};
+
 export const fetchRobotsTxtInfo = async (
   baseUrl: string,
 ): Promise<RobotsTxtInfo> => {
@@ -114,6 +125,10 @@ export const fetchPageContent = async (
   immediate: boolean,
   useCustomPageFetcher: boolean,
 ): Promise<string | undefined> => {
+  console.log(
+    'Fetching',
+    JSON.stringify({ url, immediate, useCustomPageFetcher }, null, 2),
+  );
   const res = await fetch('/api/integrations/website/fetch-page', {
     method: 'POST',
     body: JSON.stringify({ url, immediate, useCustomPageFetcher }),

@@ -10,7 +10,7 @@ import { DbSource, Project } from '@/types/types';
 
 import { SyncStep, addSourceAndNangoConnection } from './shared';
 import { Step, ConnectSourceStepState } from './Step';
-import { NotionPagesSettings } from '../settings/NotionPages';
+import { NotionPagesSettings } from '../settings-panes/NotionPages';
 import SourceDialog from '../SourceDialog';
 
 const nango = getNangoClientInstance();
@@ -37,6 +37,9 @@ const ConnectStep = ({
         projectId,
         integrationId,
         name,
+        undefined,
+        undefined,
+        true,
       );
 
       if (!newSource) {

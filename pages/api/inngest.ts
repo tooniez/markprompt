@@ -170,7 +170,7 @@ const syncNangoRecords = inngest.createFunction(
         trainEvents.length,
         'file',
         'files',
-      )}. Deleted ${pluralize(filesIdsToDelete.length, 'file', 'files')}`,
+      )}. Deleted ${pluralize(filesIdsToDelete.length, 'file', 'files')}.`,
       level: 'info',
     });
 

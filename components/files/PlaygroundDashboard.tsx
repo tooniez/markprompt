@@ -46,7 +46,7 @@ import {
   getIconForSource,
   getLabelForSource,
 } from '@/lib/utils';
-import { getApiUrl } from '@/lib/utils.edge';
+import { getApiUrl } from '@/lib/utils.nodeps';
 import { DbSource, SourceType } from '@/types/types';
 
 import { UpgradeNote } from './UpgradeNote';

@@ -104,7 +104,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             ? className
             : cn(
                 className,
-                'button-ring relative flex select-none flex-row items-center whitespace-nowrap border disabled:cursor-not-allowed',
+                'button-ring relative flex select-none flex-row items-center whitespace-nowrap border active:outline-none disabled:cursor-not-allowed',
                 {
                   'rounded-md': !squareCorners && shape !== 'rounded',
                   'rounded-l-md border-r-0':

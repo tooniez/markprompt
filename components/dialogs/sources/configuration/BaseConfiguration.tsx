@@ -2,6 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import * as Tabs from '@radix-ui/react-tabs';
 import { parseISO } from 'date-fns';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { FC, JSXElementConstructor, ReactNode, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
@@ -17,7 +18,8 @@ import {
   getIntegrationId,
   getIntegrationName,
 } from '@/lib/integrations/nango';
-import { fetcher } from '@/lib/utils';
+import { fetcher, removeTrailingSlash } from '@/lib/utils';
+import { removeSchema } from '@/lib/utils.nodeps';
 import {
   DbSource,
   DbSyncQueue,
@@ -83,8 +85,15 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   }, [source]);
 
   const integrationId = source && getIntegrationId(source);
+
+  // Proper to integrations like Salesforce
   const integrationEnvironment =
     integrationId && getIntegrationEnvironment(integrationId);
+  const instanceUrl = (source?.data as NangoSourceDataType)?.connectionConfig
+    ?.instance_url;
+
+  // Proper to integrations like unauthed websites
+  const baseUrl = (source?.data as NangoSourceDataType)?.nangoMetadata?.baseUrl;
 
   return (
     <SourceDialog
@@ -136,15 +145,30 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
                   </div>
                 </div>
               )}
-              {(source?.data as NangoSourceDataType)?.connectionConfig
-                ?.instance_url && (
+              {instanceUrl && (
                 <div className="FormField">
                   <p className="FormLabel">Instance URL</p>
-                  <div className="truncate text-sm text-neutral-300">
-                    {(
-                      source?.data as NangoSourceDataType
-                    )?.connectionConfig?.instance_url?.replace(/\/+$/, '')}
-                  </div>
+                  <Link
+                    href={instanceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="subtle-underline self-start truncate text-sm text-neutral-300"
+                  >
+                    {removeTrailingSlash(instanceUrl)}
+                  </Link>
+                </div>
+              )}
+              {baseUrl && (
+                <div className="FormField">
+                  <p className="FormLabel">Base URL</p>
+                  <Link
+                    href={baseUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="subtle-underline self-start truncate text-sm text-neutral-300"
+                  >
+                    {removeSchema(removeTrailingSlash(baseUrl))}
+                  </Link>
                 </div>
               )}
             </div>

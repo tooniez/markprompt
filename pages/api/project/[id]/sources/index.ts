@@ -26,7 +26,8 @@ export default withProjectAccess(
       const { data: sources, error } = await supabase
         .from('sources')
         .select('*')
-        .eq('project_id', projectId);
+        .eq('project_id', projectId)
+        .order('inserted_at', { ascending: true });
 
       if (error) {
         return res.status(400).json({ error: error.message });

@@ -12,7 +12,7 @@ import useProject from '@/lib/hooks/use-project';
 import usePromptConfigs from '@/lib/hooks/use-prompt-configs';
 import useTeam from '@/lib/hooks/use-team';
 import { copyToClipboard, generateShareKey } from '@/lib/utils';
-import { getAppOrigin, removeSchema } from '@/lib/utils.edge';
+import { getAppOrigin, removeSchema } from '@/lib/utils.nodeps';
 
 const getShareLink = (shareKey: string) => {
   return `${getAppOrigin()}/s/${shareKey}`;

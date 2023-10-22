@@ -21,6 +21,7 @@ import {
   RefreshCw,
   XOctagon,
   Plus,
+  AlertTriangle,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { FC, useEffect, useMemo, useState } from 'react';
@@ -121,12 +122,16 @@ const FilesAddSourceDialog = dynamic(
   { loading: () => Loading },
 );
 
+const SalesforceDatabaseConfigurationDialog = dynamic(
+  () => import('@/components/dialogs/sources/configuration/SalesforceDatabase'),
+);
+
 const NotionPagesConfigurationDialog = dynamic(
   () => import('@/components/dialogs/sources/configuration/NotionPages'),
 );
 
-const SalesforceDatabaseConfigurationDialog = dynamic(
-  () => import('@/components/dialogs/sources/configuration/SalesforceDatabase'),
+const WebsitePagesConfigurationDialog = dynamic(
+  () => import('@/components/dialogs/sources/configuration/WebsitePages'),
 );
 
 const EditorDialog = dynamic(() => import('@/components/files/EditorDialog'), {
@@ -203,9 +208,9 @@ const SyncStatusIndicator: FC<SyncStatusIndicatorProps> = ({ syncQueue }) => {
     }
     default:
       return (
-        <Tag color="orange" size="xs">
-          Not synced
-        </Tag>
+        <Tooltip as="span" message="The source has not yet been synced">
+          <AlertTriangle className="h-4 w-4 text-orange-600" />
+        </Tooltip>
       );
   }
 };
@@ -223,12 +228,7 @@ const Sources: FC<SourcesProps> = ({
   onConfigureSelected,
   onRemoveSelected,
 }) => {
-  const {
-    sources,
-    latestSyncQueues,
-    syncSources,
-    loading: loadingSources,
-  } = useSources();
+  const { sources, latestSyncQueues, syncSources } = useSources();
 
   return (
     <div className="flex flex-col gap-1">
@@ -302,7 +302,7 @@ const SourceItem: FC<SourceItemProps> = ({
     >
       <button
         className={cn(
-          'flex flex-grow cursor-pointer flex-row items-center gap-2 text-sm outline-none ',
+          'flex flex-grow cursor-pointer flex-row items-center gap-2 overflow-hidden text-sm outline-none',
           { 'bg-neutral-1000': isDropdownOpen },
         )}
         onClick={() => {
@@ -317,9 +317,9 @@ const SourceItem: FC<SourceItemProps> = ({
         sync status when it is running (on Inngest), so that users are not
         confused e.g. with a 'complete' indicator when we don't know what is
         going on on the Nango end. */}
-        {syncQueue?.status === 'running' && (
-          <SyncStatusIndicator syncQueue={syncQueue} />
-        )}
+        {/* {syncQueue?.status === 'running' && ( */}
+        <SyncStatusIndicator syncQueue={syncQueue} />
+        {/* )} */}
       </button>
       <DropdownMenu.Root open={isDropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenu.Trigger asChild>
@@ -1203,6 +1203,25 @@ const Data = () => {
               }
             }}
           /> */}
+          <SalesforceDatabaseConfigurationDialog
+            projectId={project?.id}
+            open={
+              configureSourceDialogOpen.open &&
+              (configureSourceDialogOpen?.dialogId === 'salesforce-knowledge' ||
+                configureSourceDialogOpen?.dialogId ===
+                  'salesforce-knowledge-sandbox' ||
+                configureSourceDialogOpen?.dialogId === 'salesforce-case' ||
+                configureSourceDialogOpen?.dialogId ===
+                  'salesforce-case-sandbox')
+            }
+            onOpenChange={(open) => {
+              if (!open) {
+                setConfigureSourceDialogOpen((s) => ({ ...s, open: false }));
+              }
+            }}
+            sourceId={configureSourceDialogOpen?.source?.id}
+            defaultView={configureSourceDialogOpen?.view}
+          />
           <NotionPagesConfigurationDialog
             projectId={project?.id}
             open={
@@ -1222,20 +1241,20 @@ const Data = () => {
             sourceId={configureSourceDialogOpen?.source?.id}
             defaultView={configureSourceDialogOpen?.view}
           />
-          <SalesforceDatabaseConfigurationDialog
+          <WebsitePagesConfigurationDialog
             projectId={project?.id}
             open={
               configureSourceDialogOpen.open &&
-              (configureSourceDialogOpen?.dialogId === 'salesforce-knowledge' ||
-                configureSourceDialogOpen?.dialogId ===
-                  'salesforce-knowledge-sandbox' ||
-                configureSourceDialogOpen?.dialogId === 'salesforce-case' ||
-                configureSourceDialogOpen?.dialogId ===
-                  'salesforce-case-sandbox')
+              configureSourceDialogOpen?.dialogId === 'website-pages'
             }
             onOpenChange={(open) => {
               if (!open) {
-                setConfigureSourceDialogOpen((s) => ({ ...s, open: false }));
+                // Do not set to undefined, as this will cause flicker when
+                // data in nulled and the fields in the dialog get reset.
+                setConfigureSourceDialogOpen((s) => ({
+                  ...s,
+                  open: false,
+                }));
               }
             }}
             sourceId={configureSourceDialogOpen?.source?.id}

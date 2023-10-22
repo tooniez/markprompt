@@ -44,14 +44,16 @@ export const integrationRequiresAuth = (integrationId: NangoIntegrationId) => {
 
 export const getIntegrationName = (integrationId: NangoIntegrationId) => {
   switch (integrationId) {
-    case 'notion-pages':
-      return 'Notion';
     case 'salesforce-case':
     case 'salesforce-case-sandbox':
       return 'Salesforce Case';
     case 'salesforce-knowledge':
     case 'salesforce-knowledge-sandbox':
       return 'Salesforce Knowledge';
+    case 'notion-pages':
+      return 'Notion';
+    case 'website-pages':
+      return 'Website';
   }
 };
 

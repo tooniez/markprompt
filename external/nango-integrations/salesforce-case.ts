@@ -88,6 +88,7 @@ function mapRecords(
           return { ...acc, [key]: record[key] };
         }, {}),
       },
+      error: undefined,
     };
   });
 }

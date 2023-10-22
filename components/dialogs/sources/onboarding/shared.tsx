@@ -4,7 +4,7 @@ import { FC, useCallback, useState } from 'react';
 import Button from '@/components/ui/Button';
 import { addSource } from '@/lib/api';
 import useSources from '@/lib/hooks/use-sources';
-import { deleteConnection } from '@/lib/integrations/nango.client';
+import { deleteConnection, setMetadata } from '@/lib/integrations/nango.client';
 import { generateConnectionId } from '@/lib/utils';
 import { DbSource, NangoIntegrationId, Project } from '@/types/types';
 
@@ -15,7 +15,9 @@ export const addSourceAndNangoConnection = async (
   projectId: Project['id'],
   integrationId: NangoIntegrationId,
   name: string,
-  params?: Record<string, string>,
+  nangoConnectionConfigParams: Record<string, string> | undefined,
+  nangoMetadata: Record<string, string> | undefined,
+  authed: boolean,
 ): Promise<DbSource | undefined> => {
   // Create the Nango connection. Note that nango.yaml specifies
   // `auto_start: false` to give us a chance to set the metadata
@@ -23,17 +25,32 @@ export const addSourceAndNangoConnection = async (
   const connectionId = generateConnectionId();
 
   try {
-    await nango.auth(integrationId, connectionId, params);
+    if (authed) {
+      await nango.auth(
+        integrationId,
+        connectionId,
+        nangoConnectionConfigParams,
+      );
+    } else {
+      await nango.create(integrationId, connectionId, {
+        params: nangoConnectionConfigParams || {},
+      });
+    }
 
     const newSource = await addSource(projectId, 'nango', {
       integrationId,
       connectionId,
       name,
-      connectionConfig: params,
+      connectionConfig: nangoConnectionConfigParams,
+      nangoMetadata,
     });
 
     if (!newSource.id) {
       throw new Error('Unable to create source');
+    }
+
+    if (nangoMetadata) {
+      await setMetadata(projectId, integrationId, connectionId, nangoMetadata);
     }
 
     return newSource;
@@ -47,7 +64,6 @@ export const addSourceAndNangoConnection = async (
     // Throw error from nango.auth to catch on the client side.
     throw e;
   }
-  return undefined;
 };
 
 type SyncStepProps = {

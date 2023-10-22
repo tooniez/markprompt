@@ -86,8 +86,8 @@ export default function useSources() {
   );
 
   const generateUniqueName = useCallback(
-    (integrationId: NangoIntegrationId) => {
-      const baseName = getIntegrationName(integrationId);
+    (integrationId: NangoIntegrationId, candidateBaseName?: string) => {
+      const baseName = candidateBaseName || getIntegrationName(integrationId);
       if (isNameAvailable(baseName)) {
         return baseName;
       }

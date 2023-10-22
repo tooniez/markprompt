@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ChangeEvent, FC } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
-import { safeParseJSON } from '@/lib/utils.edge';
+import { safeParseJSON } from '@/lib/utils.nodeps';
 
 import { Row } from './PlaygroundDashboard';
 import Input from '../ui/Input';

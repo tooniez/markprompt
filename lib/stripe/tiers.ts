@@ -7,8 +7,7 @@ import {
   UsagePeriod,
 } from '@/types/types';
 
-import { deepMerge } from '../utils.edge';
-import { roundToLowerOrderDecimal } from '../utils.nodeps';
+import { deepMerge, roundToLowerOrderDecimal } from '../utils.nodeps';
 
 type Price = {
   amount: number;

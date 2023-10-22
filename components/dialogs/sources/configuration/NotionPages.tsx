@@ -5,7 +5,7 @@ import useSources from '@/lib/hooks/use-sources';
 import { DbSource, Project, SourceConfigurationView } from '@/types/types';
 
 import { BaseConfigurationDialog } from './BaseConfiguration';
-import { NotionPagesSettings } from '../settings/NotionPages';
+import { NotionPagesSettings } from '../settings-panes/NotionPages';
 
 type NotionPagesConfigurationDialogProps = {
   projectId: Project['id'];

@@ -93,12 +93,12 @@ export const SalesforceDatabaseSettings: FC<
         validate={async (values) => {
           const errors: FormikErrors<FormikValues> = {};
           if (!values.name || values.name.trim().length === 0) {
-            errors.identifier = 'Please enter a name';
+            errors.name = 'Please enter a name';
           } else if (
             values.name !== sourceData?.name &&
             !isNameAvailable(values.name)
           ) {
-            errors.identifier = 'This name is already taken';
+            errors.name = 'This name is already taken';
           }
 
           return errors;
@@ -125,7 +125,7 @@ export const SalesforceDatabaseSettings: FC<
                   disabled={isSubmitting || forceDisabled}
                 />
               </div>
-              <ErrorMessage name="identifier" component={ErrorLabel} />
+              <ErrorMessage name="name" component={ErrorLabel} />
             </div>
             <Button
               className="place-self-start"
@@ -168,18 +168,16 @@ export const SalesforceDatabaseSettings: FC<
         {({ isSubmitting, isValid }) => (
           <Form className="FormRoot">
             <SalesforceSharedForm isSubmitting={isSubmitting} />
-            <div className="flex flex-row gap-2">
-              <Button
-                className="flex-none"
-                disabled={!isValid || forceDisabled}
-                loading={isSubmitting}
-                variant="plain"
-                buttonSize="sm"
-                type="submit"
-              >
-                Save
-              </Button>
-            </div>
+            <Button
+              className="mt-4 flex-none self-start"
+              disabled={!isValid || forceDisabled}
+              loading={isSubmitting}
+              variant="plain"
+              buttonSize="sm"
+              type="submit"
+            >
+              Save
+            </Button>
           </Form>
         )}
       </Formik>

@@ -49,7 +49,7 @@ import {
   isValidDomain,
   truncateMiddle,
 } from '@/lib/utils';
-import { getDomain } from '@/lib/utils.edge';
+import { getDomain } from '@/lib/utils.nodeps';
 import { Domain, Project, Token } from '@/types/types';
 
 const ProjectSettingsPage = () => {

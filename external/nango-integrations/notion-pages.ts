@@ -467,6 +467,7 @@ const mapPage = async (nango: NangoSync, page: any): Promise<NangoFile> => {
       last_edited_time: page.last_edited_time,
       properties,
     },
+    error: undefined,
   };
 };
 

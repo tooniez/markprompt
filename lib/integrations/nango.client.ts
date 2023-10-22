@@ -14,7 +14,7 @@ export const setMetadata = async (
   projectId: Project['id'],
   integrationId: NangoIntegrationId,
   connectionId: string,
-  metadata: any,
+  metadata: Record<string, any> | undefined,
 ) => {
   const res = await fetch(
     `/api/project/${projectId}/integrations/nango/set-metadata`,

@@ -185,7 +185,8 @@ export type NangoIntegrationId =
   | 'salesforce-knowledge-sandbox'
   | 'salesforce-case'
   | 'salesforce-case-sandbox'
-  | 'notion-pages';
+  | 'notion-pages'
+  | 'website-pages';
 
 // Must match nango.yaml definition. Currently, sync id and integration id
 // are identical.
@@ -210,6 +211,7 @@ export type NangoSourceDataType = {
   name: string;
   connectionConfig?: {
     instance_url?: string;
+    baseUrl?: string;
   };
   nangoMetadata?: any;
 };
