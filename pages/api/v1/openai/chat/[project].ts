@@ -399,10 +399,9 @@ export default async function handler(req: NextRequest) {
     let promptEmbedding: number[] | undefined = undefined;
 
     const sanitizedUserMessage = userMessage.content.trim().replace('\n', ' ');
+    let messageForContextSectionRetrieval = sanitizedUserMessage;
 
     try {
-      let messageForContextSectionRetrieval = sanitizedUserMessage;
-
       if (userMessages.length > 1) {
         // Include previous messages for context retrieval.
         messageForContextSectionRetrieval = await generateStandaloneMessage(
@@ -413,6 +412,10 @@ export default async function handler(req: NextRequest) {
             .filter(isPresent),
           byoOpenAIKey,
           true,
+        );
+        console.debug(
+          '[CHAT] messageForContextSectionRetrieval:',
+          messageForContextSectionRetrieval,
         );
       }
 
@@ -572,6 +575,7 @@ export default async function handler(req: NextRequest) {
 
     const debugInfo = {
       initMessages,
+      messageForContextSectionRetrieval,
       ts: { sections: sectionsDelta },
     };
 
