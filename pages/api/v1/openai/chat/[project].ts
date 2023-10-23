@@ -413,6 +413,9 @@ export default async function handler(req: NextRequest) {
         supabaseAdmin,
       );
 
+      fileSections = matches.fileSections;
+      promptEmbedding = matches.promptEmbedding;
+
       if (userMessages.length > 1) {
         // Include previous messages for context retrieval.
         messageForContextSectionRetrieval = await generateStandaloneMessage(
@@ -424,9 +427,6 @@ export default async function handler(req: NextRequest) {
           byoOpenAIKey,
           true,
         );
-
-        fileSections = matches.fileSections;
-        promptEmbedding = matches.promptEmbedding;
 
         const matchesWithHistory = await getMatchingSections(
           messageForContextSectionRetrieval,
