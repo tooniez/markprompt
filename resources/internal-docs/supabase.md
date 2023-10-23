@@ -7,5 +7,16 @@ Sometimes, tables cannot be altered due to computed views. This is a bug in Supa
 It usually complains about `decrypted_query_stats`. The solution is to:
 
 - Drop the `v_insights_query_stats` view
+
+```
+drop view v_insights_query_stats;
+```
+
 - Perform the table altering
+
 - Recreate the `v_insights_query_stats` view.
+
+```
+create view v_insights_query_stats
+# Use latest definition of the view
+```
