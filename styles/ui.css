@@ -46,6 +46,8 @@
   @apply cursor-pointer select-none text-sm text-neutral-300;
 }
 
+/* Tabs */
+
 .TabsRoot {
   @apply flex flex-col;
 }
@@ -54,8 +56,20 @@
   @apply flex shrink-0 border-b border-neutral-900;
 }
 
+.TabsListSegmented {
+  @apply flex shrink-0 overflow-hidden rounded-md border border-neutral-800 bg-neutral-1000;
+}
+
 .TabsTrigger {
-  @apply flex flex-1 select-none flex-row items-center justify-center overflow-hidden truncate border-b-2 border-transparent border-white px-4 pt-2 pb-2 text-sm font-medium outline-none transition;
+  @apply flex flex-1 select-none flex-row items-center justify-center overflow-hidden truncate outline-none transition;
+}
+
+.TabsList .TabsTrigger {
+  @apply border-b-2 border-transparent border-white px-4 pt-2 pb-2 text-sm font-medium;
+}
+
+.TabsListSegmented .TabsTrigger {
+  @apply px-4 py-1.5 text-sm font-medium;
 }
 
 .TabsTrigger:hover {

@@ -3,7 +3,7 @@ import * as Switch from '@radix-ui/react-switch';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
 import { ExternalLinkIcon, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { ChangeEvent, FC, useMemo } from 'react';
+import { ChangeEvent, FC, useEffect, useMemo } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';

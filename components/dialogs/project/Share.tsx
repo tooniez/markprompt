@@ -57,10 +57,6 @@ const Share = ({ children }: { children: ReactNode }) => {
     }
   }, [shareKey, generateAndStoreShareKey, shareDialogOpen]);
 
-  if (!team || !project) {
-    return <></>;
-  }
-
   return (
     <Dialog.Root open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
       <Dialog.Trigger asChild>{children}</Dialog.Trigger>
