@@ -425,6 +425,7 @@ export interface Database {
         Row: {
           conversation_id: string | null
           created_at: string
+          data: Json | null
           downvoted: boolean | null
           embedding: string | null
           feedback: Json | null
@@ -446,6 +447,7 @@ export interface Database {
         Insert: {
           conversation_id?: string | null
           created_at?: string
+          data?: Json | null
           downvoted?: boolean | null
           embedding?: string | null
           feedback?: Json | null
@@ -467,6 +469,7 @@ export interface Database {
         Update: {
           conversation_id?: string | null
           created_at?: string
+          data?: Json | null
           downvoted?: boolean | null
           embedding?: string | null
           feedback?: Json | null
@@ -524,6 +527,67 @@ export interface Database {
           }
         ]
       }
+      query_stats_usage: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          query_stat_id: string | null
+          team_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          query_stat_id?: string | null
+          team_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          query_stat_id?: string | null
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "query_stats_usage_query_stat_id_fkey"
+            columns: ["query_stat_id"]
+            referencedRelation: "query_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_usage_query_stat_id_fkey"
+            columns: ["query_stat_id"]
+            referencedRelation: "decrypted_query_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_usage_query_stat_id_fkey"
+            columns: ["query_stat_id"]
+            referencedRelation: "v_insights_query_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_usage_team_id_fkey"
+            columns: ["team_id"]
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "query_stats_usage_team_id_fkey"
+            columns: ["team_id"]
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "query_stats_usage_team_id_fkey"
+            columns: ["team_id"]
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["team_id"]
+          }
+        ]
+      }
       sources: {
         Row: {
           data: Json | null
@@ -570,6 +634,40 @@ export interface Database {
             columns: ["project_id"]
             referencedRelation: "v_team_project_usage_info"
             referencedColumns: ["project_id"]
+          }
+        ]
+      }
+      sync_queues: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          logs: Json[]
+          source_id: string
+          status: Database["public"]["Enums"]["sync_status"]
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          logs?: Json[]
+          source_id: string
+          status: Database["public"]["Enums"]["sync_status"]
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          logs?: Json[]
+          source_id?: string
+          status?: Database["public"]["Enums"]["sync_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_queues_source_id_fkey"
+            columns: ["source_id"]
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
           }
         ]
       }
@@ -839,6 +937,7 @@ export interface Database {
         Row: {
           conversation_id: string | null
           created_at: string | null
+          data: Json | null
           decrypted_prompt: string | null
           decrypted_response: string | null
           downvoted: boolean | null
@@ -862,6 +961,7 @@ export interface Database {
         Insert: {
           conversation_id?: string | null
           created_at?: string | null
+          data?: Json | null
           decrypted_prompt?: never
           decrypted_response?: never
           downvoted?: boolean | null
@@ -885,6 +985,7 @@ export interface Database {
         Update: {
           conversation_id?: string | null
           created_at?: string | null
+          data?: Json | null
           decrypted_prompt?: never
           decrypted_response?: never
           downvoted?: boolean | null
@@ -1250,6 +1351,13 @@ export interface Database {
       }
     }
     Functions: {
+      append_log_to_sync_queue: {
+        Args: {
+          id: string
+          entry: Json
+        }
+        Returns: undefined
+      }
       create_fts_index: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1306,6 +1414,18 @@ export interface Database {
         Returns: {
           date: string
           occurrences: number
+        }[]
+      }
+      get_latest_sync_queues: {
+        Args: {
+          project_id: string
+        }
+        Returns: {
+          id: string
+          source_id: string
+          status: Database["public"]["Enums"]["sync_status"]
+          created_at: string
+          ended_at: string
         }[]
       }
       get_most_cited_references_stats: {
@@ -1477,13 +1597,14 @@ export interface Database {
         | "errored"
         | "skipped"
       source_type:
-        | "salesforce"
-        | "api-upload"
-        | "file-upload"
         | "github"
         | "motif"
-        | "nango"
         | "website"
+        | "nango"
+        | "salesforce"
+        | "file-upload"
+        | "api-upload"
+      sync_status: "running" | "errored" | "canceled" | "complete"
     }
     CompositeTypes: {
       [_ in never]: never

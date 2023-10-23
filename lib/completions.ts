@@ -12,9 +12,11 @@ import {
   CompletionsMessage,
   DbConversation,
   DbQueryStat,
+  DbTeam,
   FileSectionMatchResult,
   OpenAIErrorResponse,
   Project,
+  UsageInfo,
 } from '@/types/types';
 
 import { createEmbedding, createModeration } from './openai.edge';
@@ -28,7 +30,7 @@ import {
 
 export type PromptNoResponseReason = 'no_sections' | 'idk' | 'api_error';
 
-const storePrompt = async (
+const _insertQueryStat = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
   conversationId: DbConversation['id'],
@@ -67,11 +69,12 @@ const storePrompt = async (
   return data?.id;
 };
 
-export const updatePrompt = async (
+export const updateQueryStat = async (
   supabase: SupabaseClient<Database>,
   promptId: DbQueryStat['id'],
   response: string | undefined,
   noResponseReason: PromptNoResponseReason | undefined,
+  usageInfo: UsageInfo,
 ) => {
   return supabase
     .from('query_stats')
@@ -80,6 +83,7 @@ export const updatePrompt = async (
       ...(typeof noResponseReason !== 'undefined'
         ? { no_response: !!noResponseReason }
         : {}),
+      data: usageInfo,
     })
     .eq('id', promptId);
 };
@@ -277,7 +281,7 @@ const getOrCreateConversationId = async (
   return createConversation(supabase, projectId, conversationMetadata);
 };
 
-export const storePromptOrPlaceholder = async (
+export const insertQueryStat = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
   existingConversationId: DbConversation['id'] | undefined,
@@ -291,7 +295,7 @@ export const storePromptOrPlaceholder = async (
   // If true, only the event will be stored for global counts.
   excludeData: boolean,
   // If true, the stat will be marked as `unprocessed` and will
-  // be processed to redact sensited info.
+  // be processed to redact sensitive info.
   redact: boolean,
 ): Promise<{
   conversationId: DbConversation['id'] | undefined;
@@ -309,7 +313,7 @@ export const storePromptOrPlaceholder = async (
   }
 
   if (excludeData) {
-    const promptId = await storePrompt(
+    const promptId = await _insertQueryStat(
       supabase,
       projectId,
       conversationId,
@@ -326,7 +330,7 @@ export const storePromptOrPlaceholder = async (
     // Store response in >= basic insights.
     // Store embeddings in >= advanced insights.
     // Store references in >= basic insights.
-    const promptId = await storePrompt(
+    const promptId = await _insertQueryStat(
       supabase,
       projectId,
       conversationId,
@@ -339,6 +343,26 @@ export const storePromptOrPlaceholder = async (
     );
     return { conversationId, promptId };
   }
+};
+
+export const insertQueryStatUsage = async (
+  supabase: SupabaseClient<Database>,
+  teamId: DbTeam['id'],
+  queryStatId: DbQueryStat['id'] | undefined,
+  usageInfo: UsageInfo,
+) => {
+  await supabase
+    .from('query_stats_usage')
+    .insert([
+      {
+        team_id: teamId,
+        query_stat_id: queryStatId,
+        data: usageInfo,
+      },
+    ])
+    .select('id')
+    .limit(1)
+    .maybeSingle();
 };
 
 // Given a list of user messages, generate a standalone message that

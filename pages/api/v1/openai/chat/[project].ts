@@ -20,8 +20,9 @@ import {
   getHeaders,
   getMatchingSections,
   generateStandaloneMessage,
-  storePromptOrPlaceholder,
-  updatePrompt,
+  insertQueryStat,
+  updateQueryStat,
+  insertQueryStatUsage,
 } from '@/lib/completions';
 import { modelConfigFields } from '@/lib/config';
 import {
@@ -48,6 +49,7 @@ import {
   getMaxTokenCount,
   getChatRequestTokenCount,
   getTokenizer,
+  getMessageTokenCount,
 } from '@/lib/tokenizer.edge';
 import {
   buildSectionReferenceFromMatchResult,
@@ -355,10 +357,15 @@ export default async function handler(req: NextRequest) {
       return new Response('Too many requests', { status: 429 });
     }
 
-    const { byoOpenAIKey } = await getProjectConfigData(
+    const { teamId, byoOpenAIKey } = await getProjectConfigData(
       supabaseAdmin,
       projectId,
     );
+
+    if (!teamId) {
+      console.error('[CHAT] Unable to retrieve team id');
+      return new Response('Unable to retrieve team id', { status: 400 });
+    }
 
     // Moderate the content to comply with OpenAI T&C
     for (const message of userMessages) {
@@ -402,7 +409,7 @@ export default async function handler(req: NextRequest) {
     const sanitizedUserMessage = userMessage.content.trim().replace('\n', ' ');
     let messageForContextSectionsRetrieval = sanitizedUserMessage;
 
-    const usage: UsageInfo = {};
+    const usageInfo: UsageInfo = {};
 
     try {
       const matches = await getMatchingSections(
@@ -432,7 +439,7 @@ export default async function handler(req: NextRequest) {
         );
 
         messageForContextSectionsRetrieval = standaloneRes.message;
-        usage.retrieval = standaloneRes.usage;
+        usageInfo.retrieval = standaloneRes.usage;
 
         const matchesWithHistory = await getMatchingSections(
           messageForContextSectionsRetrieval,
@@ -474,7 +481,7 @@ export default async function handler(req: NextRequest) {
         );
       }
     } catch (e) {
-      const { conversationId, promptId } = await storePromptOrPlaceholder(
+      const { conversationId, promptId } = await insertQueryStat(
         supabaseAdmin,
         projectId,
         existingConversationId,
@@ -488,6 +495,8 @@ export default async function handler(req: NextRequest) {
         excludeFromInsights,
         redact,
       );
+
+      await insertQueryStatUsage(supabaseAdmin, teamId, promptId, usageInfo);
 
       const headers = getHeaders([], conversationId, promptId);
 
@@ -576,6 +585,7 @@ export default async function handler(req: NextRequest) {
     const maxCompletionTokenCount = params.maxTokens || 1024;
 
     const tokenizer = await getTokenizer();
+
     const cappedMessages: ChatCompletionRequestMessage[] = capMessages(
       initMessages,
       conversationMessages,
@@ -622,46 +632,15 @@ export default async function handler(req: NextRequest) {
     };
 
     if (!stream) {
-      if (!res.ok) {
-        const message = await res.text();
-        const { conversationId, promptId } = await storePromptOrPlaceholder(
-          supabaseAdmin,
-          projectId,
-          existingConversationId,
-          conversationMetadata,
-          userMessage.content,
-          undefined,
-          promptEmbedding,
-          'api_error',
-          references,
-          insightsType,
-          excludeFromInsights,
-          redact,
-        );
-
-        const headers = getHeaders(references, conversationId, promptId);
-
-        return new Response(
-          JSON.stringify({
-            message: `Unable to retrieve completions response: ${message}`,
-            ...(params.debug ? debugInfo : {}),
-          }),
-          { status: 400, headers },
-        );
-      } else {
+      if (res.ok) {
         const json = await res.json();
-        // TODO: track token count
-        // const tokenCount = safeParseInt(json.usage.total_tokens, 0);
-        // console.log('json', JSON.stringify(json, null, 2));
-        // await recordProjectTokenCount(
-        //   projectId,
-        //   modelWithType,
-        //   tokenCount,
-        //   'completions',
-        // );
+
+        usageInfo.completion = { model: modelId, tokens: json.usage };
+
         const text = getChatCompletionsResponseText(json);
         const idk = isIDontKnowResponse(text, iDontKnowMessage);
-        const { conversationId, promptId } = await storePromptOrPlaceholder(
+
+        const { conversationId, promptId } = await insertQueryStat(
           supabaseAdmin,
           projectId,
           existingConversationId,
@@ -676,6 +655,8 @@ export default async function handler(req: NextRequest) {
           redact,
         );
 
+        await insertQueryStatUsage(supabaseAdmin, teamId, promptId, usageInfo);
+
         const headers = getHeaders(references, conversationId, promptId);
 
         return new Response(
@@ -689,6 +670,35 @@ export default async function handler(req: NextRequest) {
             status: 200,
             headers,
           },
+        );
+      } else {
+        const message = await res.text();
+
+        const { conversationId, promptId } = await insertQueryStat(
+          supabaseAdmin,
+          projectId,
+          existingConversationId,
+          conversationMetadata,
+          userMessage.content,
+          undefined,
+          promptEmbedding,
+          'api_error',
+          references,
+          insightsType,
+          excludeFromInsights,
+          redact,
+        );
+
+        await insertQueryStatUsage(supabaseAdmin, teamId, promptId, usageInfo);
+
+        const headers = getHeaders(references, conversationId, promptId);
+
+        return new Response(
+          JSON.stringify({
+            message: `Unable to retrieve completions response: ${message}`,
+            ...(params.debug ? debugInfo : {}),
+          }),
+          { status: 400, headers },
         );
       }
     }
@@ -706,7 +716,7 @@ export default async function handler(req: NextRequest) {
     // the prompt id needs to be sent in the header, which is done immediately.
     // We keep the prompt id and update the prompt with the generated response
     // once it is done.
-    const { conversationId, promptId } = await storePromptOrPlaceholder(
+    const { conversationId, promptId } = await insertQueryStat(
       supabaseAdmin,
       projectId,
       existingConversationId,
@@ -757,37 +767,38 @@ export default async function handler(req: NextRequest) {
           parser.feed(decoder.decode(chunk));
         }
 
-        // Estimate the number of tokens used by this request.
-        // TODO: GPT3Tokenizer is slow, especially on large text. Use the
-        // approximated value instead (1 token ~= 4 characters).
-        // const tokenizer = new GPT3Tokenizer({ type: 'gpt3' });
-        // const allTextEncoded = tokenizer.encode(allText);
-        // const tokenCount = allTextEncoded.text.length;
+        const promptTokenCount = getChatRequestTokenCount(
+          cappedMessages,
+          modelId,
+          tokenizer,
+        );
 
-        // TODO: track token count
-        // const allText =
-        //   messagesWithSystemMessage.map((m) => m.content).join('\n') +
-        //   responseText;
-        // const estimatedTokenCount = Math.round(allText.length / 4);
+        const completionTokenCount = getMessageTokenCount(
+          { role: 'assistant', content: responseText },
+          modelId,
+          tokenizer,
+        );
 
-        // if (!byoOpenAIKey) {
-        //   await recordProjectTokenCount(
-        //     projectId,
-        //     modelWithType,
-        //     estimatedTokenCount,
-        //     'completions',
-        //   );
-        // }
+        usageInfo.completion = {
+          model: modelId,
+          tokens: {
+            prompt_tokens: promptTokenCount,
+            completion_tokens: completionTokenCount,
+          },
+        };
 
         if (promptId) {
           const idk = isIDontKnowResponse(responseText, iDontKnowMessage);
-          await updatePrompt(
+          await updateQueryStat(
             supabaseAdmin,
             promptId,
             responseText,
             idk ? 'idk' : undefined,
+            usageInfo,
           );
         }
+
+        await insertQueryStatUsage(supabaseAdmin, teamId, promptId, usageInfo);
 
         // We're done, wind down
         parser.reset();

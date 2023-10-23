@@ -10,8 +10,8 @@ import type { NextRequest } from 'next/server';
 import {
   getHeaders,
   getMatchingSections,
-  storePromptOrPlaceholder,
-  updatePrompt,
+  insertQueryStat,
+  updateQueryStat,
 } from '@/lib/completions';
 import { modelConfigFields } from '@/lib/config';
 import {
@@ -261,7 +261,7 @@ export default async function handler(req: NextRequest) {
       fileSections = sectionsResponse.fileSections;
       promptEmbedding = sectionsResponse.promptEmbedding;
     } catch (e) {
-      const { conversationId, promptId } = await storePromptOrPlaceholder(
+      const { conversationId, promptId } = await insertQueryStat(
         supabaseAdmin,
         projectId,
         undefined,
@@ -379,7 +379,7 @@ export default async function handler(req: NextRequest) {
     if (!stream) {
       if (!res.ok) {
         const message = await res.text();
-        const { conversationId, promptId } = await storePromptOrPlaceholder(
+        const { conversationId, promptId } = await insertQueryStat(
           supabaseAdmin,
           projectId,
           undefined,
@@ -415,7 +415,7 @@ export default async function handler(req: NextRequest) {
         );
         const text = getCompletionsResponseText(json, modelInfo.model);
         const idk = isIDontKnowResponse(text, iDontKnowMessage);
-        const { conversationId, promptId } = await storePromptOrPlaceholder(
+        const { conversationId, promptId } = await insertQueryStat(
           supabaseAdmin,
           projectId,
           undefined,
@@ -461,7 +461,7 @@ export default async function handler(req: NextRequest) {
     // the prompt id needs to be sent in the header, which is done immediately.
     // We keep the prompt id and update the prompt with the generated response
     // once it is done.
-    const { conversationId, promptId } = await storePromptOrPlaceholder(
+    const { conversationId, promptId } = await insertQueryStat(
       supabaseAdmin,
       projectId,
       undefined,
@@ -540,7 +540,7 @@ export default async function handler(req: NextRequest) {
 
         if (promptId) {
           const idk = isIDontKnowResponse(responseText, iDontKnowMessage);
-          await updatePrompt(
+          await updateQueryStat(
             supabaseAdmin,
             promptId,
             responseText,

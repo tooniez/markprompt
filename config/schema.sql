@@ -172,6 +172,16 @@ create table public.conversations (
 );
 comment on table public.conversations is 'Conversations.';
 
+-- Usage
+create table public.query_stats_usage (
+  id            uuid primary key default uuid_generate_v4(),
+  created_at    timestamp with time zone default timezone('utc'::text, now()) not null,
+  team_id       uuid references public.teams on delete cascade not null,
+  query_stat_id uuid references public.query_stats,
+  data          jsonb
+);
+comment on table public.query_stats_usage is 'Usage.';
+
 -- Functions
 
 create function public.handle_new_user()
@@ -1260,6 +1270,29 @@ create policy "Users can delete conversations associated to projects they have a
       left join memberships
       on projects.team_id = memberships.team_id
       where memberships.user_id = auth.uid()
+    )
+  );
+
+-- Conversations
+
+alter table query_stats_usage
+  enable row level security;
+
+create policy "Users can only see query stats usage associated to teams they are members of." on public.query_stats_usage
+  for select using (
+    exists (
+      select 1 from memberships
+      where memberships.user_id = auth.uid()
+      and memberships.team_id = query_stats_usage.team_id
+    )
+  );
+
+create policy "Users can delete query stats usage associated to teams they are members of." on public.query_stats_usage
+  for delete using (
+    exists (
+      select 1 from memberships
+      where memberships.user_id = auth.uid()
+      and memberships.team_id = query_stats_usage.team_id
     )
   );
 
