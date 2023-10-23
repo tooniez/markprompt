@@ -446,7 +446,7 @@ export default async function handler(req: NextRequest) {
             );
           });
 
-        // Put 3 of them right after the 3 first sections from the user query.
+        // Put 2 of them right after the 2 first sections from the user query.
         // Most likely the relevant content sections are among the two first
         // sections.
         fileSections = [
