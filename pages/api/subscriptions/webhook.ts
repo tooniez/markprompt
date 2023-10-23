@@ -37,9 +37,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
 ) {
-  console.error('[STRIPE] Got request');
   if (!req.method || !allowedMethods.includes(req.method)) {
     res.setHeader('Allow', allowedMethods);
+    console.error('[STRIPE] Error 405');
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
@@ -57,7 +57,7 @@ export default async function handler(
         'webhookSecret',
         webhookSecret?.slice(0, 5),
       );
-      return;
+      return res.status(400).send('Invalid signature header');
     }
 
     event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
@@ -67,7 +67,8 @@ export default async function handler(
     return res.status(400).send(`Error: ${e.message}`);
   }
 
-  console.error('[STRIPE] Event', event.type);
+  console.debug('[STRIPE] Event', event.type);
+
   if (relevantEvents.has(event.type)) {
     try {
       // When adding a new event type here, make sure to add them to the
@@ -88,16 +89,25 @@ export default async function handler(
             console.error('[STRIPE] Invalid customer');
             throw new Error('Invalid customer.');
           }
+
           // Stripe knows the team id as it's been associated to
           // client_reference_id during checkout.
           const teamId = checkoutSession.client_reference_id;
+
+          const subscription = await stripe.subscriptions.retrieve(
+            checkoutSession.subscription as string,
+          );
+          const priceId = subscription.items.data[0].price.id;
 
           const { error } = await supabaseAdmin
             .from('teams')
             .update({
               stripe_customer_id: checkoutSession.customer.toString(),
+              stripe_price_id: priceId,
+              billing_cycle_start: new Date().toISOString(),
             })
             .eq('id', teamId);
+
           if (error) {
             console.error('[STRIPE] Error sessions completed', error.message);
             console.error('Error session completed', error.message);
@@ -155,5 +165,5 @@ export default async function handler(
     }
   }
 
-  res.json({ received: true });
+  res.status(200).json({ received: true });
 }

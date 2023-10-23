@@ -70,6 +70,12 @@ const PricingCard = ({
     tier.price?.yearly,
   ]);
 
+  useEffect(() => {
+    // Refresh the team, e.g. when redirected back from a Stripe
+    // checkout session
+    mutateTeam();
+  }, [mutateTeam]);
+
   const buttonLabel = (() => {
     if (isCurrentTeamTier) {
       if (currentTeamTierIsMonthlySubscription === !showAnnual) {
