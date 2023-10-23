@@ -14,7 +14,7 @@ import {
 } from '@/lib/utils';
 import { safeParseInt, safeParseJSON } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
-import { FileSectionMeta } from '@/types/types';
+import { FileSectionMeta, Project } from '@/types/types';
 
 const MAX_SEARCH_RESULTS = 20;
 
@@ -91,6 +91,60 @@ const createKWICSnippet = async (
   return words.join(' ');
 };
 
+const matchTitle = async (
+  query: string,
+  projectId: Project['id'],
+): Promise<FTSFileTitleResult[] | null> => {
+  const {
+    data,
+  }: {
+    data: FTSFileTitleResult[] | null;
+    error: { message: string; code: string } | null;
+  } = await supabaseAdmin.rpc('fts_file_title', {
+    search_term: query,
+    match_count: 20,
+    project_id: projectId,
+  });
+
+  while (data && data?.length === 0) {
+    // Make a search with the last word of the query removed.
+    const allButLastWords = query.split(' ').slice(0, -1).join(' ');
+    if (allButLastWords.length === 0) {
+      return null;
+    }
+    return matchTitle(allButLastWords, projectId);
+  }
+
+  return data;
+};
+
+const matchSections = async (
+  query: string,
+  projectId: Project['id'],
+): Promise<FTSFileSectionContentResult[] | null> => {
+  const { data }: { data: FTSFileSectionContentResult[] | null } =
+    await supabaseAdmin.rpc('fts_file_section_content', {
+      search_term: query,
+      match_count: 50,
+      project_id: projectId,
+    });
+
+  while (data && data?.length === 0) {
+    // Make a search with the last word of the query removed.
+    const allButLastWords = query.split(' ').slice(0, -1).join(' ');
+    if (allButLastWords.length === 0) {
+      return null;
+    }
+    return matchSections(allButLastWords, projectId);
+  }
+
+  return data;
+};
+
+const sanitizeSearchQuery = (query: string) => {
+  return query.replace(/\\n/gi, ' ').trim();
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
@@ -140,7 +194,7 @@ export default async function handler(
   //   }
   // }
 
-  const query = req.query.query as string;
+  const query = sanitizeSearchQuery(req.query.query as string);
   const projectId = req.query.projectId as string;
 
   track(projectId, 'search', { projectId });
@@ -160,16 +214,7 @@ export default async function handler(
 
   const ftsFileTitlesTs = Date.now();
 
-  const {
-    data: _fileTitleDBMatches,
-  }: {
-    data: FTSFileTitleResult[] | null;
-    error: { message: string; code: string } | null;
-  } = await supabaseAdmin.rpc('fts_file_title', {
-    search_term: query,
-    match_count: 20,
-    project_id: projectId,
-  });
+  const _fileTitleDBMatches = await matchTitle(query, projectId);
 
   const fileTitleDBMatchesIds = (_fileTitleDBMatches || []).map(
     (f: FTSFileTitleResult) => f.id,
@@ -181,15 +226,7 @@ export default async function handler(
 
   const ftsFileSectionContentTs = Date.now();
 
-  const {
-    data: _fileSectionContentDBMatches,
-  }: {
-    data: FTSFileSectionContentResult[] | null;
-  } = await supabaseAdmin.rpc('fts_file_section_content', {
-    search_term: query,
-    match_count: 50,
-    project_id: projectId,
-  });
+  const _fileSectionContentDBMatches = await matchSections(query, projectId);
 
   const ftsFileSectionContentDelta = Date.now() - ftsFileSectionContentTs;
 
