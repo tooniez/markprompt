@@ -1,6 +1,6 @@
 import { SearchResult, Source } from '@markprompt/core';
 import FlexSearch from 'flexsearch';
-import { uniq } from 'lodash-es';
+import { flatten, uniq } from 'lodash-es';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { isPresent } from 'ts-is-present';
 
@@ -94,6 +94,7 @@ const createKWICSnippet = async (
 const matchTitle = async (
   query: string,
   projectId: Project['id'],
+  matchCount = 20,
 ): Promise<FTSFileTitleResult[] | null> => {
   const {
     data,
@@ -102,17 +103,27 @@ const matchTitle = async (
     error: { message: string; code: string } | null;
   } = await supabaseAdmin.rpc('fts_file_title', {
     search_term: query,
-    match_count: 20,
+    match_count: matchCount,
     project_id: projectId,
   });
 
-  while (data && data?.length === 0) {
-    // Make a search with the last word of the query removed.
-    const allButLastWords = query.split(' ').slice(0, -1).join(' ');
-    if (allButLastWords.length === 0) {
-      return null;
+  if (!data || data.length === 0) {
+    const splitQuery = query
+      .split(' ')
+      .map((q) => q.trim())
+      .filter((q) => q.length > 0);
+    if (splitQuery.length > 1) {
+      const splitResults = await Promise.all(
+        splitQuery.map(async (q) => {
+          return matchTitle(
+            q,
+            projectId,
+            Math.max(2, Math.round(20 / splitQuery.length)),
+          );
+        }),
+      );
+      return flatten(splitResults.filter(isPresent));
     }
-    return matchTitle(allButLastWords, projectId);
   }
 
   return data;
@@ -121,21 +132,32 @@ const matchTitle = async (
 const matchSections = async (
   query: string,
   projectId: Project['id'],
+  matchCount = 50,
 ): Promise<FTSFileSectionContentResult[] | null> => {
   const { data }: { data: FTSFileSectionContentResult[] | null } =
     await supabaseAdmin.rpc('fts_file_section_content', {
       search_term: query,
-      match_count: 50,
+      match_count: matchCount,
       project_id: projectId,
     });
 
-  while (data && data?.length === 0) {
-    // Make a search with the last word of the query removed.
-    const allButLastWords = query.split(' ').slice(0, -1).join(' ');
-    if (allButLastWords.length === 0) {
-      return null;
+  if (!data || data.length === 0) {
+    const splitQuery = query
+      .split(' ')
+      .map((q) => q.trim())
+      .filter((q) => q.length > 0);
+    if (splitQuery.length > 1) {
+      const splitResults = await Promise.all(
+        splitQuery.map(async (q) => {
+          return matchSections(
+            q,
+            projectId,
+            Math.max(2, Math.round(20 / splitQuery.length)),
+          );
+        }),
+      );
+      return flatten(splitResults.filter(isPresent));
     }
-    return matchSections(allButLastWords, projectId);
   }
 
   return data;
@@ -214,7 +236,7 @@ export default async function handler(
 
   const ftsFileTitlesTs = Date.now();
 
-  const _fileTitleDBMatches = await matchTitle(query, projectId);
+  const _fileTitleDBMatches = await matchTitle(query, projectId, 20);
 
   const fileTitleDBMatchesIds = (_fileTitleDBMatches || []).map(
     (f: FTSFileTitleResult) => f.id,
@@ -226,7 +248,11 @@ export default async function handler(
 
   const ftsFileSectionContentTs = Date.now();
 
-  const _fileSectionContentDBMatches = await matchSections(query, projectId);
+  const _fileSectionContentDBMatches = await matchSections(
+    query,
+    projectId,
+    50,
+  );
 
   const ftsFileSectionContentDelta = Date.now() - ftsFileSectionContentTs;
 
