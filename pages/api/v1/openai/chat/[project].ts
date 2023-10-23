@@ -416,6 +416,12 @@ export default async function handler(req: NextRequest) {
         console.debug(
           '[CHAT] messageForContextSectionRetrieval:',
           messageForContextSectionRetrieval,
+          JSON.stringify(
+            userMessages
+              .slice(0, -1)
+              .map((m) => m.content)
+              .filter(isPresent),
+          ),
         );
       }
 

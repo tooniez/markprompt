@@ -372,7 +372,8 @@ export const generateStandaloneMessage = async (
     method: 'POST',
     body: JSON.stringify({
       model: 'gpt-3.5-turbo',
-      temperature: 0.1,
+      // Temperature 1 produces better results that 0.1.
+      temperature: 1,
       top_p: 1,
       frequency_penalty: 0,
       presence_penalty: 0,
