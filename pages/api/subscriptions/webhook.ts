@@ -37,7 +37,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
 ) {
-  console.error('[STRIPE] Got request');
   if (!req.method || !allowedMethods.includes(req.method)) {
     res.setHeader('Allow', allowedMethods);
     console.error('[STRIPE] Error 405');
@@ -95,16 +94,20 @@ export default async function handler(
           // client_reference_id during checkout.
           const teamId = checkoutSession.client_reference_id;
 
-          console.log(
-            'event.data.object',
-            JSON.stringify(event.data.object, null, 2),
+          const subscription = await stripe.subscriptions.retrieve(
+            checkoutSession.subscription as string,
           );
+          const priceId = subscription.items.data[0].price.id;
+
           const { error } = await supabaseAdmin
             .from('teams')
             .update({
               stripe_customer_id: checkoutSession.customer.toString(),
+              stripe_price_id: priceId,
+              billing_cycle_start: new Date().toISOString(),
             })
             .eq('id', teamId);
+
           if (error) {
             console.error('[STRIPE] Error sessions completed', error.message);
             console.error('Error session completed', error.message);
