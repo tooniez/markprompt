@@ -158,6 +158,7 @@ create table public.query_stats (
   feedback           jsonb,
   processed          boolean not null default false,
   procesed_state     query_stat_processed_state default 'skipped',
+  data               jsonb,
   embedding          vector(1536)
 );
 comment on table public.query_stats is 'Query stats.';

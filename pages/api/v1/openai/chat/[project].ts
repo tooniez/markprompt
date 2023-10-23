@@ -67,6 +67,7 @@ import {
   FileSectionMeta,
   Project,
   SUPPORTED_MODELS,
+  UsageInfo,
 } from '@/types/types';
 
 import { buildFullPrompt } from '../completions/[project]';
@@ -399,7 +400,9 @@ export default async function handler(req: NextRequest) {
     let promptEmbedding: number[] | undefined = undefined;
 
     const sanitizedUserMessage = userMessage.content.trim().replace('\n', ' ');
-    let messageForContextSectionRetrieval = sanitizedUserMessage;
+    let messageForContextSectionsRetrieval = sanitizedUserMessage;
+
+    const usage: UsageInfo = {};
 
     try {
       const matches = await getMatchingSections(
@@ -418,7 +421,7 @@ export default async function handler(req: NextRequest) {
 
       if (userMessages.length > 1) {
         // Include previous messages for context retrieval.
-        messageForContextSectionRetrieval = await generateStandaloneMessage(
+        const standaloneRes = await generateStandaloneMessage(
           sanitizedUserMessage,
           userMessages
             .slice(0, -1)
@@ -428,8 +431,11 @@ export default async function handler(req: NextRequest) {
           true,
         );
 
+        messageForContextSectionsRetrieval = standaloneRes.message;
+        usage.retrieval = standaloneRes.usage;
+
         const matchesWithHistory = await getMatchingSections(
-          messageForContextSectionRetrieval,
+          messageForContextSectionsRetrieval,
           params.sectionsMatchThreshold,
           params.sectionsMatchCount,
           projectId,
@@ -457,8 +463,8 @@ export default async function handler(req: NextRequest) {
         ];
 
         console.debug(
-          '[CHAT] messageForContextSectionRetrieval:',
-          messageForContextSectionRetrieval,
+          '[CHAT] messageForContextSectionsRetrieval:',
+          messageForContextSectionsRetrieval,
           JSON.stringify(
             userMessages
               .slice(0, -1)
@@ -611,7 +617,7 @@ export default async function handler(req: NextRequest) {
 
     const debugInfo = {
       initMessages,
-      messageForContextSectionRetrieval,
+      messageForContextSectionsRetrieval,
       ts: { sections: sectionsDelta },
     };
 

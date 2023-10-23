@@ -9,6 +9,7 @@ import { CreateEmbeddingResponse } from 'openai';
 import { Database } from '@/types/supabase';
 import {
   ApiError,
+  CompletionsMessage,
   DbConversation,
   DbQueryStat,
   FileSectionMatchResult,
@@ -350,9 +351,9 @@ export const generateStandaloneMessage = async (
   previousMessages: string[],
   byoOpenAIKey: string | undefined,
   includeLastMessageVerbatim: boolean,
-) => {
+): Promise<CompletionsMessage> => {
   if (previousMessages.length === 0 && includeLastMessageVerbatim) {
-    return lastMessage;
+    return { message: lastMessage };
   }
 
   const previousMessagesFormatted = previousMessages
@@ -361,6 +362,8 @@ export const generateStandaloneMessage = async (
       return `Question ${i + 1}:\n${m.replace(/\\n/gi, ' ').trim()}`;
     })
     .join('\n---\n');
+
+  const model = 'gpt-3.5-turbo';
 
   const res = await fetch(getChatCompletionsUrl(), {
     headers: {
@@ -371,7 +374,7 @@ export const generateStandaloneMessage = async (
     },
     method: 'POST',
     body: JSON.stringify({
-      model: 'gpt-3.5-turbo',
+      model: model,
       // Temperature 1 produces better results that 0.1.
       temperature: 1,
       top_p: 1,
@@ -399,15 +402,16 @@ Standalone question:`,
   });
 
   if (!res.ok) {
-    return lastMessage;
+    return { message: lastMessage };
   }
 
   const json = await res.json();
   const standaloneMessage = getChatCompletionsResponseText(json);
 
+  let message = standaloneMessage;
   if (includeLastMessageVerbatim) {
-    return `${lastMessage}\n${standaloneMessage}`;
+    message = `${lastMessage}\n${standaloneMessage}`;
   }
 
-  return standaloneMessage;
+  return { message, usage: { tokens: json.usage, model } };
 };
