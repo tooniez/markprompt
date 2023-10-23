@@ -402,6 +402,17 @@ export default async function handler(req: NextRequest) {
     let messageForContextSectionRetrieval = sanitizedUserMessage;
 
     try {
+      const matches = await getMatchingSections(
+        sanitizedUserMessage,
+        params.sectionsMatchThreshold,
+        params.sectionsMatchCount,
+        projectId,
+        byoOpenAIKey,
+        'completions',
+        false,
+        supabaseAdmin,
+      );
+
       if (userMessages.length > 1) {
         // Include previous messages for context retrieval.
         messageForContextSectionRetrieval = await generateStandaloneMessage(
@@ -413,6 +424,38 @@ export default async function handler(req: NextRequest) {
           byoOpenAIKey,
           true,
         );
+
+        fileSections = matches.fileSections;
+        promptEmbedding = matches.promptEmbedding;
+
+        const matchesWithHistory = await getMatchingSections(
+          messageForContextSectionRetrieval,
+          params.sectionsMatchThreshold,
+          params.sectionsMatchCount,
+          projectId,
+          byoOpenAIKey,
+          'completions',
+          false,
+          supabaseAdmin,
+        );
+
+        const previousUniqueMatchingSections =
+          matchesWithHistory.fileSections.filter((ps) => {
+            return !fileSections.find(
+              (s) => s.file_sections_content === ps.file_sections_content,
+            );
+          });
+
+        // Put 3 of them right after the 3 first sections from the user query.
+        // Most likely the relevant content sections are among the two first
+        // sections.
+        fileSections = [
+          ...fileSections.slice(0, 2),
+          ...previousUniqueMatchingSections.slice(0, 2),
+          ...fileSections.slice(2),
+          ...previousUniqueMatchingSections.slice(2),
+        ];
+
         console.debug(
           '[CHAT] messageForContextSectionRetrieval:',
           messageForContextSectionRetrieval,
@@ -424,19 +467,6 @@ export default async function handler(req: NextRequest) {
           ),
         );
       }
-
-      const matches = await getMatchingSections(
-        messageForContextSectionRetrieval,
-        params.sectionsMatchThreshold,
-        params.sectionsMatchCount,
-        projectId,
-        byoOpenAIKey,
-        'completions',
-        false,
-        supabaseAdmin,
-      );
-      fileSections = matches.fileSections;
-      promptEmbedding = matches.promptEmbedding;
     } catch (e) {
       const { conversationId, promptId } = await storePromptOrPlaceholder(
         supabaseAdmin,
