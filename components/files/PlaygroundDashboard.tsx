@@ -261,138 +261,15 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     overlayMessageHeight: 0,
   });
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
-  const [isPlaygroundVisible, setPlaygroundVisible] = useState(true);
   const [isPlaygroundLoaded, setPlaygroundLoaded] = useState(false);
   // const playgroundRef = useRef<HTMLDivElement>(null);
   const playgroundRef = useRef<HTMLIFrameElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const overlayMessageRef = useRef<HTMLDivElement>(null);
-  const { finishOnboarding } = useOnboarding();
 
   const hasConnectedSources = sources && sources.length > 0;
   const isTrained = paginatedFiles && paginatedFiles.length > 0;
-  const isLoading = loadingSources || loadingFiles;
   const isTraining = trainingState.state !== 'idle';
-
-  const overlayMessage = useMemo(() => {
-    if (!project || isLoading || isLoadingResponse) {
-      return undefined;
-    }
-    if (!hasConnectedSources) {
-      if (isOnboarding) {
-        return 'Start by connecting one or more sources';
-      } else {
-        return 'Connect one or more sources';
-      }
-    }
-    if (trainingState.state !== 'idle') {
-      return 'Processing sources';
-    }
-    if (!isTrained && hasConnectedSources) {
-      return "Great! Now hit 'Process sources'";
-    }
-
-    if (isTrained && !didCompleteFirstQuery) {
-      return 'Now ask a question';
-    }
-
-    if (didCompleteFirstQuery && isOnboarding) {
-      return (
-        <span>
-          <Stars className="mr-1 mt-[-2px] inline-block h-4 w-4 text-amber-400" />
-          You are all set! Get the embed code, configure the design and model,
-          or{' '}
-          <span
-            className="border-b border-dotted border-neutral-300 font-medium"
-            onClick={() => {
-              finishOnboarding();
-            }}
-          >
-            continue to the dashboard
-          </span>
-        </span>
-      );
-    }
-    return undefined;
-  }, [
-    hasConnectedSources,
-    isOnboarding,
-    isTrained,
-    project,
-    trainingState.state,
-    isLoading,
-    didCompleteFirstQuery,
-    isLoadingResponse,
-    finishOnboarding,
-  ]);
-
-  const isShowingOnboardingMessages = !!overlayMessage;
-  const isShowingLines = isShowingOnboardingMessages && !isTraining;
-  const isShowingOverlay =
-    project &&
-    (isTraining || (!isLoading && (!hasConnectedSources || !isTrained)));
-
-  useEffect(() => {
-    if (!isShowingOnboardingMessages) {
-      return;
-    }
-
-    const observer = new ResizeObserver(() => {
-      if (!previewContainerRef.current) {
-        return;
-      }
-
-      const previewContainerRect =
-        previewContainerRef.current?.getBoundingClientRect();
-      const previewContainerWidth = Math.round(
-        previewContainerRect?.width || 0,
-      );
-      const previewContainerHeight = Math.round(
-        previewContainerRect?.height || 0,
-      );
-
-      const playgroundRect = playgroundRef.current?.getBoundingClientRect();
-
-      const playgroundTop =
-        (playgroundRect?.top || 0) - (previewContainerRect?.top || 0);
-      const playgroundLeft =
-        (playgroundRect?.left || 0) - (previewContainerRect?.left || 0);
-      const playgroundWidth = playgroundRect?.width || 0;
-      const playgroundHeight = playgroundRect?.height || 0;
-
-      const overlayMessageRect =
-        overlayMessageRef.current?.getBoundingClientRect();
-
-      const overlayMessageLeft =
-        (overlayMessageRect?.left || 0) - (previewContainerRect?.left || 0);
-      const overlayMessageTop =
-        (overlayMessageRect?.top || 0) - (previewContainerRect?.top || 0);
-      const overlayMessageWidth = overlayMessageRect?.width || 0;
-      const overlayMessageHeight = overlayMessageRect?.height || 0;
-
-      setOverlayDimensions({
-        previewContainerWidth,
-        previewContainerHeight,
-        playgroundLeft,
-        playgroundTop,
-        playgroundWidth,
-        playgroundHeight,
-        overlayMessageLeft,
-        overlayMessageTop,
-        overlayMessageWidth,
-        overlayMessageHeight,
-      });
-    });
-
-    playgroundRef.current && observer.observe(playgroundRef.current);
-    previewContainerRef.current &&
-      observer.observe(previewContainerRef.current);
-    overlayMessageRef.current && observer.observe(overlayMessageRef.current);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [isShowingOnboardingMessages]);
 
   useEffect(() => {
     if (
@@ -470,91 +347,8 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
       </div>
       <div className="grid flex-grow grid-cols-1 sm:grid-cols-3">
         <div className="relative col-span-1 sm:col-span-2">
-          <div
-            ref={previewContainerRef}
-            className={cn(
-              'pointer-events-none absolute inset-0 z-30 flex items-center justify-center transition duration-300',
-            )}
-          >
-            <div
-              className={cn('absolute inset-0 z-0 bg-black/80 ', {
-                'opacity-100': isShowingOverlay,
-                'pointer-events-none opacity-0': !isShowingOverlay,
-              })}
-            />
-            {isShowingLines && (
-              <div className="pointer-events-none absolute inset-0 flex-none">
-                {!hasConnectedSources && !isTraining && (
-                  <LinesContainer
-                    position="top-left"
-                    isDark={isDark}
-                    onOverlay={true}
-                    top={40}
-                    left={0}
-                    width={overlayDimensions.overlayMessageLeft}
-                    height={overlayDimensions.previewContainerHeight / 2 - 72}
-                  />
-                )}
-                {hasConnectedSources && !isTrained && (
-                  <LinesContainer
-                    position="bottom-left"
-                    isDark={isDark}
-                    onOverlay={true}
-                    top={overlayDimensions.previewContainerHeight / 2 + 29}
-                    left={0}
-                    width={overlayDimensions.overlayMessageLeft}
-                    height={overlayDimensions.previewContainerHeight / 2 - 61}
-                  />
-                )}
-                {isTrained &&
-                  isOnboarding &&
-                  didCompleteFirstQuery &&
-                  !isLoadingResponse && (
-                    <LinesContainer
-                      position="right"
-                      isDark={isDark}
-                      top={32}
-                      left={
-                        overlayDimensions.overlayMessageLeft +
-                        overlayDimensions.overlayMessageWidth
-                      }
-                      width={
-                        overlayDimensions.previewContainerWidth -
-                        overlayDimensions.overlayMessageLeft -
-                        overlayDimensions.overlayMessageWidth
-                      }
-                      height={overlayDimensions.previewContainerHeight / 2 - 32}
-                    />
-                  )}
-              </div>
-            )}
-            {overlayMessage && (
-              <div
-                ref={overlayMessageRef}
-                className={cn(
-                  'transfrom flex max-w-[400px] flex-row flex-wrap items-center gap-2 rounded-full bg-black/80 py-3 px-5 text-center text-sm text-white backdrop-blur transition duration-500',
-
-                  {
-                    'translate-y-[-30px]':
-                      !hasConnectedSources &&
-                      !isTrained &&
-                      trainingState.state === 'idle',
-                    'translate-y-[30px]':
-                      hasConnectedSources &&
-                      !isTrained &&
-                      trainingState.state === 'idle',
-                  },
-                )}
-              >
-                {trainingState.state !== 'idle' && (
-                  <SpinnerIcon className="ml-1 h-4 w-4 animate-spin" />
-                )}
-                <>{overlayMessage}</>
-              </div>
-            )}
-          </div>
           <div className="h-full w-full overflow-hidden">
-            <div className={cn('h-full border-l border-r border-neutral-900')}>
+            <div className={cn('h-full border-r border-neutral-900')}>
               <div className="relative flex h-full flex-col gap-4">
                 <div
                   className="pointer-events-none absolute inset-0 z-0"
@@ -566,9 +360,10 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                 />
                 <div className="absolute inset-0">
                   <iframe
+                    tabIndex={-1}
                     ref={playgroundRef}
                     src="/static/html/chatbot-playground.html"
-                    className="absolute inset-0 h-full w-full bg-transparent"
+                    className="pointer-events-none absolute inset-0 h-full w-full bg-transparent"
                     onLoad={() => {
                       setTimeout(() => {
                         setPlaygroundLoaded(true);
@@ -596,8 +391,8 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
                 <Tabs.Trigger className="TabsTrigger" value="model">
                   Model
                 </Tabs.Trigger>
-                <Tabs.Trigger className="TabsTrigger" value="design">
-                  Design
+                <Tabs.Trigger className="TabsTrigger" value="ui">
+                  UI
                 </Tabs.Trigger>
               </Tabs.List>
               <Tabs.Content
@@ -606,10 +401,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
               >
                 <ModelConfigurator />
               </Tabs.Content>
-              <Tabs.Content
-                className="TabsContent flex-grow pt-4"
-                value="design"
-              >
+              <Tabs.Content className="TabsContent flex-grow pt-4" value="ui">
                 <UIConfigurator />
               </Tabs.Content>
             </Tabs.Root>
