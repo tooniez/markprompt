@@ -71,6 +71,8 @@ const PricingCard = ({
   ]);
 
   useEffect(() => {
+    // Refresh the team, e.g. when redirected back from a Stripe
+    // checkout session
     mutateTeam();
   }, [mutateTeam]);
 
