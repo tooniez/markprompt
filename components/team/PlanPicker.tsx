@@ -184,6 +184,7 @@ const PricingCard = ({
             try {
               setLoading(true);
               // Cancel any existing subscription
+              console.log('[PLAN PICKER] cancelSubscription');
               await cancelSubscription(team.id);
 
               if (tier.id === 'hobby') {

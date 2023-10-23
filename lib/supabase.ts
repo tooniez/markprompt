@@ -90,6 +90,25 @@ export const getTeamTierInfo = async (
     : undefined;
 };
 
+export const getTeamSlugAndStripeCustomerId = async (
+  supabaseAdmin: SupabaseClient<Database>,
+  teamId: DbTeam['id'],
+): Promise<{ slug: string; stripeCustomerId: string | null } | undefined> => {
+  const { data } = await supabaseAdmin
+    .from('teams')
+    .select('slug,stripe_customer_id')
+    .eq('id', teamId)
+    .limit(1)
+    .maybeSingle();
+
+  return data
+    ? {
+        slug: data.slug,
+        stripeCustomerId: data.stripe_customer_id,
+      }
+    : undefined;
+};
+
 export const setGitHubAuthState = async (
   supabase: SupabaseClient<Database>,
   userId: DbUser['id'],
@@ -351,6 +370,18 @@ export const hasUserAccessToProject = async (
     .limit(1)
     .maybeSingle();
   return !!response.data?.has_access;
+};
+
+export const hasUserAdminAccessToTeam = async (
+  supabase: SupabaseClient<Database>,
+  userId: User['id'],
+  teamId: DbTeam['id'],
+): Promise<boolean> => {
+  const { count: membershipCount } = await supabase
+    .from('memberships')
+    .select('id', { count: 'exact' })
+    .match({ user_id: userId, team_id: teamId, type: 'admin' });
+  return !!(membershipCount && membershipCount > 0);
 };
 
 export const SUPPORTED_QUERY_FILTER_COMPARISON_OPERATIONS: string[] =

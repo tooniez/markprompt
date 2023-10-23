@@ -7,10 +7,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { Database } from '@/types/supabase';
-import { ApiError, Project } from '@/types/types';
+import { ApiError, DbTeam, Project } from '@/types/types';
 
 import { get, getProjectIdByKey, setWithExpiration } from '../redis';
-import { hasUserAccessToProject } from '../supabase';
+import { hasUserAccessToProject, hasUserAdminAccessToTeam } from '../supabase';
 import { isSKTestKey, truncateMiddle } from '../utils';
 import { isAppHost } from '../utils.edge';
 
@@ -224,6 +224,24 @@ export const withProjectAccess =
           supabase,
           user.id,
           req.query.id as Project['id'],
+        );
+      },
+    );
+  };
+
+export const withTeamAdminAccess =
+  <T>(allowedMethods: string[], handler: NextApiHandler<T>) =>
+  async (req: NextApiRequest, res: NextApiResponse) => {
+    return withAuthorizedConditionalAccess(
+      req,
+      res,
+      allowedMethods,
+      handler,
+      async (req, supabase, user) => {
+        return hasUserAdminAccessToTeam(
+          supabase,
+          user.id,
+          req.query.id as DbTeam['id'],
         );
       },
     );
