@@ -300,7 +300,7 @@ export type ModelUsageInfo = {
     prompt_tokens: number;
     completion_tokens: number;
   };
-  model?: OpenAIChatCompletionsModelId | OpenAICompletionsModelId;
+  model: OpenAIChatCompletionsModelId;
 };
 
 export type UsageInfo = {
