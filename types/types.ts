@@ -289,3 +289,21 @@ export type DbQueryFilter =
       DbQueryFilterValue,
     ]
   | ['or', DbQueryFilterOrCondition];
+
+export type CompletionsMessage = {
+  message: string;
+  usage?: ModelUsageInfo;
+};
+
+export type ModelUsageInfo = {
+  tokens?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+  };
+  model?: OpenAIChatCompletionsModelId | OpenAICompletionsModelId;
+};
+
+export type UsageInfo = {
+  retrieval?: ModelUsageInfo;
+  completion?: ModelUsageInfo;
+};

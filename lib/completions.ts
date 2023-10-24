@@ -9,17 +9,18 @@ import { CreateEmbeddingResponse } from 'openai';
 import { Database } from '@/types/supabase';
 import {
   ApiError,
+  CompletionsMessage,
   DbConversation,
   DbQueryStat,
+  DbTeam,
   FileSectionMatchResult,
   OpenAIErrorResponse,
   Project,
+  UsageInfo,
 } from '@/types/types';
 
 import { createEmbedding, createModeration } from './openai.edge';
 import { InsightsType } from './stripe/tiers';
-import { recordProjectTokenCount } from './tinybird';
-import { stringToLLMInfo } from './utils';
 import {
   getChatCompletionsResponseText,
   getChatCompletionsUrl,
@@ -27,7 +28,7 @@ import {
 
 export type PromptNoResponseReason = 'no_sections' | 'idk' | 'api_error';
 
-const storePrompt = async (
+const _insertQueryStat = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
   conversationId: DbConversation['id'],
@@ -66,7 +67,7 @@ const storePrompt = async (
   return data?.id;
 };
 
-export const updatePrompt = async (
+export const updateQueryStat = async (
   supabase: SupabaseClient<Database>,
   promptId: DbQueryStat['id'],
   response: string | undefined,
@@ -136,16 +137,6 @@ export const getMatchingSections = async (
 
     if ('error' in embeddingResult) {
       throw new ApiError(400, embeddingResult.error.message);
-    }
-
-    if (!byoOpenAIKey) {
-      const embeddingModelInfo = stringToLLMInfo(modelId);
-      await recordProjectTokenCount(
-        projectId,
-        embeddingModelInfo,
-        embeddingResult.usage.total_tokens,
-        'sections',
-      );
     }
   } catch (error) {
     console.error(
@@ -276,7 +267,7 @@ const getOrCreateConversationId = async (
   return createConversation(supabase, projectId, conversationMetadata);
 };
 
-export const storePromptOrPlaceholder = async (
+export const insertQueryStat = async (
   supabase: SupabaseClient<Database>,
   projectId: Project['id'],
   existingConversationId: DbConversation['id'] | undefined,
@@ -290,7 +281,7 @@ export const storePromptOrPlaceholder = async (
   // If true, only the event will be stored for global counts.
   excludeData: boolean,
   // If true, the stat will be marked as `unprocessed` and will
-  // be processed to redact sensited info.
+  // be processed to redact sensitive info.
   redact: boolean,
 ): Promise<{
   conversationId: DbConversation['id'] | undefined;
@@ -308,7 +299,7 @@ export const storePromptOrPlaceholder = async (
   }
 
   if (excludeData) {
-    const promptId = await storePrompt(
+    const promptId = await _insertQueryStat(
       supabase,
       projectId,
       conversationId,
@@ -325,7 +316,7 @@ export const storePromptOrPlaceholder = async (
     // Store response in >= basic insights.
     // Store embeddings in >= advanced insights.
     // Store references in >= basic insights.
-    const promptId = await storePrompt(
+    const promptId = await _insertQueryStat(
       supabase,
       projectId,
       conversationId,
@@ -340,6 +331,26 @@ export const storePromptOrPlaceholder = async (
   }
 };
 
+export const insertQueryStatUsage = async (
+  supabase: SupabaseClient<Database>,
+  teamId: DbTeam['id'],
+  queryStatId: DbQueryStat['id'] | undefined,
+  usageInfo: UsageInfo,
+) => {
+  await supabase
+    .from('query_stats_usage')
+    .insert([
+      {
+        team_id: teamId,
+        query_stat_id: queryStatId,
+        data: usageInfo,
+      },
+    ])
+    .select('id')
+    .limit(1)
+    .maybeSingle();
+};
+
 // Given a list of user messages, generate a standalone message that
 // captures the information of the previous messages, if they are
 // related to the last message. This allows for more precise context
@@ -350,9 +361,9 @@ export const generateStandaloneMessage = async (
   previousMessages: string[],
   byoOpenAIKey: string | undefined,
   includeLastMessageVerbatim: boolean,
-) => {
+): Promise<CompletionsMessage> => {
   if (previousMessages.length === 0 && includeLastMessageVerbatim) {
-    return lastMessage;
+    return { message: lastMessage };
   }
 
   const previousMessagesFormatted = previousMessages
@@ -361,6 +372,8 @@ export const generateStandaloneMessage = async (
       return `Question ${i + 1}:\n${m.replace(/\\n/gi, ' ').trim()}`;
     })
     .join('\n---\n');
+
+  const model = 'gpt-3.5-turbo';
 
   const res = await fetch(getChatCompletionsUrl(), {
     headers: {
@@ -371,7 +384,7 @@ export const generateStandaloneMessage = async (
     },
     method: 'POST',
     body: JSON.stringify({
-      model: 'gpt-3.5-turbo',
+      model: model,
       // Temperature 1 produces better results that 0.1.
       temperature: 1,
       top_p: 1,
@@ -399,15 +412,16 @@ Standalone question:`,
   });
 
   if (!res.ok) {
-    return lastMessage;
+    return { message: lastMessage };
   }
 
   const json = await res.json();
   const standaloneMessage = getChatCompletionsResponseText(json);
 
+  let message = standaloneMessage;
   if (includeLastMessageVerbatim) {
-    return `${lastMessage}\n${standaloneMessage}`;
+    message = `${lastMessage}\n${standaloneMessage}`;
   }
 
-  return standaloneMessage;
+  return { message, usage: { tokens: json.usage, model } };
 };

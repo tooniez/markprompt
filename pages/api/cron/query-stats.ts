@@ -9,15 +9,12 @@ import {
   createServiceRoleSupabaseClient,
   getProjectConfigData,
 } from '@/lib/supabase';
-import { recordProjectTokenCount } from '@/lib/tinybird';
 import { getCompletionsResponseText } from '@/lib/utils';
-import { safeParseInt } from '@/lib/utils.edge';
 import { getCompletionsUrl } from '@/lib/utils.nodeps';
 import {
   OpenAIModelIdWithType,
   Project,
   QueryStatsProcessingResponseData,
-  geLLMInfoFromModel,
 } from '@/types/types';
 
 type Data =
@@ -99,14 +96,6 @@ const redactSensitiveInfo = async (
   if (json.error) {
     throw new Error(`${JSON.stringify(json)}`);
   }
-
-  const tokenCount = safeParseInt(json.usage.total_tokens, 0);
-  await recordProjectTokenCount(
-    projectId,
-    geLLMInfoFromModel(model),
-    tokenCount,
-    'query-stats',
-  );
 
   return getCompletionsResponseText(json, model)
     .trim()

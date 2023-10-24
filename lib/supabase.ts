@@ -48,12 +48,13 @@ export const getProjectConfigData = async (
   supabaseAdmin: SupabaseClient<Database>,
   projectId: Project['id'],
 ): Promise<{
+  teamId: DbTeam['id'] | undefined;
   byoOpenAIKey: string | undefined;
   markpromptConfig: MarkpromptConfig;
 }> => {
   const { data } = await supabaseAdmin
     .from('projects')
-    .select('openai_key,markprompt_config')
+    .select('team_id,openai_key,markprompt_config')
     .eq('id', projectId)
     .limit(1)
     .select()
@@ -66,6 +67,7 @@ export const getProjectConfigData = async (
     JSON.parse(DEFAULT_MARKPROMPT_CONFIG)) as MarkpromptConfig;
 
   return {
+    teamId: data?.team_id,
     byoOpenAIKey: data?.openai_key || undefined,
     markpromptConfig: markpromptConfig,
   };
