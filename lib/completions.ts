@@ -21,8 +21,6 @@ import {
 
 import { createEmbedding, createModeration } from './openai.edge';
 import { InsightsType } from './stripe/tiers';
-import { recordProjectTokenCount } from './tinybird';
-import { stringToLLMInfo } from './utils';
 import {
   getChatCompletionsResponseText,
   getChatCompletionsUrl,
@@ -74,7 +72,6 @@ export const updateQueryStat = async (
   promptId: DbQueryStat['id'],
   response: string | undefined,
   noResponseReason: PromptNoResponseReason | undefined,
-  usageInfo: UsageInfo,
 ) => {
   return supabase
     .from('query_stats')
@@ -83,7 +80,6 @@ export const updateQueryStat = async (
       ...(typeof noResponseReason !== 'undefined'
         ? { no_response: !!noResponseReason }
         : {}),
-      data: usageInfo,
     })
     .eq('id', promptId);
 };
@@ -141,16 +137,6 @@ export const getMatchingSections = async (
 
     if ('error' in embeddingResult) {
       throw new ApiError(400, embeddingResult.error.message);
-    }
-
-    if (!byoOpenAIKey) {
-      const embeddingModelInfo = stringToLLMInfo(modelId);
-      await recordProjectTokenCount(
-        projectId,
-        embeddingModelInfo,
-        embeddingResult.usage.total_tokens,
-        'sections',
-      );
     }
   } catch (error) {
     console.error(

@@ -18,7 +18,6 @@ import {
   FileSectionsData,
   OpenAIModelIdWithType,
   Project,
-  geLLMInfoFromModel,
 } from '@/types/types';
 
 import {
@@ -31,7 +30,6 @@ import {
 import { MarkpromptConfig } from './schema';
 import { tokensToApproxParagraphs } from './stripe/tiers';
 import { getTokenAllowanceInfo } from './supabase';
-import { recordProjectTokenCount } from './tinybird';
 
 const TOKEN_CUTOFF_ADJUSTED = CONTEXT_TOKENS_CUTOFF * 0.8;
 const APPROX_CHARS_PER_TOKEN = 4;
@@ -397,15 +395,6 @@ export const generateFileEmbeddingsAndSaveFile = async (
     for (const data of embeddingsData) {
       await supabaseAdmin.from('file_sections').insert([data]);
     }
-  }
-
-  if (!byoOpenAIKey) {
-    await recordProjectTokenCount(
-      projectId,
-      geLLMInfoFromModel(model),
-      embeddingsTokenCount,
-      'generate-embeddings',
-    );
   }
 
   if (errors?.length > 0) {

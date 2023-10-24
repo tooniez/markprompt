@@ -546,12 +546,6 @@ export default async function handler(req: NextRequest) {
         !!params.doNotInjectPrompt,
       );
     }
-    // const approxMessagesTokens =
-    //   approximatedTokenCount(systemPrompt) +
-    //   messages.reduce(
-    //     (acc, m) => acc + approximatedTokenCount(m.content || ''),
-    //     0,
-    //   );
 
     for (const section of fileSections) {
       numTokens += section.file_sections_token_count;
@@ -635,8 +629,6 @@ export default async function handler(req: NextRequest) {
       if (res.ok) {
         const json = await res.json();
 
-        usageInfo.completion = { model: modelId, tokens: json.usage };
-
         const text = getChatCompletionsResponseText(json);
         const idk = isIDontKnowResponse(text, iDontKnowMessage);
 
@@ -654,6 +646,8 @@ export default async function handler(req: NextRequest) {
           excludeFromInsights,
           redact,
         );
+
+        usageInfo.completion = { model: modelId, tokens: json.usage };
 
         await insertQueryStatUsage(supabaseAdmin, teamId, promptId, usageInfo);
 
@@ -767,6 +761,16 @@ export default async function handler(req: NextRequest) {
           parser.feed(decoder.decode(chunk));
         }
 
+        if (promptId) {
+          const idk = isIDontKnowResponse(responseText, iDontKnowMessage);
+          await updateQueryStat(
+            supabaseAdmin,
+            promptId,
+            responseText,
+            idk ? 'idk' : undefined,
+          );
+        }
+
         const promptTokenCount = getChatRequestTokenCount(
           cappedMessages,
           modelId,
@@ -786,17 +790,6 @@ export default async function handler(req: NextRequest) {
             completion_tokens: completionTokenCount,
           },
         };
-
-        if (promptId) {
-          const idk = isIDontKnowResponse(responseText, iDontKnowMessage);
-          await updateQueryStat(
-            supabaseAdmin,
-            promptId,
-            responseText,
-            idk ? 'idk' : undefined,
-            usageInfo,
-          );
-        }
 
         await insertQueryStatUsage(supabaseAdmin, teamId, promptId, usageInfo);
 
