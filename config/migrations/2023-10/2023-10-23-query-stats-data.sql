@@ -1,3 +1,5 @@
+create index idx_projects_id on projects(id);
+
 alter table query_stats
 add column data jsonb;
 

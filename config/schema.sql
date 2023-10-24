@@ -822,6 +822,7 @@ create index idx_files_source_id on files(source_id);
 create index idx_files_path on files(path);
 create index idx_sources_project_id on sources(project_id);
 create index idx_file_sections_file_id on file_sections(file_id);
+create index idx_projects_id on projects(id);
 create index idx_projects_team_id on projects(team_id);
 create index idx_projects_private_dev_api_key on projects(private_dev_api_key);
 create index idx_projects_public_api_key on projects(public_api_key);
