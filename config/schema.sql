@@ -174,11 +174,12 @@ comment on table public.conversations is 'Conversations.';
 
 -- Usage
 create table public.query_stats_usage (
-  id            uuid primary key default uuid_generate_v4(),
-  created_at    timestamp with time zone default timezone('utc'::text, now()) not null,
-  team_id       uuid references public.teams on delete cascade not null,
-  query_stat_id uuid references public.query_stats,
-  data          jsonb
+  id                     uuid primary key default uuid_generate_v4(),
+  created_at             timestamp with time zone default timezone('utc'::text, now()) not null,
+  team_id                uuid references public.teams on delete cascade not null,
+  query_stat_id          uuid references public.query_stats,
+  data                   jsonb,
+  normalized_token_count int
 );
 comment on table public.query_stats_usage is 'Usage.';
 

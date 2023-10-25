@@ -12,8 +12,7 @@
     "lint:ts": "tsc",
     "version": "changeset version && npm install",
     "test": "vitest run --coverage",
-    "test:watch": "vitest watch --coverage",
-    "build:analyze": "npm run build && source-map-explorer .next/static/**/*.js"
+    "test:watch": "vitest watch --coverage"
   },
   "overrides": {
     "@types/react": "^18.0.0",
@@ -64,9 +63,6 @@
     "@tailwindcss/forms": "^0.5.3",
     "@tanstack/react-table": "^8.7.9",
     "@testing-library/jest-dom": "^6.0.1",
-    "@tiptap/pm": "^2.0.4",
-    "@tiptap/react": "^2.0.4",
-    "@tiptap/starter-kit": "^2.0.4",
     "@types/flexsearch": "^0.7.3",
     "@upstash/ratelimit": "^0.4.0",
     "@upstash/redis": "^1.20.1",

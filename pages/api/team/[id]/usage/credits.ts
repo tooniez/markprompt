@@ -1,18 +1,22 @@
+import { OpenAIChatCompletionsModelId } from '@markprompt/core';
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { endOfMonth, formatISO, parseISO, startOfMonth } from 'date-fns';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { withTeamAdminAccess } from '@/lib/middleware/common';
 import {
   DAY_IN_SECONDS,
-  del,
   get,
   getTeamCreditsKey,
   setWithExpiration,
 } from '@/lib/redis';
+import {
+  getCompletionCredits,
+  getCompletionsAllowance,
+} from '@/lib/stripe/tiers';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase';
-import { safeParseInt, safeParseIntOrUndefined } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
-import { DbTeam } from '@/types/types';
+import { DbTeam, ModelUsageInfo } from '@/types/types';
 
 type Data =
   | {
@@ -49,48 +53,81 @@ export default withTeamAdminAccess(
 
     if (req.method === 'GET') {
       // Fetch from cache (1 day expiration)
-      await del(getTeamCreditsKey(teamId));
-      console.log('Got', await get(getTeamCreditsKey(teamId)));
-      let credits = safeParseIntOrUndefined(
-        await get(getTeamCreditsKey(teamId)),
-      );
+      const credits: number | null = await get(getTeamCreditsKey(teamId));
 
-      console.log('Got credits', credits);
       if (!credits) {
-        credits = 40;
+        const { data: teamData } = await supabaseAdmin
+          .from('teams')
+          .select('billing_cycle_start,stripe_price_id,plan_details')
+          .match({ id: teamId })
+          .limit(1)
+          .maybeSingle();
+
+        if (!teamData) {
+          return res
+            .status(401)
+            .json({ error: 'Unable to retrieve team data' });
+        }
+
+        const { usagePeriod } = getCompletionsAllowance({
+          stripe_price_id: teamData.stripe_price_id,
+          plan_details: teamData.plan_details,
+        });
+
+        let startDate: Date;
+        if (usagePeriod === 'yearly' && teamData.billing_cycle_start) {
+          startDate = parseISO(teamData.billing_cycle_start);
+        } else {
+          startDate = startOfMonth(new Date());
+        }
+
+        // const { data } = await supabaseAdmin.rpc(
+        //   'get_accumulated_query_stats_token_count',
+        //   {
+        //     team_id: teamId,
+        //     from_tz: formatISO(startDate),
+        //     to_tz: formatISO(endOfMonth(startDate)),
+        //   },
+        // );
+
+        // if (!data) {
+        //   credits = 0;
+        // } else {
+        //   const modelUsageInfos: ModelUsageInfo[] = data.flatMap((row) => {
+        //     const infos: ModelUsageInfo[] = [];
+        //     if (row.retrieval_model) {
+        //       infos.push({
+        //         model: row.retrieval_model as OpenAIChatCompletionsModelId,
+        //         tokens: {
+        //           prompt_tokens: row.total_retrieval_prompt_tokens,
+        //           completion_tokens: row.total_retrieval_completion_tokens,
+        //         },
+        //       });
+        //     }
+        //     if (row.completion_model) {
+        //       infos.push({
+        //         model: row.completion_model as OpenAIChatCompletionsModelId,
+        //         tokens: {
+        //           prompt_tokens: row.total_completion_prompt_tokens,
+        //           completion_tokens: row.total_completion_completion_tokens,
+        //         },
+        //       });
+        //     }
+        //     return infos;
+        //   });
+
+        //   credits = getCompletionCredits(modelUsageInfos) || 0;
+        // }
 
         // Set in cache (with a 1-day expiration)
-        console.log(
-          'Setting',
-          JSON.stringify(credits),
-          typeof JSON.stringify(credits),
-        );
         await setWithExpiration(
           getTeamCreditsKey(teamId),
-          String(120),
+          credits,
           DAY_IN_SECONDS,
         );
-        const got = await get(getTeamCreditsKey(teamId));
-        console.log('Got', got, typeof got);
       }
-      // const { data: occurrences, error } = await supabaseAdmin.rpc(
-      //   'get_team_num_completions',
-      //   {
-      //     team_id: teamId,
-      //     from_tz: req.query.from as string,
-      //     to_tz: req.query.to as string,
-      //   },
-      // );
 
-      // if (error) {
-      //   return res.status(400).json({ error: error.message });
-      // }
-
-      // if (!occurrences || occurrences.length === 0) {
-      //   return res.status(404).json({ error: 'No results found.' });
-      // }
-
-      return res.status(200).json({ credits: 20 });
+      return res.status(200).json({ credits: credits || 0 });
     }
 
     return res.status(400).end();

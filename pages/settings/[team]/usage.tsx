@@ -123,13 +123,18 @@ const UsageCredits = ({ team }: { team?: DbTeam }) => {
     <UsageCard
       loading={loading || !team}
       title={
-        <>
-          Message credits{' '}
-          <span className="text-sm font-normal text-neutral-500">
-            {completionsAllowance?.usagePeriod === 'monthly' &&
-              '(month to date)'}
+        <div className="flex flex-row items-center gap-2 overflow-hidden">
+          <div className="flex-grow overflow-hidden truncate">
+            Message credits{' '}
+            <span className="text-sm font-normal text-neutral-500">
+              {completionsAllowance?.usagePeriod === 'monthly' &&
+                '(month to date)'}
+            </span>
+          </div>
+          <span className="flex-none text-xs text-neutral-600">
+            Updated daily
           </span>
-        </>
+        </div>
       }
       subtitle={
         <>

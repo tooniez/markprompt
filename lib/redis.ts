@@ -44,31 +44,16 @@ export const getRedisClient = () => {
   return redis;
 };
 
-export const safeGetObject = async <T>(
-  key: string,
-  defaultValue: T,
-): Promise<T> => {
-  const value = await get(key);
-  if (value) {
-    try {
-      return JSON.parse(value);
-    } catch (e) {
-      // Do nothing
-    }
-  }
-  return defaultValue;
-};
-
-export const get = async (key: string): Promise<string | null> => {
+export const get = async <T>(key: string): Promise<T | null> => {
   try {
-    return getRedisClient().get<string>(key);
+    return getRedisClient().get<T>(key);
   } catch (e) {
     console.error('Redis `get` error', e);
   }
   return null;
 };
 
-export const set = async (key: string, value: string) => {
+export const set = async <T>(key: string, value: T) => {
   try {
     await getRedisClient().set(key, value);
   } catch (e) {
@@ -76,9 +61,9 @@ export const set = async (key: string, value: string) => {
   }
 };
 
-export const setWithExpiration = async (
+export const setWithExpiration = async <T>(
   key: string,
-  value: string,
+  value: T,
   expirationInSeconds: number,
 ) => {
   try {

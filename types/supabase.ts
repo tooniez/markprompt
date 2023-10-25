@@ -532,6 +532,7 @@ export interface Database {
           created_at: string
           data: Json | null
           id: string
+          normalized_token_count: number | null
           query_stat_id: string | null
           team_id: string
         }
@@ -539,6 +540,7 @@ export interface Database {
           created_at?: string
           data?: Json | null
           id?: string
+          normalized_token_count?: number | null
           query_stat_id?: string | null
           team_id: string
         }
@@ -546,6 +548,7 @@ export interface Database {
           created_at?: string
           data?: Json | null
           id?: string
+          normalized_token_count?: number | null
           query_stat_id?: string | null
           team_id?: string
         }
@@ -1401,6 +1404,21 @@ export interface Database {
         }
         Returns: {
           id: number
+        }[]
+      }
+      get_accumulated_query_stats_token_count: {
+        Args: {
+          team_id: string
+          from_tz: string
+          to_tz: string
+        }
+        Returns: {
+          retrieval_model: string
+          completion_model: string
+          total_retrieval_prompt_tokens: number
+          total_retrieval_completion_tokens: number
+          total_completion_prompt_tokens: number
+          total_completion_completion_tokens: number
         }[]
       }
       get_insights_query_histogram: {
