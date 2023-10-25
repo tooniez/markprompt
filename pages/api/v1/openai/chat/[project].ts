@@ -162,7 +162,7 @@ const buildInitMessages = (
   }
 
   initMessages.push({
-    role: ChatCompletionRequestMessageRoleEnum.User,
+    role: ChatCompletionRequestMessageRoleEnum.System,
     content: `Here is the documentation, in the form of sections preceded by a section id:\n\n${contextSections}`,
   });
 
