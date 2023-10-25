@@ -575,6 +575,8 @@ export default async function handler(req: NextRequest) {
       !!params.skipHardPromptInstructions,
     );
 
+    console.debug('[CHAT LOG]', JSON.stringify(initMessages, null, 2));
+
     // Max length of completion
     const maxCompletionTokenCount = params.maxTokens || 1024;
 
