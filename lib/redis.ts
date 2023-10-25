@@ -1,8 +1,10 @@
 import { Redis } from '@upstash/redis';
 
-import { Project } from '@/types/types';
+import { DbTeam, Project } from '@/types/types';
 
 let redis: Redis | undefined = undefined;
+
+export const DAY_IN_SECONDS = 86400;
 
 const monthBin = (date: Date) => {
   return `${date.getFullYear()}/${date.getMonth() + 1}`;
@@ -19,6 +21,10 @@ export const getProjectEmbeddingsMonthTokenCountKey = (
 
 export const getProjectIdByKey = (apiKey: string) => {
   return `${process.env.NODE_ENV}:project_id:by_api_key:${apiKey}`;
+};
+
+export const getTeamCreditsKey = (teamId: DbTeam['id']) => {
+  return `${process.env.NODE_ENV}:team:${teamId}:credits`;
 };
 
 export const getIsDomainWhitelistedForProjectKey = (
@@ -76,6 +82,7 @@ export const setWithExpiration = async (
   expirationInSeconds: number,
 ) => {
   try {
+    console.log('setWithExpiration', value, typeof value);
     await getRedisClient().set(key, value, { ex: expirationInSeconds });
   } catch (e) {
     console.error('Redis `set` error', e);

@@ -13,6 +13,7 @@ import useSWR from 'swr';
 import { QueriesHistogram } from '@/components/insights/queries-histogram';
 import { TeamSettingsLayout } from '@/components/layouts/TeamSettingsLayout';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
+import { SkeletonPanel } from '@/components/ui/Skeletons';
 import {
   TableBody,
   Table,
@@ -33,10 +34,10 @@ import {
   MAX_COMPLETIONS_ALLOWANCE,
   MAX_EMBEDDINGS_TOKEN_ALLOWANCE,
   getEmbeddingTokensAllowance,
-  getMonthlyCompletionsAllowance,
+  getCompletionsAllowance,
 } from '@/lib/stripe/tiers';
 import { fetcher, formatUrl } from '@/lib/utils';
-import { DateCountHistogramEntry, TeamStats } from '@/types/types';
+import { DateCountHistogramEntry, DbTeam, TeamStats } from '@/types/types';
 
 dayjs.extend(duration);
 
@@ -44,17 +45,26 @@ const UsageCard = ({
   title,
   subtitle,
   percentage,
+  loading,
 }: {
   title: ReactNode | string;
   subtitle: ReactNode | string;
   percentage: number;
+  loading?: boolean;
 }) => {
   return (
     <div className="flex flex-row items-center gap-4 p-4">
       <div className="flex flex-grow flex-col gap-2">
         <p className="text-sm font-medium text-neutral-100">{title}</p>
-        <div className="flex flex-row items-center gap-4">
-          <div className="w-16 flex-none">
+        <div className="relative flex flex-row items-center gap-4">
+          <div className="absolute inset-y-0 h-full w-40">
+            <SkeletonPanel loading={loading} />
+          </div>
+          <div
+            className={cn('w-16 flex-none transition', {
+              'opacity-0': loading,
+            })}
+          >
             <Progress.Root
               // Fix overflow clipping in Safari
               // https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0
@@ -77,10 +87,62 @@ const UsageCard = ({
               />
             </Progress.Root>
           </div>
-          <p className="text-sm text-neutral-400">{subtitle}</p>
+          <p
+            className={cn('text-sm text-neutral-400 transition', {
+              'opacity-0': loading,
+            })}
+          >
+            {subtitle}
+          </p>
         </div>
       </div>
     </div>
+  );
+};
+
+const UsageCredits = ({ team }: { team?: DbTeam }) => {
+  const { data, error } = useSWR(
+    team?.id ? `/api/team/${team.id}/usage/credits` : null,
+    fetcher<{ credits: number } | undefined>,
+  );
+
+  const loading = !data && !error;
+
+  const credits = data?.credits || 0;
+
+  const completionsAllowance = team ? getCompletionsAllowance(team) : undefined;
+
+  const completionsPercentage = completionsAllowance
+    ? Math.min(
+        100,
+        Math.round((credits / completionsAllowance.completions) * 100),
+      )
+    : 0;
+
+  return (
+    <UsageCard
+      loading={loading || !team}
+      title={
+        <>
+          Message credits{' '}
+          <span className="text-sm font-normal text-neutral-500">
+            {completionsAllowance?.usagePeriod === 'monthly' &&
+              '(month to date)'}
+          </span>
+        </>
+      }
+      subtitle={
+        <>
+          {credits}/
+          {completionsAllowance?.completions === MAX_COMPLETIONS_ALLOWANCE ? (
+            <InfinityIcon className="inline-block h-4 w-4" />
+          ) : (
+            completionsAllowance?.completions
+          )}
+        </>
+      }
+      percentage={completionsPercentage}
+    />
   );
 };
 
@@ -173,14 +235,6 @@ const Usage = () => {
       Math.round((numUsedEmbeddingsTokens / numAllowedEmbeddingsTokens) * 100),
     ) || 0;
 
-  const numCompletions = numCompletionsResponse?.occurrences || 0;
-
-  const numAllowedCompletions = team ? getMonthlyCompletionsAllowance(team) : 0;
-
-  const completionsPercentage =
-    Math.min(100, Math.round((numCompletions / numAllowedCompletions) * 100)) ||
-    0;
-
   return (
     <TeamSettingsLayout
       title="Usage"
@@ -201,27 +255,7 @@ const Usage = () => {
           }
           percentage={embeddingsTokensPercentage}
         />
-        <UsageCard
-          title={
-            <>
-              Completions{' '}
-              <span className="text-sm font-normal text-neutral-500">
-                (month to date)
-              </span>
-            </>
-          }
-          subtitle={
-            <>
-              {numCompletions}/
-              {numAllowedCompletions === MAX_COMPLETIONS_ALLOWANCE ? (
-                <InfinityIcon className="inline-block h-4 w-4" />
-              ) : (
-                numAllowedCompletions
-              )}
-            </>
-          }
-          percentage={completionsPercentage}
-        />
+        <UsageCredits team={team} />
       </div>
       <h2 className="mt-8 text-lg font-bold text-neutral-100">Content</h2>
       <div className="flex justify-start text-neutral-100">
@@ -297,12 +331,12 @@ const Usage = () => {
             defaultRange={FixedDateRange.MONTH_TO_DATE}
           />
         </div>
-        <div className="flex-none">
+        <div className="hidden flex-none">
           {queriesHistogram ? (
             <div className="text-sm text-neutral-500">
               In selected range:{' '}
               <span className="font-medium text-neutral-100">
-                {queriesHistogram.reduce((acc, q) => acc + q.count, 0)}
+                0{/* {queriesHistogram.reduce((acc, q) => acc + q.count, 0)} */}
               </span>
             </div>
           ) : (

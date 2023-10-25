@@ -1,0 +1,1 @@
+create index idx_query_stats_usage_team_id_created on query_stats_usage(team_id, created_at);

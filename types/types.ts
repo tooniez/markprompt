@@ -307,3 +307,5 @@ export type UsageInfo = {
   retrieval?: ModelUsageInfo;
   completion?: ModelUsageInfo;
 };
+
+export type UsagePeriod = 'monthly' | 'yearly';

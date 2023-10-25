@@ -831,6 +831,7 @@ create index idx_tokens_project_id on tokens(project_id);
 create index idx_domain_project_id on domains(project_id);
 create index idx_file_sections_cf_project_id on file_sections (cf_project_id);
 create index idx_query_stats_project_id_created_at_processed on query_stats(project_id, created_at, processed);
+create index idx_query_stats_usage_team_id_created on query_stats_usage(team_id, created_at);
 create index idx_pgroonga_file_sections_content on file_sections using pgroonga (content);
 create index idx_pgroonga_files_meta on files using pgroonga (meta);
 create index idx_pgroonga_files_meta_title on files using pgroonga ((meta->>'title'));

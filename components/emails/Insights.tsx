@@ -11,7 +11,6 @@ import {
   Text,
 } from '@react-email/components';
 import cn from 'classnames';
-import { sum } from 'd3-array';
 import { format } from 'date-fns';
 import { FC } from 'react';
 
@@ -143,22 +142,23 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
           stats.teamUsageStats
             .filter((team) => {
               // Exclude teams with no files in projects
-              return sum(team.projectUsageStats.map((p) => p.numFiles)) > 0;
+              return team.projectUsageStats.some((p) => p.numFiles > 0);
             })
             .map((team, i) => {
               // Completions usage
               const hasInfiniteCompletions = isInifiniteCompletionsAllowance(
-                team.numMonthlyAllowedCompletions,
+                team.numAllowedCompletions,
               );
 
-              const usedCompletions = sum(
-                team.projectUsageStats.map((p) => p.numQuestionsAsked),
+              const usedCompletions = team.projectUsageStats.reduce(
+                (acc, p) => acc + p.numQuestionsAsked,
+                0,
               );
 
               const completionsUsagePercent = hasInfiniteCompletions
                 ? 0
                 : Math.round(
-                    (100 * usedCompletions) / team.numMonthlyAllowedCompletions,
+                    (100 * usedCompletions) / team.numAllowedCompletions,
                   );
 
               const completionsWarningLevel =
@@ -172,8 +172,9 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
               const hasInfiniteEmbeddings =
                 isInifiniteEmbeddingsTokensAllowance(team.numAllowedEmbeddings);
 
-              const usedEmbeddingTokens = sum(
-                team.projectUsageStats.map((p) => p.numEmbeddingTokens),
+              const usedEmbeddingTokens = team.projectUsageStats.reduce(
+                (acc, p) => acc + p.numEmbeddingTokens,
+                0,
               );
 
               const embeddingTokensUsagePercent = hasInfiniteEmbeddings
@@ -216,7 +217,7 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
                         <Text className="m-0 text-sm">
                           {getWarningMessage(
                             completionsUsagePercent,
-                            team.numMonthlyAllowedCompletions,
+                            team.numAllowedCompletions,
                             usedCompletions,
                             embeddingTokensUsagePercent,
                             team.numAllowedEmbeddings,

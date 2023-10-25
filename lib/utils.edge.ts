@@ -62,6 +62,24 @@ export const safeParseInt = (
   return fallbackValue;
 };
 
+export const safeParseIntOrUndefined = (
+  value: string | undefined | null,
+): number | undefined => {
+  if (typeof value !== 'string') {
+    console.log('Value is not a string: ', typeof value);
+    return undefined;
+  }
+
+  try {
+    return parseInt(value);
+  } catch (e) {
+    console.log('ERROR', e);
+    //
+  }
+
+  return undefined;
+};
+
 export const safeParseJSON = <T>(
   value: string | undefined | null,
   fallbackValue: T,
