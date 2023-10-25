@@ -22,6 +22,7 @@ import {
 import { createEmbedding, createModeration } from './openai.edge';
 import { InsightsType } from './stripe/tiers';
 import {
+  byteSize,
   getChatCompletionsResponseText,
   getChatCompletionsUrl,
 } from './utils.nodeps';
@@ -193,6 +194,20 @@ export const getMatchingSections = async (
   return { fileSections, promptEmbedding };
 };
 
+const createrResponseHeader = (
+  references: FileSectionReference[],
+  conversationId: DbConversation['id'] | undefined,
+  promptId: DbQueryStat['id'] | undefined,
+) => {
+  const headerEncoder = new TextEncoder();
+  return headerEncoder
+    .encode(JSON.stringify({ references, conversationId, promptId }))
+    .toString();
+};
+
+// Header max size.
+const MAX_HEADER_BYTE_SIZE = 32_000;
+
 export const getHeaders = (
   references: FileSectionReference[],
   conversationId: DbConversation['id'] | undefined,
@@ -201,10 +216,24 @@ export const getHeaders = (
   // Headers cannot include non-UTF-8 characters, so make sure any strings
   // we pass in the headers are properly encoded before sending.
   const headers = new Headers();
-  const headerEncoder = new TextEncoder();
-  const encodedHeaderData = headerEncoder
-    .encode(JSON.stringify({ references, conversationId, promptId }))
-    .toString();
+  let encodedHeaderData = createrResponseHeader(
+    references,
+    conversationId,
+    promptId,
+  );
+
+  let trimmedReferences = references;
+  while (
+    trimmedReferences.length > 0 &&
+    byteSize(encodedHeaderData) > MAX_HEADER_BYTE_SIZE
+  ) {
+    trimmedReferences = references.slice(0, -1);
+    encodedHeaderData = createrResponseHeader(
+      trimmedReferences,
+      conversationId,
+      promptId,
+    );
+  }
 
   headers.append('Content-Type', 'application/json');
   headers.append('x-markprompt-data', encodedHeaderData);

@@ -138,3 +138,7 @@ export const getCompletionsResponseText = (
 export const getChatCompletionsResponseText = (response: any): string => {
   return response.choices[0].message.content;
 };
+
+export const byteSize = (s: string) => {
+  return new Blob([s]).size;
+};
