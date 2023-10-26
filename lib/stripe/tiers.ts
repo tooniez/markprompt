@@ -361,17 +361,16 @@ export const getEmbeddingTokensAllowance = (
   return getTierDetails(teamTierInfo).quotas?.embeddings || 0;
 };
 
-export const MAX_EMBEDDINGS_TOKEN_ALLOWANCE = 1_000_000_000;
-export const MAX_COMPLETIONS_ALLOWANCE = 1_000_000_000;
+export const INFINITE_TOKEN_ALLOWANCE = -1;
 
 // Plans with infinite embeddings tokens allowance still have a limit, not
 // visible to the user.
 export const isInifiniteEmbeddingsTokensAllowance = (numTokens: number) => {
-  return numTokens >= MAX_EMBEDDINGS_TOKEN_ALLOWANCE;
+  return numTokens === INFINITE_TOKEN_ALLOWANCE;
 };
 
 export const isInifiniteCompletionsAllowance = (numCompletions: number) => {
-  return numCompletions >= MAX_COMPLETIONS_ALLOWANCE;
+  return numCompletions === INFINITE_TOKEN_ALLOWANCE;
 };
 
 export const isEnterpriseOrCustomTier = (tier: Tier) => {

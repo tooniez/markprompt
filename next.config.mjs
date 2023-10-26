@@ -4,7 +4,6 @@ import remarkGfm from 'remark-gfm';
 
 const withBundleAnalyzer = analyze({
   enabled: process.env.ANALYZE === 'true',
-  defaultSizes: 'gzip',
 });
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -39,7 +38,7 @@ const corsHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
-  reactStrictMode: true,
+  // reactStrictMode: true,
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**.googleusercontent.com' },
@@ -55,6 +54,9 @@ const nextConfig = {
     },
     'date-fns': {
       transform: 'date-fns/{{member}}',
+    },
+    lodash: {
+      transform: 'lodash/{{member}}',
     },
   },
   async headers() {

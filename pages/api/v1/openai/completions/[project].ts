@@ -1,7 +1,6 @@
 import {
   FileSectionReference,
   OpenAIChatCompletionsModelId,
-  OpenAICompletionsModelId,
 } from '@markprompt/core';
 import { stripIndent } from 'common-tags';
 import {

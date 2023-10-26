@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_OPTIONS=--max-old-space-size=8192 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "run-p lint:format lint:js lint:ts",
@@ -12,7 +12,8 @@
     "lint:ts": "tsc",
     "version": "changeset version && npm install",
     "test": "vitest run --coverage",
-    "test:watch": "vitest watch --coverage"
+    "test:watch": "vitest watch --coverage",
+    "analyze": "ANALYZE=true npm run build"
   },
   "overrides": {
     "@types/react": "^18.0.0",
@@ -138,11 +139,7 @@
     "unique-names-generator": "^4.7.1",
     "unist-builder": "^3.0.1",
     "unist-util-filter": "^4.0.1",
-    "unist-util-visit": "^4.1.2",
-    "unzipper": "^0.10.14",
-    "use-debounce": "^9.0.3",
-    "utility-types": "^3.10.0",
-    "web-streams-node": "^0.4.0"
+    "unist-util-visit": "^4.1.2"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.9",
@@ -158,7 +155,6 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/turndown": "^5.0.1",
-    "@types/unzipper": "^0.10.5",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
     "@vitejs/plugin-react": "^4.0.4",

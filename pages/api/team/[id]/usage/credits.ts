@@ -50,11 +50,7 @@ export default withTeamAdminAccess(
 
     if (req.method === 'GET') {
       // Fetch from cache (1 day expiration)
-      let creditsInfo: CreditsInfo | null = null;
-      // let credits: Credits | null = safeParseJSON(
-      //   await get(getTeamCreditsKey(teamId)),
-      //   null,
-      // );
+      let creditsInfo = await get<CreditsInfo>(getTeamCreditsKey(teamId));
 
       if (!creditsInfo) {
         const { data: teamData } = await supabaseAdmin

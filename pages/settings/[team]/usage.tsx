@@ -1,8 +1,6 @@
 import * as Progress from '@radix-ui/react-progress';
 import cn from 'classnames';
 import { endOfDay, formatISO, parseISO, startOfMonth } from 'date-fns';
-import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration';
 import { sum } from 'lodash-es';
 import { InfinityIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -31,10 +29,9 @@ import {
 } from '@/lib/date';
 import useTeam from '@/lib/hooks/use-team';
 import {
-  MAX_COMPLETIONS_ALLOWANCE,
-  MAX_EMBEDDINGS_TOKEN_ALLOWANCE,
   getEmbeddingTokensAllowance,
-  getCompletionsAllowance,
+  getTierDetails,
+  INFINITE_TOKEN_ALLOWANCE,
 } from '@/lib/stripe/tiers';
 import { fetcher, formatUrl } from '@/lib/utils';
 import {
@@ -44,68 +41,143 @@ import {
   TeamStats,
 } from '@/types/types';
 
-dayjs.extend(duration);
+type GaugeData = {
+  label?: ReactNode | string;
+  value: number;
+  total: number;
+};
+
+const UsageGauge = ({
+  gauge,
+  loading,
+}: {
+  gauge?: GaugeData;
+  loading?: boolean;
+}) => {
+  const percentage = gauge
+    ? gauge.total === INFINITE_TOKEN_ALLOWANCE
+      ? 1
+      : Math.min(100, Math.round((gauge.value / gauge.total) * 100))
+    : 0;
+
+  return (
+    <div className="relative">
+      <div className="absolute inset-y-0 h-full w-40">
+        <SkeletonPanel loading={loading} />
+      </div>
+      <div
+        className={cn('flex flex-none flex-row items-center gap-4 transition', {
+          'opacity-0': loading,
+        })}
+      >
+        {gauge?.label || ''}
+        <div className="w-16 flex-none">
+          <Progress.Root
+            // Fix overflow clipping in Safari
+            // https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0
+            style={{ transform: 'translateZ(0)' }}
+            className="relative h-2 flex-grow overflow-hidden rounded-full bg-neutral-800"
+            value={10}
+          >
+            <Progress.Indicator
+              className={cn(
+                'h-full w-full transform duration-500 ease-in-out',
+                {
+                  'bg-sky-400': percentage <= 70,
+                  'bg-amber-400': percentage > 70 && percentage <= 90,
+                  'bg-red-400': percentage > 90,
+                },
+              )}
+              style={{
+                transform: `translateX(-${100 - Math.max(2, percentage)}%)`,
+              }}
+            />
+          </Progress.Root>
+        </div>
+        <p
+          className={cn('text-sm text-neutral-400 transition', {
+            'opacity-0': loading,
+          })}
+        >
+          {!gauge ? (
+            0
+          ) : (
+            <>
+              {gauge.value}/
+              {gauge.total === INFINITE_TOKEN_ALLOWANCE ? (
+                <InfinityIcon className="inline-block h-4 w-4" />
+              ) : (
+                gauge.total
+              )}
+            </>
+          )}
+        </p>
+      </div>
+    </div>
+  );
+};
 
 const UsageCard = ({
   title,
-  subtitle,
-  percentage,
+  gauges,
   loading,
 }: {
   title: ReactNode | string;
-  subtitle: ReactNode | string;
-  percentage: number;
+  gauges: GaugeData[];
   loading?: boolean;
 }) => {
   return (
     <div className="flex flex-row items-center gap-4 p-4">
-      <div className="flex flex-grow flex-col gap-2">
+      <div className="flex flex-grow flex-col gap-4">
         <p className="text-sm font-medium text-neutral-100">{title}</p>
-        <div className="relative flex flex-row items-center gap-4">
-          <div className="absolute inset-y-0 h-full w-40">
-            <SkeletonPanel loading={loading} />
-          </div>
-          <div
-            className={cn('w-16 flex-none transition', {
-              'opacity-0': loading,
-            })}
-          >
-            <Progress.Root
-              // Fix overflow clipping in Safari
-              // https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0
-              style={{ transform: 'translateZ(0)' }}
-              className="relative h-2 flex-grow overflow-hidden rounded-full bg-neutral-800"
-              value={10}
-            >
-              <Progress.Indicator
-                className={cn(
-                  'h-full w-full transform duration-500 ease-in-out',
-                  {
-                    'bg-sky-400': percentage <= 70,
-                    'bg-amber-400': percentage > 70 && percentage <= 90,
-                    'bg-red-400': percentage > 90,
-                  },
-                )}
-                style={{
-                  transform: `translateX(-${100 - Math.max(2, percentage)}%)`,
-                }}
+        <div className="flex flex-col gap-2">
+          {gauges.length === 0 ? (
+            <UsageGauge loading={loading} />
+          ) : (
+            gauges.map((gauge, i) => (
+              <UsageGauge
+                key={`gauge-${title}-${i}`}
+                gauge={gauge}
+                loading={loading}
               />
-            </Progress.Root>
-          </div>
-          <p
-            className={cn('text-sm text-neutral-400 transition', {
-              'opacity-0': loading,
-            })}
-          >
-            {subtitle}
-          </p>
+            ))
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-const UsageCredits = ({ team }: { team?: DbTeam }) => {
+const EmbeddingsCredits = ({
+  team,
+  teamStats,
+}: {
+  team?: DbTeam;
+  teamStats?: TeamStats[];
+}) => {
+  const numUsedEmbeddingsTokens = sum(
+    (teamStats || []).map((s) => s.num_tokens),
+  );
+
+  const numAllowedEmbeddingsTokens = team
+    ? getEmbeddingTokensAllowance(team)
+    : 0;
+
+  return (
+    <UsageCard
+      loading={!team}
+      title="Embeddings"
+      gauges={[
+        {
+          value: numUsedEmbeddingsTokens,
+          total: numAllowedEmbeddingsTokens,
+        },
+      ]}
+    />
+  );
+};
+
+const CompletionsCredits = ({ team }: { team?: DbTeam }) => {
   const { data, error } = useSWR(
     team?.id ? `/api/team/${team.id}/usage/credits` : null,
     fetcher<CreditsInfo | undefined>,
@@ -113,16 +185,30 @@ const UsageCredits = ({ team }: { team?: DbTeam }) => {
 
   const loading = !data && !error;
 
-  let entries: Record<string, number> = {};
+  const gaugeData: GaugeData[] = useMemo(() => {
+    if (!team || !data) {
+      return [];
+    }
 
-  if (
-    data?.completionCreditsPerModel &&
-    Object.keys(data.completionCreditsPerModel).length > 0
-  ) {
-    entries = data?.completionCreditsPerModel;
-  } else {
-    entries = { '': 1 };
-  }
+    const tierDetails = getTierDetails(team);
+
+    const _gaugeData: GaugeData[] = [];
+    if (
+      data?.completionCreditsPerModel &&
+      Object.keys(data.completionCreditsPerModel).length > 0
+    ) {
+      // entries = data?.completionCreditsPerModel;
+    } else if (data?.credits) {
+      _gaugeData.push({
+        value: 0,
+        // total: team?.plan_details || 0,
+        total: 0,
+      });
+      // entries = { [NO_MODEL]: 1 };
+    }
+
+    return _gaugeData;
+  }, [team, data]);
 
   // const credits = data?.credits || 0;
 
@@ -151,17 +237,33 @@ const UsageCredits = ({ team }: { team?: DbTeam }) => {
           </span>
         </div>
       }
-      subtitle={
-        <>
-          {credits}/
-          {completionsAllowance?.completions === MAX_COMPLETIONS_ALLOWANCE ? (
-            <InfinityIcon className="inline-block h-4 w-4" />
-          ) : (
-            completionsAllowance?.completions
-          )}
-        </>
+      gauges={
+        gaugeData
+        //   [
+        //   {
+        //     value: 2,
+        //     total: 10,
+        //     label: <span className="w-10">Hi</span>,
+        //   },
+        // ]
       }
-      percentage={completionsPercentage}
+      // subtitle={
+      //   <>
+      //     {Object.keys(entries).map((entry, i) => {
+      //       if (entry === NO_MODEL) {
+      //       }
+      //       return <div key={`credit-entry-${i}`} />;
+      //     })}
+      //     {credits}/
+      //     {completionsAllowance?.completions === MAX_COMPLETIONS_ALLOWANCE ? (
+      //       <InfinityIcon className="inline-block h-4 w-4" />
+      //     ) : (
+      //       completionsAllowance?.completions
+      //     )}
+      //   </>
+      // }
+      // percentage={completionsPercentage}
+      // percentage={0}
     />
   );
 };
@@ -261,21 +363,8 @@ const Usage = () => {
       titleComponent={<div className="flex items-center">Usage</div>}
     >
       <div className="grid grid-cols-2 rounded-md border border-neutral-900 [&>div:not(:first-child)]:border-l [&>div:not(:first-child)]:border-neutral-900">
-        <UsageCard
-          title="Embeddings"
-          subtitle={
-            <>
-              {numUsedEmbeddingsTokens}/
-              {numAllowedEmbeddingsTokens === MAX_EMBEDDINGS_TOKEN_ALLOWANCE ? (
-                <InfinityIcon className="inline-block h-4 w-4" />
-              ) : (
-                numAllowedEmbeddingsTokens
-              )}
-            </>
-          }
-          percentage={embeddingsTokensPercentage}
-        />
-        <UsageCredits team={team} />
+        <EmbeddingsCredits team={team} teamStats={teamContentStats} />
+        <CompletionsCredits team={team} />
       </div>
       <h2 className="mt-8 text-lg font-bold text-neutral-100">Content</h2>
       <div className="flex justify-start text-neutral-100">
@@ -329,8 +418,7 @@ const Usage = () => {
                   {numUsedEmbeddingsTokens}
                   <span className="text-neutral-500">
                     /
-                    {numAllowedEmbeddingsTokens ===
-                    MAX_EMBEDDINGS_TOKEN_ALLOWANCE ? (
+                    {numAllowedEmbeddingsTokens === INFINITE_TOKEN_ALLOWANCE ? (
                       <InfinityIcon className="inline-block h-4 w-4" />
                     ) : (
                       numAllowedEmbeddingsTokens
