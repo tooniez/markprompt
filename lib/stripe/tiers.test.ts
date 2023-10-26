@@ -33,6 +33,7 @@ describe('credits', () => {
         tokens: { prompt_tokens: 950, completion_tokens: 12 },
       },
     ];
+
     // it('should normalize token count according to price factors', () => {
     //   expect(getNormalizedTokenCountForModelUsageInfos(usage)).toBe(1884);
     // });

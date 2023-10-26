@@ -25,6 +25,9 @@ export type TierDetails = {
   quotas?: {
     embeddings?: number;
     completions?: number;
+    perModelCompletions?: {
+      model: number;
+    };
     usagePeriod?: UsagePeriod;
   };
   features?: {
@@ -266,7 +269,7 @@ export const getTierName = (tier: Tier) => {
   return tier.name || 'Enterprise';
 };
 
-const getTierDetails = (teamTierInfo: TeamTierInfo): TierDetails => {
+export const getTierDetails = (teamTierInfo: TeamTierInfo): TierDetails => {
   // If team has signed up for a custom tier, return the associated tier
   // details. If not, return the trial tier if set (e.g. during a
   // trial period, before any stripe_price_id is set), merged with the

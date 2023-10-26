@@ -309,3 +309,10 @@ export type UsageInfo = {
 };
 
 export type UsagePeriod = 'monthly' | 'yearly';
+
+export type CreditsInfo = {
+  usagePeriod: UsagePeriod;
+  credits?: number;
+  // In case a user has per-model credits
+  completionCreditsPerModel?: Record<string, number>;
+};

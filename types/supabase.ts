@@ -1361,6 +1361,27 @@ export interface Database {
         }
         Returns: undefined
       }
+      count_team_credits: {
+        Args: {
+          team_id: string
+          from_tz: string
+          to_tz: string
+        }
+        Returns: {
+          count: number
+        }[]
+      }
+      count_team_credits_for_completions_model: {
+        Args: {
+          team_id: string
+          from_tz: string
+          to_tz: string
+          model: string
+        }
+        Returns: {
+          count: number
+        }[]
+      }
       create_fts_index: {
         Args: Record<PropertyKey, never>
         Returns: undefined

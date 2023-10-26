@@ -1,4 +1,3 @@
-import { OpenAIChatCompletionsModelId } from '@markprompt/core';
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { endOfMonth, formatISO, parseISO, startOfMonth } from 'date-fns';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -10,20 +9,18 @@ import {
   getTeamCreditsKey,
   setWithExpiration,
 } from '@/lib/redis';
-import {
-  getCompletionCredits,
-  getCompletionsAllowance,
-} from '@/lib/stripe/tiers';
+import { getTierDetails } from '@/lib/stripe/tiers';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase';
+import { safeParseJSON } from '@/lib/utils.edge';
 import { Database } from '@/types/supabase';
-import { DbTeam, ModelUsageInfo } from '@/types/types';
+import { CreditsInfo, DbTeam } from '@/types/types';
 
 type Data =
   | {
       status?: string;
       error?: string;
     }
-  | { credits: number };
+  | CreditsInfo;
 
 const allowedMethods = ['GET'];
 
@@ -53,9 +50,13 @@ export default withTeamAdminAccess(
 
     if (req.method === 'GET') {
       // Fetch from cache (1 day expiration)
-      const credits: number | null = await get(getTeamCreditsKey(teamId));
+      let creditsInfo: CreditsInfo | null = null;
+      // let credits: Credits | null = safeParseJSON(
+      //   await get(getTeamCreditsKey(teamId)),
+      //   null,
+      // );
 
-      if (!credits) {
+      if (!creditsInfo) {
         const { data: teamData } = await supabaseAdmin
           .from('teams')
           .select('billing_cycle_start,stripe_price_id,plan_details')
@@ -69,65 +70,70 @@ export default withTeamAdminAccess(
             .json({ error: 'Unable to retrieve team data' });
         }
 
-        const { usagePeriod } = getCompletionsAllowance({
+        const tierDetails = getTierDetails({
           stripe_price_id: teamData.stripe_price_id,
           plan_details: teamData.plan_details,
         });
 
         let startDate: Date;
-        if (usagePeriod === 'yearly' && teamData.billing_cycle_start) {
+        if (
+          tierDetails.quotas?.usagePeriod === 'yearly' &&
+          teamData.billing_cycle_start
+        ) {
           startDate = parseISO(teamData.billing_cycle_start);
         } else {
           startDate = startOfMonth(new Date());
         }
 
-        // const { data } = await supabaseAdmin.rpc(
-        //   'get_accumulated_query_stats_token_count',
-        //   {
-        //     team_id: teamId,
-        //     from_tz: formatISO(startDate),
-        //     to_tz: formatISO(endOfMonth(startDate)),
-        //   },
-        // );
+        creditsInfo = {
+          usagePeriod: tierDetails.quotas?.usagePeriod || 'monthly',
+        };
 
-        // if (!data) {
-        //   credits = 0;
-        // } else {
-        //   const modelUsageInfos: ModelUsageInfo[] = data.flatMap((row) => {
-        //     const infos: ModelUsageInfo[] = [];
-        //     if (row.retrieval_model) {
-        //       infos.push({
-        //         model: row.retrieval_model as OpenAIChatCompletionsModelId,
-        //         tokens: {
-        //           prompt_tokens: row.total_retrieval_prompt_tokens,
-        //           completion_tokens: row.total_retrieval_completion_tokens,
-        //         },
-        //       });
-        //     }
-        //     if (row.completion_model) {
-        //       infos.push({
-        //         model: row.completion_model as OpenAIChatCompletionsModelId,
-        //         tokens: {
-        //           prompt_tokens: row.total_completion_prompt_tokens,
-        //           completion_tokens: row.total_completion_completion_tokens,
-        //         },
-        //       });
-        //     }
-        //     return infos;
-        //   });
+        if (tierDetails.quotas?.perModelCompletions) {
+          for (const model of Object.keys(
+            tierDetails.quotas?.perModelCompletions,
+          )) {
+            const { data } = await supabaseAdmin.rpc(
+              'count_team_credits_for_completions_model',
+              {
+                team_id: teamId,
+                from_tz: formatISO(startDate),
+                to_tz: formatISO(endOfMonth(startDate)),
+                model,
+              },
+            );
 
-        //   credits = getCompletionCredits(modelUsageInfos) || 0;
-        // }
+            if (data) {
+              creditsInfo = {
+                ...creditsInfo,
+                completionCreditsPerModel: {
+                  ...creditsInfo?.completionCreditsPerModel,
+                  [model]: data?.[0]?.count || 0,
+                },
+              };
+            }
+          }
+        } else {
+          const { data } = await supabaseAdmin.rpc('count_team_credits', {
+            team_id: teamId,
+            from_tz: formatISO(startDate),
+            to_tz: formatISO(endOfMonth(startDate)),
+          });
+          creditsInfo = { ...creditsInfo, credits: data?.[0]?.count || 0 };
+        }
 
         // Set in cache (with a 1-day expiration)
         await setWithExpiration(
           getTeamCreditsKey(teamId),
-          credits,
+          JSON.stringify(creditsInfo),
           DAY_IN_SECONDS,
         );
+        console.log('Got from DB', JSON.stringify(creditsInfo, null, 2));
+      } else {
+        console.log('Got from cache', JSON.stringify(creditsInfo, null, 2));
       }
 
-      return res.status(200).json({ credits: credits || 0 });
+      return res.status(200).json(creditsInfo);
     }
 
     return res.status(400).end();

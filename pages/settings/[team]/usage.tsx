@@ -37,7 +37,12 @@ import {
   getCompletionsAllowance,
 } from '@/lib/stripe/tiers';
 import { fetcher, formatUrl } from '@/lib/utils';
-import { DateCountHistogramEntry, DbTeam, TeamStats } from '@/types/types';
+import {
+  CreditsInfo,
+  DateCountHistogramEntry,
+  DbTeam,
+  TeamStats,
+} from '@/types/types';
 
 dayjs.extend(duration);
 
@@ -103,21 +108,32 @@ const UsageCard = ({
 const UsageCredits = ({ team }: { team?: DbTeam }) => {
   const { data, error } = useSWR(
     team?.id ? `/api/team/${team.id}/usage/credits` : null,
-    fetcher<{ credits: number } | undefined>,
+    fetcher<CreditsInfo | undefined>,
   );
 
   const loading = !data && !error;
 
-  const credits = data?.credits || 0;
+  let entries: Record<string, number> = {};
 
-  const completionsAllowance = team ? getCompletionsAllowance(team) : undefined;
+  if (
+    data?.completionCreditsPerModel &&
+    Object.keys(data.completionCreditsPerModel).length > 0
+  ) {
+    entries = data?.completionCreditsPerModel;
+  } else {
+    entries = { '': 1 };
+  }
 
-  const completionsPercentage = completionsAllowance
-    ? Math.min(
-        100,
-        Math.round((credits / completionsAllowance.completions) * 100),
-      )
-    : 0;
+  // const credits = data?.credits || 0;
+
+  // const completionsAllowance = team ? getCompletionsAllowance(team) : undefined;
+
+  // const completionsPercentage = completionsAllowance
+  //   ? Math.min(
+  //       100,
+  //       Math.round((credits / completionsAllowance.completions) * 100),
+  //     )
+  //   : 0;
 
   return (
     <UsageCard
@@ -127,8 +143,7 @@ const UsageCredits = ({ team }: { team?: DbTeam }) => {
           <div className="flex-grow overflow-hidden truncate">
             Message credits{' '}
             <span className="text-sm font-normal text-neutral-500">
-              {completionsAllowance?.usagePeriod === 'monthly' &&
-                '(month to date)'}
+              {data?.usagePeriod === 'monthly' ? '(month to date)' : 'per year'}
             </span>
           </div>
           <span className="flex-none text-xs text-neutral-600">
