@@ -40,6 +40,7 @@ import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
+import { INFINITE_TOKEN_ALLOWANCE } from '@/lib/stripe/tiers';
 import {
   getAccessoryLabelForSource,
   getIconForSource,
@@ -356,8 +357,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   } = useSources();
   const { state: trainingState, trainAllSources } = useTrainingContext();
   const { markpromptOptions, theme, isDark } = useConfigContext();
-  const { numTokensPerTeamRemainingAllowance, numTokensPerTeamAllowance } =
-    useUsage();
+  const { canAddMoreContent, numTokensPerTeamAllowance } = useUsage();
   const [overlayDimensions, setOverlayDimensions] = useState({
     previewContainerWidth: 0,
     previewContainerHeight: 0,
@@ -480,7 +480,6 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   const isShowingOverlay =
     project &&
     (isTraining || (!isLoading && (!hasConnectedSources || !isTrained)));
-  const canAddMoreContent = numTokensPerTeamRemainingAllowance > 0;
 
   useEffect(() => {
     if (!isShowingOnboardingMessages) {

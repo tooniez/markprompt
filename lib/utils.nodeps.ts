@@ -1,5 +1,7 @@
 // Utilities that run without dependencies on any runtime, like
 // edge, node or browser. Anything in here can run anywhere.
+import { OpenAIChatCompletionsModelId } from '@markprompt/core';
+
 import { DbSource, OpenAIModelIdWithType, Source } from '@/types/types';
 
 import { APPROX_CHARS_PER_TOKEN } from './constants';
@@ -135,10 +137,35 @@ export const getCompletionsResponseText = (
   }
 };
 
+export const getModelDisplayName = (model: OpenAIChatCompletionsModelId) => {
+  switch (model) {
+    case 'gpt-3.5-turbo':
+      return 'GPT-3.5 Turbo';
+    case 'gpt-4':
+      return 'GPT-4';
+    case 'gpt-4-32k':
+      return 'GPT-4 32k';
+  }
+};
+
 export const getChatCompletionsResponseText = (response: any): string => {
   return response.choices[0].message.content;
 };
 
 export const byteSize = (s: string) => {
   return new Blob([s]).size;
+};
+
+// Returns the "new billing period start date", namely, the same day/month
+// but with year updated so that it is the closest before the current date.
+export const closestPastDate = (date: Date) => {
+  const now = new Date();
+  const nowYear = now.getFullYear();
+  date.setFullYear(nowYear);
+
+  if (date > now) {
+    date.setFullYear(nowYear - 1);
+  }
+
+  return date;
 };

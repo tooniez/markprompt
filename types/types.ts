@@ -300,10 +300,26 @@ export type ModelUsageInfo = {
     prompt_tokens: number;
     completion_tokens: number;
   };
-  model?: OpenAIChatCompletionsModelId | OpenAICompletionsModelId;
+  model: OpenAIChatCompletionsModelId;
 };
 
 export type UsageInfo = {
   retrieval?: ModelUsageInfo;
   completion?: ModelUsageInfo;
+};
+
+export type UsagePeriod = 'monthly' | 'yearly';
+
+export type CompletionsAllowances = { all?: number } & Partial<
+  Record<OpenAIChatCompletionsModelId, number>
+>;
+
+export type CompletionAllowanceAndUsage = { allowance: number; used: number };
+
+export type CompletionsUsageInfo = {
+  usagePeriod: UsagePeriod;
+  billingCycleStart: string;
+  completions?: { all?: CompletionAllowanceAndUsage } & Partial<
+    Record<OpenAIChatCompletionsModelId, CompletionAllowanceAndUsage>
+  >;
 };

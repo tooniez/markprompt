@@ -11,11 +11,6 @@
       "country": "United States"
     },
     {
-      "name": "Posthog",
-      "description": "Markprompt uses Posthog for analytics purposes in order to improve user experience.",
-      "country": "United States"
-    },
-    {
       "name": "Resend",
       "description": "Markprompt uses Resend to send your transactional emails about our services.",
       "country": "United States"

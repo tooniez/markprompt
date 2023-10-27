@@ -5,6 +5,7 @@ import {
 import { SupabaseClient } from '@supabase/supabase-js';
 import { backOff } from 'exponential-backoff';
 import { CreateEmbeddingResponse } from 'openai';
+import { isPresent } from 'ts-is-present';
 
 import { Database } from '@/types/supabase';
 import {
@@ -20,7 +21,10 @@ import {
 } from '@/types/types';
 
 import { createEmbedding, createModeration } from './openai.edge';
-import { InsightsType } from './stripe/tiers';
+import {
+  InsightsType,
+  getNormalizedTokenCountForModelUsageInfos,
+} from './stripe/tiers';
 import {
   byteSize,
   getChatCompletionsResponseText,
@@ -373,6 +377,9 @@ export const insertQueryStatUsage = async (
         team_id: teamId,
         query_stat_id: queryStatId,
         data: usageInfo,
+        normalized_token_count: getNormalizedTokenCountForModelUsageInfos(
+          [usageInfo.retrieval, usageInfo.completion].filter(isPresent),
+        ),
       },
     ])
     .select('id')

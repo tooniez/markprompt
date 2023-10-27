@@ -46,7 +46,11 @@ import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
-import { getTier, isEnterpriseOrCustomTier } from '@/lib/stripe/tiers';
+import {
+  INFINITE_TOKEN_ALLOWANCE,
+  getTier,
+  isEnterpriseOrCustomTier,
+} from '@/lib/stripe/tiers';
 import {
   canDeleteSource,
   getAccessoryLabelForSource,
@@ -208,9 +212,9 @@ const Data = () => {
     trainAllSources,
   } = useTrainingContext();
   const {
-    numTokensPerTeamRemainingAllowance,
     numTokensPerTeamAllowance,
     mutate: mutateFileStats,
+    canAddMoreContent,
   } = useUsage();
   const [rowSelection, setRowSelection] = useState({});
   const [forceRetrain, setForceRetrain] = useState(false);
@@ -380,7 +384,6 @@ const Data = () => {
   const numSelected = Object.values(rowSelection).filter(Boolean).length;
   const hasFiles = paginatedFiles && paginatedFiles.length > 0;
   const canTrain = hasFiles || hasNonFileSources(sources);
-  const canAddMoreContent = numTokensPerTeamRemainingAllowance > 0;
 
   if (!loadingUser && !user?.has_completed_onboarding) {
     return <Onboarding />;

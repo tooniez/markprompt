@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { track } from '@/lib/posthog';
-
 import {
   getProjectIdFromToken,
   noProjectForTokenResponse,
@@ -70,8 +68,6 @@ export default async function MatchSectionsMiddleware(req: NextRequest) {
   if (!projectId) {
     return noProjectForTokenResponse;
   }
-
-  track(projectId, 'get sections', { projectId });
 
   // We pass the query string as part of the rewritten response.
   // This is the only way I found to pass along GET query params to the

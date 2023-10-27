@@ -174,11 +174,12 @@ comment on table public.conversations is 'Conversations.';
 
 -- Usage
 create table public.query_stats_usage (
-  id            uuid primary key default uuid_generate_v4(),
-  created_at    timestamp with time zone default timezone('utc'::text, now()) not null,
-  team_id       uuid references public.teams on delete cascade not null,
-  query_stat_id uuid references public.query_stats,
-  data          jsonb
+  id                     uuid primary key default uuid_generate_v4(),
+  created_at             timestamp with time zone default timezone('utc'::text, now()) not null,
+  team_id                uuid references public.teams on delete cascade not null,
+  query_stat_id          uuid references public.query_stats,
+  data                   jsonb,
+  normalized_token_count int
 );
 comment on table public.query_stats_usage is 'Usage.';
 
@@ -668,6 +669,54 @@ begin
 end;
 $$;
 
+-- Count credits
+
+create or replace function count_team_credits(
+  team_id uuid,
+  from_tz timestamptz,
+  to_tz timestamptz
+)
+returns table (
+  count bigint
+)
+language plpgsql
+as $$
+begin
+  return query
+  select sum(ceil(normalized_token_count::decimal / 1000)::integer) as count
+  from query_stats_usage as qsu
+  where qsu.team_id = count_team_credits.team_id
+    and qsu.created_at >= count_team_credits.from_tz
+    and qsu.created_at <= count_team_credits.to_tz
+  group by qsu.team_id;
+end;
+$$;
+
+-- Count credits per completions model
+
+create or replace function count_team_credits_for_completions_model(
+  team_id uuid,
+  from_tz timestamptz,
+  to_tz timestamptz,
+  model text
+)
+returns table (
+  count bigint
+)
+language plpgsql
+as $$
+begin
+  return query
+  select sum(ceil(normalized_token_count::decimal / 1000)::integer) as count
+  from query_stats_usage as qsu
+  where qsu.team_id = count_team_credits_for_completions_model.team_id
+    and qsu.created_at >= count_team_credits_for_completions_model.from_tz
+    and qsu.created_at <= count_team_credits_for_completions_model.to_tz
+    and qsu.data->'completion'->>'model' = count_team_credits_for_completions_model.model
+  group by qsu.team_id;
+end;
+$$;
+
 -- Triggers
 
 -- This trigger automatically creates a user entry when a new user signs up
@@ -831,6 +880,7 @@ create index idx_tokens_project_id on tokens(project_id);
 create index idx_domain_project_id on domains(project_id);
 create index idx_file_sections_cf_project_id on file_sections (cf_project_id);
 create index idx_query_stats_project_id_created_at_processed on query_stats(project_id, created_at, processed);
+create index idx_query_stats_usage_team_id_created on query_stats_usage(team_id, created_at);
 create index idx_pgroonga_file_sections_content on file_sections using pgroonga (content);
 create index idx_pgroonga_files_meta on files using pgroonga (meta);
 create index idx_pgroonga_files_meta_title on files using pgroonga ((meta->>'title'));

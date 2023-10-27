@@ -3,7 +3,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 import { getMatchingSections } from '@/lib/completions';
 import { getRequesterIp } from '@/lib/middleware/common';
-import { track } from '@/lib/posthog';
 import { checkSectionsRateLimits } from '@/lib/rate-limits';
 import { canAccessSectionsAPI } from '@/lib/stripe/tiers';
 import {
@@ -129,8 +128,6 @@ export default async function handler(
       });
     }
   }
-
-  track(projectId, 'get sections', { projectId });
 
   const data = await Promise.all(
     fileSections.map(async (section) => {

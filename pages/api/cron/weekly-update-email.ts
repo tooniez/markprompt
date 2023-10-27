@@ -7,7 +7,7 @@ import { Resend } from 'resend';
 import InsightsEmail from '@/components/emails/Insights';
 import {
   getEmbeddingTokensAllowance,
-  getMonthlyCompletionsAllowance,
+  getCompletionsAllowance,
   getTier,
   getTierName,
 } from '@/lib/stripe/tiers';
@@ -23,10 +23,12 @@ import {
 } from '@/lib/utils';
 import { Database } from '@/types/supabase';
 import {
+  CompletionsAllowances,
   DbTeam,
   DbUser,
   Project,
   QueryStatsProcessingResponseData,
+  UsagePeriod,
 } from '@/types/types';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -51,7 +53,7 @@ type TeamUsageStats = {
   name: string;
   slug: string;
   tierName: string;
-  numMonthlyAllowedCompletions: number;
+  usagePeriod: UsagePeriod;
   numAllowedEmbeddings: number;
   projectUsageStats: ProjectUsageStats[];
 };
@@ -175,11 +177,12 @@ const getTeamUsageStats = async (
 ): Promise<TeamUsageStats> => {
   const projectIds = await getTeamProjectIds(supabase, team.id);
   const tierName = getTierName(getTier(team));
+  const completionsAllowance = getCompletionsAllowance(team);
   return {
     name: team.name || 'Unnamed',
     slug: team.slug,
     tierName,
-    numMonthlyAllowedCompletions: await getMonthlyCompletionsAllowance(team),
+    usagePeriod: completionsAllowance.usagePeriod,
     numAllowedEmbeddings: await getEmbeddingTokensAllowance(team),
     projectUsageStats: await Promise.all(
       projectIds.map(async (projectId) =>

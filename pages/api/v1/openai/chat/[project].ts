@@ -1,4 +1,4 @@
-import { Tiktoken } from '@dqbd/tiktoken/lite/init';
+import type { Tiktoken } from '@dqbd/tiktoken/lite/init';
 import {
   FileSectionReference,
   OpenAIChatCompletionsModelId,

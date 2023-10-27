@@ -21,7 +21,7 @@ export const getApiUrl = (
     | 'sections'
     | 'search'
     | 'feedback',
-  forceProduction: boolean,
+  forceProduction?: boolean,
 ) => {
   return getAppOrigin('api', forceProduction) + '/v1/' + api;
 };
@@ -39,7 +39,7 @@ export const getDomain = (url: string) => {
   if (url.includes('://')) {
     hostname = new URL(url).hostname;
   } else {
-    hostname = url.split('/')[0];
+    hostname = url.split('/')[0].split(':')[0];
   }
   const domain = hostname.replace(/^www\./, '');
   return domain;
@@ -53,13 +53,25 @@ export const safeParseInt = (
     return fallbackValue;
   }
 
-  try {
-    return parseInt(value);
-  } catch {
-    //
+  const parsedInt = parseInt(value);
+  if (isNaN(parsedInt)) {
+    return fallbackValue;
+  }
+  return parsedInt;
+};
+
+export const safeParseIntOrUndefined = (
+  value: string | undefined | null,
+): number | undefined => {
+  if (typeof value !== 'string') {
+    return undefined;
   }
 
-  return fallbackValue;
+  const parsedInt = parseInt(value);
+  if (isNaN(parsedInt)) {
+    return undefined;
+  }
+  return parsedInt;
 };
 
 export const safeParseJSON = <T>(

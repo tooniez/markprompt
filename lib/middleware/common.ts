@@ -81,7 +81,7 @@ export const getProjectIdFromKey = async (
   projectKey: string,
 ): Promise<Project['id']> => {
   const redisKey = getProjectIdByKey(projectKey);
-  const projectId = await get(redisKey);
+  const projectId = await get<string>(redisKey);
   if (projectId) {
     return projectId;
   }

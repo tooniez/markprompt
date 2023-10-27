@@ -1,8 +1,11 @@
 import { Redis } from '@upstash/redis';
 
-import { Project } from '@/types/types';
+import { DbTeam, Project } from '@/types/types';
 
 let redis: Redis | undefined = undefined;
+
+export const HOUR_IN_SECONDS = 3600;
+export const DAY_IN_SECONDS = 86400;
 
 const monthBin = (date: Date) => {
   return `${date.getFullYear()}/${date.getMonth() + 1}`;
@@ -19,6 +22,10 @@ export const getProjectEmbeddingsMonthTokenCountKey = (
 
 export const getProjectIdByKey = (apiKey: string) => {
   return `${process.env.NODE_ENV}:project_id:by_api_key:${apiKey}`;
+};
+
+export const getTeamCreditsKey = (teamId: DbTeam['id']) => {
+  return `${process.env.NODE_ENV}:team:${teamId}:credits`;
 };
 
 export const getIsDomainWhitelistedForProjectKey = (
@@ -38,31 +45,16 @@ export const getRedisClient = () => {
   return redis;
 };
 
-export const safeGetObject = async <T>(
-  key: string,
-  defaultValue: T,
-): Promise<T> => {
-  const value = await get(key);
-  if (value) {
-    try {
-      return JSON.parse(value);
-    } catch (e) {
-      // Do nothing
-    }
-  }
-  return defaultValue;
-};
-
-export const get = async (key: string): Promise<string | null> => {
+export const get = async <T>(key: string): Promise<T | null> => {
   try {
-    return getRedisClient().get<string>(key);
+    return getRedisClient().get<T>(key);
   } catch (e) {
     console.error('Redis `get` error', e);
   }
   return null;
 };
 
-export const set = async (key: string, value: string) => {
+export const set = async <T>(key: string, value: T) => {
   try {
     await getRedisClient().set(key, value);
   } catch (e) {
@@ -70,9 +62,9 @@ export const set = async (key: string, value: string) => {
   }
 };
 
-export const setWithExpiration = async (
+export const setWithExpiration = async <T>(
   key: string,
-  value: string,
+  value: T,
   expirationInSeconds: number,
 ) => {
   try {

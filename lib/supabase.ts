@@ -23,6 +23,7 @@ import {
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
 import { MarkpromptConfig } from './schema';
 import {
+  INFINITE_TOKEN_ALLOWANCE,
   PlanDetails,
   TeamTierInfo,
   getEmbeddingTokensAllowance,
@@ -323,7 +324,10 @@ export const getTokenAllowanceInfo = async (
     stripe_price_id: teamUsageInfo?.stripe_price_id,
     plan_details: teamUsageInfo?.plan_details as PlanDetails,
   });
-  const numRemainingTokensOnPlan = Math.max(0, tokenAllowance - usedTokens);
+  const numRemainingTokensOnPlan =
+    tokenAllowance === INFINITE_TOKEN_ALLOWANCE
+      ? 1_000_000_000
+      : Math.max(0, tokenAllowance - usedTokens);
   return { numRemainingTokensOnPlan, usedTokens, tokenAllowance };
 };
 
