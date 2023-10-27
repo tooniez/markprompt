@@ -17,6 +17,7 @@ import { FileSectionData, FileSectionsData, FileType } from '@/types/types';
 import { htmlToMarkdown } from './converters/html-to-markdown';
 import { markdocToMarkdown } from './converters/markdoc-to-markdown';
 import { rstToMarkdown } from './converters/rst-to-markdown';
+import { remarkImageSourceRewrite } from './remark/remark-image-source-rewrite';
 import { remarkLinkRewrite } from './remark/remark-link-rewrite';
 import { MarkpromptConfig } from './schema';
 
@@ -54,6 +55,13 @@ const getProcessor = (withMdx: boolean, markpromptConfig: MarkpromptConfig) => {
 
   if (markpromptConfig.processorOptions?.linkRewrite) {
     chain.use(remarkLinkRewrite, markpromptConfig.processorOptions.linkRewrite);
+  }
+
+  if (markpromptConfig.processorOptions?.imageSourceRewrite) {
+    chain.use(
+      remarkImageSourceRewrite,
+      markpromptConfig.processorOptions.imageSourceRewrite,
+    );
   }
 
   chain

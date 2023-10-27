@@ -2,51 +2,46 @@ import { describe, expect, it } from 'vitest';
 
 import { markdownToFileSectionData } from './markdown';
 
-const heading = 'Heading';
+const content = `# Heading
 
-const loremIpsum = `[Lorem](/blog/post-1.mdx) ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum. Donec in efficitur ipsum, in egestas mauris.`;
+[A link](/blog/index.mdx) ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum. Donec in efficitur ipsum, in egestas mauris.
 
-const loremIpsumLinkTransformed = `[Lorem](/blog/post-1) ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum. Donec in efficitur ipsum, in egestas mauris.`;
+![Lorem](https://example.com/assets/image.jpg)
 
-const sampleContent = `# ${heading}
+<img src="https://example.com/assets/image.jpg" />
+`;
 
-${loremIpsum}`;
+const contentTransformed = `# Heading
 
-const sections = (linkTransformed: boolean) => ({
-  leadFileHeading: heading,
-  meta: {},
-  sections: [
-    {
-      content: `# ${heading}\n\n${
-        linkTransformed ? loremIpsumLinkTransformed : loremIpsum
-      }\n`,
-      leadHeading: {
-        depth: 1,
-        value: heading,
-      },
-    },
-  ],
-});
+[A link](/blog/index) ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum. Donec in efficitur ipsum, in egestas mauris.
+
+![Lorem](https://globex.com/image.jpg)
+
+<img src="https://globex.com/image.jpg" />
+`;
 
 const options = {
   processorOptions: {
     linkRewrite: {
       rules: [{ pattern: '\\.mdx?', replace: '' }],
     },
+    imageSourceRewrite: {
+      rules: [
+        {
+          pattern: '^https://example.com/assets',
+          replace: 'https://globex.com',
+        },
+      ],
+    },
   },
 };
 
 describe('markdown', () => {
   describe('markdownToFileSectionData', () => {
-    it('should chunk Markdown content', () => {
-      expect(markdownToFileSectionData(sampleContent, false, {})).toStrictEqual(
-        sections(false),
+    it('should transform Markdown content', () => {
+      expect(markdownToFileSectionData(content, false, options)).toStrictEqual(
+        markdownToFileSectionData(contentTransformed, false, {}),
       );
-    });
-    it('should transform links', () => {
-      expect(
-        markdownToFileSectionData(sampleContent, false, options),
-      ).toStrictEqual(sections(true));
     });
   });
 });
