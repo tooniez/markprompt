@@ -316,7 +316,7 @@ export type CompletionsAllowances = { all?: number } & Partial<
 
 export type CompletionAllowanceAndUsage = { allowance: number; used: number };
 
-export type CreditsInfo = {
+export type CompletionsUsageInfo = {
   usagePeriod: UsagePeriod;
   completions?: { all?: CompletionAllowanceAndUsage } & Partial<
     Record<OpenAIChatCompletionsModelId, CompletionAllowanceAndUsage>

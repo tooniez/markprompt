@@ -12,7 +12,6 @@ import useSWR from 'swr';
 import { QueriesHistogram } from '@/components/insights/queries-histogram';
 import { TeamSettingsLayout } from '@/components/layouts/TeamSettingsLayout';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
-import { SkeletonPanel } from '@/components/ui/Skeletons';
 import {
   TableBody,
   Table,
@@ -30,15 +29,13 @@ import {
 } from '@/lib/date';
 import useTeam from '@/lib/hooks/use-team';
 import {
-  getCompletionsAllowance,
   getEmbeddingTokensAllowance,
-  getTierDetails,
   INFINITE_TOKEN_ALLOWANCE,
 } from '@/lib/stripe/tiers';
 import { fetcher, formatUrl } from '@/lib/utils';
 import { getModelDisplayName } from '@/lib/utils.nodeps';
 import {
-  CreditsInfo,
+  CompletionsUsageInfo,
   DateCountHistogramEntry,
   DbTeam,
   TeamStats,
@@ -250,8 +247,8 @@ const EmbeddingsCredits = ({
 
 const CompletionsCredits = ({ team }: { team?: DbTeam }) => {
   const { data, error } = useSWR(
-    team?.id ? `/api/team/${team.id}/usage/credits` : null,
-    fetcher<CreditsInfo | undefined>,
+    team?.id ? `/api/team/${team.id}/usage/completions` : null,
+    fetcher<CompletionsUsageInfo | undefined>,
   );
 
   const loading = !data && !error;
