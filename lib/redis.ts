@@ -4,6 +4,7 @@ import { DbTeam, Project } from '@/types/types';
 
 let redis: Redis | undefined = undefined;
 
+export const HOUR_IN_SECONDS = 3600;
 export const DAY_IN_SECONDS = 86400;
 
 const monthBin = (date: Date) => {
@@ -67,7 +68,6 @@ export const setWithExpiration = async <T>(
   expirationInSeconds: number,
 ) => {
   try {
-    console.log('setWithExpiration', value, typeof value);
     await getRedisClient().set(key, value, { ex: expirationInSeconds });
   } catch (e) {
     console.error('Redis `set` error', e);

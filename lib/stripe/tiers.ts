@@ -1,6 +1,11 @@
 import { OpenAIChatCompletionsModelId } from '@markprompt/core';
 
-import { DbTeam, ModelUsageInfo, UsagePeriod } from '@/types/types';
+import {
+  CompletionsAllowances,
+  DbTeam,
+  ModelUsageInfo,
+  UsagePeriod,
+} from '@/types/types';
 
 import { deepMerge } from '../utils.edge';
 import { roundToLowerOrderDecimal } from '../utils.nodeps';
@@ -24,10 +29,7 @@ export type InsightsType = 'basic' | 'advanced';
 export type TierDetails = {
   quotas?: {
     embeddings?: number;
-    completions?: number;
-    perModelCompletions?: {
-      model: number;
-    };
+    completions?: CompletionsAllowances;
     usagePeriod?: UsagePeriod;
   };
   features?: {
@@ -69,7 +71,7 @@ export const DEFAULT_TIERS: Tier[] = [
     ],
     details: {
       quotas: {
-        completions: 25,
+        completions: { all: 25 },
         embeddings: 30000,
       },
     },
@@ -99,7 +101,7 @@ export const DEFAULT_TIERS: Tier[] = [
     },
     details: {
       quotas: {
-        completions: 200,
+        completions: { all: 200 },
         embeddings: 120_000,
       },
     },
@@ -131,7 +133,7 @@ export const DEFAULT_TIERS: Tier[] = [
     },
     details: {
       quotas: {
-        completions: 1000,
+        completions: { all: 1000 },
         embeddings: 600_000,
       },
       features: {
@@ -336,9 +338,15 @@ export const isCustomPageFetcherEnabled = (teamTierInfo: TeamTierInfo) => {
 
 export const getCompletionsAllowance = (
   teamTierInfo: TeamTierInfo,
-): { completions: number; usagePeriod: UsagePeriod } => {
+): { completions: CompletionsAllowances; usagePeriod: UsagePeriod } => {
   const quotas = getTierDetails(teamTierInfo).quotas;
-  const completions = quotas?.completions || 0;
+  let completions = quotas?.completions || { all: 0 };
+  if (typeof quotas?.completions === 'number') {
+    // Backwards-compatibility
+    completions = { all: quotas?.completions };
+  } else {
+    completions = quotas?.completions || { all: 0 };
+  }
   const usagePeriod = quotas?.usagePeriod || 'monthly';
   return { completions, usagePeriod };
 };

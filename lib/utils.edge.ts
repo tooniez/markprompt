@@ -66,15 +66,14 @@ export const safeParseIntOrUndefined = (
   value: string | undefined | null,
 ): number | undefined => {
   if (typeof value !== 'string') {
-    console.log('Value is not a string: ', typeof value);
     return undefined;
   }
 
   try {
     return parseInt(value);
   } catch (e) {
-    console.log('ERROR', e);
-    //
+    console.error('Error safeParseIntOrUndefined', e);
+    // Do nothing
   }
 
   return undefined;

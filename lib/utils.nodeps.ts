@@ -1,5 +1,7 @@
 // Utilities that run without dependencies on any runtime, like
 // edge, node or browser. Anything in here can run anywhere.
+import { OpenAIChatCompletionsModelId } from '@markprompt/core';
+
 import { DbSource, OpenAIModelIdWithType, Source } from '@/types/types';
 
 import { APPROX_CHARS_PER_TOKEN } from './constants';
@@ -132,6 +134,17 @@ export const getCompletionsResponseText = (
     default: {
       return response.choices[0].text;
     }
+  }
+};
+
+export const getModelDisplayName = (model: OpenAIChatCompletionsModelId) => {
+  switch (model) {
+    case 'gpt-3.5-turbo':
+      return 'GPT-3.5 Turbo';
+    case 'gpt-4':
+      return 'GPT-4';
+    case 'gpt-4-32k':
+      return 'GPT-4 32k';
   }
 };
 

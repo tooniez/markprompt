@@ -310,9 +310,15 @@ export type UsageInfo = {
 
 export type UsagePeriod = 'monthly' | 'yearly';
 
+export type CompletionsAllowances = { all?: number } & Partial<
+  Record<OpenAIChatCompletionsModelId, number>
+>;
+
+export type CompletionAllowanceAndUsage = { allowance: number; used: number };
+
 export type CreditsInfo = {
   usagePeriod: UsagePeriod;
-  credits?: number;
-  // In case a user has per-model credits
-  completionCreditsPerModel?: Record<string, number>;
+  completions?: { all?: CompletionAllowanceAndUsage } & Partial<
+    Record<OpenAIChatCompletionsModelId, CompletionAllowanceAndUsage>
+  >;
 };

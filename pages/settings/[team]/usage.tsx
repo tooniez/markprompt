@@ -1,3 +1,4 @@
+import { OpenAIChatCompletionsModelId } from '@markprompt/core';
 import * as Progress from '@radix-ui/react-progress';
 import cn from 'classnames';
 import { endOfDay, formatISO, parseISO, startOfMonth } from 'date-fns';
@@ -29,11 +30,13 @@ import {
 } from '@/lib/date';
 import useTeam from '@/lib/hooks/use-team';
 import {
+  getCompletionsAllowance,
   getEmbeddingTokensAllowance,
   getTierDetails,
   INFINITE_TOKEN_ALLOWANCE,
 } from '@/lib/stripe/tiers';
 import { fetcher, formatUrl } from '@/lib/utils';
+import { getModelDisplayName } from '@/lib/utils.nodeps';
 import {
   CreditsInfo,
   DateCountHistogramEntry,
@@ -61,16 +64,15 @@ const UsageGauge = ({
     : 0;
 
   return (
-    <div className="relative">
-      <div className="absolute inset-y-0 h-full w-40">
-        <SkeletonPanel loading={loading} />
-      </div>
-      <div
-        className={cn('flex flex-none flex-row items-center gap-4 transition', {
-          'opacity-0': loading,
+    <>
+      <td
+        className={cn('whitespace-nowrap pb-2 text-sm', {
+          'pr-4': gauge?.label,
         })}
       >
         {gauge?.label || ''}
+      </td>
+      <td className="pr-4 pb-2">
         <div className="w-16 flex-none">
           <Progress.Root
             // Fix overflow clipping in Safari
@@ -94,6 +96,8 @@ const UsageGauge = ({
             />
           </Progress.Root>
         </div>
+      </td>
+      <td className="pb-2">
         <p
           className={cn('text-sm text-neutral-400 transition', {
             'opacity-0': loading,
@@ -112,8 +116,61 @@ const UsageGauge = ({
             </>
           )}
         </p>
-      </div>
-    </div>
+      </td>
+    </>
+    // <div className="relative">
+    //   <div className="absolute inset-y-0 h-full w-40">
+    //     <SkeletonPanel loading={loading} />
+    //   </div>
+    //   <div
+    //     className={cn('flex flex-none flex-row items-center gap-4 transition', {
+    //       'opacity-0': loading,
+    //     })}
+    //   >
+    //     {gauge?.label || ''}
+    //     <div className="w-16 flex-none">
+    //       <Progress.Root
+    //         // Fix overflow clipping in Safari
+    //         // https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0
+    //         style={{ transform: 'translateZ(0)' }}
+    //         className="relative h-2 flex-grow overflow-hidden rounded-full bg-neutral-800"
+    //         value={10}
+    //       >
+    //         <Progress.Indicator
+    //           className={cn(
+    //             'h-full w-full transform duration-500 ease-in-out',
+    //             {
+    //               'bg-sky-400': percentage <= 70,
+    //               'bg-amber-400': percentage > 70 && percentage <= 90,
+    //               'bg-red-400': percentage > 90,
+    //             },
+    //           )}
+    //           style={{
+    //             transform: `translateX(-${100 - Math.max(2, percentage)}%)`,
+    //           }}
+    //         />
+    //       </Progress.Root>
+    //     </div>
+    //     <p
+    //       className={cn('text-sm text-neutral-400 transition', {
+    //         'opacity-0': loading,
+    //       })}
+    //     >
+    //       {!gauge ? (
+    //         0
+    //       ) : (
+    //         <>
+    //           {gauge.value}/
+    //           {gauge.total === INFINITE_TOKEN_ALLOWANCE ? (
+    //             <InfinityIcon className="inline-block h-4 w-4" />
+    //           ) : (
+    //             gauge.total
+    //           )}
+    //         </>
+    //       )}
+    //     </p>
+    //   </div>
+    // </div>
   );
 };
 
@@ -127,10 +184,24 @@ const UsageCard = ({
   loading?: boolean;
 }) => {
   return (
-    <div className="flex flex-row items-center gap-4 p-4">
-      <div className="flex flex-grow flex-col gap-4">
-        <p className="text-sm font-medium text-neutral-100">{title}</p>
-        <div className="flex flex-col gap-2">
+    <div className="flex flex-row items-start gap-4 p-4">
+      <div className="flex flex-grow flex-col justify-start gap-4">
+        <div className="text-sm font-medium text-neutral-100">{title}</div>
+        <table className="table-auto border-collapse text-sm">
+          <colgroup>
+            <col />
+            <col />
+            <col className="w-full" />
+          </colgroup>
+          <tbody>
+            {gauges.map((gauge, i) => (
+              <tr key={`gauge-${title}-${i}`}>
+                <UsageGauge gauge={gauge} loading={loading} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {/* <div className="flex flex-col gap-2">
           {gauges.length === 0 ? (
             <UsageGauge loading={loading} />
           ) : (
@@ -142,7 +213,7 @@ const UsageCard = ({
               />
             ))
           )}
-        </div>
+        </div> */}
       </div>
     </div>
   );
@@ -190,36 +261,23 @@ const CompletionsCredits = ({ team }: { team?: DbTeam }) => {
       return [];
     }
 
-    const tierDetails = getTierDetails(team);
-
     const _gaugeData: GaugeData[] = [];
-    if (
-      data?.completionCreditsPerModel &&
-      Object.keys(data.completionCreditsPerModel).length > 0
-    ) {
-      // entries = data?.completionCreditsPerModel;
-    } else if (data?.credits) {
-      _gaugeData.push({
-        value: 0,
-        // total: team?.plan_details || 0,
-        total: 0,
-      });
-      // entries = { [NO_MODEL]: 1 };
+    if (data.completions) {
+      for (const [model, details] of Object.entries(data.completions)) {
+        _gaugeData.push({
+          value: details.used,
+          total: details.allowance || 0,
+          // Don't show a label if all
+          label:
+            model === 'all'
+              ? undefined
+              : getModelDisplayName(model as OpenAIChatCompletionsModelId),
+        });
+      }
     }
 
     return _gaugeData;
   }, [team, data]);
-
-  // const credits = data?.credits || 0;
-
-  // const completionsAllowance = team ? getCompletionsAllowance(team) : undefined;
-
-  // const completionsPercentage = completionsAllowance
-  //   ? Math.min(
-  //       100,
-  //       Math.round((credits / completionsAllowance.completions) * 100),
-  //     )
-  //   : 0;
 
   return (
     <UsageCard
@@ -227,43 +285,17 @@ const CompletionsCredits = ({ team }: { team?: DbTeam }) => {
       title={
         <div className="flex flex-row items-center gap-2 overflow-hidden">
           <div className="flex-grow overflow-hidden truncate">
-            Message credits{' '}
-            <span className="text-sm font-normal text-neutral-500">
+            Message credits
+            <span className="ml-2 text-sm font-normal text-neutral-500">
               {data?.usagePeriod === 'monthly' ? '(month to date)' : 'per year'}
             </span>
           </div>
           <span className="flex-none text-xs text-neutral-600">
-            Updated daily
+            Updated hourly
           </span>
         </div>
       }
-      gauges={
-        gaugeData
-        //   [
-        //   {
-        //     value: 2,
-        //     total: 10,
-        //     label: <span className="w-10">Hi</span>,
-        //   },
-        // ]
-      }
-      // subtitle={
-      //   <>
-      //     {Object.keys(entries).map((entry, i) => {
-      //       if (entry === NO_MODEL) {
-      //       }
-      //       return <div key={`credit-entry-${i}`} />;
-      //     })}
-      //     {credits}/
-      //     {completionsAllowance?.completions === MAX_COMPLETIONS_ALLOWANCE ? (
-      //       <InfinityIcon className="inline-block h-4 w-4" />
-      //     ) : (
-      //       completionsAllowance?.completions
-      //     )}
-      //   </>
-      // }
-      // percentage={completionsPercentage}
-      // percentage={0}
+      gauges={gaugeData}
     />
   );
 };
@@ -350,12 +382,6 @@ const Usage = () => {
   const numAllowedEmbeddingsTokens = team
     ? getEmbeddingTokensAllowance(team)
     : 0;
-
-  const embeddingsTokensPercentage =
-    Math.min(
-      100,
-      Math.round((numUsedEmbeddingsTokens / numAllowedEmbeddingsTokens) * 100),
-    ) || 0;
 
   return (
     <TeamSettingsLayout
