@@ -155,3 +155,17 @@ export const getChatCompletionsResponseText = (response: any): string => {
 export const byteSize = (s: string) => {
   return new Blob([s]).size;
 };
+
+// Returns the "new billing period start date", namely, the same day/month
+// but with year updated so that it is the closest before the current date.
+export const closestPastDate = (date: Date) => {
+  const now = new Date();
+  const nowYear = now.getFullYear();
+  date.setFullYear(nowYear);
+
+  if (date > now) {
+    date.setFullYear(nowYear - 1);
+  }
+
+  return date;
+};

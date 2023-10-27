@@ -11,6 +11,7 @@ import {
 } from '@/lib/redis';
 import { getTierDetails } from '@/lib/stripe/tiers';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase';
+import { closestPastDate } from '@/lib/utils.nodeps';
 import { Database } from '@/types/supabase';
 import { CompletionsUsageInfo, DbTeam } from '@/types/types';
 
@@ -78,7 +79,7 @@ export default withTeamAdminAccess(
           tierDetails.quotas?.usagePeriod === 'yearly' &&
           teamData.billing_cycle_start
         ) {
-          startDate = parseISO(teamData.billing_cycle_start);
+          startDate = closestPastDate(parseISO(teamData.billing_cycle_start));
           endDate = add(startDate, { years: 1 });
         } else {
           startDate = startOfMonth(new Date());
@@ -87,6 +88,7 @@ export default withTeamAdminAccess(
 
         creditsInfo = {
           usagePeriod: tierDetails.quotas?.usagePeriod || 'monthly',
+          billingCycleStart: formatISO(startDate),
         };
 
         const completionsQuotas = tierDetails.quotas?.completions;

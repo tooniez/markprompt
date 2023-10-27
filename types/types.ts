@@ -318,6 +318,7 @@ export type CompletionAllowanceAndUsage = { allowance: number; used: number };
 
 export type CompletionsUsageInfo = {
   usagePeriod: UsagePeriod;
+  billingCycleStart: string;
   completions?: { all?: CompletionAllowanceAndUsage } & Partial<
     Record<OpenAIChatCompletionsModelId, CompletionAllowanceAndUsage>
   >;

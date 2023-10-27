@@ -1,7 +1,7 @@
 import { OpenAIChatCompletionsModelId } from '@markprompt/core';
 import * as Progress from '@radix-ui/react-progress';
 import cn from 'classnames';
-import { endOfDay, formatISO, parseISO, startOfMonth } from 'date-fns';
+import { add, format, formatISO, parseISO } from 'date-fns';
 import { sum } from 'lodash-es';
 import { InfinityIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -41,33 +41,36 @@ import {
   TeamStats,
 } from '@/types/types';
 
-type GaugeData = {
+type ProgressData = {
   label?: ReactNode | string;
   value: number;
   total: number;
 };
 
 const UsageGauge = ({
-  gauge,
+  progressData,
   loading,
 }: {
-  gauge?: GaugeData;
+  progressData?: ProgressData;
   loading?: boolean;
 }) => {
-  const percentage = gauge
-    ? gauge.total === INFINITE_TOKEN_ALLOWANCE
+  const percentage = progressData
+    ? progressData.total === INFINITE_TOKEN_ALLOWANCE
       ? 1
-      : Math.min(100, Math.round((gauge.value / gauge.total) * 100))
+      : Math.min(
+          100,
+          Math.round((progressData.value / progressData.total) * 100),
+        )
     : 0;
 
   return (
     <>
       <td
         className={cn('whitespace-nowrap pb-2 text-sm', {
-          'pr-4': gauge?.label,
+          'pr-4': progressData?.label,
         })}
       >
-        {gauge?.label || ''}
+        {progressData?.label || ''}
       </td>
       <td className="pr-4 pb-2">
         <div className="w-16 flex-none">
@@ -100,15 +103,15 @@ const UsageGauge = ({
             'opacity-0': loading,
           })}
         >
-          {!gauge ? (
+          {!progressData ? (
             0
           ) : (
             <>
-              {gauge.value}/
-              {gauge.total === INFINITE_TOKEN_ALLOWANCE ? (
+              {progressData.value}/
+              {progressData.total === INFINITE_TOKEN_ALLOWANCE ? (
                 <InfinityIcon className="inline-block h-4 w-4" />
               ) : (
-                gauge.total
+                progressData.total
               )}
             </>
           )}
@@ -173,11 +176,11 @@ const UsageGauge = ({
 
 const UsageCard = ({
   title,
-  gauges,
+  progressDataEntries,
   loading,
 }: {
   title: ReactNode | string;
-  gauges: GaugeData[];
+  progressDataEntries: ProgressData[];
   loading?: boolean;
 }) => {
   return (
@@ -191,26 +194,13 @@ const UsageCard = ({
             <col className="w-full" />
           </colgroup>
           <tbody>
-            {gauges.map((gauge, i) => (
+            {progressDataEntries.map((progressData, i) => (
               <tr key={`gauge-${title}-${i}`}>
-                <UsageGauge gauge={gauge} loading={loading} />
+                <UsageGauge progressData={progressData} loading={loading} />
               </tr>
             ))}
           </tbody>
         </table>
-        {/* <div className="flex flex-col gap-2">
-          {gauges.length === 0 ? (
-            <UsageGauge loading={loading} />
-          ) : (
-            gauges.map((gauge, i) => (
-              <UsageGauge
-                key={`gauge-${title}-${i}`}
-                gauge={gauge}
-                loading={loading}
-              />
-            ))
-          )}
-        </div> */}
       </div>
     </div>
   );
@@ -235,7 +225,7 @@ const EmbeddingsCredits = ({
     <UsageCard
       loading={!team}
       title="Embeddings"
-      gauges={[
+      progressDataEntries={[
         {
           value: numUsedEmbeddingsTokens,
           total: numAllowedEmbeddingsTokens,
@@ -253,15 +243,15 @@ const CompletionsCredits = ({ team }: { team?: DbTeam }) => {
 
   const loading = !data && !error;
 
-  const gaugeData: GaugeData[] = useMemo(() => {
+  const progressDataEntries: ProgressData[] = useMemo(() => {
     if (!team || !data) {
       return [];
     }
 
-    const _gaugeData: GaugeData[] = [];
+    const _progressDataEntries: ProgressData[] = [];
     if (data.completions) {
       for (const [model, details] of Object.entries(data.completions)) {
-        _gaugeData.push({
+        _progressDataEntries.push({
           value: details.used,
           total: details.allowance || 0,
           // Don't show a label if all
@@ -273,7 +263,7 @@ const CompletionsCredits = ({ team }: { team?: DbTeam }) => {
       }
     }
 
-    return _gaugeData;
+    return _progressDataEntries;
   }, [team, data]);
 
   return (
@@ -283,16 +273,23 @@ const CompletionsCredits = ({ team }: { team?: DbTeam }) => {
         <div className="flex flex-row items-center gap-2 overflow-hidden">
           <div className="flex-grow overflow-hidden truncate">
             Message credits
-            <span className="ml-2 text-sm font-normal text-neutral-500">
-              {data?.usagePeriod === 'monthly' ? '(month to date)' : 'per year'}
-            </span>
+            {data && (
+              <span className="ml-2 text-xs font-normal text-neutral-500">
+                {data?.usagePeriod === 'monthly'
+                  ? '(month to date)'
+                  : `${format(
+                      parseISO(data.billingCycleStart),
+                      'LLL dd, yyyy',
+                    )} - ${format(
+                      add(parseISO(data.billingCycleStart), { years: 1 }),
+                      'LLL dd, yyyy',
+                    )}`}
+              </span>
+            )}
           </div>
-          <span className="flex-none text-xs text-neutral-600">
-            Updated hourly
-          </span>
         </div>
       }
-      gauges={gaugeData}
+      progressDataEntries={progressDataEntries}
     />
   );
 };
@@ -332,17 +329,6 @@ const Usage = () => {
   const { data: teamContentStats } = useSWR(
     team?.id && fromISO && toISO ? `/api/team/${team.id}/usage/stats` : null,
     fetcher<TeamStats[]>,
-  );
-
-  const { data: numCompletionsResponse } = useSWR(
-    team?.id && fromISO && toISO
-      ? formatUrl(`/api/team/${team.id}/usage/completions`, {
-          from: formatISO(startOfMonth(new Date())),
-          to: formatISO(endOfDay(new Date())),
-          tz: REFERENCE_TIMEZONE,
-        })
-      : null,
-    fetcher<{ occurrences: number }>,
   );
 
   const { data: queriesHistogramResponse, error: queriesHistogramError } =
@@ -388,6 +374,9 @@ const Usage = () => {
       <div className="grid grid-cols-2 rounded-md border border-neutral-900 [&>div:not(:first-child)]:border-l [&>div:not(:first-child)]:border-neutral-900">
         <EmbeddingsCredits team={team} teamStats={teamContentStats} />
         <CompletionsCredits team={team} />
+      </div>
+      <div className="mt-2 flex-none text-right text-xs text-neutral-600 antialiased">
+        Updated hourly
       </div>
       <h2 className="mt-8 text-lg font-bold text-neutral-100">Content</h2>
       <div className="flex justify-start text-neutral-100">
