@@ -27,7 +27,6 @@ import {
   MAX_PROMPT_LENGTH,
   STREAM_SEPARATOR,
 } from '@/lib/constants';
-import { track } from '@/lib/posthog';
 import { checkCompletionsRateLimits } from '@/lib/rate-limits';
 import {
   canUseCustomModelConfig,
@@ -302,8 +301,6 @@ export default async function handler(req: NextRequest) {
     }
 
     const sectionsDelta = Date.now() - sectionsTs;
-
-    track(projectId, 'generate completions', { projectId });
 
     // const { completionsTokensCount } = await getTokenCountsForProject(projectId);
 

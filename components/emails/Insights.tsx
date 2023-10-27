@@ -14,11 +14,6 @@ import cn from 'classnames';
 import { format } from 'date-fns';
 import { FC } from 'react';
 
-import {
-  isInifiniteCompletionsAllowance,
-  isInifiniteEmbeddingsTokensAllowance,
-} from '@/lib/stripe/tiers';
-import { formatNumberWithLocale } from '@/lib/utils';
 import { UserUsageStats } from '@/pages/api/cron/weekly-update-email';
 
 import { Wrapper } from './templates/Shared';
@@ -30,76 +25,6 @@ type InsightsEmailProps = {
   stats: UserUsageStats;
   from: Date;
   to: Date;
-};
-
-const getWarningMessage = (
-  completionsUsagePercent: number,
-  numAllowedCompletions: number,
-  numUsedCompletions: number,
-  embeddingTokensUsagePercent: number,
-  numAllowedEmbeddings: number,
-  numUsedEmbeddings: number,
-) => {
-  const numAllowedCompletionsSymbol = isInifiniteCompletionsAllowance(
-    numAllowedCompletions,
-  )
-    ? '∞'
-    : formatNumberWithLocale(numAllowedCompletions);
-
-  const numAllowedEmbeddingsSymbol = isInifiniteEmbeddingsTokensAllowance(
-    numAllowedEmbeddings,
-  )
-    ? '∞'
-    : formatNumberWithLocale(numAllowedEmbeddings);
-
-  const upgradeMessage =
-    completionsUsagePercent > 100 || embeddingTokensUsagePercent > 100 ? (
-      <> Please upgrade your plan to continue using Markprompt.</>
-    ) : (
-      <></>
-    );
-  if (completionsUsagePercent > 0 && embeddingTokensUsagePercent > 0) {
-    return (
-      <>
-        Your team has used{' '}
-        <strong>
-          {formatNumberWithLocale(Math.round(completionsUsagePercent))}%
-        </strong>{' '}
-        of completions (
-        <strong>
-          {formatNumberWithLocale(numUsedCompletions)}/
-          {numAllowedCompletionsSymbol}
-        </strong>
-        ) for this cycle, and{' '}
-        <strong>
-          {formatNumberWithLocale(Math.round(embeddingTokensUsagePercent))}%
-        </strong>{' '}
-        of embeddings (
-        <strong>
-          {formatNumberWithLocale(numUsedEmbeddings)}/
-          {numAllowedEmbeddingsSymbol}
-        </strong>
-        ) included in this plan.
-        {upgradeMessage}
-      </>
-    );
-  } else if (embeddingTokensUsagePercent > 0) {
-    return (
-      <>
-        Your team has used{' '}
-        <strong>
-          {formatNumberWithLocale(Math.round(embeddingTokensUsagePercent))}%
-        </strong>{' '}
-        of embeddings (
-        <strong>
-          {formatNumberWithLocale(numUsedEmbeddings)}/
-          {numAllowedEmbeddingsSymbol}
-        </strong>
-        ) included in this plan.
-        {upgradeMessage}
-      </>
-    );
-  }
 };
 
 // We create the email component as a standalone component, instead of
@@ -145,60 +70,6 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
               return team.projectUsageStats.some((p) => p.numFiles > 0);
             })
             .map((team, i) => {
-              // Completions usage
-              const hasInfiniteCompletions = isInifiniteCompletionsAllowance(
-                team.numAllowedCompletions,
-              );
-
-              const usedCompletions = team.projectUsageStats.reduce(
-                (acc, p) => acc + p.numQuestionsAsked,
-                0,
-              );
-
-              const completionsUsagePercent = hasInfiniteCompletions
-                ? 0
-                : Math.round(
-                    (100 * usedCompletions) / team.numAllowedCompletions,
-                  );
-
-              const completionsWarningLevel =
-                completionsUsagePercent >= 100
-                  ? 'overuse'
-                  : completionsUsagePercent >= 80
-                  ? 'near'
-                  : 'none';
-
-              // Embeddings usage
-              const hasInfiniteEmbeddings =
-                isInifiniteEmbeddingsTokensAllowance(team.numAllowedEmbeddings);
-
-              const usedEmbeddingTokens = team.projectUsageStats.reduce(
-                (acc, p) => acc + p.numEmbeddingTokens,
-                0,
-              );
-
-              const embeddingTokensUsagePercent = hasInfiniteEmbeddings
-                ? 0
-                : Math.round(
-                    (100 * usedEmbeddingTokens) / team.numAllowedEmbeddings,
-                  );
-
-              const embeddingTokensWarningLevel =
-                embeddingTokensUsagePercent >= 100
-                  ? 'overuse'
-                  : embeddingTokensUsagePercent >= 80
-                  ? 'near'
-                  : 'none';
-
-              const warningLevel =
-                completionsWarningLevel === 'overuse' ||
-                embeddingTokensWarningLevel === 'overuse'
-                  ? 'overuse'
-                  : completionsWarningLevel === 'near' ||
-                    embeddingTokensWarningLevel === 'near'
-                  ? 'near'
-                  : 'none';
-
               return (
                 <Section key={`team-${i}`}>
                   <Section className={i > 0 ? 'mt-8' : ''}>
@@ -211,29 +82,6 @@ const InsightsEmail: FC<InsightsEmailProps> = ({
                     <Text className="mt-2 text-sm text-neutral-600">
                       Projects: {team.projectUsageStats.length || 0}
                     </Text>
-                    {(warningLevel === 'near' ||
-                      warningLevel === 'overuse') && (
-                      <Section className="mt-8 mb-4 border-separate overflow-hidden rounded-lg border border-solid border-orange-200 bg-orange-50 p-6 text-orange-900">
-                        <Text className="m-0 text-sm">
-                          {getWarningMessage(
-                            completionsUsagePercent,
-                            team.numAllowedCompletions,
-                            usedCompletions,
-                            embeddingTokensUsagePercent,
-                            team.numAllowedEmbeddings,
-                            usedEmbeddingTokens,
-                          )}
-                        </Text>
-                        <Button
-                          pX={10}
-                          pY={10}
-                          className="mt-4 flex-none whitespace-nowrap rounded-md border border-solid border-orange-300 bg-orange-200 px-3 py-1.5 text-sm font-semibold text-orange-900 no-underline"
-                          href={`https://markprompt.com/settings/${team.slug}/plans`}
-                        >
-                          Upgrade your plan
-                        </Button>
-                      </Section>
-                    )}
                   </Section>
                   {team.projectUsageStats
                     ?.filter((p) => p.numFiles > 0)

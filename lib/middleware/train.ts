@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { track } from '@/lib/posthog';
-
 import {
   getProjectIdFromToken,
   noProjectForTokenResponse,
@@ -76,8 +74,6 @@ export default async function TrainMiddleware(req: NextRequest) {
   if (!projectId) {
     return noProjectForTokenResponse;
   }
-
-  track(projectId, 'train', { projectId });
 
   return NextResponse.rewrite(
     new URL(`/api/v1/openai/train/${projectId}`, req.url),

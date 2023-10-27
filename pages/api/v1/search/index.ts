@@ -4,7 +4,6 @@ import { flatten, uniq } from 'lodash-es';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { isPresent } from 'ts-is-present';
 
-import { track } from '@/lib/posthog';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import {
   buildFileReferenceFromMatchResult,
@@ -218,8 +217,6 @@ export default async function handler(
 
   const query = sanitizeSearchQuery(req.query.query as string);
   const projectId = req.query.projectId as string;
-
-  track(projectId, 'search', { projectId });
 
   const limit = Math.min(
     MAX_SEARCH_RESULTS,

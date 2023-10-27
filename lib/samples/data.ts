@@ -6,7 +6,6 @@ export const sampleUserUsageStats: UserUsageStats = {
       name: 'Markprompt',
       slug: 'sample-team-slug',
       tierName: 'Pro',
-      numAllowedCompletions: 1000,
       usagePeriod: 'monthly',
       numAllowedEmbeddings: 1_000_000,
       projectUsageStats: [
@@ -56,7 +55,6 @@ export const sampleUserUsageStats: UserUsageStats = {
       name: 'Sample team 2',
       slug: 'sample-team-slug-2',
       tierName: 'Pro',
-      numAllowedCompletions: 1000,
       usagePeriod: 'monthly',
       numAllowedEmbeddings: 1_000_000,
       projectUsageStats: [

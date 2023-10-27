@@ -23,6 +23,7 @@ import {
 } from '@/lib/utils';
 import { Database } from '@/types/supabase';
 import {
+  CompletionsAllowances,
   DbTeam,
   DbUser,
   Project,
@@ -52,7 +53,6 @@ type TeamUsageStats = {
   name: string;
   slug: string;
   tierName: string;
-  numAllowedCompletions: number;
   usagePeriod: UsagePeriod;
   numAllowedEmbeddings: number;
   projectUsageStats: ProjectUsageStats[];
@@ -177,12 +177,11 @@ const getTeamUsageStats = async (
 ): Promise<TeamUsageStats> => {
   const projectIds = await getTeamProjectIds(supabase, team.id);
   const tierName = getTierName(getTier(team));
-  const completionsAllowance = await getCompletionsAllowance(team);
+  const completionsAllowance = getCompletionsAllowance(team);
   return {
     name: team.name || 'Unnamed',
     slug: team.slug,
     tierName,
-    numAllowedCompletions: completionsAllowance.completions,
     usagePeriod: completionsAllowance.usagePeriod,
     numAllowedEmbeddings: await getEmbeddingTokensAllowance(team),
     projectUsageStats: await Promise.all(
