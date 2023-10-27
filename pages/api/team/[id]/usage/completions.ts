@@ -50,10 +50,9 @@ export default withTeamAdminAccess(
 
     if (req.method === 'GET') {
       // Fetch from cache (1 hour expiration)
-      let creditsInfo: CompletionsUsageInfo | undefined = undefined;
-      // let creditsInfo = await get<CompletionsUsageInfo>(
-      //   getTeamCreditsKey(teamId),
-      // );
+      let creditsInfo = await get<CompletionsUsageInfo>(
+        getTeamCreditsKey(teamId),
+      );
 
       if (!creditsInfo) {
         const { data: teamData } = await supabaseAdmin
