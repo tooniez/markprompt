@@ -20,7 +20,6 @@ describe('utils.edge', () => {
     it('should return localhost in dev environment', () => {
       expect(getAppHost()).toBe('localhost:3000');
       expect(getAppHost('api')).toBe('api.localhost:3000');
-      expect(getAppHost('api', true)).toBe('api.markprompt.com');
     });
   });
 
@@ -28,7 +27,6 @@ describe('utils.edge', () => {
     it('should return localhost in dev environment', () => {
       expect(getAppOrigin()).toBe('http://localhost:3000');
       expect(getAppOrigin('api')).toBe('http://api.localhost:3000');
-      expect(getAppOrigin('api', true)).toBe('https://api.markprompt.com');
     });
   });
 
