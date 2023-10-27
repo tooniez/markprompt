@@ -378,7 +378,7 @@ const Usage = () => {
       <div className="mt-2 flex-none text-right text-xs text-neutral-600 antialiased">
         Updated hourly
       </div>
-      <h2 className="mt-8 text-lg font-bold text-neutral-100">Content</h2>
+      <h2 className="mt-6 text-lg font-bold text-neutral-100">Content</h2>
       <div className="flex justify-start text-neutral-100">
         {!teamContentStats || teamContentStats?.length === 0 ? (
           <p className="text-sm text-neutral-500">No projects created.</p>
