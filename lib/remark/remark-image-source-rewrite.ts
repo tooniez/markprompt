@@ -18,7 +18,6 @@ export const remarkImageSourceRewrite: Plugin<
 > = ({ rules, excludeExternalLinks }) => {
   return (tree, _file, done) => {
     visit(tree, 'image', (node) => {
-      console.log('image', JSON.stringify(node, null, 2));
       if (!(excludeExternalLinks && EXTERNAL_URL_REGEX.test(node.url))) {
         let newUrl = node.url;
         for (const rule of rules) {
