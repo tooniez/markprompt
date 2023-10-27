@@ -1,5 +1,6 @@
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 
+import { RemarkImageSourceRewriteOptions } from './remark/remark-image-source-rewrite';
 import { RemarkLinkRewriteOptions } from './remark/remark-link-rewrite';
 
 export type MarkpromptConfig = {
@@ -7,6 +8,7 @@ export type MarkpromptConfig = {
   exclude?: string[];
   processorOptions?: {
     linkRewrite?: RemarkLinkRewriteOptions;
+    imageSourceRewrite?: RemarkImageSourceRewriteOptions;
   };
   insightsMetadataFields?: string[];
 };
@@ -18,6 +20,21 @@ export const MARKPROMPT_CONFIG_SCHEMA: JTDSchemaType<MarkpromptConfig> = {
     processorOptions: {
       optionalProperties: {
         linkRewrite: {
+          properties: {
+            rules: {
+              elements: {
+                properties: {
+                  pattern: { type: 'string' },
+                  replace: { type: 'string' },
+                },
+              },
+            },
+          },
+          optionalProperties: {
+            excludeExternalLinks: { type: 'boolean' },
+          },
+        },
+        imageSourceRewrite: {
           properties: {
             rules: {
               elements: {
