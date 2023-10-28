@@ -61,11 +61,8 @@ const getProcessor = (
     chain.use(remarkLinkRewrite, processorOptions.linkRewrite);
   }
 
-  if (markpromptConfig.processorOptions?.imageSourceRewrite) {
-    chain.use(
-      remarkImageSourceRewrite,
-      markpromptConfig.processorOptions.imageSourceRewrite,
-    );
+  if (processorOptions?.imageSourceRewrite) {
+    chain.use(remarkImageSourceRewrite, processorOptions.imageSourceRewrite);
   }
 
   chain

@@ -38,6 +38,7 @@ import {
   DbFileSignature,
   DbSource,
   FileSections,
+  FileType,
   NangoFileWithMetadata,
   Project,
 } from '@/types/types';
@@ -118,8 +119,6 @@ const syncNangoRecords = inngest.createFunction(
       });
     }
 
-    console.log('records', JSON.stringify(records, null, 2));
-
     const projectId = await getProjectIdFromSource(supabase, sourceId);
 
     if (!projectId) {
@@ -131,6 +130,22 @@ const syncNangoRecords = inngest.createFunction(
     }
 
     const config = await getProjectConfigData(supabase, projectId);
+
+    // Delete files
+
+    const filesIdsToDelete = records
+      .filter((record) => {
+        return record._nango_metadata.last_action === 'DELETED';
+      })
+      .map((record) => record.id);
+
+    // Files to delete
+    await step.sendEvent('delete-files', {
+      name: 'markprompt/files.delete',
+      data: { ids: filesIdsToDelete, sourceId },
+    });
+
+    // Train added/updated files
 
     const trainEvents = records
       .filter((record) => {
@@ -150,18 +165,6 @@ const syncNangoRecords = inngest.createFunction(
           },
         };
       });
-
-    const filesIdsToDelete = records
-      .filter((record) => {
-        return record._nango_metadata.last_action === 'DELETED';
-      })
-      .map((record) => record.id);
-
-    // Files to delete
-    await step.sendEvent('delete-files', {
-      name: 'markprompt/files.delete',
-      data: { ids: filesIdsToDelete, sourceId },
-    });
 
     await step.sendEvent('train-files', trainEvents);
 

@@ -201,7 +201,13 @@ type NangoFileMetadata = {
   last_modified_at: string;
 };
 
-export type NangoFileWithMetadata = NangoFile & {
+// nango.yaml does not allow to specify union types, so we have to
+// use strings there. We fix this with the NangoRichFile type
+export type NangoRichFile = Omit<NangoFile, 'contentType'> & {
+  contentType: FileType;
+};
+
+export type NangoFileWithMetadata = NangoRichFile & {
   _nango_metadata: NangoFileMetadata;
 };
 

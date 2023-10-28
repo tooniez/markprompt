@@ -618,13 +618,6 @@ export default async function handler(req: NextRequest) {
       stream,
     );
 
-    // console.log(
-    //   'Input tokens',
-    //   approximatedTokenCount(
-    //     messagesWithSystemMessage.map((m) => m.content).join('\n'),
-    //   ),
-    // );
-
     const url = getChatCompletionsUrl();
 
     const res = await fetch(url, {
