@@ -46,17 +46,7 @@ import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
-import {
-  getConnectionId,
-  getIntegrationId,
-  getSyncId,
-} from '@/lib/integrations/nango';
-import { triggerSync } from '@/lib/integrations/nango.client';
-import {
-  INFINITE_TOKEN_ALLOWANCE,
-  getTier,
-  isEnterpriseOrCustomTier,
-} from '@/lib/stripe/tiers';
+import { getTier, isEnterpriseOrCustomTier } from '@/lib/stripe/tiers';
 import {
   canDeleteSource,
   getAccessoryLabelForSource,

@@ -241,18 +241,22 @@ export const TeamProjectPicker = () => {
         ) : (
           <SkeletonPanel onDark loading className="mr-2 ml-2 h-6 w-32" />
         )}
-        {hasProjectPath && <Slash size="md" />}
-        {!loadingProject && team && project ? (
-          <>
-            <ProjectPicker />
-          </>
-        ) : (
-          <SkeletonPanel onDark loading className="ml-2 h-6 w-24" />
-        )}
-        {isNewProjectRoute && (
+        {hasProjectPath && (
           <>
             <Slash size="md" />
-            <p className="text-sm text-neutral-300">New project</p>
+            {!loadingProject && team && project ? (
+              <>
+                <ProjectPicker />
+              </>
+            ) : (
+              <SkeletonPanel onDark loading className="ml-2 h-6 w-24" />
+            )}
+            {isNewProjectRoute && (
+              <>
+                <Slash size="md" />
+                <p className="text-sm text-neutral-300">New project</p>
+              </>
+            )}
           </>
         )}
       </div>

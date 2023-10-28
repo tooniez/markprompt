@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, it } from 'vitest';
 
-import { arrayEquals, removeSchema, safeParseInt } from './utils.nodeps';
+import {
+  arrayEquals,
+  removeSchema,
+  safeParseInt,
+  safeParseIntOrUndefined,
+  safeParseJSON,
+} from './utils.nodeps';
 
 const customComparison = (obj1: any, obj2: any): boolean => {
   return obj1.id === obj2.id;
@@ -49,6 +55,44 @@ describe('utils.nodeps', () => {
       expect(safeParseInt('abc', 234)).toBe(234);
     });
   });
+
+  describe('safeParseInt', () => {
+    it('should parse a string into an int', () => {
+      expect(safeParseInt('123', 234)).toBe(123);
+      expect(safeParseInt('blabla', 234)).toBe(234);
+      expect(safeParseInt(1 as any, 234)).toBe(234);
+    });
+  });
+
+  describe('safeParseIntOrUndefined', () => {
+    it('should parse a string into an int', () => {
+      expect(safeParseIntOrUndefined('123')).toBe(123);
+    });
+    it('should return undefined on non-string input', () => {
+      expect(safeParseIntOrUndefined(undefined)).toBe(undefined);
+      expect(safeParseIntOrUndefined('blabla')).toBe(undefined);
+      expect(safeParseIntOrUndefined(123 as any)).toBe(undefined);
+    });
+  });
+
+  describe('safeParseJSON', () => {
+    it('should parse a JSON string', () => {
+      expect(safeParseJSON(1 as any, { status: 'error' })).toStrictEqual({
+        status: 'error',
+      });
+      expect(
+        safeParseJSON('{ "a": 1, "b" : { "c": "d" } }', {
+          status: 'error',
+        }),
+      ).toStrictEqual({ a: 1, b: { c: 'd' } });
+      expect(
+        safeParseJSON('non-json', {
+          status: 'error',
+        }),
+      ).toStrictEqual({ status: 'error' });
+    });
+  });
+
   describe('removeSchema', () => {
     it('should remove schema', () => {
       expect(removeSchema('https://markprompt.com')).toBe('markprompt.com');

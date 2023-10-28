@@ -195,6 +195,20 @@ export const safeParseInt = (
   return fallbackValue;
 };
 
+export const safeParseIntOrUndefined = (
+  value: string | undefined | null,
+): number | undefined => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const parsedInt = parseInt(value);
+  if (isNaN(parsedInt)) {
+    return undefined;
+  }
+  return parsedInt;
+};
+
 export const safeParseJSON = <T>(
   value: string | undefined | null,
   fallbackValue: T,
