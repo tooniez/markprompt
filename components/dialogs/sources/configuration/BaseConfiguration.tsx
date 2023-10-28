@@ -30,8 +30,8 @@ import {
 import { SyncQueueLogs, getTagForSyncQueue } from './SyncQueueLogs';
 import SourceDialog from '../SourceDialog';
 
-const RemoveSourceDialog = dynamic(
-  () => import('@/components/dialogs/sources/RemoveSource'),
+const DeleteSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/DeleteSource'),
 );
 
 type BaseConfigurationDialogProps = {
@@ -54,7 +54,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   const { project } = useProject();
   const { latestSyncQueues, syncSources } = useSources();
   const [syncStarted, setSyncStarted] = useState(false);
-  const [showRemoveSourceDialog, setShowRemoveSourceDialog] = useState(false);
+  const [showDeleteSourceDialog, setShowDeleteSourceDialog] = useState(false);
 
   const { data: allSyncQueuesForSource, error } = useSWR(
     project?.id && source?.id
@@ -178,10 +178,10 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
               buttonSize="sm"
               variant="plainDanger"
               onClick={() => {
-                setShowRemoveSourceDialog(true);
+                setShowDeleteSourceDialog(true);
               }}
             >
-              Remove source
+              Delete source
             </Button>
           </Tabs.Content>
           <Tabs.Content
@@ -232,13 +232,13 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
       </div>
       {project?.id && source && (
         <Dialog.Root
-          open={!!showRemoveSourceDialog}
-          onOpenChange={() => setShowRemoveSourceDialog(false)}
+          open={!!showDeleteSourceDialog}
+          onOpenChange={() => setShowDeleteSourceDialog(false)}
         >
-          <RemoveSourceDialog
+          <DeleteSourceDialog
             projectId={project.id}
             source={source}
-            onComplete={() => setShowRemoveSourceDialog(false)}
+            onComplete={() => setShowDeleteSourceDialog(false)}
           />
         </Dialog.Root>
       )}

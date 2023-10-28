@@ -132,8 +132,8 @@ const ConfirmDialog = dynamic(() => import('@/components/dialogs/Confirm'), {
   loading: () => Loading,
 });
 
-const RemoveSourceDialog = dynamic(
-  () => import('@/components/dialogs/sources/RemoveSource'),
+const DeleteSourceDialog = dynamic(
+  () => import('@/components/dialogs/sources/DeleteSource'),
   {
     loading: () => Loading,
   },
@@ -211,12 +211,12 @@ type SourcesProps = {
     source: DbSource,
     view: SourceConfigurationView,
   ) => void;
-  onRemoveSelected: (source: DbSource) => void;
+  onDeleteSelected: (source: DbSource) => void;
 };
 
 const Sources: FC<SourcesProps> = ({
   onConfigureSelected,
-  onRemoveSelected,
+  onDeleteSelected,
 }) => {
   const { sources, latestSyncQueues, syncSources } = useSources();
 
@@ -237,8 +237,8 @@ const Sources: FC<SourcesProps> = ({
               onConfigureSelected={(view) => {
                 onConfigureSelected(source, view);
               }}
-              onRemoveSelected={() => {
-                onRemoveSelected(source);
+              onDeleteSelected={() => {
+                onDeleteSelected(source);
               }}
             />
           );
@@ -253,7 +253,7 @@ type SourceItemProps = {
   syncQueue: DbSyncQueueOverview | undefined;
   onSyncSelected: () => void;
   onConfigureSelected: (view: SourceConfigurationView) => void;
-  onRemoveSelected: () => void;
+  onDeleteSelected: () => void;
 };
 
 const SourceItem: FC<SourceItemProps> = ({
@@ -261,7 +261,7 @@ const SourceItem: FC<SourceItemProps> = ({
   syncQueue,
   onSyncSelected,
   onConfigureSelected,
-  onRemoveSelected,
+  onDeleteSelected,
 }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const Icon = getIconForSource(source);
@@ -363,11 +363,11 @@ const SourceItem: FC<SourceItemProps> = ({
               asChild
               onSelect={() => {
                 setDropdownOpen(false);
-                onRemoveSelected();
+                onDeleteSelected();
               }}
             >
               <span className="dropdown-menu-item dropdown-menu-item-noindent block">
-                Remove
+                Delete
               </span>
             </DropdownMenu.Item>
           </DropdownMenu.Content>
@@ -806,7 +806,7 @@ const Data = () => {
                       view: view,
                     });
                   }}
-                  onRemoveSelected={setSourceToRemove}
+                  onDeleteSelected={setSourceToRemove}
                 />
               </div>
             </>
@@ -1119,7 +1119,7 @@ const Data = () => {
         onOpenChange={() => setSourceToRemove(undefined)}
       >
         {sourceToRemove && project && (
-          <RemoveSourceDialog
+          <DeleteSourceDialog
             projectId={project.id}
             source={sourceToRemove}
             onComplete={() => setSourceToRemove(undefined)}

@@ -33,9 +33,13 @@ const unique = (arr: string[]) => {
   return result;
 };
 
+const WEBSITE_PAGES_PROVIDER_CONFIG_KEY = 'website-pages';
+
 const fetchPageAndUrls =
   (
-    pageFetcherServiceUrl: string,
+    nango: NangoSync,
+    pageFetcherServiceBaseUrl: string,
+    pageFetcherServicePath: string,
     pageFetcherServiceAPIToken: string,
     crawlerRoot: string,
     requestHeaders: { [key: string]: string } | undefined,
@@ -49,9 +53,15 @@ const fetchPageAndUrls =
     // (since doing it here is practically impossible, as `minimatch` cannot
     // be imported).
     console.log('Fetching', url);
-    const pageRes = await fetch(pageFetcherServiceUrl, {
+
+    const res = await nango.proxy({
       method: 'POST',
-      body: JSON.stringify({
+      baseUrlOverride: pageFetcherServiceBaseUrl,
+      endpoint: pageFetcherServicePath,
+      providerConfigKey: WEBSITE_PAGES_PROVIDER_CONFIG_KEY,
+      connectionId: nango.connectionId!,
+      retries: 5,
+      data: JSON.stringify({
         url,
         crawlerRoot,
         includePageUrls: true,
@@ -66,17 +76,40 @@ const fetchPageAndUrls =
       },
     });
 
+    console.log('Response', JSON.stringify(res.data, null, 2));
+
+    // const pageRes = await fetch(pageFetcherServiceUrl, {
+    //   method: 'POST',
+    //   body: JSON.stringify({
+    //     url,
+    //     crawlerRoot,
+    //     includePageUrls: true,
+    //     requestHeaders,
+    //     includeGlobs,
+    //     excludeGlobs,
+    //   }),
+    //   headers: {
+    //     Authorization: `Bearer ${pageFetcherServiceAPIToken}`,
+    //     'Content-Type': 'application/json',
+    //     accept: 'application/json',
+    //   },
+    // });
+
     let content = '';
     let nextUrls: string[] = [];
     let error: string | undefined = undefined;
 
-    if (pageRes.ok) {
-      const { content: _content, urls } = await pageRes.json();
-      content = _content;
-      nextUrls = urls;
-    } else {
-      error = await pageRes.text();
-    }
+    content = 'abc';
+    nextUrls = ['123'];
+    error = undefined;
+
+    // if (pageRes.ok) {
+    //   const { content: _content, urls } = await pageRes.json();
+    //   content = _content;
+    //   nextUrls = urls;
+    // } else {
+    //   error = await pageRes.text();
+    // }
 
     return {
       file: {
@@ -93,7 +126,9 @@ const fetchPageAndUrls =
   };
 
 const parallelFetchPages = async (
-  pageFetcherServiceUrl: string,
+  nango: NangoSync,
+  pageFetcherServiceBaseUrl: string,
+  pageFetcherServicePath: string,
   pageFetcherServiceAPIToken: string,
   crawlerRoot: string,
   urls: string[],
@@ -104,7 +139,9 @@ const parallelFetchPages = async (
   return Promise.all(
     urls.map(
       fetchPageAndUrls(
-        pageFetcherServiceUrl,
+        nango,
+        pageFetcherServiceBaseUrl,
+        pageFetcherServicePath,
         pageFetcherServiceAPIToken,
         crawlerRoot,
         requestHeaders,
@@ -116,7 +153,9 @@ const parallelFetchPages = async (
 };
 
 const fetchPages = async (
-  pageFetcherServiceUrl: string,
+  nango: NangoSync,
+  pageFetcherServiceBaseUrl: string,
+  pageFetcherServicePath: string,
   pageFetcherServiceAPIToken: string,
   crawlerRoot: string,
   urls: string[],
@@ -132,7 +171,9 @@ const fetchPages = async (
 
   for (const urlChunk of urlChunks) {
     const filesWithUrls = await parallelFetchPages(
-      pageFetcherServiceUrl,
+      nango,
+      pageFetcherServiceBaseUrl,
+      pageFetcherServicePath,
       pageFetcherServiceAPIToken,
       crawlerRoot,
       urlChunk,
@@ -164,14 +205,25 @@ export default async function fetchData(nango: NangoSync) {
     await nango.getMetadata<Metadata>();
 
   const envVariables = await nango.getEnvironmentVariables();
-  const pageFetcherServiceUrl = envVariables?.find(
-    (v) => v.name === 'CUSTOM_PAGE_FETCH_SERVICE_URL',
+  const pageFetcherServiceBaseUrl = envVariables?.find(
+    (v) => v.name === 'CUSTOM_PAGE_FETCH_SERVICE_BASE_URL',
+  )?.value;
+  const pageFetcherServicePath = envVariables?.find(
+    (v) => v.name === 'CUSTOM_PAGE_FETCH_SERVICE_PATH',
   )?.value;
   const pageFetcherServiceAPIToken = envVariables?.find(
     (v) => v.name === 'MARKPROMPT_API_TOKEN',
   )?.value;
 
-  if (!pageFetcherServiceUrl || !pageFetcherServiceAPIToken) {
+  if (!baseUrl) {
+    throw new Error('Missing base URL.');
+  }
+
+  if (
+    !pageFetcherServiceBaseUrl ||
+    !pageFetcherServicePath ||
+    !pageFetcherServiceAPIToken
+  ) {
     throw new Error('Missing page fetcher service URL or API token.');
   }
 
@@ -183,10 +235,7 @@ export default async function fetchData(nango: NangoSync) {
   const maxAllowedPages = 10000;
   let numProcessedLinks = 0;
 
-  const response = await nango.get({
-    endpoint: 'https://markprompt.com',
-  });
-  console.log('Response', JSON.stringify(response, null, 2));
+  console.log('linksToProcess', JSON.stringify(linksToProcess, null, 2));
 
   while (linksToProcess.length > 0) {
     try {
@@ -197,7 +246,11 @@ export default async function fetchData(nango: NangoSync) {
       );
 
       const { files, nextUrls } = await fetchPages(
-        pageFetcherServiceUrl,
+        nango,
+        // pageFetcherServiceBaseUrl,
+        'https://5e5d-50-175-150-150.ngrok-free.app:3001',
+        // pageFetcherServicePath,
+        '/api/fetch-page-with-links',
         pageFetcherServiceAPIToken,
         baseUrl,
         linksToProcess,

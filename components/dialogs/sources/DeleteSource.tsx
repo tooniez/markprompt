@@ -11,13 +11,13 @@ import { deleteConnection } from '@/lib/integrations/nango.client';
 import { getLabelForSource } from '@/lib/utils';
 import { Project, DbSource } from '@/types/types';
 
-type RemoveSourceDialogProps = {
+type DeleteSourceDialogProps = {
   projectId: Project['id'];
   source: DbSource;
   onComplete: () => void;
 };
 
-const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
+const DeleteSourceDialog: FC<DeleteSourceDialogProps> = ({
   projectId,
   source,
   onComplete,
@@ -29,9 +29,9 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
 
   return (
     <ConfirmDialog
-      title={`Remove ${getLabelForSource(source, true)}?`}
+      title={`Delete ${getLabelForSource(source, true)}?`}
       description={<>All associated files and data will be deleted.</>}
-      cta="Remove"
+      cta="Delete"
       variant="danger"
       loading={loading}
       onCTAClick={async () => {
@@ -61,14 +61,14 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
           setLoading(false);
           onComplete();
 
-          toast.success(`${getLabelForSource(source, true)} has been removed`);
+          toast.success(`${getLabelForSource(source, true)} has been deleted`);
         } catch (e) {
           console.error(e);
-          toast.error('Error removing source');
+          toast.error('Error deleting source');
         }
       }}
     />
   );
 };
 
-export default RemoveSourceDialog;
+export default DeleteSourceDialog;
