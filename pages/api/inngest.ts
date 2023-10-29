@@ -102,6 +102,8 @@ const syncNangoRecords = inngest.createFunction(
       delta: event.data.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
 
+    console.log('Records', JSON.stringify(recordIncludingErrors, null, 2));
+
     const records = recordIncludingErrors.filter((r) => !r.error);
 
     const errorMessages = recordIncludingErrors

@@ -66,7 +66,7 @@ const fetchPageAndUrlsWithRetryWithThrows = async (
     endpoint: pageFetcherServicePath,
     providerConfigKey: WEBSITE_PAGES_PROVIDER_CONFIG_KEY,
     connectionId: nango.connectionId!,
-    // retries: 5,
+    retries: 10,
     data: {
       url,
       crawlerRoot,
@@ -86,7 +86,7 @@ const fetchPageAndUrlsWithRetryWithThrows = async (
     file: {
       id: url,
       path: url,
-      content: 'content', //res.data.content,
+      content: res.data.content,
       contentType: 'html',
       error: undefined,
     },
@@ -109,7 +109,6 @@ const fetchPageAndUrlsWithRetry =
   ) =>
   async (url: string): Promise<PageFetchResponse> => {
     try {
-      await nango.log(`Fetching ${url}`);
       const res = await fetchPageAndUrlsWithRetryWithThrows(
         nango,
         url,
@@ -123,10 +122,7 @@ const fetchPageAndUrlsWithRetry =
       );
       return res;
     } catch (e) {
-      await nango.log(`!!!!!!!!!!!!!!!!!! NANGO ERROR ${e}`);
-
       if (retryAttempt >= maxRetries) {
-        await nango.log(`FAILING ${e}`);
         return {
           file: {
             id: url,
@@ -141,7 +137,6 @@ const fetchPageAndUrlsWithRetry =
         // await timeout(
         //   (800 + Math.round(Math.random() * 400)) * Math.pow(2, retryAttempt),
         // );
-        await nango.log(`Retrying attempt ${retryAttempt + 1}`);
         const res = await fetchPageAndUrlsWithRetry(
           nango,
           pageFetcherServiceBaseUrl,
@@ -311,7 +306,13 @@ export default async function fetchData(nango: NangoSync) {
   await nango.log(`Files to save: ${filesToSave.length}`);
 
   await nango.log(
-    'batchSave:\n\n' + JSON.stringify(filesToSave.map((f) => f.id)),
+    'batchSave:\n\n' +
+      JSON.stringify(
+        filesToSave.map((f) => ({
+          id: f.id,
+          content: f.content?.slice(0, 200),
+        })),
+      ),
   );
   await nango.log('================================================');
 
