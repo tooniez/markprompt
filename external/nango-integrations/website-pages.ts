@@ -7,9 +7,14 @@ interface Metadata {
   requestHeaders?: { [key: string]: string };
 }
 
-type NangoFileWithNextUrls = {
-  file: Omit<NangoFile, 'last_modified'>;
-  nextUrls: string[];
+type NangoWebpageFile = Pick<
+  NangoFile,
+  'id' | 'path' | 'content' | 'contentType' | 'error'
+>;
+
+type PageFetchResponse = {
+  file: NangoWebpageFile;
+  nextUrls?: string[];
 };
 
 const chunkArray = (arr: string[], chunkSize: number) => {
@@ -35,7 +40,61 @@ const unique = (arr: string[]) => {
 
 const WEBSITE_PAGES_PROVIDER_CONFIG_KEY = 'website-pages';
 
-const fetchPageAndUrls =
+// const timeout = (ms: number) =>
+//   new Promise((resolve) => setTimeout(resolve, ms));
+
+const fetchPageAndUrlsWithRetryWithThrows = async (
+  nango: NangoSync,
+  url: string,
+  pageFetcherServiceBaseUrl: string,
+  pageFetcherServicePath: string,
+  pageFetcherServiceAPIToken: string,
+  crawlerRoot: string,
+  requestHeaders: { [key: string]: string } | undefined,
+  includeGlobs: string[] | undefined,
+  excludeGlobs: string[] | undefined,
+): Promise<PageFetchResponse> => {
+  // Note that this endpoint returns FULL urls. That is, it has resolved
+  // e.g. absolute and relative URLs to their fully specified paths with
+  // base URL prepended. It has also applied the glob filters if provided
+  // (since doing it here is practically impossible, as `minimatch` cannot
+  // be imported).
+
+  const res = await nango.proxy({
+    method: 'POST',
+    baseUrlOverride: pageFetcherServiceBaseUrl,
+    endpoint: pageFetcherServicePath,
+    providerConfigKey: WEBSITE_PAGES_PROVIDER_CONFIG_KEY,
+    connectionId: nango.connectionId!,
+    // retries: 5,
+    data: {
+      url,
+      crawlerRoot,
+      includePageUrls: true,
+      requestHeaders,
+      includeGlobs,
+      excludeGlobs,
+    },
+    headers: {
+      Authorization: `Bearer ${pageFetcherServiceAPIToken}`,
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+  });
+
+  return {
+    file: {
+      id: url,
+      path: url,
+      content: 'content', //res.data.content,
+      contentType: 'html',
+      error: undefined,
+    },
+    nextUrls: res.data.urls || [],
+  };
+};
+
+const fetchPageAndUrlsWithRetry =
   (
     nango: NangoSync,
     pageFetcherServiceBaseUrl: string,
@@ -45,106 +104,59 @@ const fetchPageAndUrls =
     requestHeaders: { [key: string]: string } | undefined,
     includeGlobs: string[] | undefined,
     excludeGlobs: string[] | undefined,
+    retryAttempt: number,
+    maxRetries: number,
   ) =>
-  async (url: string): Promise<NangoFileWithNextUrls> => {
-    await nango.log(
-      'FETCHING: ' +
-        JSON.stringify({
-          method: 'POST',
-          baseUrlOverride: pageFetcherServiceBaseUrl,
-          endpoint: pageFetcherServicePath,
-          providerConfigKey: WEBSITE_PAGES_PROVIDER_CONFIG_KEY,
-          connectionId: nango.connectionId!,
-          retries: 5,
-          data: JSON.stringify({
-            url,
-            crawlerRoot,
-            includePageUrls: true,
-            requestHeaders,
-            includeGlobs,
-            excludeGlobs,
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-            accept: 'application/json',
-          },
-        }),
-    );
-    // Note that this endpoint returns FULL urls. That is, it has resolved
-    // e.g. absolute and relative URLs to their fully specified paths with
-    // base URL prepended. It has also applied the glob filters if provided
-    // (since doing it here is practically impossible, as `minimatch` cannot
-    // be imported).
-
-    const res = await nango.proxy({
-      method: 'POST',
-      baseUrlOverride: pageFetcherServiceBaseUrl,
-      endpoint: pageFetcherServicePath,
-      providerConfigKey: WEBSITE_PAGES_PROVIDER_CONFIG_KEY,
-      connectionId: nango.connectionId!,
-      retries: 5,
-      data: JSON.stringify({
+  async (url: string): Promise<PageFetchResponse> => {
+    try {
+      await nango.log(`Fetching ${url}`);
+      const res = await fetchPageAndUrlsWithRetryWithThrows(
+        nango,
         url,
+        pageFetcherServiceBaseUrl,
+        pageFetcherServicePath,
+        pageFetcherServiceAPIToken,
         crawlerRoot,
-        includePageUrls: true,
         requestHeaders,
         includeGlobs,
         excludeGlobs,
-      }),
-      headers: {
-        Authorization: `Bearer ${pageFetcherServiceAPIToken}`,
-        'Content-Type': 'application/json',
-        accept: 'application/json',
-      },
-    });
+      );
+      return res;
+    } catch (e) {
+      await nango.log(`!!!!!!!!!!!!!!!!!! NANGO ERROR ${e}`);
 
-    console.log('Response', JSON.stringify(res.data, null, 2));
-
-    // const pageRes = await fetch(pageFetcherServiceUrl, {
-    //   method: 'POST',
-    //   body: JSON.stringify({
-    //     url,
-    //     crawlerRoot,
-    //     includePageUrls: true,
-    //     requestHeaders,
-    //     includeGlobs,
-    //     excludeGlobs,
-    //   }),
-    //   headers: {
-    //     Authorization: `Bearer ${pageFetcherServiceAPIToken}`,
-    //     'Content-Type': 'application/json',
-    //     accept: 'application/json',
-    //   },
-    // });
-
-    let content = '';
-    let nextUrls: string[] = [];
-    let error: string | undefined = undefined;
-
-    content = 'abc';
-    nextUrls = ['123'];
-    error = undefined;
-
-    // if (pageRes.ok) {
-    //   const { content: _content, urls } = await pageRes.json();
-    //   content = _content;
-    //   nextUrls = urls;
-    // } else {
-    //   error = await pageRes.text();
-    // }
-
-    return {
-      file: {
-        id: url,
-        path: url,
-        title: undefined,
-        content: content,
-        contentType: 'html',
-        meta: undefined,
-        error,
-      },
-      nextUrls,
-    };
+      if (retryAttempt >= maxRetries) {
+        await nango.log(`FAILING ${e}`);
+        return {
+          file: {
+            id: url,
+            path: url,
+            content: undefined,
+            contentType: undefined,
+            error: `${e}`,
+          },
+        };
+      } else {
+        // setTimeout is not defined in the Nango runtime
+        // await timeout(
+        //   (800 + Math.round(Math.random() * 400)) * Math.pow(2, retryAttempt),
+        // );
+        await nango.log(`Retrying attempt ${retryAttempt + 1}`);
+        const res = await fetchPageAndUrlsWithRetry(
+          nango,
+          pageFetcherServiceBaseUrl,
+          pageFetcherServicePath,
+          pageFetcherServiceAPIToken,
+          crawlerRoot,
+          requestHeaders,
+          includeGlobs,
+          excludeGlobs,
+          retryAttempt + 1,
+          maxRetries,
+        )(url);
+        return res;
+      }
+    }
   };
 
 const parallelFetchPages = async (
@@ -157,21 +169,25 @@ const parallelFetchPages = async (
   requestHeaders: { [key: string]: string } | undefined,
   includeGlobs: string[] | undefined,
   excludeGlobs: string[] | undefined,
-): Promise<NangoFileWithNextUrls[]> => {
-  return Promise.all(
-    urls.map(
-      fetchPageAndUrls(
-        nango,
-        pageFetcherServiceBaseUrl,
-        pageFetcherServicePath,
-        pageFetcherServiceAPIToken,
-        crawlerRoot,
-        requestHeaders,
-        includeGlobs,
-        excludeGlobs,
+): Promise<PageFetchResponse[]> => {
+  return (
+    await Promise.all(
+      urls.map(
+        fetchPageAndUrlsWithRetry(
+          nango,
+          pageFetcherServiceBaseUrl,
+          pageFetcherServicePath,
+          pageFetcherServiceAPIToken,
+          crawlerRoot,
+          requestHeaders,
+          includeGlobs,
+          excludeGlobs,
+          0,
+          5,
+        ),
       ),
-    ),
-  );
+    )
+  ).filter((f) => !!f) as PageFetchResponse[];
 };
 
 const fetchPages = async (
@@ -184,11 +200,11 @@ const fetchPages = async (
   requestHeaders: { [key: string]: string } | undefined,
   includeGlobs: string[] | undefined,
   excludeGlobs: string[] | undefined,
-): Promise<{ files: NangoFile[]; nextUrls: string[] }> => {
-  const files: NangoFile[] = [];
+): Promise<{ files: NangoWebpageFile[]; nextUrls: string[] }> => {
+  const files: NangoWebpageFile[] = [];
   const nextUrls: string[] = [];
 
-  const parallelization = 50;
+  const parallelization = 40;
   const urlChunks = chunkArray(urls, parallelization);
 
   for (const urlChunk of urlChunks) {
@@ -209,7 +225,7 @@ const fetchPages = async (
         files.push(f);
       });
     filesWithUrls
-      .flatMap((f) => f.nextUrls)
+      .flatMap((f) => f.nextUrls || [])
       .forEach((url) => {
         nextUrls.push(url);
       });
@@ -225,8 +241,6 @@ export default async function fetchData(nango: NangoSync) {
 
   const { baseUrl, includeGlobs, excludeGlobs, requestHeaders } =
     await nango.getMetadata<Metadata>();
-
-  await nango.log('baseUrl: ' + baseUrl);
 
   if (!baseUrl) {
     throw new Error('Missing base URL.');
@@ -251,7 +265,7 @@ export default async function fetchData(nango: NangoSync) {
     throw new Error('Missing page fetcher service URL or API token.');
   }
 
-  const filesToSave: NangoFile[] = [];
+  const filesToSave: NangoWebpageFile[] = [];
 
   const processedUrls: string[] = [];
   let linksToProcess = [baseUrl];
@@ -295,6 +309,11 @@ export default async function fetchData(nango: NangoSync) {
   }
 
   await nango.log(`Files to save: ${filesToSave.length}`);
+
+  await nango.log(
+    'batchSave:\n\n' + JSON.stringify(filesToSave.map((f) => f.id)),
+  );
+  await nango.log('================================================');
 
   await nango.batchSave(filesToSave, 'NangoFile');
 }

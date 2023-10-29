@@ -104,17 +104,17 @@ const syncNangoRecords = inngest.createFunction(
 
     const records = recordIncludingErrors.filter((r) => !r.error);
 
-    const errorRecordPaths = recordIncludingErrors
+    const errorMessages = recordIncludingErrors
       .filter((r) => r.error)
-      .map((r) => r.path);
+      .map((r) => `${r.path}: ${r.error}`);
 
-    if (errorRecordPaths.length > 0) {
+    if (errorMessages.length > 0) {
       await updateSyncQueue(supabase, syncQueueId, 'running', {
         message: `Error processing ${pluralize(
-          errorRecordPaths.length,
+          errorMessages.length,
           'file',
           'files',
-        )}: ${JSON.stringify(errorRecordPaths, null, 2)}`,
+        )}:\n\n${errorMessages.join('\n')}`,
         level: 'error',
       });
     }
@@ -195,6 +195,10 @@ const isFileChanged = (
 // Meta is built from the Markdown frontmatter, and from additional
 // data, such as Notion properties.
 const createFullMeta = async (file: NangoFileWithMetadata) => {
+  if (!file.content) {
+    return {};
+  }
+
   let meta = await extractMeta(file.content, file.contentType);
 
   meta = { ...file.meta, ...meta };
@@ -210,7 +214,7 @@ const runTrainFile = async (data: FileTrainEventData) => {
   const sourceId = data.sourceId;
   const projectId = data.projectId;
 
-  if (!file?.id) {
+  if (!file?.id || file.error) {
     return;
   }
 
@@ -235,7 +239,9 @@ const runTrainFile = async (data: FileTrainEventData) => {
   }
 
   const meta = await createFullMeta(file);
-  const markdown = await convertToMarkdown(file.content, file.contentType);
+  const markdown = file.content
+    ? await convertToMarkdown(file.content, file.contentType)
+    : '';
   const checksum = createChecksum(markdown);
 
   if (
@@ -285,7 +291,7 @@ const runTrainFile = async (data: FileTrainEventData) => {
     meta,
     internalMetadata,
     checksum,
-    file.content,
+    file.content || '',
     tokenCount,
   );
 

@@ -64,7 +64,7 @@ models:
     id: string
     path: string
     title: string | undefined
-    content: string
-    contentType: string
+    content: string | undefined
+    contentType: string | undefined
     meta: object | undefined
     error: string | undefined
