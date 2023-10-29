@@ -47,12 +47,34 @@ const fetchPageAndUrls =
     excludeGlobs: string[] | undefined,
   ) =>
   async (url: string): Promise<NangoFileWithNextUrls> => {
+    await nango.log(
+      'FETCHING: ' +
+        JSON.stringify({
+          method: 'POST',
+          baseUrlOverride: pageFetcherServiceBaseUrl,
+          endpoint: pageFetcherServicePath,
+          providerConfigKey: WEBSITE_PAGES_PROVIDER_CONFIG_KEY,
+          connectionId: nango.connectionId!,
+          retries: 5,
+          data: JSON.stringify({
+            url,
+            crawlerRoot,
+            includePageUrls: true,
+            requestHeaders,
+            includeGlobs,
+            excludeGlobs,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+            accept: 'application/json',
+          },
+        }),
+    );
     // Note that this endpoint returns FULL urls. That is, it has resolved
     // e.g. absolute and relative URLs to their fully specified paths with
     // base URL prepended. It has also applied the glob filters if provided
     // (since doing it here is practically impossible, as `minimatch` cannot
     // be imported).
-    console.log('Fetching', url);
 
     const res = await nango.proxy({
       method: 'POST',
@@ -204,6 +226,10 @@ export default async function fetchData(nango: NangoSync) {
   const { baseUrl, includeGlobs, excludeGlobs, requestHeaders } =
     await nango.getMetadata<Metadata>();
 
+  if (!baseUrl) {
+    throw new Error('Missing base URL.');
+  }
+
   const envVariables = await nango.getEnvironmentVariables();
   const pageFetcherServiceBaseUrl = envVariables?.find(
     (v) => v.name === 'CUSTOM_PAGE_FETCH_SERVICE_BASE_URL',
@@ -214,10 +240,6 @@ export default async function fetchData(nango: NangoSync) {
   const pageFetcherServiceAPIToken = envVariables?.find(
     (v) => v.name === 'MARKPROMPT_API_TOKEN',
   )?.value;
-
-  if (!baseUrl) {
-    throw new Error('Missing base URL.');
-  }
 
   if (
     !pageFetcherServiceBaseUrl ||

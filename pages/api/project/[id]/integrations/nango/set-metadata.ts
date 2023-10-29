@@ -15,7 +15,6 @@ const nango = getNangoServerInstance();
 export default withProjectAccess(
   allowedMethods,
   async (req: NextApiRequest, res: NextApiResponse<Data>) => {
-    console.log('In here', JSON.stringify(req.body, null, 2));
     if (req.method === 'POST') {
       if (!req.body.integrationId) {
         return res.status(400).json({ error: 'No integration id provided.' });
@@ -26,12 +25,6 @@ export default withProjectAccess(
       }
 
       try {
-        console.log(
-          'Set metadata',
-          req.body.integrationId,
-          req.body.connectionId,
-          JSON.stringify(req.body.metadata, null, 2),
-        );
         await nango.setMetadata(
           req.body.integrationId,
           req.body.connectionId,
