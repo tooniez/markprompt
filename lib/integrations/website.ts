@@ -125,10 +125,6 @@ export const fetchPageContent = async (
   immediate: boolean,
   useCustomPageFetcher: boolean,
 ): Promise<string | undefined> => {
-  console.log(
-    'Fetching',
-    JSON.stringify({ url, immediate, useCustomPageFetcher }, null, 2),
-  );
   const res = await fetch('/api/integrations/website/fetch-page', {
     method: 'POST',
     body: JSON.stringify({ url, immediate, useCustomPageFetcher }),

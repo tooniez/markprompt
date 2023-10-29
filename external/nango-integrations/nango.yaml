@@ -1,20 +1,20 @@
 integrations:
   # Legacy - to remove
-  salesforce:
-    salesforce-articles:
-      type: sync
-      runs: every day
-      auto_start: false
-      returns:
-        - NangoFile
-  # Legacy - to remove
-  salesforce-sandbox:
-    salesforce-articles:
-      type: sync
-      runs: every day
-      auto_start: false
-      returns:
-        - NangoFile
+  # salesforce:
+  #   salesforce-articles:
+  #     type: sync
+  #     runs: every day
+  #     auto_start: false
+  #     returns:
+  #       - NangoFile
+  # # Legacy - to remove
+  # salesforce-sandbox:
+  #   salesforce-articles:
+  #     type: sync
+  #     runs: every day
+  #     auto_start: false
+  #     returns:
+  #       - NangoFile
   salesforce-knowledge:
     salesforce-knowledge:
       type: sync

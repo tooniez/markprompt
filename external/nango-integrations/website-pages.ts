@@ -226,6 +226,8 @@ export default async function fetchData(nango: NangoSync) {
   const { baseUrl, includeGlobs, excludeGlobs, requestHeaders } =
     await nango.getMetadata<Metadata>();
 
+  await nango.log('baseUrl: ' + baseUrl);
+
   if (!baseUrl) {
     throw new Error('Missing base URL.');
   }
@@ -257,22 +259,16 @@ export default async function fetchData(nango: NangoSync) {
   const maxAllowedPages = 10000;
   let numProcessedLinks = 0;
 
-  console.log('linksToProcess', JSON.stringify(linksToProcess, null, 2));
+  await nango.log(`linksToProcess: ${JSON.stringify(linksToProcess)}`);
 
   while (linksToProcess.length > 0) {
     try {
       numProcessedLinks += linksToProcess.length;
 
-      await nango.log(
-        `[website-pages] fetch: ${JSON.stringify(linksToProcess)}`,
-      );
-
       const { files, nextUrls } = await fetchPages(
         nango,
-        // pageFetcherServiceBaseUrl,
-        'https://5e5d-50-175-150-150.ngrok-free.app:3001',
-        // pageFetcherServicePath,
-        '/api/fetch-page-with-links',
+        pageFetcherServiceBaseUrl,
+        pageFetcherServicePath,
         pageFetcherServiceAPIToken,
         baseUrl,
         linksToProcess,

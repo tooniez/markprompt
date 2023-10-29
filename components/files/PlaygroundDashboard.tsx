@@ -24,7 +24,6 @@ import { getApiUrl } from '@/lib/utils.nodeps';
 
 import GetCode from '../dialogs/project/GetCode';
 import Share from '../dialogs/project/Share';
-import { SpinnerIcon } from '../icons/Spinner';
 import Button from '../ui/Button';
 import { InfoTooltip } from '../ui/Tooltip';
 
@@ -332,80 +331,75 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
   ]);
 
   return (
-    <div className="absolute inset-0 flex flex-col">
-      <div className="flex flex-none flex-row items-center justify-end gap-2 border-b border-neutral-900 px-6 py-2">
-        <Share>
-          <Button buttonSize="sm" variant="plain" Icon={ShareIcon}>
-            Share
-          </Button>
-        </Share>
-        <GetCode isOnboarding={!!isOnboarding}>
-          <Button buttonSize="sm" variant="plain" Icon={Code}>
-            Get code
-          </Button>
-        </GetCode>
-      </div>
-      <div className="grid flex-grow grid-cols-1 sm:grid-cols-3">
-        <div className="relative col-span-1 sm:col-span-2">
-          <div className="h-full w-full overflow-hidden">
-            <div className={cn('h-full border-r border-neutral-900')}>
-              <div className="relative flex h-full flex-col gap-4">
-                <div
-                  className="pointer-events-none absolute inset-0 z-0"
-                  style={{
-                    backgroundColor: isDark
-                      ? theme.colors.dark.overlay
-                      : theme.colors.light.overlay,
+    <div className="absolute inset-0 grid flex-grow grid-cols-1 sm:grid-cols-3">
+      <div className="relative col-span-1 h-full sm:col-span-2">
+        <div className="h-full w-full overflow-hidden">
+          <div className={cn('h-full border-r border-neutral-900')}>
+            <div className="relative flex h-full flex-col gap-4">
+              {/* <div
+                className="pointer-events-none absolute inset-0 z-0"
+                style={{
+                  backgroundColor: isDark
+                    ? theme.colors.dark.overlay
+                    : theme.colors.light.overlay,
+                }}
+              /> */}
+              <div className="absolute inset-0">
+                <iframe
+                  tabIndex={-1}
+                  ref={playgroundRef}
+                  src="/static/html/chatbot-playground.html"
+                  className="absolute inset-0 h-full w-full bg-transparent"
+                  onLoad={() => {
+                    setTimeout(() => {
+                      setPlaygroundLoaded(true);
+                    }, 100);
+                    setTimeout(() => {
+                      setDidCompleteFirstQuery(true);
+                    }, 5000);
                   }}
                 />
-                <div className="absolute inset-0">
-                  <iframe
-                    tabIndex={-1}
-                    ref={playgroundRef}
-                    src="/static/html/chatbot-playground.html"
-                    className="pointer-events-none absolute inset-0 h-full w-full bg-transparent"
-                    onLoad={() => {
-                      setTimeout(() => {
-                        setPlaygroundLoaded(true);
-                      }, 100);
-                      setTimeout(() => {
-                        setDidCompleteFirstQuery(true);
-                      }, 5000);
-                    }}
-                  />
-                </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="relative h-full transition">
-          <div className="absolute inset-x-0 top-0 bottom-0 flex flex-col overflow-y-auto pb-12">
-            <Tabs.Root
-              className="TabsRoot mt-4 flex-grow px-6"
-              defaultValue="model"
+      </div>
+      <div className="relative h-full flex-col items-stretch overflow-hidden transition">
+        <div className="grid flex-none grid-cols-1 flex-row items-center justify-end gap-2 border-b border-neutral-900 px-6 py-2 sm:grid-cols-2">
+          <Share>
+            <Button buttonSize="sm" variant="plain" Icon={ShareIcon}>
+              Share
+            </Button>
+          </Share>
+          <GetCode isOnboarding={!!isOnboarding}>
+            <Button buttonSize="sm" variant="plain" Icon={Code}>
+              Get code
+            </Button>
+          </GetCode>
+        </div>
+        <div className="flex h-full flex-grow flex-col overflow-y-auto pb-12">
+          <Tabs.Root
+            className="TabsRoot mt-4 flex-grow px-6 pb-12"
+            defaultValue="model"
+          >
+            <Tabs.List
+              className="TabsListSegmented"
+              aria-label="Configure model"
             >
-              <Tabs.List
-                className="TabsListSegmented"
-                aria-label="Configure model"
-              >
-                <Tabs.Trigger className="TabsTrigger" value="model">
-                  Model
-                </Tabs.Trigger>
-                <Tabs.Trigger className="TabsTrigger" value="ui">
-                  UI
-                </Tabs.Trigger>
-              </Tabs.List>
-              <Tabs.Content
-                className="TabsContent flex-grow pt-4"
-                value="model"
-              >
-                <ModelConfigurator />
-              </Tabs.Content>
-              <Tabs.Content className="TabsContent flex-grow pt-4" value="ui">
-                <UIConfigurator />
-              </Tabs.Content>
-            </Tabs.Root>
-          </div>
+              <Tabs.Trigger className="TabsTrigger" value="model">
+                Model
+              </Tabs.Trigger>
+              <Tabs.Trigger className="TabsTrigger" value="ui">
+                UI
+              </Tabs.Trigger>
+            </Tabs.List>
+            <Tabs.Content className="TabsContent flex-grow pt-4" value="model">
+              <ModelConfigurator />
+            </Tabs.Content>
+            <Tabs.Content className="TabsContent flex-grow pt-4" value="ui">
+              <UIConfigurator />
+            </Tabs.Content>
+          </Tabs.Root>
         </div>
       </div>
     </div>
