@@ -18,7 +18,7 @@ import {
   FileSections,
   DbSyncQueue,
   LogLevel,
-  DbFileSignature,
+  DbFileMetaChecksum,
 } from '@/types/types';
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
@@ -523,7 +523,7 @@ export const getFilesIdAndCheksumBySourceAndNangoId = async (
   supabase: SupabaseClient<Database>,
   sourceId: DbSource['id'],
   nangoFileId: string,
-): Promise<DbFileSignature[]> => {
+): Promise<DbFileMetaChecksum[]> => {
   const { data, error } = await supabase
     .from('files')
     .select('id,meta,path,checksum')

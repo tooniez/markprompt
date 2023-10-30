@@ -380,4 +380,7 @@ export type SyncData = {
   syncIds: NangoSyncId[];
 };
 
-export type DbFileSignature = Pick<DbFile, 'id' | 'meta' | 'path' | 'checksum'>;
+export type DbFileMetaChecksum = Pick<
+  DbFile,
+  'id' | 'meta' | 'path' | 'checksum'
+>;

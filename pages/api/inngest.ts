@@ -35,10 +35,9 @@ import {
 import { createChecksum, pluralize } from '@/lib/utils';
 import { Json } from '@/types/supabase';
 import {
-  DbFileSignature,
+  DbFileMetaChecksum,
   DbSource,
   FileSections,
-  FileType,
   NangoFileWithMetadata,
   Project,
 } from '@/types/types';
@@ -181,9 +180,9 @@ const syncNangoRecords = inngest.createFunction(
   },
 );
 
-const isFileChanged = (
-  newFile: Omit<DbFileSignature, 'id'>,
-  storedFile: Omit<DbFileSignature, 'id'>,
+export const isFileChanged = (
+  newFile: Omit<DbFileMetaChecksum, 'id'>,
+  storedFile: Omit<DbFileMetaChecksum, 'id'>,
 ) => {
   return (
     newFile.path !== storedFile.path ||
@@ -194,7 +193,7 @@ const isFileChanged = (
 
 // Meta is built from the Markdown frontmatter, and from additional
 // data, such as Notion properties.
-const createFullMeta = async (file: NangoFileWithMetadata) => {
+export const createFullMeta = async (file: NangoFileWithMetadata) => {
   if (!file.content) {
     return {};
   }
@@ -224,7 +223,7 @@ const runTrainFile = async (data: FileTrainEventData) => {
     file.id,
   );
 
-  let foundFile: DbFileSignature | undefined = undefined;
+  let foundFile: DbFileMetaChecksum | undefined = undefined;
 
   if (foundFiles.length > 0) {
     foundFile = foundFiles[0];
