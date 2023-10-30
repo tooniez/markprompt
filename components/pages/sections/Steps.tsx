@@ -2,10 +2,10 @@ import cn from 'classnames';
 import createGlobe from 'cobe';
 import { motion } from 'framer-motion';
 import {
-  Code,
   Globe,
   MessageCircle,
   MessagesSquare,
+  Rocket,
   Search,
   Settings2,
   Unplug,
@@ -109,17 +109,22 @@ const Step = ({ title, description, Icon, position, children }: StepProps) => {
         </div>
         <div className="relative flex w-full items-center justify-center">
           <div className="relative z-20">
-            <div className="h-10 w-10 flex-none rounded-full bg-fuchsia-600 p-3 text-white">
-              <Icon className="h-full w-full" />
+            <div className="rounded-full bg-neutral-1000">
+              <div className="h-12 w-12 flex-none rounded-full border border-sky-500/20 bg-sky-500/10 p-3 text-white">
+                <Icon
+                  className="h-full w-full text-sky-500"
+                  strokeWidth={1.75}
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div>
-        <div className="relative mt-4 flex w-full flex-none flex-col items-center font-medium text-neutral-300">
-          {title}
-          <p className="mx-auto mt-2 h-20 max-w-xs text-center text-sm font-normal text-neutral-500">
-            <Balancer ratio={0.5}>{description}</Balancer>
+      <div className="w-full sm:px-4">
+        <div className="relative mt-4 flex w-full flex-none flex-col items-center">
+          <p className="text-lg font-semibold text-neutral-100">{title}</p>
+          <p className="mx-auto mt-2 h-20 max-w-sm text-center font-normal text-neutral-500">
+            {description}
           </p>
         </div>
       </div>
@@ -239,9 +244,9 @@ export const LaunchLine = ({
           id="pulse1"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor={colors.fuchsia['500']} stopOpacity="0" />
-          <stop stopColor={colors.fuchsia['500']} stopOpacity="0.7" />
-          <stop offset="1" stopColor={colors.fuchsia['500']} stopOpacity="0" />
+          <stop stopColor={colors.sky['500']} stopOpacity="0" />
+          <stop stopColor={colors.sky['500']} stopOpacity="0.7" />
+          <stop offset="1" stopColor={colors.sky['500']} stopOpacity="0" />
         </motion.linearGradient>
       </defs>
     </svg>
@@ -283,7 +288,7 @@ const StepsSection = () => {
 
   return (
     <div className="relative z-0 mx-auto max-w-screen-xl px-6 pt-24 sm:px-8 sm:pt-0">
-      <h2 className="gradient-heading mt-16 text-center text-4xl sm:mt-40">
+      <h2 className="gradient-heading mt-16 text-center text-3xl sm:mt-40 sm:text-4xl">
         <Balancer>How it works</Balancer>
       </h2>
       <div className="grid grid-cols-1 items-center justify-center gap-12 sm:mt-16 sm:gap-0 md:grid-cols-3">
@@ -303,18 +308,18 @@ const StepsSection = () => {
             <div className="relative flex h-min w-full">
               <div className="absolute inset-x-0 top-0 z-10 h-[100px] bg-gradient-to-b from-neutral-1100 to-neutral-1100/0" />
               <div className="relative z-0 grid h-min w-full grid-cols-4 items-center justify-center gap-4">
-                <SourceIcon id="motif" />
                 <SourceIcon id="substack" />
-                <SourceIcon id="medium" />
                 <SourceIcon id="wordpress" />
                 <SourceIcon id="gitbook" />
-                <SourceIcon id="readme" />
                 <SourceIcon id="docusaurus" />
-                <SourceIcon id="markdown" />
+                <SourceIcon id="hubspot" />
                 <SourceIcon Icon={Globe} />
-                <SourceIcon Icon={GitHubIcon} />
-                <SourceIcon id="zendesk" />
                 <SourceIcon Icon={Upload} />
+                <SourceIcon id="medium" />
+                <SourceIcon id="salesforce" />
+                <SourceIcon id="zendesk" />
+                <SourceIcon id="notion" />
+                <SourceIcon Icon={GitHubIcon} />
               </div>
             </div>
             <div className="h-[150px] w-full px-5">
@@ -411,8 +416,8 @@ const StepsSection = () => {
         </Step>
         <Step
           title="Deploy at all touch points"
-          description="Use with your existing CS tools. Publish as AI chatbots with our customizable component libraries. Or build bespoke flows on top of our APIs."
-          Icon={Code}
+          description="Use with your existing CS tools. Publish as AI chatbots with our customizable component libraries. Or build on top of our APIs."
+          Icon={Rocket}
           position="right"
         >
           <div className="relative overflow-hidden">

@@ -42,19 +42,19 @@ export default function LandingNavbar({
         Pricing
       </Link> */}
       <Link
-        className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 md:block"
+        className="block transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100"
         href="/integrations"
       >
         Integrations
       </Link>
       <Link
-        className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 sm:block"
+        className="block transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100"
         href="/blog"
       >
         Blog
       </Link>
       <Link
-        className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 sm:block"
+        className="block transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100"
         href="/docs"
       >
         Docs
@@ -72,7 +72,7 @@ export default function LandingNavbar({
       />
       {session ? (
         <Link
-          className="button-glow flex flex-row items-center gap-3 rounded-md bg-white px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-300"
+          className="button-glow hidden flex-row items-center gap-3 rounded-md bg-white px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-300 sm:flex"
           href="/"
         >
           Go to app
@@ -86,7 +86,7 @@ export default function LandingNavbar({
             Sign up
           </Link>
           <Link
-            className="button-glow flex flex-row items-center gap-3 whitespace-nowrap rounded-md bg-white px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-300"
+            className="button-glow hidden flex-row items-center gap-3 whitespace-nowrap rounded-md bg-white px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-300 sm:flex"
             href="/login"
           >
             Sign in

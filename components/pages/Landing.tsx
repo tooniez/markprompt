@@ -123,30 +123,38 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
                 </Balancer>
               </p>
               <div className="flex flex-col items-start justify-start gap-4 pt-8 sm:flex-row sm:items-center">
-                <Button variant="cta" buttonSize="lg" href="/signup">
+                <Button
+                  className="hidden sm:block"
+                  variant="cta"
+                  buttonSize="lg"
+                  href="/signup"
+                >
                   Start now
                 </Button>
-                <div className="hidden sm:block">
-                  <ContactWindow
-                    closeOnClickOutside
-                    Component={
-                      <Button variant="plain" buttonSize="lg">
-                        Book a demo
-                      </Button>
-                    }
-                  />
-                  {/* <Button
-                    variant="plain"
-                    buttonSize="lg"
-                    href="https://github.com/motifland/markprompt"
-                    Icon={GitHubIcon}
-                  >
-                    Star on GitHub
-                    <span className="ml-2 text-neutral-600">
-                      {formatNumStars(stars)}
-                    </span>
-                  </Button> */}
-                </div>
+                <ContactWindow
+                  closeOnClickOutside
+                  Component={
+                    <Button
+                      className="hidden sm:block"
+                      variant="plain"
+                      buttonSize="lg"
+                    >
+                      Book a demo
+                    </Button>
+                  }
+                />
+                <ContactWindow
+                  closeOnClickOutside
+                  Component={
+                    <Button
+                      className="block sm:hidden"
+                      variant="cta"
+                      buttonSize="lg"
+                    >
+                      Book a demo
+                    </Button>
+                  }
+                />
               </div>
               <p className="pt-16 text-left text-sm text-neutral-700 sm:text-base">
                 Live with
@@ -178,10 +186,10 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
         </div>
       </div>
       <div className="relative mx-auto max-w-screen-lg px-6 pt-32 sm:px-8 sm:pt-0">
-        <h2 className="gradient-heading mt-12 mb-8 text-4xl sm:text-center">
+        <h2 className="gradient-heading mt-12 mb-12 text-3xl sm:mb-24 sm:text-center sm:text-4xl">
           <Balancer>Scale your mighty customer support team</Balancer>
         </h2>
-        <div className="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           <FeatureCard
             Icon={BookmarkCheck}
             title="Ticket deflection"
@@ -243,10 +251,10 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
       </div>
 
       <div className="relative z-0 mx-auto mt-40 max-w-screen-lg px-6 sm:px-8">
-        <h2 className="gradient-heading mb-8 text-4xl sm:text-center">
+        <h2 className="gradient-heading mt-12 mb-12 text-3xl sm:mb-24 sm:text-center sm:text-4xl">
           <Balancer>Delight your customers</Balancer>
         </h2>
-        <div className="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           <FeatureCard
             Icon={MessagesSquare}
             title="Bespoke ChatGPT"
@@ -286,11 +294,11 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             }
           />
         </div>
-        <div className="mt-12 rounded-lg border border-dashed border-neutral-900 bg-neutral-1000 px-4 py-8">
+        <div className="mt-12 rounded-lg border border-dashed border-neutral-900 bg-neutral-1000 px-4 py-4 sm:py-8">
           <div className="relative mx-auto grid max-w-screen-lg grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
             <Goal>Onboard faster</Goal>
             <Goal>Educate better</Goal>
-            <Goal>Increase NPS</Goal>
+            <Goal>Increase NPS and CSAT</Goal>
           </div>
         </div>
       </div>
@@ -298,10 +306,10 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
       <StepsSection />
       <div className="relative z-0 mx-auto mt-32 max-w-screen-xl px-6 sm:px-8 sm:pt-0">
         <div className="rounded-lg border border-dashed border-neutral-900 bg-neutral-1000/60 px-8 py-12">
-          <h2 className="gradient-heading mb-2 text-3xl sm:text-center">
+          <h2 className="gradient-heading mb-4 text-center text-3xl sm:text-4xl">
             <Balancer>Integrations</Balancer>
           </h2>
-          <p className="text-lg text-neutral-500 sm:text-center">
+          <p className="text-center text-lg text-neutral-500">
             Integrate natively with Salesforce, Zendesk, Notion, Slack, Discord
             and more.
           </p>
