@@ -102,8 +102,6 @@ const syncNangoRecords = inngest.createFunction(
       delta: event.data.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
 
-    console.log('Records', JSON.stringify(recordIncludingErrors, null, 2));
-
     const records = recordIncludingErrors.filter((r) => !r.error);
 
     const errorMessages = recordIncludingErrors
@@ -131,8 +129,6 @@ const syncNangoRecords = inngest.createFunction(
       return { updated: 0, deleted: 0 };
     }
 
-    const config = await getProjectConfigData(supabase, projectId);
-
     // Delete files
 
     const filesIdsToDelete = records
@@ -148,6 +144,8 @@ const syncNangoRecords = inngest.createFunction(
     });
 
     // Train added/updated files
+
+    const config = await getProjectConfigData(supabase, projectId);
 
     const trainEvents = records
       .filter((record) => {

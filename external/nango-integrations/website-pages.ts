@@ -306,7 +306,7 @@ export default async function fetchData(nango: NangoSync) {
   await nango.log(`Files to save: ${filesToSave.length}`);
 
   await nango.log(
-    'batchSave:\n\n' +
+    'batchSave called!\n\n' +
       JSON.stringify(
         filesToSave.map((f) => ({
           id: f.id,
