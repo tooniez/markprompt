@@ -105,7 +105,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
                   Introducing ticket hand-off →
                 </Tag>
               </Link> */}
-              <h1 className="gradient-heading z-10 mt-6 text-left text-5xl leading-[56px] tracking-[-0.6px] sm:text-6xl sm:leading-[64px] md:text-7xl">
+              <h1 className="gradient-heading z-10 mt-6 text-left text-[2.5rem] leading-[2.5rem] tracking-[-0.6px] sm:text-6xl sm:leading-[64px] md:text-7xl">
                 <Balancer>
                   AI for
                   <br />
@@ -160,19 +160,19 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
                 Live with
               </p>
               <div className="flex flex-row flex-wrap items-center justify-start gap-y-2 gap-x-8 overflow-x-auto sm:items-center">
-                <div className="flex h-12 items-center justify-center">
+                <div className="flex h-10 items-center justify-center sm:h-12">
                   <AngelListIcon className="mt-1 w-[92px] text-neutral-500" />
                 </div>
-                <div className="flex h-12 items-center justify-center">
+                <div className="flex h-10 items-center justify-center sm:h-12">
                   <PlotlyIcon className="w-[110px] text-neutral-500" />
                 </div>
-                <div className="flex h-12 items-center justify-center">
+                <div className="flex h-10 items-center justify-center sm:h-12">
                   <CalIcon className="w-[90px] text-neutral-500" />
                 </div>
-                <div className="flex h-12 items-center justify-center">
+                <div className="flex h-10 items-center justify-center sm:h-12">
                   <SemgrepIcon className="mt-1 w-[130px] text-neutral-500" />
                 </div>
-                <div className="flex h-12 items-center justify-center">
+                <div className="flex h-10 items-center justify-center sm:h-12">
                   <SkeduloIcon className="w-[110px] text-neutral-500" />
                 </div>
               </div>
@@ -305,7 +305,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
       {/* <VideoSection /> */}
       <StepsSection />
       <div className="relative z-0 mx-auto mt-32 max-w-screen-xl px-6 sm:px-8 sm:pt-0">
-        <div className="rounded-lg border border-dashed border-neutral-900 bg-neutral-1000/60 px-8 py-12">
+        <div className="rounded-lg border border-dashed border-neutral-900 bg-neutral-1000/60 px-4 py-12 sm:px-8">
           <h2 className="gradient-heading mb-4 text-center text-3xl sm:text-4xl">
             <Balancer>Integrations</Balancer>
           </h2>
@@ -314,14 +314,14 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             and more.
           </p>
           <div className="relative mx-auto mt-12 grid max-w-screen-lg grid-cols-4 place-items-center items-center justify-center gap-4 sm:grid-cols-8">
-            <SalesforceIcon className="h-11 w-11 text-neutral-500" />
-            <ZendeskIcon className="h-10 w-10 text-neutral-500" />
-            <GitHubIcon className="h-10 w-10 text-neutral-500" />
-            <NotionIcon className="h-10 w-10 text-neutral-500" />
-            <HubspotIcon className="h-10 w-10 text-neutral-500" />
-            <SlackIcon className="h-10 w-10 text-neutral-500" />
-            <DiscordIcon className="h-10 w-10 text-neutral-500" />
-            <AlgoliaIcon className="h-10 w-10 text-neutral-500" />
+            <SalesforceIcon className="h-8 w-8 text-neutral-500 sm:h-11 sm:w-11" />
+            <ZendeskIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
+            <GitHubIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
+            <NotionIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
+            <HubspotIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
+            <SlackIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
+            <DiscordIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
+            <AlgoliaIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
           </div>
           <div className="flex items-center justify-center pt-20">
             <Button variant="cta" href="/integrations" buttonSize="lg">

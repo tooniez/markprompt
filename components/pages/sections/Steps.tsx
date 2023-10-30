@@ -69,14 +69,14 @@ const SourceIcon = ({
   id?: string;
 }) => {
   return (
-    <div className="z-20 rounded-full border border-dashed border-neutral-800 bg-neutral-1000 p-3 text-white">
-      {Icon && <Icon className="h-5 w-5" />}
+    <div className="z-20 flex flex-none items-center justify-center rounded-full border border-dashed border-neutral-800 bg-neutral-1000 p-3 text-white">
+      {Icon && <Icon className="h-5 w-5 flex-none" />}
       {id && (
         <Image
           alt={id}
           width={20}
           height={20}
-          className="h-5 w-5"
+          className="h-5 w-5 flex-none"
           src={`/static/icons/${id}.svg`}
         />
       )}
@@ -307,7 +307,7 @@ const StepsSection = () => {
           <div className="max-auto flex h-full flex-col items-end justify-end">
             <div className="relative flex h-min w-full">
               <div className="absolute inset-x-0 top-0 z-10 h-[100px] bg-gradient-to-b from-neutral-1100 to-neutral-1100/0" />
-              <div className="relative z-0 grid h-min w-full grid-cols-4 items-center justify-center gap-4">
+              <div className="relative z-0 grid h-min w-full grid-cols-4 place-items-center items-center justify-center gap-4">
                 <SourceIcon id="substack" />
                 <SourceIcon id="wordpress" />
                 <SourceIcon id="gitbook" />

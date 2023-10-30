@@ -135,7 +135,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     variant === 'borderedFuchsia',
                   'text-sm': size === 'base' || size === 'sm',
                   'text-xs': size === 'xs',
-                  'text-sm sm:text-base': size === 'lg',
+                  'text-base': size === 'lg',
                   'px-4 py-2': size === 'base' && !noPadding,
                   'px-2 py-1.5': size === 'xs' && !noPadding,
                   'px-4 py-1.5': size === 'sm' && !noPadding,
