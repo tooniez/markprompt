@@ -40,10 +40,20 @@ export const S = ({ children }: { children: ReactNode }) => {
   return <span className="font-medium text-neutral-300">{children}</span>;
 };
 
+export const GoalList = ({ children }: { children: ReactNode }) => {
+  return (
+    <div className="mt-12 rounded-lg border border-dashed border-neutral-900 bg-neutral-1000 px-4 py-6 sm:py-8">
+      <div className="relative mx-auto grid max-w-screen-lg grid-cols-1 gap-4 sm:grid-cols-3">
+        {children}
+      </div>
+    </div>
+  );
+};
+
 export const Goal = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="flex items-center gap-4 rounded-lg bg-neutral-1000 text-base font-semibold sm:justify-center">
-      <Check className="h-6 w-6 text-green-400" />
+    <div className="flex flex-row items-center gap-4 text-base font-medium sm:justify-center">
+      <Check className="h-5 w-5 text-green-400 sm:h-6 sm:w-6" />
       {children}
     </div>
   );
@@ -178,7 +188,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
               </div>
             </div>
             <div className="z-0 col-span-2 hidden h-full sm:block">
-              <div className="animate-scale-bounce relative ml-[-100px] mt-[5%] block h-[90%] w-[calc(100%+200px)] transform-gpu">
+              <div className="animate-scale-bounce ml-[-100px] mt-[5%] block h-[90%] w-[calc(100%+200px)] transform-gpu">
                 <Spline scene="https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode" />
               </div>
             </div>
@@ -241,13 +251,11 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             }
           />
         </div>
-        <div className="mt-12 rounded-lg border border-dashed border-neutral-900 bg-neutral-1000 px-4 py-8">
-          <div className="relative mx-auto grid max-w-screen-lg grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
-            <Goal>Deflect more tickets</Goal>
-            <Goal>Close cases faster</Goal>
-            <Goal>Understand your customer</Goal>
-          </div>
-        </div>
+        <GoalList>
+          <Goal>Deflect more tickets</Goal>
+          <Goal>Close cases faster</Goal>
+          <Goal>Understand your customer</Goal>
+        </GoalList>
       </div>
 
       <div className="relative z-0 mx-auto mt-40 max-w-screen-lg px-6 sm:px-8">
@@ -294,13 +302,11 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             }
           />
         </div>
-        <div className="mt-12 rounded-lg border border-dashed border-neutral-900 bg-neutral-1000 px-4 py-4 sm:py-8">
-          <div className="relative mx-auto grid max-w-screen-lg grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
-            <Goal>Onboard faster</Goal>
-            <Goal>Educate better</Goal>
-            <Goal>Increase NPS and CSAT</Goal>
-          </div>
-        </div>
+        <GoalList>
+          <Goal>Onboard faster</Goal>
+          <Goal>Educate better</Goal>
+          <Goal>Increase NPS and CSAT</Goal>
+        </GoalList>
       </div>
       {/* <VideoSection /> */}
       <StepsSection />
