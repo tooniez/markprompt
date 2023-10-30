@@ -1,140 +1,70 @@
 import Spline from '@splinetool/react-spline';
-import cn from 'classnames';
-import { ChevronsUpDown, SearchIcon } from 'lucide-react';
-import Image from 'next/image';
+import {
+  BookmarkCheck,
+  Check,
+  Lightbulb,
+  MessagesSquare,
+  PenSquare,
+  Sparkles,
+  Timer,
+} from 'lucide-react';
 import Link from 'next/link';
-import { FC, useState } from 'react';
+import { FC, JSXElementConstructor, ReactNode } from 'react';
 import Balancer from 'react-wrap-balancer';
 
-import { AngeListIcon } from '@/components/icons/AngelList';
+import { AngelListIcon } from '@/components/icons/AngelList';
+import { AlgoliaIcon } from '@/components/icons/brands/Algolia';
+import { HubspotIcon } from '@/components/icons/brands/Hubspot';
+import { NotionIcon } from '@/components/icons/brands/Notion';
+import { SalesforceIcon } from '@/components/icons/brands/Salesforce';
+import { SlackIcon } from '@/components/icons/brands/Slack';
+import { ZendeskIcon } from '@/components/icons/brands/Zendesk';
 import { CalIcon } from '@/components/icons/Cal';
+import { DiscordIcon } from '@/components/icons/Discord';
 import { GitHubIcon } from '@/components/icons/GitHub';
-import { MarkpromptIcon } from '@/components/icons/Markprompt';
 import { XIcon } from '@/components/icons/X';
 import LandingNavbar from '@/components/layouts/LandingNavbar';
-import { Blurs } from '@/components/ui/Blurs';
 import Button from '@/components/ui/Button';
 import { Pattern } from '@/components/ui/Pattern';
-import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
-import {
-  DEFAULT_TIERS,
-  PLACEHOLDER_ENTERPRISE_TIER,
-  Tier,
-} from '@/lib/stripe/tiers';
 import { SystemStatus } from '@/types/types';
 
 import StepsSection from './sections/Steps';
-import VideoSection from './sections/Video';
 import { SharedHead } from './SharedHead';
-import { InsightsExample } from '../examples/insights';
-import { CernIcon } from '../icons/Cern';
-import { DiscordIcon } from '../icons/Discord';
-import { ListItem } from '../ui/ListItem';
-import { Segment } from '../ui/Segment';
-import { Slash } from '../ui/Slash';
+import { PlotlyIcon } from '../icons/Plotly';
+import { SemgrepIcon } from '../icons/Semgrep';
+import { SkeduloIcon } from '../icons/Skedulo';
 import { SystemStatusButton } from '../ui/SystemStatusButton';
-import { Tag } from '../ui/Tag';
 import { ContactWindow } from '../user/ChatWindow';
 
-const PricingCard = ({
-  tier,
-  highlight,
-  cta,
-  ctaHref,
-  onCtaClick,
-  priceLabel,
-}: {
-  tier: Tier;
-  highlight?: boolean;
-  cta: string;
-  ctaHref?: string;
-  onCtaClick?: () => void;
-  priceLabel?: string;
-}) => {
-  const [showAnnual, setShowAnnual] = useState(true);
-  const hasMonthlyOption = !!tier.price?.monthly;
+export const S = ({ children }: { children: ReactNode }) => {
+  return <span className="font-medium text-neutral-300">{children}</span>;
+};
 
+export const Goal = ({ children }: { children: ReactNode }) => {
   return (
-    <div
-      className={cn(
-        'relative flex w-full flex-col items-center gap-4 rounded-lg bg-neutral-1100 py-12 backdrop-blur',
-        {
-          'border border-neutral-900 shadow-2xl': !highlight,
-          'shadow-box': highlight,
-        },
-      )}
-    >
-      {highlight && (
-        <div className="absolute inset-0 z-[-1]">
-          <div className="glow-border glow-border-fuchsia glow-border-founded-lg absolute inset-0 z-0 rounded-lg" />
-        </div>
-      )}
-      <div className="absolute inset-0 rounded-lg bg-neutral-1100" />
-      <h2 className="z-10 flex-none px-4 text-2xl font-semibold text-neutral-300 md:px-6">
-        {tier.name}
-      </h2>
-      <div className="relative z-10 flex h-16 w-full flex-col items-center px-4 md:px-6">
-        <p className="mt-0 text-center text-base text-neutral-500">
-          {tier.description}
-        </p>
-        {hasMonthlyOption && (
-          <div className="absolute -bottom-2 flex items-center">
-            <div>
-              <Segment
-                size="sm"
-                items={['Monthly', 'Yearly']}
-                selected={showAnnual ? 1 : 0}
-                id="billing-period"
-                onChange={(i) => setShowAnnual(i === 1)}
-              />
-            </div>
-          </div>
-        )}
+    <div className="flex items-center gap-4 rounded-lg bg-neutral-1000 text-base font-semibold sm:justify-center">
+      <Check className="h-6 w-6 text-green-400" />
+      {children}
+    </div>
+  );
+};
+
+export const FeatureCard = ({
+  Icon,
+  title,
+  description,
+}: {
+  Icon: JSXElementConstructor<any>;
+  title: string;
+  description: ReactNode;
+}) => {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-sky-500/10 bg-sky-500/10 p-2">
+        <Icon className="w-full text-sky-500" strokeWidth={1.75} />
       </div>
-      <div className="z-10 flex h-20 w-full items-center justify-center bg-neutral-900/0 px-4 sm:h-24 md:px-6">
-        <div className="relative -mt-4 flex w-full flex-col items-center">
-          <p className="text-[36px] font-semibold text-neutral-300 sm:text-[28px] md:text-[36px]">
-            {priceLabel ?? (
-              <>
-                $
-                {tier.price?.[
-                  showAnnual || !hasMonthlyOption ? 'yearly' : 'monthly'
-                ]?.amount || 0}
-                <span className="text-base font-normal text-neutral-500">
-                  /month
-                </span>
-              </>
-            )}
-          </p>
-        </div>
-      </div>
-      <div className="z-10 flex w-full flex-grow flex-col gap-1">
-        <ul className="flex w-full flex-col gap-1 px-4 md:px-6">
-          {tier.items?.map((item, i) => {
-            return (
-              <ListItem
-                size="sm"
-                variant="discreet"
-                key={`pricing-${tier.name}-${i}`}
-              >
-                {item}
-              </ListItem>
-            );
-          })}
-        </ul>
-      </div>
-      <div className="z-10 mt-4 w-full px-4 md:px-6">
-        <Button
-          className="w-full"
-          variant={highlight ? 'fuchsia' : 'plain'}
-          href={ctaHref ?? (!onCtaClick ? '/signup' : undefined)}
-          onClick={() => {
-            onCtaClick?.();
-          }}
-        >
-          {cta}
-        </Button>
-      </div>
+      <h3 className="text-lg font-semibold text-neutral-100">{title}</h3>
+      <div className="flex flex-col gap-4 text-neutral-500">{description}</div>
     </div>
   );
 };
@@ -154,7 +84,7 @@ const formatNumStars = (stars: number) => {
 const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
   return (
     <>
-      <SharedHead title="Markprompt | AI infrastructure for customer experience teams" />
+      <SharedHead title="Markprompt | AI for customer support" />
       {/* <div className="z-40 bg-fuchsia-700 py-1.5 px-6 sm:px-8">
         <Link
           href="/blog/markprompt-qa"
@@ -164,26 +94,32 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
           fits in →
         </Link>
       </div> */}
-      <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 sm:px-8">
+      <div className="relative z-0 mx-auto max-w-screen-xl px-6 sm:min-h-screen sm:px-8">
         <Pattern />
         <LandingNavbar />
         <div className="animate-slide-up">
-          <div className="grid grid-cols-1 gap-8 pb-24 sm:min-h-[calc(100vh-100px)] sm:grid-cols-5">
-            <div className="col-span-3 mt-4 flex flex-col justify-center sm:mt-12 2xl:mt-0">
+          <div className="grid grid-cols-1 gap-8 sm:min-h-[calc(100vh-200px)] sm:grid-cols-5">
+            <div className="col-span-3 mt-4 flex flex-col justify-center sm:mt-4 2xl:mt-0">
               {/* <Link href="/blog/feedback-flows">
                 <Tag size="base" color="sky">
                   Introducing ticket hand-off →
                 </Tag>
               </Link> */}
-              <h1 className="gradient-heading z-10 mt-6 text-left text-5xl leading-[56px] tracking-[-0.6px] sm:mr-[-200px] sm:text-6xl sm:leading-[64px] md:text-7xl">
-                <Balancer>AI infrastructure for CX teams</Balancer>
+              <h1 className="gradient-heading z-10 mt-6 text-left text-5xl leading-[56px] tracking-[-0.6px] sm:text-6xl sm:leading-[64px] md:text-7xl">
+                <Balancer>
+                  AI for
+                  <br />
+                  customer support
+                </Balancer>
               </h1>
-              <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base text-neutral-500 sm:mt-4 sm:text-lg">
+              <p className="z-20 mt-8 mr-[40px] max-w-screen-md text-left text-base text-neutral-500 sm:mt-4 sm:text-2xl">
                 <Balancer ratio={0.5}>
-                  Connect all your sources of data, such as Salesforce Service
+                  Automate customer support, scale without increasing headcount,
+                  and deliver exceptional user experiences.
+                  {/* Connect all your sources of data, such as Salesforce Service
                   Cloud, Zendesk, Notion pages and GitHub repositories, and use
                   as context to automatically answer your users&apos; questions,
-                  deflect tickets and draft case replies.
+                  deflect tickets and draft case replies. */}
                 </Balancer>
               </p>
               <div className="flex flex-col items-start justify-start gap-4 pt-8 sm:flex-row sm:items-center">
@@ -195,7 +131,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
                     closeOnClickOutside
                     Component={
                       <Button variant="plain" buttonSize="lg">
-                        Contact sales
+                        Book a demo
                       </Button>
                     }
                   />
@@ -212,13 +148,25 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
                   </Button> */}
                 </div>
               </div>
-              <p className="pt-8 text-left text-sm text-neutral-700 sm:pt-8 sm:text-base">
+              <p className="pt-16 text-left text-sm text-neutral-700 sm:text-base">
                 Live with
               </p>
-              <div className="flex flex-row items-center justify-start gap-8 overflow-x-auto pt-4 sm:items-center sm:gap-12 sm:pt-4">
-                <AngeListIcon className="mt-1 w-[76px] text-neutral-500 sm:w-[92px]" />
-                <CernIcon className="w-[60px] text-neutral-500 sm:w-[72px]" />
-                <CalIcon className="w-[72px] text-neutral-500 sm:w-[90px]" />
+              <div className="flex flex-row flex-wrap items-center justify-start gap-y-2 gap-x-8 overflow-x-auto sm:items-center">
+                <div className="flex h-12 items-center justify-center">
+                  <AngelListIcon className="mt-1 w-[92px] text-neutral-500" />
+                </div>
+                <div className="flex h-12 items-center justify-center">
+                  <PlotlyIcon className="w-[110px] text-neutral-500" />
+                </div>
+                <div className="flex h-12 items-center justify-center">
+                  <CalIcon className="w-[90px] text-neutral-500" />
+                </div>
+                <div className="flex h-12 items-center justify-center">
+                  <SemgrepIcon className="mt-1 w-[130px] text-neutral-500" />
+                </div>
+                <div className="flex h-12 items-center justify-center">
+                  <SkeduloIcon className="w-[110px] text-neutral-500" />
+                </div>
               </div>
             </div>
             <div className="z-0 col-span-2 hidden h-full sm:block">
@@ -227,189 +175,171 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
               </div>
             </div>
           </div>
-          {/* <a
-            href="https://twitter.com/markprompt"
-            className="mx-auto mt-20 flex w-min flex-row items-center gap-2 whitespace-nowrap rounded-full bg-primary-900/20 px-4 py-1 text-sm font-medium text-primary-400 transition hover:bg-primary-900/30"
-          >
-            <TwitterIcon className="h-4 w-4" />
-            Introducing Markprompt
-          </a> */}
         </div>
       </div>
-      <VideoSection />
-      <StepsSection />
-      {/* <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 pt-8 sm:px-8 sm:pt-24">
-        <h2 className="gradient-heading mt-32 text-center text-4xl sm:mt-64">
-          <Balancer>Combine with instant search</Balancer>
+      <div className="relative mx-auto max-w-screen-lg px-6 pt-32 sm:px-8 sm:pt-0">
+        <h2 className="gradient-heading mt-12 mb-8 text-4xl sm:text-center">
+          <Balancer>Scale your mighty customer support team</Balancer>
         </h2>
-        <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg text-neutral-500">
-          Bring your chatbot and your instant search together. Because
-          sometimes, a quick lookup is more suited than asking a question, and
-          vice versa.
-        </p>
-        <div className="mt-20 flex w-full items-center justify-center">
-          <SearchExample />
-        </div>
-        <div className="mt-8 flex flex-row items-center justify-center gap-2">
-          <span className="text-sm text-neutral-500">Powered by</span>
-          <Image
-            alt="Algolia"
-            width={465}
-            height={106}
-            className="h-5 w-min"
-            src={`/static/icons/algolia.svg`}
+        <div className="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-3">
+          <FeatureCard
+            Icon={BookmarkCheck}
+            title="Ticket deflection"
+            description={
+              <>
+                <p>
+                  Answer your customers&apos; questions before they reach a
+                  human agent.
+                </p>
+                <p>
+                  Generate expert answers based on all your knowledge sources,
+                  including <S>Salesforce Knowledge</S>, <S>Notion</S>,{' '}
+                  <S>Zendesk</S>, <S>GitHub Discussions</S>, and more.
+                </p>
+              </>
+            }
+          />
+          <FeatureCard
+            Icon={PenSquare}
+            title="AI draft responses"
+            description={
+              <>
+                <p>
+                  Quickly generate responses to support tickets, with instant
+                  access to your team&apos;s expertise.
+                </p>
+                <p>
+                  It is trained on past resolved cases, and integrates with your
+                  existing tools, like <S>Zendesk</S> and <S>Salesforce Case</S>
+                  .
+                </p>
+              </>
+            }
+          />
+          <FeatureCard
+            Icon={Lightbulb}
+            title="Insights"
+            description={
+              <>
+                <p>
+                  Cluster questions thematically, generate summaries, filter by
+                  audience, and more to get the big picture.
+                </p>
+                <p>
+                  Take informed decisions on where your product or resources
+                  lack, and quickly address them.
+                </p>
+              </>
+            }
           />
         </div>
-      </div> */}
-      <div className="relative z-0 mx-auto min-h-screen max-w-screen-xl px-6 pt-8 sm:px-8 sm:pt-24">
-        <h2 className="gradient-heading mt-32 text-center text-4xl sm:mt-64">
-          <Balancer>Track usage, get feedback, improve content</Balancer>
+        <div className="mt-12 rounded-lg border border-dashed border-neutral-900 bg-neutral-1000 px-4 py-8">
+          <div className="relative mx-auto grid max-w-screen-lg grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
+            <Goal>Deflect more tickets</Goal>
+            <Goal>Close cases faster</Goal>
+            <Goal>Understand your customer</Goal>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative z-0 mx-auto mt-40 max-w-screen-lg px-6 sm:px-8">
+        <h2 className="gradient-heading mb-8 text-4xl sm:text-center">
+          <Balancer>Delight your customers</Balancer>
         </h2>
-        <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg text-neutral-500">
-          Your users will be asking lots of questions, and will be expecting
-          quality answers. Use Markprompt&apos;s privacy-enabled feedback and
-          insights features to pinpoint shortcomings in your content, and
-          improve it.
-        </p>
-        <div className="relative mt-20 flex w-full flex-col overflow-hidden rounded-lg border border-neutral-900 bg-neutral-1000 sm:h-[660px]">
-          <div className="flex flex-none flex-row items-center justify-start gap-2 border-b border-neutral-900 px-2 py-3 sm:gap-4 sm:px-4">
-            <MarkpromptIcon className="ml-1 h-7 w-7 flex-none text-neutral-300 sm:h-8 sm:w-8" />
-            <Slash size="md" />
-            <p className="text-sm text-neutral-300">Acme</p>
-            <ChevronsUpDown className="h-3 w-3 flex-none text-neutral-500 sm:-ml-2" />
-            <Slash size="md" />
-            <p className="text-sm text-neutral-300">Documentation</p>
-            <ChevronsUpDown className="h-3 w-3 flex-none text-neutral-500 sm:-ml-2" />
-            <div className="flex-grow" />
-            <p className="hidden text-sm text-neutral-300 sm:block">Help</p>
-            <p className="ml-2 hidden text-sm text-neutral-300 sm:block">
-              Docs
-            </p>
-            <SearchIcon className="ml-2 hidden h-4 w-4 text-neutral-300 sm:block" />
-            <Image
-              alt="Profile"
-              className="ml-2 h-6 w-6 rounded-full"
-              width={20}
-              height={20}
-              src="/static/images/marie.png"
-            />
-          </div>
-          <div className="flex flex-none flex-row items-center justify-start gap-4 border-b border-neutral-900 px-4 py-2.5 text-sm font-medium text-neutral-500">
-            <p>Data</p>
-            <p>Playground</p>
-            <p className="text-neutral-100">Insights</p>
-            <p>Settings</p>
-          </div>
-          <div className="z-0 w-full flex-grow">
-            <div className="flex flex-col gap-6 p-4 sm:p-8">
-              <InsightsExample />
-            </div>
+        <div className="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-3">
+          <FeatureCard
+            Icon={MessagesSquare}
+            title="Bespoke ChatGPT"
+            description={
+              <>
+                <p>
+                  Markprompt employs the state-of-the-art language model used in
+                  the latest version of ChatGPT (GPT-4), tuned to your
+                  company&apos;s content and brand.
+                </p>
+              </>
+            }
+          />
+
+          <FeatureCard
+            Icon={Timer}
+            title="Instant responses"
+            description={
+              <>
+                <p>
+                  Never leave your customers waiting and churn. Assist them in
+                  the moment, when they most needed it.
+                </p>
+              </>
+            }
+          />
+          <FeatureCard
+            Icon={Sparkles}
+            title="Expert advice"
+            description={
+              <>
+                <p>
+                  Generate high quality reponses based on your knowledge
+                  sources, always kept up to date.
+                </p>
+              </>
+            }
+          />
+        </div>
+        <div className="mt-12 rounded-lg border border-dashed border-neutral-900 bg-neutral-1000 px-4 py-8">
+          <div className="relative mx-auto grid max-w-screen-lg grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
+            <Goal>Onboard faster</Goal>
+            <Goal>Educate better</Goal>
+            <Goal>Increase NPS</Goal>
           </div>
         </div>
-        <div className="relative flex flex-col items-center">
-          <h2
-            id="pricing"
-            className="gradient-heading mt-40 pt-8 text-center text-4xl"
-          >
-            <Balancer>Pricing that scales as you grow</Balancer>
+      </div>
+      {/* <VideoSection /> */}
+      <StepsSection />
+      <div className="relative z-0 mx-auto mt-32 max-w-screen-xl px-6 sm:px-8 sm:pt-0">
+        <div className="rounded-lg border border-dashed border-neutral-900 bg-neutral-1000/60 px-8 py-12">
+          <h2 className="gradient-heading mb-2 text-3xl sm:text-center">
+            <Balancer>Integrations</Balancer>
           </h2>
-          <p className="mx-auto mt-4 max-w-screen-sm text-center text-lg text-neutral-500">
-            Start for free, no credit card required.
+          <p className="text-lg text-neutral-500 sm:text-center">
+            Integrate natively with Salesforce, Zendesk, Notion, Slack, Discord
+            and more.
           </p>
-          {/* <div className="relative mt-8">
-            <Segment
-              items={modelNames}
-              selected={model === 'gpt-4' ? 1 : model === 'byo' ? 2 : 0}
-              id="billing-period"
-              onChange={(i) =>
-                setModel(i === 0 ? 'gpt-3.5-turbo' : i === 1 ? 'gpt-4' : 'byo')
-              }
-            />
-            <p
-              className={cn(
-                'absolute inset-x-0 -bottom-8 mt-4 transform text-center text-xs text-neutral-600 transition duration-500',
-                {
-                  'translate-y-0 opacity-100': model === 'byo',
-                  'translate-y-1 opacity-0': model !== 'byo',
-                },
-              )}
-            >
-              * BYO: Bring your own API key
-            </p>
-          </div> */}
-          <div className="relative mt-16 grid w-full max-w-screen-md grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
-            <Blurs />
-            <PricingCard
-              tier={DEFAULT_TIERS.find((t) => t.id === 'hobby')!}
-              cta="Get started with Hobby"
-              priceLabel="Free"
-            />
-            {/* <PricingCard
-              tier={DEFAULT_TIERS.find((t) => t.id === 'starter')!}
-              cta="Get started with Starter"
-            /> */}
-            {/* <PricingCard
-              tier={DEFAULT_TIERS.find((t) => t.id === 'pro')!}
-              highlight
-              cta="Get started with Pro"
-            /> */}
-            <PricingCard
-              tier={PLACEHOLDER_ENTERPRISE_TIER}
-              cta="Contact sales"
-              onCtaClick={() => {
-                emitter.emit(EVENT_OPEN_CONTACT);
-              }}
-              priceLabel="Custom"
-            />
+          <div className="relative mx-auto mt-12 grid max-w-screen-lg grid-cols-4 place-items-center items-center justify-center gap-4 sm:grid-cols-8">
+            <SalesforceIcon className="h-11 w-11 text-neutral-500" />
+            <ZendeskIcon className="h-10 w-10 text-neutral-500" />
+            <GitHubIcon className="h-10 w-10 text-neutral-500" />
+            <NotionIcon className="h-10 w-10 text-neutral-500" />
+            <HubspotIcon className="h-10 w-10 text-neutral-500" />
+            <SlackIcon className="h-10 w-10 text-neutral-500" />
+            <DiscordIcon className="h-10 w-10 text-neutral-500" />
+            <AlgoliaIcon className="h-10 w-10 text-neutral-500" />
           </div>
-          {/* <p className="mt-12 rounded-lg border border-neutral-900 px-6 py-4 text-center text-sm text-neutral-500">
-            * 1 token ≈ ¾ words. 1 document ≈ 1200 tokens.{' '}
-            <Link className="subtle-underline" href="/docs#what-are-tokens">
-              Learn more
-            </Link>
-          </p> */}
-        </div>
-        {/* <div className="flex flex-col items-center">
-          <h2 className="gradient-heading mt-40 text-center text-4xl">
-            Open source
-          </h2>
-          <p className="mx-auto mt-4 max-w-md text-center text-lg text-neutral-500">
-            <Balancer>
-              The source code is on GitHub, for you to review, run, and
-              contribute to if you like!
-            </Balancer>
-          </p>
-          <div className="mt-12">
-            <Button
-              variant="plain"
-              buttonSize="lg"
-              href="https://github.com/motifland/markprompt"
-              Icon={GitHubIcon}
-            >
-              Star on GitHub
-              <span className="ml-2 text-neutral-600">
-                {formatNumStars(stars)}
-              </span>
+          <div className="flex items-center justify-center pt-20">
+            <Button variant="cta" href="/integrations" buttonSize="lg">
+              Explore integrations
             </Button>
           </div>
-        </div> */}
-        <div className="flex flex-col items-center">
-          <h2 className="gradient-heading mt-64 text-center text-3xl sm:text-5xl">
-            Customer experience reimagined.
-            <br />
-            Get started now.
-          </h2>
-          <div className="mt-12">
-            <ContactWindow
-              closeOnClickOutside
-              Component={
-                <Button variant="cta" buttonSize="lg">
-                  Contact sales
-                </Button>
-              }
-            />
-          </div>
         </div>
+      </div>
+      <div className="flex flex-col items-center">
+        <h2 className="gradient-heading mt-64 text-center text-3xl sm:text-5xl">
+          Customer support reimagined.
+          <br />
+          Get started now.
+        </h2>
+        <div className="mt-12">
+          <ContactWindow
+            closeOnClickOutside
+            Component={
+              <Button variant="cta" buttonSize="lg">
+                Book a demo
+              </Button>
+            }
+          />
+        </div>
+      </div>
+      <div className="relative z-0 mx-auto max-w-screen-xl px-6 pt-8 sm:px-8 sm:pt-16">
         <div className="mt-48 grid grid-cols-1 items-center gap-8 border-t border-neutral-900/50 px-6 pt-12 pb-20 sm:py-12 sm:px-8 lg:grid-cols-3">
           <div className="flex flex-row items-center justify-center gap-6 text-sm text-neutral-500 lg:justify-start">
             <SystemStatusButton status={status} />

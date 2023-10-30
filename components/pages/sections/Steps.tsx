@@ -24,7 +24,6 @@ import Balancer from 'react-wrap-balancer';
 import colors from 'tailwindcss/colors';
 
 import { GitHubIcon } from '@/components/icons/GitHub';
-import Button from '@/components/ui/Button';
 
 const AnimatedGlobe = ({ className }: { className: string }) => {
   const canvasRef = useRef<any>();
@@ -283,9 +282,9 @@ const StepsSection = () => {
   }, []);
 
   return (
-    <div className="relative z-0 mx-auto max-w-screen-xl px-6 sm:px-8">
+    <div className="relative z-0 mx-auto max-w-screen-xl px-6 pt-24 sm:px-8 sm:pt-0">
       <h2 className="gradient-heading mt-16 text-center text-4xl sm:mt-40">
-        <Balancer>Go live in minutes, no setup required</Balancer>
+        <Balancer>How it works</Balancer>
       </h2>
       <div className="grid grid-cols-1 items-center justify-center gap-12 sm:mt-16 sm:gap-0 md:grid-cols-3">
         <Step
@@ -296,7 +295,7 @@ const StepsSection = () => {
               source of content
             </p>
           }
-          description="Ingest anything from a Salesforce or Zendesk knowledge base, a Notion workspace, a Gitbook repository, a website, and more."
+          description="Ingest anything from a Salesforce or Zendesk knowledge base, a Notion workspace, GitHub discussions, a website, and more."
           Icon={Unplug}
           position="left"
         >
@@ -412,7 +411,7 @@ const StepsSection = () => {
         </Step>
         <Step
           title="Deploy at all touch points"
-          description="Use with your CX tools. Publish as AI chatbots with our customizable component libraries. Or build bespoke flows on top of our APIs."
+          description="Use with your existing CS tools. Publish as AI chatbots with our customizable component libraries. Or build bespoke flows on top of our APIs."
           Icon={Code}
           position="right"
         >
@@ -430,11 +429,6 @@ const StepsSection = () => {
             </div>
           </div>
         </Step>
-      </div>
-      <div className="flex items-center justify-center pt-20">
-        <Button variant="cta" href="/integrations" buttonSize="lg">
-          See all integrations
-        </Button>
       </div>
     </div>
   );

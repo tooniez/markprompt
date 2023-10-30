@@ -19,16 +19,12 @@ export const SharedHead: FC<SharedHeadProps> = ({
       <meta property="og:title" content="Markprompt" />
       <meta
         name="description"
-        content={
-          description || 'AI infrastructure for customer experience teams'
-        }
+        content={description || 'AI for customer support'}
         key="desc"
       />
       <meta
         property="og:description"
-        content={
-          description || 'AI infrastructure for customer experience teams'
-        }
+        content={description || 'AI for customer support'}
       />
 
       <meta property="og:url" content="https://markprompt.com/" />
@@ -42,9 +38,7 @@ export const SharedHead: FC<SharedHeadProps> = ({
       <meta name="twitter:title" content={title} />
       <meta
         name="twitter:description"
-        content={
-          description || 'AI infrastructure for customer experience teams'
-        }
+        content={description || 'AI for customer support'}
       />
       <meta name="twitter:image" content={_ogImage} />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
