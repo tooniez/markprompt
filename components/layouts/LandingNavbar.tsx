@@ -35,12 +35,12 @@ export default function LandingNavbar({
       >
         Why Markprompt
       </Link>
-      <Link
+      {/* <Link
         className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 md:block"
         href="/#pricing"
       >
         Pricing
-      </Link>
+      </Link> */}
       <Link
         className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 md:block"
         href="/integrations"
