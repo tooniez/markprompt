@@ -212,7 +212,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
           />
           <FeatureCard
             Icon={Lightbulb}
-            title="Insights"
+            title="Customer insights"
             description={
               <>
                 <p>
