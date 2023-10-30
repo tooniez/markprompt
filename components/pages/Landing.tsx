@@ -14,7 +14,7 @@ import Balancer from 'react-wrap-balancer';
 
 import { AngelListIcon } from '@/components/icons/AngelList';
 import { AlgoliaIcon } from '@/components/icons/brands/Algolia';
-import { HubSpotIcon } from '@/components/icons/brands/HubSpot';
+import { HubSpotIcon } from '@/components/icons/brands/HubSpotIcon';
 import { NotionIcon } from '@/components/icons/brands/Notion';
 import { SalesforceIcon } from '@/components/icons/brands/Salesforce';
 import { SlackIcon } from '@/components/icons/brands/Slack';

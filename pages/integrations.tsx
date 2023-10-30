@@ -5,7 +5,7 @@ import Balancer from 'react-wrap-balancer';
 
 import { AlgoliaIcon } from '@/components/icons/brands/Algolia';
 import { FrontIcon } from '@/components/icons/brands/Front';
-import { HubSpotIcon } from '@/components/icons/brands/HubSpot';
+import { HubSpotIcon } from '@/components/icons/brands/HubSpotIcon';
 import { JiraIcon } from '@/components/icons/brands/Jira';
 import { NotionIcon } from '@/components/icons/brands/Notion';
 import { SalesforceIcon } from '@/components/icons/brands/Salesforce';
