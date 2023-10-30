@@ -322,7 +322,7 @@ const StepsSection = () => {
                 <SourceIcon Icon={GitHubIcon} />
               </div>
             </div>
-            <div className="h-[150px] w-full px-5">
+            <div className="hidden h-[150px] w-full px-5 sm:block">
               <div ref={sourcesContainerRef}>
                 <Lines
                   width={sourcesContainerDimensions.width}
@@ -333,6 +333,9 @@ const StepsSection = () => {
                   strokeDasharray={2}
                 />
               </div>
+            </div>
+            <div className="mt-4 flex h-[150px] w-full justify-center px-5 sm:hidden">
+              <div className="block w-px border-r border-dashed border-neutral-800 sm:hidden" />
             </div>
           </div>
         </Step>
