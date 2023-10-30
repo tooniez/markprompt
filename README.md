@@ -3,7 +3,7 @@
   <h1 align="center">Markprompt</h1>
 </a>
 
-Markprompt is a platform for building GPT-powered prompts. It takes Markdown, Markdoc, MDX, reStructuredText, HTML and plain text files (from a GitHub repo, website, file uploads or API requests), and creates embeddings that you can use to create a prompt, for instance using the companion [Markprompt React or Web component](https://markprompt.com/docs#components). Markprompt also offers analytics, so you can gain insights on how users interact with your docs.
+Markprompt is an AI-native platform for customer support. Connect any source of content (Salesforce, Zendesk, Notion, GitHub, and more) and use as foundation for generative AI applications to empower your support operations: bespoke ChatGPT tuned to your company's content and brand, AI draft responses for faster case responses, centralized access to expert knowledge updated in real time, and AI-powered customer insights.
 
 <br />
 <br />
@@ -39,10 +39,6 @@ Markprompt is built on top of the following stack:
 Markprompt comes with React and Web components that make it easy to build a prompt interface on top of the Markprompt API. With a single line of code, you can provide a prompt interface to your React application. Follow the steps in the [Markprompt docs](https://markprompt.com/docs#components) to get started, or explore the [source code](https://github.com/motifland/markprompt-js).
 
 Also, try out the [Markprompt starter template](https://github.com/motifland/markprompt-starter-template) for a fully working Next.js + Tailwind project.
-
-## Usage
-
-Currently, the Markprompt API has basic protection against misuse when making requests from public websites, such as rate limiting, IP blacklisting, allowed origins, and prompt moderation. These are not strong guarantees against misuse though, and it is always safer to expose an API like Markprompt's to authenticated users, and/or in non-public systems using private access tokens. We do plan to offer more extensive tooling on that front (hard limits, spike protection, notifications, query analysis, flagging).
 
 ## Data retention
 
