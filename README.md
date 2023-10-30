@@ -3,7 +3,7 @@
   <h1 align="center">Markprompt</h1>
 </a>
 
-Markprompt is an AI-native platform for customer support. Connect any source of content (Salesforce, Zendesk, Notion, GitHub, and more) and use as foundation for generative AI applications to empower your support operations: bespoke ChatGPT tuned to your company's content and brand, AI draft responses for faster case responses, centralized access to expert knowledge updated in real time, and AI-powered customer insights.
+Markprompt is an AI-native platform for customer support. Connect any source of content (Salesforce, Zendesk, Notion, GitHub, and more) and use as foundation for applications to automate and scale support operations: bespoke ChatGPT tuned to your company's content and brand, AI draft responses for faster case resolution, centralized access to expert knowledge updated in real time, and AI-powered customer insights.
 
 <br />
 <br />

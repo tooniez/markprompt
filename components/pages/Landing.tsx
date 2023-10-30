@@ -14,7 +14,6 @@ import Balancer from 'react-wrap-balancer';
 
 import { AngelListIcon } from '@/components/icons/AngelList';
 import { AlgoliaIcon } from '@/components/icons/brands/Algolia';
-import { HubSpotIcon } from '@/components/icons/brands/HubSpotIcon';
 import { NotionIcon } from '@/components/icons/brands/Notion';
 import { SalesforceIcon } from '@/components/icons/brands/Salesforce';
 import { SlackIcon } from '@/components/icons/brands/Slack';
@@ -30,6 +29,7 @@ import { SystemStatus } from '@/types/types';
 
 import StepsSection from './sections/Steps';
 import { SharedHead } from './SharedHead';
+import { HubSpotIcon } from '../icons/brands/HubSpotIcon';
 import { PlotlyIcon } from '../icons/Plotly';
 import { SemgrepIcon } from '../icons/Semgrep';
 import { SkeduloIcon } from '../icons/Skedulo';
@@ -254,7 +254,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
         </div>
         <GoalList>
           <Goal>Deflect more tickets</Goal>
-          <Goal>Close cases faster</Goal>
+          <Goal>Resolve cases faster</Goal>
           <Goal>Understand your customer</Goal>
         </GoalList>
       </div>
