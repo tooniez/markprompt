@@ -33,6 +33,7 @@ import { SharedHead } from './SharedHead';
 import { PlotlyIcon } from '../icons/Plotly';
 import { SemgrepIcon } from '../icons/Semgrep';
 import { SkeduloIcon } from '../icons/Skedulo';
+import { Blurs } from '../ui/Blurs';
 import { SystemStatusButton } from '../ui/SystemStatusButton';
 import { ContactWindow } from '../user/ChatWindow';
 
@@ -336,8 +337,11 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col items-center">
-        <h2 className="gradient-heading mt-64 text-center text-3xl sm:text-5xl">
+      <div className="relative flex flex-col items-center">
+        <div className="absolute inset-0">
+          <Blurs />
+        </div>
+        <h2 className="gradient-heading relative mt-36 text-center text-3xl sm:mt-56 sm:text-5xl">
           Customer support reimagined.
           <br />
           Get started now.
@@ -354,7 +358,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
         </div>
       </div>
       <div className="relative z-0 mx-auto max-w-screen-xl px-6 pt-8 sm:px-8 sm:pt-16">
-        <div className="mt-48 grid grid-cols-1 items-center gap-8 border-t border-neutral-900/50 px-6 pt-12 pb-20 sm:py-12 sm:px-8 lg:grid-cols-3">
+        <div className="mt-20 grid grid-cols-1 items-center gap-8 border-t border-neutral-900/50 px-6 pt-12 pb-20 sm:mt-36 sm:py-12 sm:px-8 lg:grid-cols-3">
           <div className="flex flex-row items-center justify-center gap-6 text-sm text-neutral-500 lg:justify-start">
             <SystemStatusButton status={status} />
             <Link href="/legal/terms">Terms</Link>
