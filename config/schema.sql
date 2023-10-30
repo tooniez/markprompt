@@ -717,6 +717,20 @@ begin
 end;
 $$;
 
+create or replace function clear_query_stat_id_from_query_stats_usage()
+returns trigger
+language plpgsql
+as $$
+begin
+  update query_stats_usage
+  set query_stat_id = null
+  where query_stat_id = old.id;
+  return old;
+end;
+$$;
+
+-- Functions end
+
 -- Triggers
 
 -- This trigger automatically creates a user entry when a new user signs up
@@ -741,6 +755,12 @@ create trigger query_stats_encrypt_secret_trigger_prompt_encrypted before insert
 or
 update of prompt_encrypted on query_stats for each row
 execute function query_stats_encrypt_secret_prompt_encrypted();
+
+-- This trigger automatically adds the file meta to a file_section
+create trigger trigger_clear_query_stat_usage_query_stat_id_on_query_stat_delete
+  before delete on public.query_stats
+  for each row
+  execute function clear_query_stat_id_from_query_stats_usage();
 
 -- Views
 
