@@ -161,19 +161,19 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
               </p>
               <div className="flex flex-row flex-wrap items-center justify-start gap-y-2 gap-x-8 overflow-x-auto sm:items-center">
                 <div className="flex h-10 items-center justify-center sm:h-12">
-                  <AngelListIcon className="mt-1 w-[92px] text-neutral-500" />
+                  <AngelListIcon className="mt-1 w-[84px] text-neutral-500 sm:w-[92px]" />
                 </div>
                 <div className="flex h-10 items-center justify-center sm:h-12">
-                  <PlotlyIcon className="w-[110px] text-neutral-500" />
+                  <PlotlyIcon className="w-[96px] text-neutral-500 sm:w-[110px]" />
                 </div>
                 <div className="flex h-10 items-center justify-center sm:h-12">
-                  <CalIcon className="w-[90px] text-neutral-500" />
+                  <CalIcon className="w-[80px] text-neutral-500 sm:w-[90px]" />
                 </div>
                 <div className="flex h-10 items-center justify-center sm:h-12">
-                  <SemgrepIcon className="mt-1 w-[130px] text-neutral-500" />
+                  <SemgrepIcon className="mt-1 w-[115px] text-neutral-500 sm:w-[130px]" />
                 </div>
                 <div className="flex h-10 items-center justify-center sm:h-12">
-                  <SkeduloIcon className="w-[110px] text-neutral-500" />
+                  <SkeduloIcon className="w-[96px] text-neutral-500 sm:w-[110px]" />
                 </div>
               </div>
             </div>
