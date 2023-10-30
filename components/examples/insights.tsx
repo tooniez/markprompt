@@ -23,12 +23,12 @@ import {
 import { Tag } from '../ui/Tag';
 
 const sampleTopReferences: ReferenceWithOccurrenceCount[] = [
-  { path: '/docs/getting-started', occurrences: 134 },
-  { path: '/docs/tutorials/react', occurrences: 121 },
-  { path: '/blog/algolia', occurrences: 119 },
+  { path: '/help/getting-started', occurrences: 134 },
+  { path: '/help/tutorials/react', occurrences: 121 },
+  { path: '/blog/zendesk', occurrences: 119 },
   { path: '/blog', occurrences: 104 },
-  { path: '/docs/articles/cli', occurrences: 97 },
-  { path: '/docs/faq', occurrences: 83 },
+  { path: '/help/articles/cli', occurrences: 97 },
+  { path: '/help/faq', occurrences: 83 },
 ].map((s) => ({ ...s, source_type: 'github', source_data: null }));
 
 type Question = {

@@ -4,7 +4,7 @@ type AngeListIconProps = {
   className?: string;
 };
 
-export const AngeListIcon: FC<AngeListIconProps> = ({ className }) => {
+export const AngelListIcon: FC<AngeListIconProps> = ({ className }) => {
   return (
     <svg className={className} fill="none" viewBox="0 0 95 22">
       <g clipPath="url(#prefix__clip0_5089_195987)">
