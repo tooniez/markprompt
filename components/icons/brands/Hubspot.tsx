@@ -1,10 +1,10 @@
 import { FC } from 'react';
 
-type HubspotIconProps = {
+type HubSpotIconProps = {
   className?: string;
 };
 
-export const HubspotIcon: FC<HubspotIconProps> = ({ className }) => {
+export const HubSpotIcon: FC<HubSpotIconProps> = ({ className }) => {
   return (
     <svg viewBox="0 0 66 66" className={className} fill="none">
       <path

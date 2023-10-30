@@ -14,7 +14,7 @@ import Balancer from 'react-wrap-balancer';
 
 import { AngelListIcon } from '@/components/icons/AngelList';
 import { AlgoliaIcon } from '@/components/icons/brands/Algolia';
-import { HubspotIcon } from '@/components/icons/brands/Hubspot';
+import { HubSpotIcon } from '@/components/icons/brands/HubSpot';
 import { NotionIcon } from '@/components/icons/brands/Notion';
 import { SalesforceIcon } from '@/components/icons/brands/Salesforce';
 import { SlackIcon } from '@/components/icons/brands/Slack';
@@ -325,7 +325,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             <ZendeskIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
             <GitHubIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
             <NotionIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
-            <HubspotIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
+            <HubSpotIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
             <SlackIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
             <DiscordIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />
             <AlgoliaIcon className="h-8 w-8 text-neutral-500 sm:h-10 sm:w-10" />

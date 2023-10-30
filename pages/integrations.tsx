@@ -5,7 +5,7 @@ import Balancer from 'react-wrap-balancer';
 
 import { AlgoliaIcon } from '@/components/icons/brands/Algolia';
 import { FrontIcon } from '@/components/icons/brands/Front';
-import { HubspotIcon } from '@/components/icons/brands/Hubspot';
+import { HubSpotIcon } from '@/components/icons/brands/HubSpot';
 import { JiraIcon } from '@/components/icons/brands/Jira';
 import { NotionIcon } from '@/components/icons/brands/Notion';
 import { SalesforceIcon } from '@/components/icons/brands/Salesforce';
@@ -31,12 +31,12 @@ type IntegrationSpec = {
 const integrations: IntegrationSpec[] = [
   {
     name: 'GitHub',
-    description: 'Sync files in your repo',
+    description: 'Sync your repo, discussions and issues',
     Icon: GitHubIcon,
   },
   {
     name: 'Salesforce Knowledge',
-    description: 'Sync your knowledge articles',
+    description: 'Sync your knowledge base articles',
     Icon: SalesforceIcon,
   },
   {
@@ -46,7 +46,7 @@ const integrations: IntegrationSpec[] = [
   },
   {
     name: 'Zendesk Articles',
-    description: 'Sync your knowledge articles',
+    description: 'Sync your knowledge base articles',
     Icon: ZendeskIcon,
     status: 'dev',
   },
@@ -63,7 +63,7 @@ const integrations: IntegrationSpec[] = [
   },
   {
     name: 'Atlassian Jira',
-    description: 'Sync your knowledge articles',
+    description: 'Sync your knowledge base articles',
     Icon: JiraIcon,
     status: 'dev',
   },
@@ -79,9 +79,9 @@ const integrations: IntegrationSpec[] = [
     Icon: NotionIcon,
   },
   {
-    name: 'Hubspot',
-    description: 'Sync your knowledge articles',
-    Icon: HubspotIcon,
+    name: 'HubSpot',
+    description: 'Sync your knowledge base articles',
+    Icon: HubSpotIcon,
     status: 'soon',
   },
   {
