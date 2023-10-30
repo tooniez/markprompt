@@ -66,7 +66,7 @@ export default function LandingNavbar({
             className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 sm:block"
             aria-label="Contact sales"
           >
-            Contact sales
+            Contact us
           </button>
         }
       />
@@ -81,16 +81,18 @@ export default function LandingNavbar({
         <>
           <Link
             className="hidden transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100 sm:block"
-            href="/signup"
-          >
-            Sign up
-          </Link>
-          <Link
-            className="button-glow hidden flex-row items-center gap-3 whitespace-nowrap rounded-md bg-white px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-300 sm:flex"
             href="/login"
           >
             Sign in
           </Link>
+          <a
+            className="button-glow hidden flex-row items-center gap-3 whitespace-nowrap rounded-md bg-white px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-300 sm:flex"
+            target="_blank"
+            rel="noreferrer"
+            href="https://meetings.hubspot.com/markprompt/demo"
+          >
+            Book a demo
+          </a>
         </>
       )}
       <a

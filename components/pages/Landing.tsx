@@ -27,7 +27,6 @@ import Button from '@/components/ui/Button';
 import { Pattern } from '@/components/ui/Pattern';
 import { SystemStatus } from '@/types/types';
 
-import StepsSection from './sections/Steps';
 import { SharedHead } from './SharedHead';
 import { HubSpotIcon } from '../icons/brands/HubSpotIcon';
 import { PlotlyIcon } from '../icons/Plotly';
@@ -38,7 +37,7 @@ import { SystemStatusButton } from '../ui/SystemStatusButton';
 import { ContactWindow } from '../user/ChatWindow';
 
 export const S = ({ children }: { children: ReactNode }) => {
-  return <span className="font-medium text-neutral-300">{children}</span>;
+  return <span className="text-neutral-300">{children}</span>;
 };
 
 export const GoalList = ({ children }: { children: ReactNode }) => {
@@ -127,50 +126,23 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
                 <Balancer ratio={0.5}>
                   Automate customer support, scale without increasing headcount,
                   and deliver exceptional user experiences.
-                  {/* Connect all your sources of data, such as Salesforce Service
-                  Cloud, Zendesk, Notion pages and GitHub repositories, and use
-                  as context to automatically answer your users&apos; questions,
-                  deflect tickets and draft case replies. */}
                 </Balancer>
               </p>
               <div className="flex flex-col items-start justify-start gap-4 pt-8 sm:flex-row sm:items-center">
                 <Button
-                  className="hidden sm:block"
                   variant="cta"
                   buttonSize="lg"
-                  href="/signup"
+                  target="_blank"
+                  rel="noreferrer"
+                  href="https://meetings.hubspot.com/markprompt/demo"
                 >
-                  Start now
+                  Book a demo
                 </Button>
-                <ContactWindow
-                  closeOnClickOutside
-                  Component={
-                    <Button
-                      className="hidden sm:block"
-                      variant="plain"
-                      buttonSize="lg"
-                    >
-                      Book a demo
-                    </Button>
-                  }
-                />
-                <ContactWindow
-                  closeOnClickOutside
-                  Component={
-                    <Button
-                      className="block sm:hidden"
-                      variant="cta"
-                      buttonSize="lg"
-                    >
-                      Book a demo
-                    </Button>
-                  }
-                />
               </div>
               <p className="pt-16 text-left text-sm text-neutral-700 sm:text-base">
                 Live with
               </p>
-              <div className="flex flex-row flex-wrap items-center justify-start gap-y-2 gap-x-8 overflow-x-auto sm:items-center">
+              <div className="flex flex-row flex-wrap items-center justify-start gap-y-2 gap-x-8 overflow-x-auto overflow-y-hidden sm:items-center">
                 <div className="flex h-10 items-center justify-center sm:h-12">
                   <AngelListIcon className="mt-1 w-[84px] text-neutral-500 sm:w-[92px]" />
                 </div>
@@ -198,7 +170,10 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
       </div>
       <div className="relative mx-auto max-w-screen-lg px-6 pt-32 sm:px-8 sm:pt-0">
         <h2 className="gradient-heading mt-12 mb-12 text-3xl sm:mb-24 sm:text-center sm:text-4xl">
-          <Balancer>Scale your mighty customer support team</Balancer>
+          <Balancer>
+            Scale your mighty customer support team, without additional
+            headcount
+          </Balancer>
         </h2>
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           <FeatureCard
@@ -261,12 +236,12 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
 
       <div className="relative z-0 mx-auto mt-40 max-w-screen-lg px-6 sm:px-8">
         <h2 className="gradient-heading mt-12 mb-12 text-3xl sm:mb-24 sm:text-center sm:text-4xl">
-          <Balancer>Delight your customers</Balancer>
+          <Balancer>Deliver exceptional customer experiences</Balancer>
         </h2>
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           <FeatureCard
             Icon={MessagesSquare}
-            title="Bespoke ChatGPT"
+            title="Bespoke AI chat"
             description={
               <>
                 <p>
@@ -292,12 +267,12 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
           />
           <FeatureCard
             Icon={Sparkles}
-            title="Expert advice"
+            title="Domain experts"
             description={
               <>
                 <p>
-                  Generate high quality reponses based on your knowledge
-                  sources, always kept up to date.
+                  Every customer support agent becomes a domain expert,
+                  instantly.
                 </p>
               </>
             }
@@ -310,9 +285,10 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
         </GoalList>
       </div>
       {/* <VideoSection /> */}
-      <StepsSection />
+      {/* <StepsSection /> */}
       <div className="relative z-0 mx-auto mt-32 max-w-screen-xl px-6 sm:px-8 sm:pt-0">
-        <div className="rounded-lg border border-dashed border-neutral-900 bg-neutral-1000/60 px-4 py-12 sm:px-8">
+        {/* <div className="rounded-lg border border-dashed border-neutral-900 bg-neutral-1000/60 px-4 py-12 sm:px-8"> */}
+        <div className="px-4 py-12 sm:px-8">
           <h2 className="gradient-heading mb-4 text-center text-3xl sm:text-4xl">
             <Balancer>Integrations</Balancer>
           </h2>
