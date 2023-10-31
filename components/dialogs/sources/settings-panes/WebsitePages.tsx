@@ -1,7 +1,6 @@
 import {
   ErrorMessage,
   Field,
-  Form,
   Formik,
   FormikErrors,
   FormikValues,
@@ -10,7 +9,15 @@ import { FC, useCallback } from 'react';
 import { toast } from 'sonner';
 
 import Button from '@/components/ui/Button';
-import { ErrorLabel } from '@/components/ui/Forms';
+import {
+  ErrorLabel,
+  FormField,
+  FormHeading,
+  FormHeadingGroup,
+  FormLabel,
+  FormRoot,
+  FormSubHeading,
+} from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
 import { RecordEditor } from '@/components/ui/RecordEditor';
 import { NoAutoTextArea } from '@/components/ui/TextArea';
@@ -125,21 +132,19 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
         }}
       >
         {({ isSubmitting, isValid }) => (
-          <Form className="FormRoot">
-            <div className="FormField">
-              <div className="FormLabel">Name</div>
-              <div className="flex flex-row gap-2">
-                <Field
-                  className="flex-grow"
-                  type="text"
-                  name="name"
-                  inputSize="sm"
-                  as={NoAutoInput}
-                  disabled={isSubmitting || forceDisabled}
-                />
-              </div>
+          <FormRoot>
+            <FormField>
+              <FormLabel>Name</FormLabel>
+              <Field
+                className="flex-grow"
+                type="text"
+                name="name"
+                inputSize="sm"
+                as={NoAutoInput}
+                disabled={isSubmitting || forceDisabled}
+              />
               <ErrorMessage name="name" component={ErrorLabel} />
-            </div>
+            </FormField>
             <Button
               className="place-self-start"
               disabled={!isValid || forceDisabled}
@@ -150,7 +155,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
             >
               Save
             </Button>
-          </Form>
+          </FormRoot>
         )}
       </Formik>
       <div className="h-8" />
@@ -198,11 +203,12 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
         }}
       >
         {({ values, isSubmitting, isValid, setFieldValue }) => (
-          <Form className="FormRoot">
-            <div className="FormHeadingGroup">
-              <p className="FormHeading">URL configuration</p>
-              <p className="FormSubheading">
-                Specify URLs to include and exclude, using a glob pattern.{' '}
+          <FormRoot>
+            <FormHeadingGroup>
+              <FormHeading>URL configuration</FormHeading>
+              <FormSubHeading>
+                Specify URLs to include and exclude, using a glob pattern. One
+                per line.{' '}
                 <a
                   className="subtle-underline"
                   href="https://en.wikipedia.org/wiki/Glob_(programming)"
@@ -211,58 +217,52 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                 >
                   Learn more
                 </a>
-              </p>
-            </div>
-            <div className="FormField">
-              <div className="FormLabel">Include list</div>
-              <div className="flex flex-row gap-2">
-                <Field
-                  className="h-[100px] flex-grow font-mono text-xs"
-                  type="text"
-                  name="includeGlobs"
-                  textAreaSize="sm"
-                  placeholder={`Examples:\n\n${baseUrl}/blog/**/*\n${baseUrl}/docs/**/*`}
-                  as={NoAutoTextArea}
-                  disabled={isSubmitting || forceDisabled}
-                />
-              </div>
+              </FormSubHeading>
+            </FormHeadingGroup>
+            <FormField>
+              <FormLabel>Include list</FormLabel>
+              <Field
+                className="h-[100px] flex-grow font-mono text-xs"
+                type="text"
+                name="includeGlobs"
+                textAreaSize="sm"
+                placeholder={`Examples:\n\n${baseUrl}/blog/**/*\n${baseUrl}/docs/**/*`}
+                as={NoAutoTextArea}
+                disabled={isSubmitting || forceDisabled}
+              />
               <ErrorMessage name="includeGlobs" component={ErrorLabel} />
-            </div>
-            <div className="FormField">
-              <div className="FormLabel">Exclude list</div>
-              <div className="flex flex-row gap-2">
-                <Field
-                  className="h-[100px] flex-grow font-mono text-xs"
-                  type="text"
-                  name="excludeGlobs"
-                  textAreaSize="sm"
-                  placeholder={`Examples:\n\n${baseUrl}/login\n${baseUrl}/internal/**/*\n${baseUrl}/files/*.txt`}
-                  as={NoAutoTextArea}
-                  disabled={isSubmitting || forceDisabled}
-                />
-              </div>
+            </FormField>
+            <FormField>
+              <FormLabel>Exclude list</FormLabel>
+              <Field
+                className="h-[100px] flex-grow font-mono text-xs"
+                type="text"
+                name="excludeGlobs"
+                textAreaSize="sm"
+                placeholder={`Examples:\n\n${baseUrl}/login\n${baseUrl}/internal/**/*\n${baseUrl}/files/*.txt`}
+                as={NoAutoTextArea}
+                disabled={isSubmitting || forceDisabled}
+              />
               <ErrorMessage name="excludeGlobs" component={ErrorLabel} />
-            </div>
-            <div className="FormHeadingGroup">
-              <p className="FormHeading">Request configuration</p>
-              <p className="FormSubheading">
+            </FormField>
+            <FormHeadingGroup>
+              <FormHeading>Request configuration</FormHeading>
+              <FormSubHeading>
                 Specify extra data to send alongside a request to your website.
-              </p>
-            </div>
-            <div className="FormField">
-              <div className="FormLabel">Headers</div>
-              <div className="flex flex-row gap-2">
-                <RecordEditor
-                  records={values.requestHeaders || {}}
-                  onRecordsChanged={(records) => {
-                    setFieldValue('requestHeaders', records);
-                  }}
-                />
-              </div>
-            </div>
-            <div className="FormHeadingGroup">
-              <p className="FormHeading">Content targets</p>
-              <p className="FormSubheading">
+              </FormSubHeading>
+            </FormHeadingGroup>
+            <FormField>
+              <FormLabel>Headers</FormLabel>
+              <RecordEditor
+                records={values.requestHeaders || {}}
+                onRecordsChanged={(records) => {
+                  setFieldValue('requestHeaders', records);
+                }}
+              />
+            </FormField>
+            <FormHeadingGroup>
+              <FormHeading>Content targets</FormHeading>
+              <FormSubHeading>
                 Specify which parts of the page to include or exclude, using CSS
                 selectors.{' '}
                 <a
@@ -273,10 +273,10 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                 >
                   Learn more
                 </a>
-              </p>
-            </div>
-            <div className="FormField">
-              <div className="FormLabel">Target selectors</div>
+              </FormSubHeading>
+            </FormHeadingGroup>
+            <FormField>
+              <FormLabel>Target selectors</FormLabel>
               <Field
                 className="flex-grow font-mono text-xs"
                 type="text"
@@ -286,9 +286,9 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                 as={NoAutoInput}
                 disabled={isSubmitting || forceDisabled}
               />
-            </div>
-            <div className="FormField">
-              <div className="FormLabel">Exclude selectors</div>
+            </FormField>
+            <FormField>
+              <FormLabel>Exclude selectors</FormLabel>
               <Field
                 className="flex-grow font-mono text-xs"
                 type="text"
@@ -298,7 +298,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                 as={NoAutoInput}
                 disabled={isSubmitting || forceDisabled}
               />
-            </div>
+            </FormField>
             <Button
               className="mt-4 flex-none self-start"
               disabled={!isValid || forceDisabled}
@@ -309,7 +309,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
             >
               Save
             </Button>
-          </Form>
+          </FormRoot>
         )}
       </Formik>
     </>

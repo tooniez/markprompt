@@ -144,7 +144,7 @@ const syncNangoRecords = inngest.createFunction(
 
     // Train added/updated files
 
-    const config = await getProjectConfigData(supabase, projectId);
+    const projectConfigData = await getProjectConfigData(supabase, projectId);
 
     const trainEvents = records
       .filter((record) => {
@@ -160,7 +160,8 @@ const syncNangoRecords = inngest.createFunction(
             file: record,
             sourceId,
             projectId,
-            processorOptions: config.markpromptConfig.processorOptions,
+            processorOptions:
+              projectConfigData.markpromptConfig.processorOptions,
           },
         };
       });
@@ -275,11 +276,7 @@ const runTrainFile = async (data: FileTrainEventData) => {
 
   const internalMetadata = {
     nangoFileId: file.id,
-    ...(file.contentType
-      ? {
-          contentType: file.contentType,
-        }
-      : {}),
+    ...(file.contentType ? { contentType: file.contentType } : {}),
   };
 
   const newFileId = await createFile(

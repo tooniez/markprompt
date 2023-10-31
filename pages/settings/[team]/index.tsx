@@ -17,7 +17,7 @@ import ConfirmDialog from '@/components/dialogs/Confirm';
 import { GitHubIcon } from '@/components/icons/GitHub';
 import { TeamSettingsLayout } from '@/components/layouts/TeamSettingsLayout';
 import Button from '@/components/ui/Button';
-import { ErrorLabel } from '@/components/ui/Forms';
+import { ErrorLabel, FormLabel, FormRoot } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
 import {
   CTABar,
@@ -106,9 +106,9 @@ const TeamSettingsPage = () => {
             }}
           >
             {({ isSubmitting, isValid }) => (
-              <Form className="FormRoot">
+              <FormRoot>
                 <div className="FormField px-4 pt-4">
-                  <p className="FormLabel">Name</p>
+                  <FormLabel>Name</FormLabel>
                   <Field
                     type="text"
                     name="name"
@@ -119,7 +119,7 @@ const TeamSettingsPage = () => {
                   <ErrorMessage name="name" component={ErrorLabel} />
                 </div>
                 <div className="FormField px-4 pb-4">
-                  <p className="FormLabel">Slug</p>
+                  <FormLabel>Slug</FormLabel>
                   <Field
                     type="text"
                     name="slug"
@@ -140,7 +140,7 @@ const TeamSettingsPage = () => {
                     Save
                   </Button>
                 </CTABar>
-              </Form>
+              </FormRoot>
             )}
           </Formik>
         </SettingsCard>

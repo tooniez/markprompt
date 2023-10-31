@@ -11,7 +11,12 @@ import { ReactNode, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import Button from '@/components/ui/Button';
-import { ErrorLabel } from '@/components/ui/Forms';
+import {
+  ErrorLabel,
+  FormField,
+  FormLabel,
+  FormRoot,
+} from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
@@ -102,21 +107,19 @@ const ConnectStep = ({
         }}
       >
         {({ isSubmitting, isValid }) => (
-          <Form className="FormRoot">
-            <div className="FormField">
-              <div className="FormLabel">Base URL</div>
-              <div className="flex flex-row gap-2">
-                <Field
-                  className="flex-grow"
-                  type="text"
-                  name="url"
-                  inputSize="sm"
-                  as={NoAutoInput}
-                  disabled={isSubmitting || state === 'complete'}
-                />
-              </div>
+          <FormRoot>
+            <FormField>
+              <FormLabel>Base URL</FormLabel>
+              <Field
+                className="flex-grow"
+                type="text"
+                name="url"
+                inputSize="sm"
+                as={NoAutoInput}
+                disabled={isSubmitting || state === 'complete'}
+              />
               <ErrorMessage name="url" component={ErrorLabel} />
-            </div>
+            </FormField>
             <Button
               className="place-self-start"
               disabled={!isValid || state === 'complete'}
@@ -127,7 +130,7 @@ const ConnectStep = ({
             >
               {state === 'complete' ? 'Connected' : 'Connect'}
             </Button>
-          </Form>
+          </FormRoot>
         )}
       </Formik>
     </Step>

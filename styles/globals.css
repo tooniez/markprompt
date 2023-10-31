@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+@import 'css.css';
 @import 'animations.css';
 @import 'ui.css';
 @import 'prism.css';

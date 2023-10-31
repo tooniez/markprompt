@@ -106,6 +106,10 @@
   @apply text-xs font-medium text-neutral-300;
 }
 
+.FormRowLegend {
+  @apply text-sm text-neutral-300;
+}
+
 .FormHeadingGroup {
   @apply mt-2 flex flex-col gap-1 border-t border-neutral-900 pt-2;
 }

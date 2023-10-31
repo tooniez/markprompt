@@ -7,6 +7,7 @@ import { FC, JSXElementConstructor, ReactNode, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
 import Button from '@/components/ui/Button';
+import { FormField, FormLabel } from '@/components/ui/Forms';
 import { CTABar } from '@/components/ui/SettingsCard';
 import { Tag } from '@/components/ui/Tag';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
@@ -126,8 +127,8 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
             value="configuration"
           >
             <div className="FormRoot mb-6 border-b border-neutral-900 pb-6">
-              <div className="FormField">
-                <p className="FormLabel">Source</p>
+              <FormField>
+                <FormLabel>Source</FormLabel>
                 <div className="flex flex-row items-center gap-2 overflow-hidden">
                   {Icon && (
                     <Icon className="h-5 w-5 flex-none text-neutral-500" />
@@ -136,18 +137,18 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
                     {integrationId ? getIntegrationName(integrationId) : ''}
                   </div>
                 </div>
-              </div>
+              </FormField>
               {integrationEnvironment && (
-                <div className="FormField">
-                  <p className="FormLabel">Environment</p>
+                <FormField>
+                  <FormLabel>Environment</FormLabel>
                   <div className="truncate text-sm text-neutral-300">
                     {getIntegrationEnvironmentName(integrationEnvironment)}
                   </div>
-                </div>
+                </FormField>
               )}
               {instanceUrl && (
-                <div className="FormField">
-                  <p className="FormLabel">Instance URL</p>
+                <FormField>
+                  <FormLabel>Instance URL</FormLabel>
                   <Link
                     href={instanceUrl}
                     target="_blank"
@@ -156,11 +157,11 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
                   >
                     {removeTrailingSlash(instanceUrl)}
                   </Link>
-                </div>
+                </FormField>
               )}
               {baseUrl && (
-                <div className="FormField">
-                  <p className="FormLabel">Base URL</p>
+                <FormField>
+                  <FormLabel>Base URL</FormLabel>
                   <Link
                     href={baseUrl}
                     target="_blank"
@@ -169,7 +170,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
                   >
                     {removeSchema(removeTrailingSlash(baseUrl))}
                   </Link>
-                </div>
+                </FormField>
               )}
             </div>
             {children}

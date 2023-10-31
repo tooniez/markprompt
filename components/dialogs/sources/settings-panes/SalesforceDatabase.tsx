@@ -10,7 +10,12 @@ import { FC, useCallback } from 'react';
 import { toast } from 'sonner';
 
 import Button from '@/components/ui/Button';
-import { ErrorLabel } from '@/components/ui/Forms';
+import {
+  ErrorLabel,
+  FormField,
+  FormLabel,
+  FormRoot,
+} from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
 import { setSourceData } from '@/lib/api';
 import useSources from '@/lib/hooks/use-sources';
@@ -112,21 +117,19 @@ export const SalesforceDatabaseSettings: FC<
         }}
       >
         {({ isSubmitting, isValid }) => (
-          <Form className="FormRoot">
-            <div className="FormField">
-              <div className="FormLabel">Name</div>
-              <div className="flex flex-row gap-2">
-                <Field
-                  className="flex-grow"
-                  type="text"
-                  name="name"
-                  inputSize="sm"
-                  as={NoAutoInput}
-                  disabled={isSubmitting || forceDisabled}
-                />
-              </div>
+          <FormRoot>
+            <FormField>
+              <FormLabel>Name</FormLabel>
+              <Field
+                className="flex-grow"
+                type="text"
+                name="name"
+                inputSize="sm"
+                as={NoAutoInput}
+                disabled={isSubmitting || forceDisabled}
+              />
               <ErrorMessage name="name" component={ErrorLabel} />
-            </div>
+            </FormField>
             <Button
               className="place-self-start"
               disabled={!isValid || forceDisabled}
@@ -137,7 +140,7 @@ export const SalesforceDatabaseSettings: FC<
             >
               Save
             </Button>
-          </Form>
+          </FormRoot>
         )}
       </Formik>
       <div className="h-8" />
@@ -166,7 +169,7 @@ export const SalesforceDatabaseSettings: FC<
         }}
       >
         {({ isSubmitting, isValid }) => (
-          <Form className="FormRoot">
+          <FormRoot>
             <SalesforceSharedForm isSubmitting={isSubmitting} />
             <Button
               className="mt-4 flex-none self-start"
@@ -178,7 +181,7 @@ export const SalesforceDatabaseSettings: FC<
             >
               Save
             </Button>
-          </Form>
+          </FormRoot>
         )}
       </Formik>
     </>

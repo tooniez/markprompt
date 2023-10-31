@@ -17,7 +17,7 @@ import { toast } from 'react-hot-toast';
 import ConfirmDialog from '@/components/dialogs/Confirm';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
 import Button from '@/components/ui/Button';
-import { ErrorLabel } from '@/components/ui/Forms';
+import { ErrorLabel, FormLabel, FormRoot } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
 import {
   CTABar,
@@ -144,9 +144,9 @@ const ProjectSettingsPage = () => {
             }}
           >
             {({ isSubmitting, isValid }) => (
-              <Form className="FormRoot">
+              <FormRoot>
                 <div className="FormField px-4 pt-4">
-                  <p className="FormLabel">Name</p>
+                  <FormLabel>Name</FormLabel>
                   <Field
                     type="text"
                     name="name"
@@ -157,7 +157,7 @@ const ProjectSettingsPage = () => {
                   <ErrorMessage name="name" component={ErrorLabel} />
                 </div>
                 <div className="FormField px-4 pb-4">
-                  <p className="FormLabel">Slug</p>
+                  <FormLabel>Slug</FormLabel>
                   <Field
                     type="text"
                     name="slug"
@@ -178,7 +178,7 @@ const ProjectSettingsPage = () => {
                     Save
                   </Button>
                 </CTABar>
-              </Form>
+              </FormRoot>
             )}
           </Formik>
         </SettingsCard>
@@ -498,7 +498,7 @@ const ProjectSettingsPage = () => {
               {({ isSubmitting }) => (
                 <Form>
                   <div className="FormField p-4">
-                    <p className="FormLabel">OpenAI API key</p>
+                    <FormLabel>OpenAI API key</FormLabel>
                     <Field
                       type="text"
                       name="openai_key"

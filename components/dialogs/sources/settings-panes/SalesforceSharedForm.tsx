@@ -1,6 +1,15 @@
 import { Field } from 'formik';
 import { FC } from 'react';
 
+import {
+  FormField,
+  FormGrid13,
+  FormHeading,
+  FormHeadingGroup,
+  FormLabel,
+  FormRowLegend,
+  FormSubHeading,
+} from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
 import { NoAutoTextArea } from '@/components/ui/TextArea';
 
@@ -28,12 +37,12 @@ export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
 }) => {
   return (
     <>
-      <div className="FormHeadingGroup">
-        <p className="FormHeading">SOQL query</p>
-        <p className="FormSubheading">Specify how to query the database.</p>
-      </div>
-      <div className="FormField">
-        <p className="FormLabel">Custom fields (comma separated)</p>
+      <FormHeadingGroup>
+        <FormHeading>SOQL query</FormHeading>
+        <FormSubHeading>Specify how to query the database.</FormSubHeading>
+      </FormHeadingGroup>
+      <FormField>
+        <FormLabel>Custom fields (comma separated)</FormLabel>
         <Field
           className="h-[60px] flex-grow font-mono text-xs"
           type="text"
@@ -43,21 +52,11 @@ export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
           as={NoAutoTextArea}
           disabled={isSubmitting}
         />
-      </div>
-      <div className="FormField">
-        <div className="flex flex-row items-center gap-2">
-          <p className="FormLabel flex-grow overflow-hidden truncate">
-            Filters (SOQL &apos;WHERE&apos; clause)
-          </p>
-          <a
-            className="subtle-underline flex-none whitespace-nowrap text-xs font-normal text-neutral-300"
-            href="https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_select_conditionexpression.htm"
-            rel="noreferrer"
-            target="_blank"
-          >
-            Learn more
-          </a>
-        </div>
+      </FormField>
+      <FormField>
+        <FormLabel learnMoreHref="https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_select_conditionexpression.htm">
+          Filters (SOQL &apos;WHERE&apos; clause)
+        </FormLabel>
         <Field
           className="h-[120px] flex-grow font-mono text-xs"
           type="text"
@@ -67,17 +66,17 @@ export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
           as={NoAutoTextArea}
           disabled={isSubmitting}
         />
-      </div>
-      <div className="FormHeadingGroup">
-        <p className="FormHeading">Mappings</p>
-        <p className="FormSubheading">
+      </FormField>
+      <FormHeadingGroup>
+        <FormHeading>Mappings</FormHeading>
+        <FormSubHeading>
           Specify how your object fields should map to files.
-        </p>
-      </div>
-      <div className="grid grid-cols-4 items-center gap-2">
-        <p className="text-sm text-neutral-300">Title</p>
+        </FormSubHeading>
+      </FormHeadingGroup>
+      <FormGrid13>
+        <FormRowLegend>Title</FormRowLegend>
         <Field
-          className="col-span-3 font-mono text-xs"
+          className="font-mono text-xs"
           type="text"
           name="titleMapping"
           placeholder={`Example: Title`}
@@ -85,9 +84,9 @@ export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
           as={NoAutoInput}
           disabled={isSubmitting}
         />
-        <p className="text-sm text-neutral-300">Content</p>
+        <FormRowLegend>Content</FormRowLegend>
         <Field
-          className="col-span-3 font-mono text-xs"
+          className="font-mono text-xs"
           type="text"
           name="contentMapping"
           placeholder={`Example: ArticleBody`}
@@ -95,9 +94,9 @@ export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
           as={NoAutoInput}
           disabled={isSubmitting}
         />
-        <p className="text-sm text-neutral-300">Path</p>
+        <FormRowLegend>Path</FormRowLegend>
         <Field
-          className="col-span-3 font-mono text-xs"
+          className="font-mono text-xs"
           type="text"
           name="pathMapping"
           placeholder={`Example: UrlName`}
@@ -105,14 +104,14 @@ export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
           as={NoAutoInput}
           disabled={isSubmitting}
         />
-      </div>
-      <div className="FormHeadingGroup">
-        <p className="FormHeading">Metadata fields</p>
-        <p className="FormSubheading">
+      </FormGrid13>
+      <FormHeadingGroup>
+        <FormHeading>Metadata fields</FormHeading>
+        <FormSubHeading>
           Specify custom fields to include in the file metadata
           (comma-separated).
-        </p>
-      </div>
+        </FormSubHeading>
+      </FormHeadingGroup>
       <Field
         className="h-[60px] flex-grow font-mono text-xs"
         type="text"

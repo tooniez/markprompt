@@ -12,7 +12,12 @@ import { ReactNode, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import Button from '@/components/ui/Button';
-import { ErrorLabel } from '@/components/ui/Forms';
+import {
+  ErrorLabel,
+  FormField,
+  FormLabel,
+  FormRoot,
+} from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
@@ -116,78 +121,73 @@ const ConnectStep = ({
         }}
       >
         {({ isSubmitting, isValid, values, setFieldValue }) => (
-          <Form className="flex flex-col gap-4">
-            <div className="FormField">
-              <div className="FormLabel">Environment</div>
-              <div className="flex flex-row gap-2">
-                <RadioGroup.Root
-                  className="RadioGroupRoot RadioGroupRootRowLayout gap-6"
-                  defaultValue={values.environment}
-                  disabled={isSubmitting || !isEditingState}
-                  aria-label="Select environment"
-                  onValueChange={(value) => {
-                    setFieldValue('environment', value);
-                  }}
-                >
-                  <div className="flex cursor-pointer flex-row items-center gap-2">
-                    <RadioGroup.Item
-                      className="RadioGroupItem"
-                      value="production"
-                      id="production"
-                    >
-                      <RadioGroup.Indicator className="RadioGroupIndicator" />
-                    </RadioGroup.Item>
-                    <label
-                      className="cursor-pointer select-none pl-1 text-sm text-white"
-                      htmlFor="production"
-                    >
-                      Production
-                    </label>
-                  </div>
-                  <div className="flex cursor-pointer flex-row items-center gap-2">
-                    <RadioGroup.Item
-                      className="RadioGroupItem"
-                      value="sandbox"
-                      id="sandbox"
-                    >
-                      <RadioGroup.Indicator className="RadioGroupIndicator" />
-                    </RadioGroup.Item>
-                    <label
-                      className="cursor-pointer select-none pl-1 text-sm text-white"
-                      htmlFor="sandbox"
-                    >
-                      Sandbox
-                    </label>
-                  </div>
-                </RadioGroup.Root>
-              </div>
-            </div>
-            <div className="FormField">
-              <div className="FormLabel">Instance URL</div>
-              <div className="flex flex-row gap-2">
-                <Field
-                  className="flex-grow"
-                  type="text"
-                  name="instanceUrl"
-                  inputSize="sm"
-                  as={NoAutoInput}
-                  disabled={isSubmitting || !isEditingState}
-                />
-              </div>
-              <ErrorMessage name="instanceUrl" component={ErrorLabel} />
-            </div>
-            <div className="flex flex-row gap-2">
-              <Button
-                variant="cta"
-                buttonSize="sm"
-                type="submit"
-                loading={isSubmitting}
-                disabled={!isValid || !isEditingState}
+          <FormRoot>
+            <FormField>
+              <FormLabel>Environment</FormLabel>
+              <RadioGroup.Root
+                className="RadioGroupRoot RadioGroupRootRowLayout gap-6"
+                defaultValue={values.environment}
+                disabled={isSubmitting || !isEditingState}
+                aria-label="Select environment"
+                onValueChange={(value) => {
+                  setFieldValue('environment', value);
+                }}
               >
-                {state === 'complete' ? 'Authorized' : 'Authorize Salesforce'}
-              </Button>
-            </div>
-          </Form>
+                <div className="flex cursor-pointer flex-row items-center gap-2">
+                  <RadioGroup.Item
+                    className="RadioGroupItem"
+                    value="production"
+                    id="production"
+                  >
+                    <RadioGroup.Indicator className="RadioGroupIndicator" />
+                  </RadioGroup.Item>
+                  <label
+                    className="cursor-pointer select-none pl-1 text-sm text-white"
+                    htmlFor="production"
+                  >
+                    Production
+                  </label>
+                </div>
+                <div className="flex cursor-pointer flex-row items-center gap-2">
+                  <RadioGroup.Item
+                    className="RadioGroupItem"
+                    value="sandbox"
+                    id="sandbox"
+                  >
+                    <RadioGroup.Indicator className="RadioGroupIndicator" />
+                  </RadioGroup.Item>
+                  <label
+                    className="cursor-pointer select-none pl-1 text-sm text-white"
+                    htmlFor="sandbox"
+                  >
+                    Sandbox
+                  </label>
+                </div>
+              </RadioGroup.Root>
+            </FormField>
+            <FormField>
+              <FormLabel>Instance URL</FormLabel>
+              <Field
+                className="flex-grow"
+                type="text"
+                name="instanceUrl"
+                inputSize="sm"
+                as={NoAutoInput}
+                disabled={isSubmitting || !isEditingState}
+              />
+              <ErrorMessage name="instanceUrl" component={ErrorLabel} />
+            </FormField>
+            <Button
+              className="self-start"
+              variant="cta"
+              buttonSize="sm"
+              type="submit"
+              loading={isSubmitting}
+              disabled={!isValid || !isEditingState}
+            >
+              {state === 'complete' ? 'Authorized' : 'Authorize Salesforce'}
+            </Button>
+          </FormRoot>
         )}
       </Formik>
     </Step>

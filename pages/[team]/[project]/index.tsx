@@ -221,7 +221,7 @@ const Sources: FC<SourcesProps> = ({
   const { sources, latestSyncQueues, syncSources } = useSources();
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="-ml-2 flex w-[calc(100%+16px)] flex-col gap-1 ">
       {sources
         .map((source) => {
           const latestSyncQueue = latestSyncQueues?.find(
@@ -265,26 +265,11 @@ const SourceItem: FC<SourceItemProps> = ({
 }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const Icon = getIconForSource(source);
-  const accessory = getAccessoryLabelForSource(source);
-  let AccessoryTag = <></>;
-  if (accessory) {
-    const { label, Icon } = accessory;
-    if (Icon) {
-      AccessoryTag = (
-        <Tag color="neutral" className="flex flex-row gap-1">
-          <Icon className="h-3 w-3" />
-          {label}
-        </Tag>
-      );
-    } else {
-      AccessoryTag = <Tag color="neutral">{label}</Tag>;
-    }
-  }
 
   return (
     <div
       className={cn(
-        '-ml-2 flex w-[calc(100%+16px)] gap-2 rounded-md px-2 py-1 text-sm outline-none transition hover:bg-neutral-900',
+        'flex gap-2 rounded-md px-2 text-sm outline-none transition hover:bg-neutral-900',
         {
           'bg-neutral-1000': isDropdownOpen,
         },
@@ -292,7 +277,7 @@ const SourceItem: FC<SourceItemProps> = ({
     >
       <button
         className={cn(
-          'flex flex-grow cursor-pointer flex-row items-center gap-2 overflow-hidden text-sm outline-none',
+          'flex flex-grow cursor-pointer flex-row items-center gap-2 overflow-hidden py-1.5 text-sm outline-none',
           { 'bg-neutral-1000': isDropdownOpen },
         )}
         onClick={() => {
@@ -315,7 +300,7 @@ const SourceItem: FC<SourceItemProps> = ({
         <DropdownMenu.Trigger asChild>
           <button
             className={cn(
-              'flex-none select-none rounded-md p-1 text-neutral-500 opacity-50 outline-none transition hover:bg-neutral-800 hover:opacity-100',
+              'my-1 flex-none select-none rounded-md p-1 text-neutral-500 opacity-50 outline-none transition hover:bg-neutral-800 hover:opacity-100',
               {
                 'bg-neutral-800': isDropdownOpen,
               },
