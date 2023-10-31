@@ -323,14 +323,15 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
           Get started now.
         </h2>
         <div className="mt-12">
-          <ContactWindow
-            closeOnClickOutside
-            Component={
-              <Button variant="cta" buttonSize="lg">
-                Book a demo
-              </Button>
-            }
-          />
+          <Button
+            variant="cta"
+            buttonSize="lg"
+            target="_blank"
+            rel="noreferrer"
+            href="https://meetings.hubspot.com/markprompt/demo"
+          >
+            Book a demo
+          </Button>
         </div>
       </div>
       <div className="relative z-0 mx-auto max-w-screen-xl px-6 pt-8 sm:px-8 sm:pt-16">
