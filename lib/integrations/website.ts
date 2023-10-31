@@ -9,8 +9,8 @@ export type RequestHeader = { key: string; value: string };
 
 export type WebsitePagesNangoMetadata = {
   baseUrl: string;
-  includeGlobs?: string[];
-  excludeGlobs?: string[];
+  includeRegexes?: string[];
+  excludeRegexes?: string[];
   requestHeaders?: RequestHeader[];
   targetSelectors?: string;
   excludeSelectors?: string;

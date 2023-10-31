@@ -21,10 +21,6 @@ export const FormHeading = ({ children }: { children: ReactNode }) => {
   return <div className="FormHeading">{children}</div>;
 };
 
-export const FormSubHeading = ({ children }: { children: ReactNode }) => {
-  return <div className="FormSubheading">{children}</div>;
-};
-
 export const FormGrid13 = ({ children }: { children: ReactNode }) => {
   return <div className="grid_1_3 grid items-center gap-2">{children}</div>;
 };
@@ -35,6 +31,31 @@ export const FormField = ({ children }: { children: ReactNode }) => {
 
 export const FormRowLegend = ({ children }: { children: ReactNode }) => {
   return <div className="FormRowLegend">{children}</div>;
+};
+
+export const FormSubHeading = ({
+  children,
+  learnMoreHref,
+}: {
+  children: ReactNode;
+  learnMoreHref?: string;
+}) => {
+  if (learnMoreHref) {
+    return (
+      <div className="FormSubheading">
+        {children}
+        <a
+          className="subtle-underline"
+          href={learnMoreHref}
+          rel="noreferrer"
+          target="_blank"
+        >
+          Learn more
+        </a>
+      </div>
+    );
+  }
+  return <div className="FormSubheading">{children}</div>;
 };
 
 export const FormLabel = ({

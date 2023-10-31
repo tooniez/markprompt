@@ -775,6 +775,28 @@ export const toNormalizedUrl = (url: string, useInsecureSchema?: boolean) => {
   }
 };
 
+export const removeTrailingSlashAndHash = (url: string) => {
+  const urlObj = new URL(url);
+  urlObj.hash = '';
+  return urlObj.toString().replace(/\/+$/, '');
+};
+
+export const addSchemaRemoveTrailingSlashAndHash = (
+  url: string,
+  useInsecureSchema?: boolean,
+) => {
+  // Add schema, remove trailing slashes and hash. This normalizes URLs
+  // but retains query parameters, for instance when importing GitHub
+  // discussions that are "answered" (the "answered" part if indicated in
+  // the query string parameters).
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    // If not, add "https://" or "http://" to the beginning of the URL
+    url = (useInsecureSchema ? 'http://' : 'https://') + url;
+  }
+
+  return removeTrailingSlashAndHash(url);
+};
+
 export const removeTrailingSlashQueryParamsAndHash = (url: string) => {
   const urlObj = new URL(url);
   urlObj.search = '';

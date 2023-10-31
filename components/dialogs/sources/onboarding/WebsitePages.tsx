@@ -23,7 +23,10 @@ import useSources from '@/lib/hooks/use-sources';
 import { getNangoClientInstance } from '@/lib/integrations/nango.client';
 import { fetchPageContent } from '@/lib/integrations/website';
 import { extractMeta } from '@/lib/markdown';
-import { toNormalizedUrl } from '@/lib/utils';
+import {
+  addSchemaRemoveTrailingSlashAndHash,
+  toNormalizedUrl,
+} from '@/lib/utils';
 import { guessShortNameFromTitle } from '@/lib/utils.nodeps';
 import { DbSource, Project } from '@/types/types';
 
@@ -58,13 +61,13 @@ const ConnectStep = ({
         onSubmit={async (values, { setSubmitting, setErrors }) => {
           setSubmitting(true);
 
-          let url = toNormalizedUrl(values.url);
+          let url = addSchemaRemoveTrailingSlashAndHash(values.url);
 
           let content = await fetchPageContent(url, false, true);
 
           if (!content) {
-            // Check with http://
-            url = toNormalizedUrl(values.url, true);
+            // Check with http:// instea of https://
+            url = addSchemaRemoveTrailingSlashAndHash(values.url, true);
             content = await fetchPageContent(url, false, true);
           }
 

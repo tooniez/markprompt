@@ -19,12 +19,14 @@ import {
   FormSubHeading,
 } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
+import { Note } from '@/components/ui/Note';
 import { RecordEditor } from '@/components/ui/RecordEditor';
 import { NoAutoTextArea } from '@/components/ui/TextArea';
 import { setSourceData } from '@/lib/api';
 import useSources from '@/lib/hooks/use-sources';
 import { setMetadata } from '@/lib/integrations/nango.client';
 import { WebsitePagesNangoMetadata } from '@/lib/integrations/website';
+import { toNormalizedUrl } from '@/lib/utils';
 import { DbSource, NangoSourceDataType, Project } from '@/types/types';
 
 type WebsitePagesSettingsProps = {
@@ -161,37 +163,18 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
       <div className="h-8" />
       <Formik
         initialValues={{
-          includeGlobs: nangoMetadata?.includeGlobs?.join('\n') || '',
-          excludeGlobs: nangoMetadata?.excludeGlobs?.join('\n') || '',
+          includeRegexes: nangoMetadata?.includeRegexes?.join('\n') || '',
+          excludeRegexes: nangoMetadata?.excludeRegexes?.join('\n') || '',
           requestHeaders: nangoMetadata?.requestHeaders || [],
           targetSelectors: nangoMetadata?.targetSelectors || '',
           excludeSelectors: nangoMetadata?.excludeSelectors || '',
         }}
         enableReinitialize
         validateOnMount
-        validate={async (values) => {
-          const errors: FormikErrors<FormikValues> = {};
-
-          if (values.excludeGlobs) {
-            const urls = toGlobList(values.excludeGlobs);
-            if (urls.some((url) => !url.startsWith(baseUrl))) {
-              errors.excludeGlobs = `URLs must start with ${baseUrl}.`;
-            }
-          }
-
-          if (values.includeGlobs) {
-            const urls = toGlobList(values.includeGlobs);
-            if (urls.some((url) => !url.startsWith(baseUrl))) {
-              errors.includeGlobs = `URLs must start with ${baseUrl}.`;
-            }
-          }
-
-          return errors;
-        }}
         onSubmit={async (values, { setSubmitting }) => {
           const newNangoMetadata: Partial<WebsitePagesNangoMetadata> = {
-            includeGlobs: toGlobList(values.includeGlobs),
-            excludeGlobs: toGlobList(values.excludeGlobs),
+            includeRegexes: toGlobList(values.includeRegexes),
+            excludeRegexes: toGlobList(values.excludeRegexes),
             requestHeaders: values.requestHeaders,
             targetSelectors: values.targetSelectors,
             excludeSelectors: values.excludeSelectors,
@@ -202,115 +185,124 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
           );
         }}
       >
-        {({ values, isSubmitting, isValid, setFieldValue }) => (
-          <FormRoot>
-            <FormHeadingGroup>
-              <FormHeading>URL configuration</FormHeading>
-              <FormSubHeading>
-                Specify URLs to include and exclude, using a glob pattern. One
-                per line.{' '}
+        {({ values, isSubmitting, isValid, setFieldValue }) => {
+          const baseUrlRegexp = toNormalizedUrl(baseUrl).replace(/\//gi, '\\/');
+          return (
+            <FormRoot>
+              <FormHeadingGroup>
+                <FormHeading>URL configuration</FormHeading>
+                <FormSubHeading learnMoreHref="https://en.wikipedia.org/wiki/Regular_expression">
+                  Specify URL patterns to include and exclude, using regular
+                  expressions. One per line.{' '}
+                </FormSubHeading>
+              </FormHeadingGroup>
+              <FormField>
+                <FormLabel>Include list</FormLabel>
+                <Field
+                  className="h-[100px] flex-grow font-mono text-xs"
+                  type="text"
+                  name="includeRegexes"
+                  textAreaSize="sm"
+                  placeholder={`Examples:\n\n^${baseUrlRegexp}\\/blog\\/.*$\n^${baseUrlRegexp}\\/docs\\/.*$`}
+                  as={NoAutoTextArea}
+                  disabled={isSubmitting || forceDisabled}
+                />
+                <ErrorMessage name="includeRegexes" component={ErrorLabel} />
+              </FormField>
+              <FormField>
+                <FormLabel>Exclude list</FormLabel>
+                <Field
+                  className="h-[100px] flex-grow font-mono text-xs"
+                  type="text"
+                  name="excludeRegexes"
+                  textAreaSize="sm"
+                  placeholder={`Examples:\n\n^${baseUrlRegexp}\\/login$\n^${baseUrlRegexp}\\/files\\/.+\\.txt$`}
+                  as={NoAutoTextArea}
+                  disabled={isSubmitting || forceDisabled}
+                />
+                <ErrorMessage name="excludeRegexes" component={ErrorLabel} />
+              </FormField>
+              <Note size="sm" type="info">
                 <a
                   className="subtle-underline"
-                  href="https://en.wikipedia.org/wiki/Glob_(programming)"
-                  rel="noreferrer"
+                  href="https://chat.openai.com/"
                   target="_blank"
-                >
-                  Learn more
-                </a>
-              </FormSubHeading>
-            </FormHeadingGroup>
-            <FormField>
-              <FormLabel>Include list</FormLabel>
-              <Field
-                className="h-[100px] flex-grow font-mono text-xs"
-                type="text"
-                name="includeGlobs"
-                textAreaSize="sm"
-                placeholder={`Examples:\n\n${baseUrl}/blog/**/*\n${baseUrl}/docs/**/*`}
-                as={NoAutoTextArea}
-                disabled={isSubmitting || forceDisabled}
-              />
-              <ErrorMessage name="includeGlobs" component={ErrorLabel} />
-            </FormField>
-            <FormField>
-              <FormLabel>Exclude list</FormLabel>
-              <Field
-                className="h-[100px] flex-grow font-mono text-xs"
-                type="text"
-                name="excludeGlobs"
-                textAreaSize="sm"
-                placeholder={`Examples:\n\n${baseUrl}/login\n${baseUrl}/internal/**/*\n${baseUrl}/files/*.txt`}
-                as={NoAutoTextArea}
-                disabled={isSubmitting || forceDisabled}
-              />
-              <ErrorMessage name="excludeGlobs" component={ErrorLabel} />
-            </FormField>
-            <FormHeadingGroup>
-              <FormHeading>Request configuration</FormHeading>
-              <FormSubHeading>
-                Specify extra data to send alongside a request to your website.
-              </FormSubHeading>
-            </FormHeadingGroup>
-            <FormField>
-              <FormLabel>Headers</FormLabel>
-              <RecordEditor
-                records={values.requestHeaders || {}}
-                onRecordsChanged={(records) => {
-                  setFieldValue('requestHeaders', records);
-                }}
-              />
-            </FormField>
-            <FormHeadingGroup>
-              <FormHeading>Content targets</FormHeading>
-              <FormSubHeading>
-                Specify which parts of the page to include or exclude, using CSS
-                selectors.{' '}
-                <a
-                  className="subtle-underline"
-                  href="https://github.com/fb55/css-select/blob/master/README.md#supported-selectors"
                   rel="noreferrer"
-                  target="_blank"
                 >
-                  Learn more
-                </a>
-              </FormSubHeading>
-            </FormHeadingGroup>
-            <FormField>
-              <FormLabel>Target selectors</FormLabel>
-              <Field
-                className="flex-grow font-mono text-xs"
-                type="text"
-                name="targetSelectors"
-                inputSize="sm"
-                placeholder={'E.g. div.main-article-content'}
-                as={NoAutoInput}
-                disabled={isSubmitting || forceDisabled}
-              />
-            </FormField>
-            <FormField>
-              <FormLabel>Exclude selectors</FormLabel>
-              <Field
-                className="flex-grow font-mono text-xs"
-                type="text"
-                name="excludeSelectors"
-                inputSize="sm"
-                placeholder={'E.g. nav, aside, .summary > blockquote'}
-                as={NoAutoInput}
-                disabled={isSubmitting || forceDisabled}
-              />
-            </FormField>
-            <Button
-              className="mt-4 flex-none self-start"
-              disabled={!isValid || forceDisabled}
-              loading={isSubmitting}
-              variant="plain"
-              buttonSize="sm"
-              type="submit"
-            >
-              Save
-            </Button>
-          </FormRoot>
-        )}
+                  ChatGPT
+                </a>{' '}
+                works great for generating regular expressions. Give it a few
+                examples, and it will generate the right expressions that you
+                can paste here.
+              </Note>
+              <FormHeadingGroup>
+                <FormHeading>Request configuration</FormHeading>
+                <FormSubHeading>
+                  Specify extra data to send alongside a request to your
+                  website.
+                </FormSubHeading>
+              </FormHeadingGroup>
+              <FormField>
+                <FormLabel>Headers</FormLabel>
+                <RecordEditor
+                  records={values.requestHeaders || {}}
+                  onRecordsChanged={(records) => {
+                    setFieldValue('requestHeaders', records);
+                  }}
+                />
+              </FormField>
+              <FormHeadingGroup>
+                <FormHeading>Content targets</FormHeading>
+                <FormSubHeading>
+                  Specify which parts of the page to include or exclude, using
+                  CSS selectors.{' '}
+                  <a
+                    className="subtle-underline"
+                    href="https://github.com/fb55/css-select/blob/master/README.md#supported-selectors"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    Learn more
+                  </a>
+                </FormSubHeading>
+              </FormHeadingGroup>
+              <FormField>
+                <FormLabel>Target selectors</FormLabel>
+                <Field
+                  className="flex-grow font-mono text-xs"
+                  type="text"
+                  name="targetSelectors"
+                  inputSize="sm"
+                  placeholder={'E.g. div.main-article-content'}
+                  as={NoAutoInput}
+                  disabled={isSubmitting || forceDisabled}
+                />
+              </FormField>
+              <FormField>
+                <FormLabel>Exclude selectors</FormLabel>
+                <Field
+                  className="flex-grow font-mono text-xs"
+                  type="text"
+                  name="excludeSelectors"
+                  inputSize="sm"
+                  placeholder={'E.g. nav, aside, .summary > blockquote'}
+                  as={NoAutoInput}
+                  disabled={isSubmitting || forceDisabled}
+                />
+              </FormField>
+              <Button
+                className="mt-4 flex-none self-start"
+                disabled={!isValid || forceDisabled}
+                loading={isSubmitting}
+                variant="plain"
+                buttonSize="sm"
+                type="submit"
+              >
+                Save
+              </Button>
+            </FormRoot>
+          );
+        }}
       </Formik>
     </>
   );

@@ -38,12 +38,6 @@ import {
   getMotifPublicFileMetadata,
 } from '../integrations/motif';
 import {
-  getConnectionId,
-  getIntegrationId,
-  getSyncId,
-} from '../integrations/nango';
-import { getRecords, triggerSync } from '../integrations/nango.client';
-import {
   extractLinksFromHtml,
   fetchPageContent,
   fetchSitemapUrls,

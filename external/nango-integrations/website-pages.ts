@@ -2,8 +2,8 @@ import type { NangoSync, NangoFile } from './models';
 
 interface Metadata {
   baseUrl: string;
-  includeGlobs?: string[];
-  excludeGlobs?: string[];
+  includeRegexes?: string[];
+  excludeRegexes?: string[];
   requestHeaders?: { [key: string]: string };
 }
 
@@ -40,9 +40,6 @@ const unique = (arr: string[]) => {
 
 const WEBSITE_PAGES_PROVIDER_CONFIG_KEY = 'website-pages';
 
-// const timeout = (ms: number) =>
-//   new Promise((resolve) => setTimeout(resolve, ms));
-
 const fetchPageAndUrlsWithRetryWithThrows = async (
   nango: NangoSync,
   url: string,
@@ -51,14 +48,16 @@ const fetchPageAndUrlsWithRetryWithThrows = async (
   pageFetcherServiceAPIToken: string,
   crawlerRoot: string,
   requestHeaders: { [key: string]: string } | undefined,
-  includeGlobs: string[] | undefined,
-  excludeGlobs: string[] | undefined,
+  includeRegexes: string[] | undefined,
+  excludeRegexes: string[] | undefined,
 ): Promise<PageFetchResponse> => {
   // Note that this endpoint returns FULL urls. That is, it has resolved
   // e.g. absolute and relative URLs to their fully specified paths with
   // base URL prepended. It has also applied the glob filters if provided
   // (since doing it here is practically impossible, as `minimatch` cannot
   // be imported).
+
+  await nango.log('Fetching ' + url);
 
   const res = await nango.proxy({
     method: 'POST',
@@ -72,8 +71,8 @@ const fetchPageAndUrlsWithRetryWithThrows = async (
       crawlerRoot,
       includePageUrls: true,
       requestHeaders,
-      includeGlobs,
-      excludeGlobs,
+      includeRegexes,
+      excludeRegexes,
     },
     headers: {
       Authorization: `Bearer ${pageFetcherServiceAPIToken}`,
@@ -102,8 +101,8 @@ const fetchPageAndUrlsWithRetry =
     pageFetcherServiceAPIToken: string,
     crawlerRoot: string,
     requestHeaders: { [key: string]: string } | undefined,
-    includeGlobs: string[] | undefined,
-    excludeGlobs: string[] | undefined,
+    includeRegexes: string[] | undefined,
+    excludeRegexes: string[] | undefined,
     retryAttempt: number,
     maxRetries: number,
   ) =>
@@ -117,8 +116,8 @@ const fetchPageAndUrlsWithRetry =
         pageFetcherServiceAPIToken,
         crawlerRoot,
         requestHeaders,
-        includeGlobs,
-        excludeGlobs,
+        includeRegexes,
+        excludeRegexes,
       );
       return res;
     } catch (e) {
@@ -144,8 +143,8 @@ const fetchPageAndUrlsWithRetry =
           pageFetcherServiceAPIToken,
           crawlerRoot,
           requestHeaders,
-          includeGlobs,
-          excludeGlobs,
+          includeRegexes,
+          excludeRegexes,
           retryAttempt + 1,
           maxRetries,
         )(url);
@@ -162,8 +161,8 @@ const parallelFetchPages = async (
   crawlerRoot: string,
   urls: string[],
   requestHeaders: { [key: string]: string } | undefined,
-  includeGlobs: string[] | undefined,
-  excludeGlobs: string[] | undefined,
+  includeRegexes: string[] | undefined,
+  excludeRegexes: string[] | undefined,
 ): Promise<PageFetchResponse[]> => {
   return (
     await Promise.all(
@@ -175,8 +174,8 @@ const parallelFetchPages = async (
           pageFetcherServiceAPIToken,
           crawlerRoot,
           requestHeaders,
-          includeGlobs,
-          excludeGlobs,
+          includeRegexes,
+          excludeRegexes,
           0,
           5,
         ),
@@ -193,8 +192,8 @@ const fetchPages = async (
   crawlerRoot: string,
   urls: string[],
   requestHeaders: { [key: string]: string } | undefined,
-  includeGlobs: string[] | undefined,
-  excludeGlobs: string[] | undefined,
+  includeRegexes: string[] | undefined,
+  excludeRegexes: string[] | undefined,
 ): Promise<{ files: NangoWebpageFile[]; nextUrls: string[] }> => {
   const files: NangoWebpageFile[] = [];
   const nextUrls: string[] = [];
@@ -211,8 +210,8 @@ const fetchPages = async (
       crawlerRoot,
       urlChunk,
       requestHeaders,
-      includeGlobs,
-      excludeGlobs,
+      includeRegexes,
+      excludeRegexes,
     );
     filesWithUrls
       .flatMap((f) => f.file)
@@ -234,8 +233,10 @@ export default async function fetchData(nango: NangoSync) {
     return;
   }
 
-  const { baseUrl, includeGlobs, excludeGlobs, requestHeaders } =
+  const { baseUrl, includeRegexes, excludeRegexes, requestHeaders } =
     await nango.getMetadata<Metadata>();
+
+  console.log('baseUrl', JSON.stringify(baseUrl, null, 2));
 
   if (!baseUrl) {
     throw new Error('Missing base URL.');
@@ -282,8 +283,8 @@ export default async function fetchData(nango: NangoSync) {
         baseUrl,
         linksToProcess,
         requestHeaders,
-        includeGlobs,
-        excludeGlobs,
+        includeRegexes,
+        excludeRegexes,
       );
 
       files.forEach((file) => {
@@ -314,7 +315,6 @@ export default async function fetchData(nango: NangoSync) {
         })),
       ),
   );
-  await nango.log('================================================');
 
   await nango.batchSave(filesToSave, 'NangoFile');
 }
