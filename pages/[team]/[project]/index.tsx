@@ -462,12 +462,13 @@ const Data = () => {
     token_count: number | undefined;
   }>();
 
-  const pageHasSelectableItems = useMemo(() => {
-    return (paginatedFiles || []).some((f) => {
-      const source = sources.find((s) => s.id === f.source_id);
-      return source && canDeleteSource(source.type);
-    });
-  }, [paginatedFiles, sources]);
+  // const pageHasSelectableItems = useMemo(() => {
+  //   return (paginatedFiles || []).some((f) => {
+  //     const source = sources.find((s) => s.id === f.source_id);
+  //     // return source && canDeleteSource(source.type);
+  //     return !!source;
+  //   });
+  // }, [paginatedFiles, sources]);
 
   const columns: any = useMemo(
     () => [
@@ -475,9 +476,9 @@ const Data = () => {
         id: 'select',
         enableSorting: false,
         header: ({ table }) => {
-          if (!pageHasSelectableItems) {
-            return <></>;
-          }
+          // if (!pageHasSelectableItems) {
+          //   return <></>;
+          // }
           return (
             <IndeterminateCheckbox
               checked={table.getIsAllRowsSelected()}
@@ -588,7 +589,8 @@ const Data = () => {
         footer: (info) => info.column.id,
       }),
     ],
-    [columnHelper, pageHasSelectableItems, sources],
+    // [columnHelper, pageHasSelectableItems, sources],
+    [columnHelper, sources],
   );
 
   const table = useReactTable({
@@ -596,11 +598,11 @@ const Data = () => {
     columns,
     state: { rowSelection, sorting },
     enableRowSelection: (row) => {
-      const value = row.getValue('source');
-      const source = sources.find((s) => s.id === value);
-      if (source && !canDeleteSource(source.type)) {
-        return false;
-      }
+      // const value = row.getValue('source');
+      // const source = sources.find((s) => s.id === value);
+      // if (source && !canDeleteSource(source.type)) {
+      //   return false;
+      // }
       return true;
     },
     onSortingChange: setSorting,
@@ -654,7 +656,7 @@ const Data = () => {
               </Dialog.Trigger>
               <ConfirmDialog
                 title={`Delete ${pluralize(numSelected, 'file', 'files')}?`}
-                description="Deleting a file will remove it from all future answers."
+                description="Deleting a file will remove it as a source for future answers."
                 cta="Delete"
                 variant="danger"
                 loading={isDeleting}
@@ -991,7 +993,8 @@ const Data = () => {
           {!loadingFiles && hasFiles && (
             <table className="w-full max-w-full table-fixed border-collapse">
               <colgroup>
-                <col className={pageHasSelectableItems ? 'w-[32px]' : 'w-0'} />
+                {/* <col className={pageHasSelectableItems ? 'w-[32px]' : 'w-0'} /> */}
+                <col className="w-[32px]" />
                 <col className="w-[calc(80%-152px)]" />
                 {/* <col className="w-[30%]" /> */}
                 <col className="w-[20%]" />

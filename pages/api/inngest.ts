@@ -195,11 +195,13 @@ export const isFileChanged = (
 // Meta is built from the Markdown frontmatter, and from additional
 // data, such as Notion properties.
 export const createFullMeta = async (file: NangoFileWithMetadata) => {
-  if (!file.content) {
-    return {};
-  }
+  let meta: {
+    [key: string]: string;
+  } = {};
 
-  let meta = await extractMeta(file.content, file.contentType);
+  if (file.content) {
+    meta = (await extractMeta(file.content, file.contentType)) || {};
+  }
 
   meta = { ...file.meta, ...meta };
   if (file.title) {
@@ -210,27 +212,34 @@ export const createFullMeta = async (file: NangoFileWithMetadata) => {
 };
 
 const runTrainFile = async (data: FileTrainEventData) => {
-  const file = data.file;
+  const nangoFile = data.file;
   const sourceId = data.sourceId;
   const projectId = data.projectId;
 
-  if (!file?.id || file.error) {
+  if (!nangoFile?.id || nangoFile.error) {
     return;
   }
 
   const foundFiles = await getFilesIdAndCheksumBySourceAndNangoId(
     supabase,
     sourceId,
-    file.id,
+    nangoFile.id,
   );
 
   let foundFile: DbFileMetaChecksum | undefined = undefined;
+
+  console.log('runTrainFile', JSON.stringify(data, null, 2));
 
   if (foundFiles.length > 0) {
     foundFile = foundFiles[0];
     if (foundFiles.length > 1) {
       // There should not be more than one file with the same source id and
       // Nango id, but if there is exceptionally, purge all but the first.
+      console.log(
+        'runTrainFile delete duplicates',
+        foundFiles.slice(1).map((f) => f.id),
+      );
+
       await batchDeleteFiles(
         supabase,
         foundFiles.slice(1).map((f) => f.id),
@@ -238,15 +247,18 @@ const runTrainFile = async (data: FileTrainEventData) => {
     }
   }
 
-  const meta = await createFullMeta(file);
-  const markdown = file.content
-    ? await convertToMarkdown(file.content, file.contentType)
+  const meta = await createFullMeta(nangoFile);
+  const markdown = nangoFile.content
+    ? await convertToMarkdown(nangoFile.content, nangoFile.contentType)
     : '';
   const checksum = createChecksum(markdown);
 
   if (
     foundFile &&
-    !isFileChanged({ path: file.path, meta: meta || {}, checksum }, foundFile)
+    !isFileChanged(
+      { path: nangoFile.path, meta: meta || {}, checksum },
+      foundFile,
+    )
   ) {
     // If checksums match on the Markdown, skip. Note that we don't compare
     // on the raw content, since two different raw versions chould still have
@@ -275,19 +287,19 @@ const runTrainFile = async (data: FileTrainEventData) => {
   });
 
   const internalMetadata = {
-    nangoFileId: file.id,
-    ...(file.contentType ? { contentType: file.contentType } : {}),
+    nangoFileId: nangoFile.id,
+    ...(nangoFile.contentType ? { contentType: nangoFile.contentType } : {}),
   };
 
   const newFileId = await createFile(
     supabase,
     projectId,
     sourceId,
-    file.path,
+    nangoFile.path,
     meta,
     internalMetadata,
     checksum,
-    file.content || '',
+    nangoFile.content || '',
     tokenCount,
   );
 
@@ -315,6 +327,7 @@ const runTrainFile = async (data: FileTrainEventData) => {
   // If previous file existed, delete it here (i.e. once its replacement has
   // been fully indexed, so we avoid a time where the content is not available).
   if (foundFile) {
+    console.log('Deleting previous version of file', foundFile.id);
     await batchDeleteFiles(supabase, [foundFile.id]);
   }
 };

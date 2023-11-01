@@ -39,6 +39,8 @@ export default async function fetchData(nango: NangoSync) {
 
   let endpoint = '/services/data/v53.0/query';
 
+  const records: NangoFile[] = [];
+
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const response = await nango.get({
@@ -52,7 +54,9 @@ export default async function fetchData(nango: NangoSync) {
       metadata?.metadataFields,
     );
 
-    await nango.batchSave(mappedRecords, 'NangoFile');
+    for (const mappedRecord of mappedRecords) {
+      records.push(mappedRecord);
+    }
 
     if (response.data.done) {
       break;
@@ -60,6 +64,13 @@ export default async function fetchData(nango: NangoSync) {
 
     endpoint = response.data.nextRecordsUrl;
   }
+
+  // Important: we have enabled track_deletes, which means that everything
+  // that is not present in `batchSave` calls within a sync run will be deleted.
+  // Therefore, we need to call `batchSave` only once. Otherwise, if the
+  // script fails after a few calls to `batchSave`, everything else will be
+  // deleted. We'd rather the script fails and doesn't delete any data.
+  await nango.batchSave(records, 'NangoFile');
 }
 
 function mapRecords(

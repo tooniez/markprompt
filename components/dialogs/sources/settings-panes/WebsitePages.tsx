@@ -203,7 +203,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                   type="text"
                   name="includeRegexes"
                   textAreaSize="sm"
-                  placeholder={`Examples:\n\n^${baseUrlRegexp}\\/blog\\/.*$\n^${baseUrlRegexp}\\/docs\\/.*$`}
+                  placeholder={`Examples:\n\n\\/blog\\/.*$\n\\/docs\\/.*$`}
                   as={NoAutoTextArea}
                   disabled={isSubmitting || forceDisabled}
                 />
@@ -216,7 +216,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                   type="text"
                   name="excludeRegexes"
                   textAreaSize="sm"
-                  placeholder={`Examples:\n\n^${baseUrlRegexp}\\/login$\n^${baseUrlRegexp}\\/files\\/.+\\.txt$`}
+                  placeholder={`Examples:\n\n\\/login$\n\\/files\\/.+\\.txt$`}
                   as={NoAutoTextArea}
                   disabled={isSubmitting || forceDisabled}
                 />

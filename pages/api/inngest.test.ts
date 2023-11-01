@@ -40,6 +40,7 @@ describe('inngest', () => {
       ).toBe(true);
     });
   });
+
   describe('createFullMeta', () => {
     it('should detect whether a file has changed for training', async () => {
       const baseNangoFile = {
@@ -72,6 +73,17 @@ describe('inngest', () => {
           content: '# Heading\n\nContent',
           contentType: 'md',
           meta: { key: 1 },
+        } as NangoFileWithMetadata),
+      ).toStrictEqual({ title: 'Nango title', key: 1 });
+      expect(
+        await createFullMeta({
+          ...baseNangoFile,
+          content: '',
+          contentType: 'md',
+          meta: {
+            title: 'Nango title',
+            key: 1,
+          },
         } as NangoFileWithMetadata),
       ).toStrictEqual({ title: 'Nango title', key: 1 });
     });

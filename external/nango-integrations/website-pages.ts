@@ -236,8 +236,6 @@ export default async function fetchData(nango: NangoSync) {
   const { baseUrl, includeRegexes, excludeRegexes, requestHeaders } =
     await nango.getMetadata<Metadata>();
 
-  console.log('baseUrl', JSON.stringify(baseUrl, null, 2));
-
   if (!baseUrl) {
     throw new Error('Missing base URL.');
   }
