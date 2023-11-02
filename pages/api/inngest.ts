@@ -72,8 +72,6 @@ type NamedEvent<T extends keyof Events> = Events[T] & { name: T };
 
 const nango = getNangoServerInstance();
 
-const supabase = createServiceRoleSupabaseClient();
-
 export const inngest = new Inngest({
   id: 'markprompt',
   schemas: new EventSchemas().fromRecord<Events>(),
@@ -83,6 +81,8 @@ const syncNangoRecords = inngest.createFunction(
   { id: 'sync-nango-records' },
   { event: 'nango/sync' },
   async ({ event, step }) => {
+    const supabase = createServiceRoleSupabaseClient();
+
     const sourceId = await getSourceId(supabase, event.data.connectionId);
 
     if (!sourceId) {
@@ -211,7 +211,7 @@ export const createFullMeta = async (file: NangoFileWithMetadata) => {
   return meta;
 };
 
-const runTrainFile = async (data: FileTrainEventData) => {
+export const runTrainFile = async (data: FileTrainEventData) => {
   const nangoFile = data.file;
   const sourceId = data.sourceId;
   const projectId = data.projectId;
@@ -219,6 +219,8 @@ const runTrainFile = async (data: FileTrainEventData) => {
   if (!nangoFile?.id || nangoFile.error) {
     return;
   }
+
+  const supabase = createServiceRoleSupabaseClient();
 
   const foundFiles = await getFilesIdAndCheksumBySourceAndNangoId(
     supabase,
@@ -286,6 +288,11 @@ const runTrainFile = async (data: FileTrainEventData) => {
     };
   });
 
+  console.log(
+    'embeddingsResponse',
+    JSON.stringify(embeddingsResponse, null, 2),
+  );
+
   const internalMetadata = {
     nangoFileId: nangoFile.id,
     ...(nangoFile.contentType ? { contentType: nangoFile.contentType } : {}),
@@ -352,6 +359,9 @@ const deleteFiles = inngest.createFunction(
   { event: 'markprompt/files.delete' },
   async ({ event, logger }) => {
     logger.debug('Delete files', event.data.ids);
+
+    const supabase = createServiceRoleSupabaseClient();
+
     await batchDeleteFilesBySourceAndNangoId(
       supabase,
       event.data.sourceId,
