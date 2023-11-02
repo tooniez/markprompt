@@ -468,7 +468,7 @@ export const getOutputFormatInstructions = (
 ) => {
   switch (outputFormat) {
     case 'slack':
-      return 'Output as Slack-flavored Markdown.';
+      return 'Output as Slack-flavored Markdown. For instance, bold text should be surrounded by single asterisks, and URLs should be of the form <http://example.com/>.';
     default:
       return 'Output as Markdown.';
   }

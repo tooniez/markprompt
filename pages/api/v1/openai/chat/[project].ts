@@ -204,7 +204,7 @@ const buildInitMessages = (
         ${oneLine`
           - Respond using the same language as the question.
         `}
-        ${oneLine`${getOutputFormatInstructions(outputFormat)}`}
+        ${oneLine`- ${getOutputFormatInstructions(outputFormat)}`}
         ${oneLine`
           - Always include code snippets if available.
         `}
