@@ -13,6 +13,7 @@ import type { NextRequest } from 'next/server';
 import {
   getHeaders,
   getMatchingSections,
+  getOutputFormatInstructions,
   insertQueryStat,
   insertQueryStatUsage,
   updateQueryStat,
@@ -38,11 +39,7 @@ import {
   getProjectConfigData,
   getTeamTierInfo,
 } from '@/lib/supabase';
-import {
-  getChatRequestTokenCount,
-  getMessageTokenCount,
-  getTokenizer,
-} from '@/lib/tokenizer.edge';
+import { getMessageTokenCount, getTokenizer } from '@/lib/tokenizer.edge';
 import {
   buildSectionReferenceFromMatchResult,
   getCompletionsResponseText,
@@ -56,6 +53,7 @@ import {
 } from '@/lib/utils.nodeps';
 import {
   ApiError,
+  ChatOutputFormat,
   FileSectionMatchResult,
   FileSectionMeta,
   OpenAIModelIdWithType,
@@ -345,7 +343,9 @@ export default async function handler(req: NextRequest) {
     // Backwards compatibility
     const promptTemplate =
       ((params.promptTemplate || params.systemPrompt) as string) ||
-      `You are a very enthusiastic company representative who loves to help people! Given the following sections from the documentation (preceded by a section id), answer the question using only that information, outputted in Markdown format. If you are unsure and the answer is not explicitly written in the documentation, say "{{I_DONT_KNOW}}".\n\nContext sections:\n---\n{{CONTEXT}}\n\nQuestion: "{{PROMPT}}"\n\nAnswer (including related code snippets if available):\n`;
+      `You are a very enthusiastic company representative who loves to help people! Given the following sections from the documentation (preceded by a section id), answer the question using only that information. ${getOutputFormatInstructions(
+        params.outputFormat,
+      )} If you are unsure and the answer is not explicitly written in the documentation, say "{{I_DONT_KNOW}}".\n\nContext sections:\n---\n{{CONTEXT}}\n\nQuestion: "{{PROMPT}}"\n\nAnswer (including related code snippets if available):\n`;
 
     const fullPrompt = buildFullPrompt(
       promptTemplate,

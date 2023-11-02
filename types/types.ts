@@ -323,3 +323,5 @@ export type CompletionsUsageInfo = {
     Record<OpenAIChatCompletionsModelId, CompletionAllowanceAndUsage>
   >;
 };
+
+export type ChatOutputFormat = 'markdown' | 'slack';

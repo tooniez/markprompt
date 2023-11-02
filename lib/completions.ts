@@ -10,6 +10,7 @@ import { isPresent } from 'ts-is-present';
 import { Database } from '@/types/supabase';
 import {
   ApiError,
+  ChatOutputFormat,
   CompletionsMessage,
   DbConversation,
   DbQueryStat,
@@ -460,4 +461,15 @@ Standalone question:`,
   }
 
   return { message, usage: { tokens: json.usage, model } };
+};
+
+export const getOutputFormatInstructions = (
+  outputFormat: ChatOutputFormat | undefined,
+) => {
+  switch (outputFormat) {
+    case 'slack':
+      return 'Output as Slack-flavored Markdown.';
+    default:
+      return 'Output as Markdown.';
+  }
 };

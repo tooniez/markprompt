@@ -23,6 +23,7 @@ import {
   insertQueryStat,
   updateQueryStat,
   insertQueryStatUsage,
+  getOutputFormatInstructions,
 } from '@/lib/completions';
 import { modelConfigFields } from '@/lib/config';
 import {
@@ -64,6 +65,7 @@ import {
 } from '@/lib/utils.nodeps';
 import {
   ApiError,
+  ChatOutputFormat,
   DEFAULT_CHAT_COMPLETION_MODEL,
   FileSectionMatchResult,
   FileSectionMeta,
@@ -150,6 +152,7 @@ const buildInitMessages = (
   contextSections: string,
   doNotInjectContext = false,
   skipHardPromptInstructions = false,
+  outputFormat: ChatOutputFormat = 'markdown',
 ): ChatCompletionRequestMessage[] => {
   const initMessages: ChatCompletionRequestMessage[] = [
     {
@@ -201,9 +204,7 @@ const buildInitMessages = (
         ${oneLine`
           - Respond using the same language as the question.
         `}
-        ${oneLine`
-          - Output as Markdown.
-        `}
+        ${oneLine`${getOutputFormatInstructions(outputFormat)}`}
         ${oneLine`
           - Always include code snippets if available.
         `}
@@ -585,6 +586,7 @@ export default async function handler(req: NextRequest) {
       contextText,
       !!params.doNotInjectContext,
       !!params.skipHardPromptInstructions,
+      params.outputFormat as ChatOutputFormat,
     );
 
     console.debug(
