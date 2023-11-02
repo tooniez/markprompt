@@ -259,8 +259,8 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             description={
               <>
                 <p>
-                  Never leave your customers waiting and churn. Assist them in
-                  the moment, when they most need it.
+                  Never leave your customers waiting. Assist them in the moment,
+                  when they most need it.
                 </p>
               </>
             }
