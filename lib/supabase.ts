@@ -496,9 +496,11 @@ export const createFile = async (
     .select('id')
     .limit(1)
     .maybeSingle();
+
   if (error) {
     throw error;
   }
+
   return data?.id as DbFile['id'];
 };
 

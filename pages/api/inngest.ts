@@ -49,7 +49,7 @@ export type NangoSyncPayload = Pick<
   'providerConfigKey' | 'connectionId' | 'model' | 'queryTimeStamp'
 >;
 
-type FileTrainEventData = {
+export type FileTrainEventData = {
   file: NangoFileWithMetadata;
   projectId: Project['id'];
   sourceId: DbSource['id'];
@@ -230,18 +230,11 @@ export const runTrainFile = async (data: FileTrainEventData) => {
 
   let foundFile: DbFileMetaChecksum | undefined = undefined;
 
-  console.log('runTrainFile', JSON.stringify(data, null, 2));
-
   if (foundFiles.length > 0) {
     foundFile = foundFiles[0];
     if (foundFiles.length > 1) {
       // There should not be more than one file with the same source id and
       // Nango id, but if there is exceptionally, purge all but the first.
-      console.log(
-        'runTrainFile delete duplicates',
-        foundFiles.slice(1).map((f) => f.id),
-      );
-
       await batchDeleteFiles(
         supabase,
         foundFiles.slice(1).map((f) => f.id),
@@ -288,11 +281,6 @@ export const runTrainFile = async (data: FileTrainEventData) => {
     };
   });
 
-  console.log(
-    'embeddingsResponse',
-    JSON.stringify(embeddingsResponse, null, 2),
-  );
-
   const internalMetadata = {
     nangoFileId: nangoFile.id,
     ...(nangoFile.contentType ? { contentType: nangoFile.contentType } : {}),
@@ -334,7 +322,6 @@ export const runTrainFile = async (data: FileTrainEventData) => {
   // If previous file existed, delete it here (i.e. once its replacement has
   // been fully indexed, so we avoid a time where the content is not available).
   if (foundFile) {
-    console.log('Deleting previous version of file', foundFile.id);
     await batchDeleteFiles(supabase, [foundFile.id]);
   }
 };

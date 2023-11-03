@@ -10,14 +10,12 @@ import {
   OpenAIEmbeddingsModelId,
 } from '@markprompt/core';
 import slugify from '@sindresorhus/slugify';
-import confetti from 'canvas-confetti';
 import dayjs from 'dayjs';
 import { ChevronsUp, GitBranchIcon, Globe, Upload } from 'lucide-react';
 import { minimatch } from 'minimatch';
 import { customAlphabet } from 'nanoid';
 import pako from 'pako';
 import { JSXElementConstructor } from 'react';
-import tailwindColors from 'tailwindcss/colors';
 import type { Config } from 'unique-names-generator';
 import {
   adjectives,
