@@ -40,7 +40,6 @@ export const ContactWindow = ({
       setContactWindowOpen(true);
     };
 
-    console.log('Binding');
     emitter.on(EVENT_OPEN_CONTACT, handler);
 
     return () => {

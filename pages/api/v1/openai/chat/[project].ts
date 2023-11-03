@@ -788,6 +788,8 @@ export default async function handler(req: NextRequest) {
             responseText,
             idk ? 'idk' : undefined,
           );
+        } else {
+          console.error('[CHAT] updateQueryStat: no prompt id', responseText);
         }
 
         const promptTokenCount = getChatRequestTokenCount(
@@ -815,6 +817,9 @@ export default async function handler(req: NextRequest) {
         // We're done, wind down
         parser.reset();
         controller.close();
+      },
+      async cancel(reason?: any) {
+        console.log('Cancelled', reason);
       },
     });
 

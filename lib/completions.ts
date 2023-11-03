@@ -79,7 +79,7 @@ export const updateQueryStat = async (
   response: string | undefined,
   noResponseReason: PromptNoResponseReason | undefined,
 ) => {
-  return supabase
+  const { error } = await supabase
     .from('query_stats')
     .update({
       ...(response ? { response } : {}),
@@ -88,6 +88,9 @@ export const updateQueryStat = async (
         : {}),
     })
     .eq('id', promptId);
+  if (error) {
+    console.error('[CHAT] updateQueryStat error:', error);
+  }
 };
 
 export const getMatchingSections = async (
