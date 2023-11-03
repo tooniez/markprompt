@@ -31,11 +31,9 @@ import { isPresent } from 'ts-is-present';
 
 import { UpgradeNote } from '@/components/files/UpgradeNote';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
-import Onboarding from '@/components/onboarding/Onboarding';
 import Button from '@/components/ui/Button';
 import { IndeterminateCheckbox } from '@/components/ui/Checkbox';
 import { SkeletonTable } from '@/components/ui/Skeletons';
-import { Tag } from '@/components/ui/Tag';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { deleteFiles } from '@/lib/api';
 import { useTrainingContext } from '@/lib/context/training';
@@ -48,8 +46,6 @@ import useUsage from '@/lib/hooks/use-usage';
 import useUser from '@/lib/hooks/use-user';
 import { getTier, isEnterpriseOrCustomTier } from '@/lib/stripe/tiers';
 import {
-  canDeleteSource,
-  getAccessoryLabelForSource,
   getIconForSource,
   getLabelForSource,
   getUrlPath,
@@ -74,41 +70,6 @@ const Loading = <></>;
 
 const SourcesDialog = dynamic(
   () => import('@/components/dialogs/sources/SourcesDialog'),
-  { loading: () => Loading },
-);
-
-const GitHubAddSourceDialog = dynamic(
-  () => import('@/components/dialogs/sources/GitHub'),
-  { loading: () => Loading },
-);
-
-const SalesforceKnowledgeAddSourceDialog = dynamic(
-  () => import('@/components/dialogs/sources/SalesforceKnowledge'),
-  { loading: () => Loading },
-);
-
-const SalesforceCaseAddSourceDialog = dynamic(
-  () => import('@/components/dialogs/sources/SalesforceCase'),
-  { loading: () => Loading },
-);
-
-// const NotionPagesOnboardingDialog = dynamic(
-//   () => import('@/components/dialogs/sources/onboarding/NotionPages'),
-//   { loading: () => Loading },
-// );
-
-const MotifAddSourceDialog = dynamic(
-  () => import('@/components/dialogs/sources/Motif'),
-  { loading: () => Loading },
-);
-
-const WebsiteAddSourceDialog = dynamic(
-  () => import('@/components/dialogs/sources/Website'),
-  { loading: () => Loading },
-);
-
-const FilesAddSourceDialog = dynamic(
-  () => import('@/components/dialogs/sources/Files'),
   { loading: () => Loading },
 );
 
@@ -362,19 +323,11 @@ const SourceItem: FC<SourceItemProps> = ({
   );
 };
 
-const hasNonFileSources = (sources: DbSource[]) => {
-  return sources.some(
-    (s) => s.type !== 'api-upload' && s.type !== 'file-upload',
-  );
-};
-
 const Data = () => {
-  const { user, loading: loadingUser } = useUser();
   const { team } = useTeam();
   const { project } = useProject();
   const {
     paginatedFiles,
-    numFiles,
     mutate: mutateFiles,
     loading: loadingFiles,
     page,
@@ -388,11 +341,6 @@ const Data = () => {
     latestSyncQueues,
     loading: loadingSources,
   } = useSources();
-  const {
-    stopGeneratingEmbeddings,
-    state: trainingState,
-    trainAllSources,
-  } = useTrainingContext();
   const {
     numTokensPerTeamAllowance,
     mutate: mutateFileStats,
@@ -425,7 +373,6 @@ const Data = () => {
   }>({ open: false });
 
   const tier = team && getTier(team);
-  const isEnterpriseTier = !tier || isEnterpriseOrCustomTier(tier);
 
   const isOneSourceSyncing = useMemo(() => {
     return !!latestSyncQueues?.some((q) => q.status === 'running');
@@ -614,11 +561,6 @@ const Data = () => {
 
   const numSelected = Object.values(rowSelection).filter(Boolean).length;
   const hasFiles = paginatedFiles && paginatedFiles.length > 0;
-  const canTrain = hasFiles || hasNonFileSources(sources);
-
-  if (!loadingUser && !user?.has_completed_onboarding) {
-    return <Onboarding />;
-  }
 
   return (
     <ProjectSettingsLayout
@@ -627,26 +569,6 @@ const Data = () => {
       RightHeading={
         <div className="flex w-full items-center gap-4">
           <div className="flex-grow" />
-          {/* <StatusMessage
-            trainingState={trainingState}
-            isDeleting={isDeleting}
-            numFiles={numFiles || 0}
-            numSelected={numSelected}
-            playgroundPath={`/${team?.slug}/${project?.slug}/playground`}
-          /> */}
-          {/* {trainingState.state !== 'idle' && (
-            <p
-              className={cn('whitespace-nowrap text-xs text-neutral-500', {
-                'subtle-underline cursor-pointer':
-                  trainingState.state !== 'cancel_requested',
-              })}
-              onClick={stopGeneratingEmbeddings}
-            >
-              {trainingState.state === 'cancel_requested'
-                ? 'Cancelling...'
-                : 'Stop training'}
-            </p>
-          )} */}
           {numSelected > 0 && (
             <Dialog.Root>
               <Dialog.Trigger asChild>
@@ -688,80 +610,6 @@ const Data = () => {
               />
             </Dialog.Root>
           )}
-          {/* {numSelected === 0 && canTrain && (
-            <div className="flex flex-row items-center gap-2">
-              <Popover.Root>
-                <Popover.Trigger asChild>
-                  <button
-                    className="rounded-md p-2 text-neutral-500 outline-none transition duration-300 hover:bg-neutral-900 hover:text-neutral-400"
-                    role="button"
-                    aria-label="Configure training"
-                  >
-                    <SettingsIcon className="h-4 w-4 transform duration-300" />
-                  </button>
-                </Popover.Trigger>
-                <Popover.Portal>
-                  <Popover.Content
-                    sideOffset={0}
-                    alignOffset={-10}
-                    align="end"
-                    className="animate-menu-up z-30 mt-2 -mr-8 ml-8 w-[320px] rounded-lg border border-neutral-900 bg-neutral-1000 p-4 shadow-2xl"
-                  >
-                    <div className="flex flex-none flex-row items-center gap-2">
-                      <label
-                        className="flex-grow truncate text-sm font-normal text-neutral-300"
-                        htmlFor="product-updates"
-                      >
-                        Force retrain
-                      </label>
-                      <Switch.Root
-                        className="switch-root"
-                        checked={forceRetrain}
-                        onCheckedChange={setForceRetrain}
-                      >
-                        <Switch.Thumb className="switch-thumb" />
-                      </Switch.Root>
-                    </div>
-                    <p className="mt-2 text-xs text-neutral-400">
-                      If on, previously indexed content will be retrained, even
-                      if it hasn&apos;t changed.
-                    </p>
-                  </Popover.Content>
-                </Popover.Portal>
-              </Popover.Root>
-              <Button
-                loading={
-                  trainingState.state === 'loading' ||
-                  trainingState.state === 'fetching_data'
-                }
-                variant="cta"
-                buttonSize="sm"
-                onClick={async () => {
-                  let i = 0;
-                  track('start training');
-                  await trainAllSources(
-                    forceRetrain,
-                    () => {
-                      if (i++ % 10 === 0) {
-                        // Only mutate every 10 files
-                        mutateFiles();
-                      }
-                    },
-                    (message: string) => {
-                      toast.error(message);
-                    },
-                  );
-                  await mutateFiles();
-                  await mutateCount();
-                  toast.success('Processing complete.', {
-                    id: 'processing-complete',
-                  });
-                }}
-              >
-                Sync
-              </Button>
-            </div>
-          )} */}
         </div>
       }
     >
@@ -814,136 +662,6 @@ const Data = () => {
               </Button>
             </SourcesDialog>
           )}
-          {/* <div
-            className={cn(
-              'flex flex-col gap-2 rounded-md border border-dashed border-neutral-800 p-4',
-              {
-                'cursor-not-allowed': !canAddMoreContent,
-              },
-            )}
-          >
-            <button
-              className={cn(
-                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                {
-                  'pointer-events-none opacity-50': !canAddMoreContent,
-                },
-              )}
-              onClick={() => {
-                setSourceDialogOpen({ dialogId: 'website' });
-              }}
-            >
-              <Globe className="h-4 w-4 flex-none text-neutral-500" />
-              <span className="truncate">Connect website</span>
-            </button>
-            <button
-              className={cn(
-                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                {
-                  'pointer-events-none opacity-50': !canAddMoreContent,
-                },
-              )}
-              onClick={() => {
-                setSourceDialogOpen({ dialogId: 'github' });
-              }}
-            >
-              <GitHub.GitHubIcon className="h-4 w-4 flex-none text-neutral-500" />
-              <span className="truncate">Connect GitHub repo</span>
-            </button>
-            <button
-              className={cn(
-                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                {
-                  'pointer-events-none opacity-50': !canAddMoreContent,
-                },
-              )}
-              onClick={() => {
-                setSourceDialogOpen({ dialogId: 'notion-pages' });
-              }}
-            >
-              <NotionIcon className="h-4 w-4 flex-none text-neutral-500" />
-              <span className="flex-grow truncate">Connect Notion</span>
-            </button>
-            <button
-              className={cn(
-                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                {
-                  'pointer-events-none opacity-50': !canAddMoreContent,
-                },
-              )}
-              onClick={(e) => {
-                if (!isEnterpriseTier) {
-                  e.preventDefault();
-                  emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
-                }
-                setSourceDialogOpen({ dialogId: 'salesforce-knowledge' });
-              }}
-            >
-              <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
-              <span className="flex-grow truncate">
-                Connect Salesforce Knowledge
-              </span>
-
-              {!isEnterpriseTier && (
-                <div className="flex-nonw">
-                  <Tag>Enterprise</Tag>
-                </div>
-              )}
-            </button>
-            <button
-              className={cn(
-                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                {
-                  'pointer-events-none opacity-50': !canAddMoreContent,
-                },
-              )}
-              onClick={(e) => {
-                if (!isEnterpriseTier) {
-                  e.preventDefault();
-                  emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
-                }
-                setSourceDialogOpen({ dialogId: 'salesforce-case' });
-              }}
-            >
-              <SalesforceIcon className="h-4 w-4 flex-none text-neutral-500" />
-              <span className="flex-grow truncate">
-                Connect Salesforce Case
-              </span>
-              {!isEnterpriseTier && (
-                <div className="flex-nonw">
-                  <Tag>Enterprise</Tag>
-                </div>
-              )}
-            </button>
-            <button
-              className={cn(
-                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                {
-                  'pointer-events-none opacity-50': !canAddMoreContent,
-                },
-              )}
-              onClick={() => {
-                setSourceDialogOpen({ dialogId: 'motif' });
-              }}
-            >
-              <MotifIcon className="h-4 w-4 flex-none text-neutral-500" />
-              <span className="truncate">Connect Motif project</span>
-            </button>
-            <button
-              className={cn(
-                'flex flex-row items-center gap-2 py-1 text-left text-sm text-neutral-300 outline-none transition hover:text-neutral-400',
-                {
-                  'pointer-events-none opacity-50': !canAddMoreContent,
-                },
-              )}
-              onClick={() => {
-                setSourceDialogOpen({ dialogId: 'api-uploads' });
-              }}
-            >
-              <Upload className="h-4 w-4 flex-none text-neutral-500" />
-              <span className="truncate">Upload files</span>
-            </button>
-          </div> */}
         </div>
         <div className="sm:col-span-9 md:col-span-10">
           {loadingFiles && (
@@ -993,7 +711,6 @@ const Data = () => {
           {!loadingFiles && hasFiles && (
             <table className="w-full max-w-full table-fixed border-collapse">
               <colgroup>
-                {/* <col className={pageHasSelectableItems ? 'w-[32px]' : 'w-0'} /> */}
                 <col className="w-[32px]" />
                 <col className="w-[calc(80%-152px)]" />
                 {/* <col className="w-[30%]" /> */}
@@ -1125,62 +842,6 @@ const Data = () => {
               }
             }}
           />
-          {/* <NotionPagesOnboardingDialog
-            open={connectSourceDialogOpen?.dialogId === 'notion-pages'}
-            onOpenChange={(open) => {
-              if (!open) {
-                setConnectSourceDialogOpen(undefined);
-              }
-            }}
-          />
-          <GitHubAddSourceDialog
-            open={connectSourceDialogOpen?.dialogId === 'github'}
-            onOpenChange={(open) => {
-              if (!open) {
-                setConnectSourceDialogOpen(undefined);
-              }
-            }}
-          />
-          <SalesforceKnowledgeAddSourceDialog
-            open={connectSourceDialogOpen?.dialogId === 'salesforce-knowledge'}
-            onOpenChange={(open) => {
-              if (!open) {
-                setConnectSourceDialogOpen(undefined);
-              }
-            }}
-          />
-          <SalesforceCaseAddSourceDialog
-            open={connectSourceDialogOpen?.dialogId === 'salesforce-case'}
-            onOpenChange={(open) => {
-              if (!open) {
-                setConnectSourceDialogOpen(undefined);
-              }
-            }}
-          />
-          <WebsiteAddSourceDialog
-            open={connectSourceDialogOpen?.dialogId === 'website'}
-            onOpenChange={(open) => {
-              if (!open) {
-                setConnectSourceDialogOpen(undefined);
-              }
-            }}
-          />
-          <MotifAddSourceDialog
-            open={connectSourceDialogOpen?.dialogId === 'motif'}
-            onOpenChange={(open) => {
-              if (!open) {
-                setConnectSourceDialogOpen(undefined);
-              }
-            }}
-          />
-          <FilesAddSourceDialog
-            open={connectSourceDialogOpen?.dialogId === 'api-uploads'}
-            onOpenChange={(open) => {
-              if (!open) {
-                setConnectSourceDialogOpen(undefined);
-              }
-            }}
-          /> */}
           <SalesforceDatabaseConfigurationDialog
             projectId={project?.id}
             open={

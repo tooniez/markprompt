@@ -250,7 +250,6 @@ const getDescription = (
   teamSlug: string,
   projectSlug: string,
   isTestMode: boolean,
-  isOnboarding: boolean,
 ) => {
   if (isTestMode) {
     return (
@@ -267,16 +266,12 @@ const getDescription = (
         Showing code with your <strong>production</strong> key. Production keys
         can only be used when called from a whitelisted domain. You can add
         whitelisted domains in the{' '}
-        {!isOnboarding ? (
-          <Link
-            className="subtle-underline"
-            href={`/${teamSlug}/${projectSlug}/settings`}
-          >
-            project settings
-          </Link>
-        ) : (
-          <>project settings</>
-        )}
+        <Link
+          className="subtle-underline"
+          href={`/${teamSlug}/${projectSlug}/settings`}
+        >
+          project settings
+        </Link>
         . For local development, use a test key (toggle &ldquo;Test mode&rdquo;
         above).
       </>
@@ -288,29 +283,21 @@ export const TestKeyNote = ({
   team,
   project,
   testMode,
-  isOnboarding,
   className,
 }: {
   team: DbTeam;
   project: Project;
   testMode: boolean;
-  isOnboarding: boolean;
   className: string;
 }) => {
   return (
     <Note type="warning" size="sm" className={className}>
-      {getDescription(team.slug, project.slug, testMode, isOnboarding)}
+      {getDescription(team.slug, project.slug, testMode)}
     </Note>
   );
 };
 
-const GetCode = ({
-  isOnboarding,
-  children,
-}: {
-  isOnboarding: boolean;
-  children: ReactNode;
-}) => {
+const GetCode = ({ children }: { children: ReactNode }) => {
   const { team } = useTeam();
   const { project } = useProject();
   const { markpromptOptions, theme } = useConfigContext();
@@ -399,7 +386,6 @@ const GetCode = ({
                         team={team}
                         project={project}
                         testMode={testMode}
-                        isOnboarding={isOnboarding}
                       />
                       <CodePanel
                         language="jsx"
@@ -451,7 +437,6 @@ const GetCode = ({
                         team={team}
                         project={project}
                         testMode={testMode}
-                        isOnboarding={isOnboarding}
                       />
                       <h4>HTML</h4>
                       <p className="text-sm text-neutral-300">
@@ -510,7 +495,6 @@ const GetCode = ({
                         team={team}
                         project={project}
                         testMode={testMode}
-                        isOnboarding={isOnboarding}
                       />
                       <h4>Configuration</h4>
                       <p className="text-sm text-neutral-300">
@@ -575,7 +559,6 @@ const GetCode = ({
                         team={team}
                         project={project}
                         testMode={testMode}
-                        isOnboarding={isOnboarding}
                       />
                       <CodePanel
                         className="w-full"
@@ -603,7 +586,6 @@ const GetCode = ({
                         team={team}
                         project={project}
                         testMode={testMode}
-                        isOnboarding={isOnboarding}
                       />
                       <CodePanel
                         className="w-full"

@@ -225,13 +225,7 @@ export const Lines = ({
   );
 };
 
-type PlaygroundDashboardProps = {
-  isOnboarding?: boolean;
-};
-
-const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
-  isOnboarding,
-}) => {
+const PlaygroundDashboard = () => {
   const { project } = useProject();
   const {
     paginatedFiles,
@@ -239,36 +233,9 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
     loading: loadingFiles,
   } = useFiles();
   const { didCompleteFirstQuery, setDidCompleteFirstQuery } = useAppContext();
-  const {
-    sources,
-    mutate: mutateSources,
-    loading: loadingSources,
-  } = useSources();
-  const { state: trainingState, trainAllSources } = useTrainingContext();
   const { markpromptOptions, theme, isDark } = useConfigContext();
-  const { canAddMoreContent, numTokensPerTeamAllowance } = useUsage();
-  const [overlayDimensions, setOverlayDimensions] = useState({
-    previewContainerWidth: 0,
-    previewContainerHeight: 0,
-    playgroundWidth: 0,
-    playgroundHeight: 0,
-    playgroundLeft: 0,
-    playgroundTop: 0,
-    overlayMessageLeft: 0,
-    overlayMessageTop: 0,
-    overlayMessageWidth: 0,
-    overlayMessageHeight: 0,
-  });
-  const [isLoadingResponse, setIsLoadingResponse] = useState(false);
   const [isPlaygroundLoaded, setPlaygroundLoaded] = useState(false);
-  // const playgroundRef = useRef<HTMLDivElement>(null);
   const playgroundRef = useRef<HTMLIFrameElement>(null);
-  const previewContainerRef = useRef<HTMLDivElement>(null);
-  const overlayMessageRef = useRef<HTMLDivElement>(null);
-
-  const hasConnectedSources = sources && sources.length > 0;
-  const isTrained = paginatedFiles && paginatedFiles.length > 0;
-  const isTraining = trainingState.state !== 'idle';
 
   useEffect(() => {
     if (
@@ -371,7 +338,7 @@ const PlaygroundDashboard: FC<PlaygroundDashboardProps> = ({
               Share
             </Button>
           </Share>
-          <GetCode isOnboarding={!!isOnboarding}>
+          <GetCode>
             <Button buttonSize="sm" variant="plain" Icon={Code}>
               Get code
             </Button>

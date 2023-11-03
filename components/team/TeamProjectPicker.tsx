@@ -21,7 +21,6 @@ import useProject from '@/lib/hooks/use-project';
 import useProjects from '@/lib/hooks/use-projects';
 import useTeam from '@/lib/hooks/use-team';
 import useTeams from '@/lib/hooks/use-teams';
-import useUser from '@/lib/hooks/use-user';
 import { Tier, getTier, getTierName } from '@/lib/stripe/tiers';
 import { TagColor } from '@/types/types';
 
@@ -64,7 +63,6 @@ const getColorForTier = (tier: Tier): TagColor => {
 };
 
 const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
-  const { user } = useUser();
   const { teams, loading } = useTeams();
   const { team } = useTeam();
   const [isOpen, setOpen] = useState(false);
@@ -78,22 +76,16 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
   return (
     <DropdownMenu.Root open={isOpen} onOpenChange={setOpen}>
       <DropdownMenu.Trigger asChild>
-        {user?.has_completed_onboarding ? (
-          <button
-            className="no-ring flex select-none flex-row items-center gap-2 overflow-hidden truncate whitespace-nowrap rounded py-1 px-2 text-sm text-neutral-300 outline-none transition hover:bg-neutral-900 hover:text-neutral-400"
-            aria-label="Select team"
-          >
-            <span className="overflow-hidden truncate whitespace-nowrap">
-              {team?.name || ''}
-            </span>
-            {tier && (
-              <Tag color={getColorForTier(tier)}>{getTierName(tier)}</Tag>
-            )}
-            <ChevronsUpDown className="h-3 w-3 flex-none" />
-          </button>
-        ) : (
-          <p className="dropdown-menu-button select-none">{team?.name || ''}</p>
-        )}
+        <button
+          className="no-ring flex select-none flex-row items-center gap-2 overflow-hidden truncate whitespace-nowrap rounded py-1 px-2 text-sm text-neutral-300 outline-none transition hover:bg-neutral-900 hover:text-neutral-400"
+          aria-label="Select team"
+        >
+          <span className="overflow-hidden truncate whitespace-nowrap">
+            {team?.name || ''}
+          </span>
+          {tier && <Tag color={getColorForTier(tier)}>{getTierName(tier)}</Tag>}
+          <ChevronsUpDown className="h-3 w-3 flex-none" />
+        </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content

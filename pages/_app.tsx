@@ -14,7 +14,6 @@ import { SWRConfig } from 'swr';
 import { ManagedAppContext } from '@/lib/context/app';
 import { ManagedConfigContext } from '@/lib/context/config';
 import { ManagedTrainingContext } from '@/lib/context/training';
-import useUser from '@/lib/hooks/use-user';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -44,7 +43,6 @@ export default function App({ Component, pageProps }: CustomAppProps) {
               <ManagedTrainingContext>
                 <ManagedConfigContext>
                   <Component {...pageProps}></Component>
-                  {!(Component as any).hideChat && <PromptOutsideOnboarding />}
                   <Toaster />
                 </ManagedConfigContext>
               </ManagedTrainingContext>
@@ -56,13 +54,3 @@ export default function App({ Component, pageProps }: CustomAppProps) {
     </main>
   );
 }
-
-export const PromptOutsideOnboarding = () => {
-  const { user } = useUser();
-
-  // Don't show chat in the bottom left during onboarding.
-  if (user && !user.has_completed_onboarding) {
-    return <></>;
-  }
-  return <></>;
-};

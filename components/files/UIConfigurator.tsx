@@ -8,7 +8,11 @@ import { ChangeEvent, FC, useEffect, useMemo } from 'react';
 import { useConfigContext } from '@/lib/context/config';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';
 import useTeam from '@/lib/hooks/use-team';
-import { canRemoveBranding } from '@/lib/stripe/tiers';
+import {
+  canRemoveBranding,
+  getTier,
+  isEnterpriseOrCustomTier,
+} from '@/lib/stripe/tiers';
 import { Theme, ThemeColorKeys, ThemeColors } from '@/lib/themes';
 import { SerializableMarkpromptOptions } from '@/types/types';
 
@@ -60,6 +64,9 @@ const UIConfigurator: FC<UIConfiguratorProps> = () => {
 
   const _canRemoveBranding = team && canRemoveBranding(team);
 
+  const tier = team && getTier(team);
+  const isEnterpriseTier = !tier || isEnterpriseOrCustomTier(tier);
+
   return (
     <div className="flex flex-col">
       <h3 className="mb-2 text-lg font-bold">Components</h3>
@@ -71,14 +78,6 @@ const UIConfigurator: FC<UIConfiguratorProps> = () => {
       </Row>
       <Row label="Instant search">
         <div className="flex flex-row items-center justify-end gap-2">
-          <ButtonOrLinkWrapper
-            className="mr-1 flex flex-none items-center rounded-full"
-            Component="div"
-          >
-            <Tag className="flex flex-row items-center gap-1" color="sky">
-              <Sparkles className="h-4 w-3" /> New
-            </Tag>
-          </ButtonOrLinkWrapper>
           <Switch.Root
             className="relative h-5 w-8 flex-none rounded-full border border-neutral-700 bg-neutral-800 disabled:cursor-not-allowed data-[state='checked']:border-green-600 data-[state='checked']:bg-green-600 disabled:data-[state='checked']:opacity-40"
             checked={!!(markpromptOptions.search as any)?.enabled}
@@ -137,7 +136,7 @@ const UIConfigurator: FC<UIConfiguratorProps> = () => {
       </Row>
       <Row label="Include branding">
         <div className="flex flex-row items-center justify-end gap-2">
-          {!_canRemoveBranding && (
+          {!isEnterpriseTier && (
             <ButtonOrLinkWrapper
               className="mr-1 flex flex-none items-center rounded-full"
               onClick={() => {

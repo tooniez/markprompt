@@ -108,17 +108,6 @@ export const deleteFiles = async (
   });
 };
 
-export const setHasCompletedOnboarding = async () => {
-  await fetch('/api/user', {
-    method: 'PATH',
-    body: JSON.stringify({ has_completed_onboarding: true }),
-    headers: {
-      'Content-Type': 'application/json',
-      accept: 'application/json',
-    },
-  });
-};
-
 export const initUserData = async (): Promise<{
   team: DbTeam;
   project: Project;

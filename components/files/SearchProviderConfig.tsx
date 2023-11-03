@@ -104,9 +104,8 @@ export const SearchProviderConfig: FC<SearchProviderConfigProps> = () => {
           <Row fullWidth>
             <div className="mt-2 flex w-full flex-col">
               <p className="rounded border border-dashed border-orange-900/50 bg-orange-900/20 p-3 text-xs text-orange-400">
-                The Markprompt search provider is experimental. Retraining with
-                the &ldquo;force retrain&rdquo; option may be required to make
-                your content available for search.
+                The Markprompt search provider is experimental. Re-syncing your
+                sources may be required.
               </p>
             </div>
           </Row>
