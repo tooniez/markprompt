@@ -374,6 +374,7 @@ const UIConfigurator: FC<UIConfiguratorProps> = () => {
           <>
             <Row label="Search tab">
               <Input
+                className="w-full"
                 inputSize="sm"
                 value={markpromptOptions.search?.tabLabel}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => {
@@ -389,6 +390,7 @@ const UIConfigurator: FC<UIConfiguratorProps> = () => {
             </Row>
             <Row label="Ask tab">
               <Input
+                className="w-full"
                 inputSize="sm"
                 value={markpromptOptions.prompt?.tabLabel}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => {

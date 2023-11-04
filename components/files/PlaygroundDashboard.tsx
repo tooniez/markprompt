@@ -1,5 +1,6 @@
 import * as Tabs from '@radix-ui/react-tabs';
 import cn from 'classnames';
+import { backOff } from 'exponential-backoff';
 import { motion } from 'framer-motion';
 import { Code, Stars, Share as ShareIcon } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -227,22 +228,31 @@ export const Lines = ({
 
 const PlaygroundDashboard = () => {
   const { project } = useProject();
-  const {
-    paginatedFiles,
-    mutate: mutateFiles,
-    loading: loadingFiles,
-  } = useFiles();
-  const { didCompleteFirstQuery, setDidCompleteFirstQuery } = useAppContext();
+  const { setDidCompleteFirstQuery } = useAppContext();
   const { markpromptOptions, theme, isDark } = useConfigContext();
   const [isPlaygroundLoaded, setPlaygroundLoaded] = useState(false);
   const playgroundRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    if (
-      !isPlaygroundLoaded ||
-      !playgroundRef.current?.contentWindow ||
-      !project
-    ) {
+    if (!playgroundRef.current) {
+      return;
+    }
+
+    const handler = () => {
+      setPlaygroundLoaded(true);
+    };
+
+    const playground = playgroundRef.current;
+
+    playground.addEventListener('load', handler, false);
+
+    return () => {
+      playground.removeEventListener('load', handler);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!project) {
       return;
     }
 
@@ -278,24 +288,30 @@ const PlaygroundDashboard = () => {
 
     const colors = isDark ? theme.colors.dark : theme.colors.light;
 
-    playgroundRef.current.contentWindow.postMessage(
-      {
-        serializedProps,
-        colors,
-        size: theme.size,
-        dimensions: theme.dimensions,
-        isDark,
+    // Setting an onLoad callback on the iframe does not seem reliable.
+    backOff(
+      async () => {
+        if (!playgroundRef.current?.contentWindow) {
+          throw new Error('Iframe not loaded');
+        }
+
+        playgroundRef.current?.contentWindow?.postMessage(
+          {
+            serializedProps,
+            colors,
+            size: theme.size,
+            dimensions: theme.dimensions,
+            isDark,
+          },
+          '*',
+        );
       },
-      '*',
+      {
+        startingDelay: 1000,
+        numOfAttempts: 5,
+      },
     );
-  }, [
-    paginatedFiles,
-    isPlaygroundLoaded,
-    project,
-    theme,
-    isDark,
-    markpromptOptions,
-  ]);
+  }, [isPlaygroundLoaded, project, theme, isDark, markpromptOptions]);
 
   return (
     <div className="absolute inset-0 grid flex-grow grid-cols-1 sm:grid-cols-3">
@@ -317,14 +333,6 @@ const PlaygroundDashboard = () => {
                   ref={playgroundRef}
                   src="/static/html/chatbot-playground.html"
                   className="absolute inset-0 h-full w-full bg-transparent"
-                  onLoad={() => {
-                    setTimeout(() => {
-                      setPlaygroundLoaded(true);
-                    }, 100);
-                    setTimeout(() => {
-                      setDidCompleteFirstQuery(true);
-                    }, 5000);
-                  }}
                 />
               </div>
             </div>

@@ -16,13 +16,11 @@ import useUser from '../hooks/use-user';
 import { useLocalStorage } from '../hooks/utils/use-localstorage';
 
 export type State = {
-  isOnboarding: boolean;
   didCompleteFirstQuery: boolean;
   setDidCompleteFirstQuery: (value: boolean) => void;
 };
 
 const initialContextState: State = {
-  isOnboarding: false,
   didCompleteFirstQuery: false,
   setDidCompleteFirstQuery: () => {
     // Do nothing
@@ -156,7 +154,6 @@ const AppContextProvider = (props: PropsWithChildren) => {
   return (
     <AppContext.Provider
       value={{
-        isOnboarding: !loadingUser && !user?.has_completed_onboarding,
         didCompleteFirstQuery: !!didCompleteFirstQuery,
         setDidCompleteFirstQuery,
       }}

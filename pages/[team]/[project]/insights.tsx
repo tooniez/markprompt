@@ -305,10 +305,8 @@ const Insights = () => {
         return;
       }
       try {
-        console.debug('Start processing query stats');
         const res = await processQueryStats(project.id);
         await mutateQueries();
-        console.debug('Process query stats response:', JSON.stringify(res));
 
         if (res.allProcessed) {
           setProcessingQueryStats(false);
