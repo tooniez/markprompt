@@ -819,9 +819,6 @@ export default async function handler(req: NextRequest) {
         parser.reset();
         controller.close();
       },
-      async cancel(reason?: any) {
-        console.log('Cancelled', reason);
-      },
     });
 
     const headers = getHeaders(references, conversationId, promptId);
