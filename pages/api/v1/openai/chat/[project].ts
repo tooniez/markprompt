@@ -788,7 +788,7 @@ export default async function handler(req: NextRequest) {
             responseText,
             idk ? 'idk' : undefined,
           );
-          console.error('[CHAT] updateQueryStat:', responseText.slice(0, 500));
+          console.debug('[CHAT] updateQueryStat:', responseText.slice(0, 500));
         } else {
           console.error('[CHAT] updateQueryStat: no prompt id', responseText);
         }
