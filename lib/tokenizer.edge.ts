@@ -58,6 +58,7 @@ export const getMessageTokenCount = (
       break;
     case 'gpt-4':
     case 'gpt-4-32k':
+    case 'gpt-4-1106-preview':
       tokensPerMessage = 3;
       tokensPerName = 1;
       break;
@@ -81,5 +82,7 @@ export const getMaxTokenCount = (modelId: OpenAIChatCompletionsModelId) => {
       return 8192;
     case 'gpt-4-32k':
       return 32768;
+    case 'gpt-4-1106-preview':
+      return 128000;
   }
 };

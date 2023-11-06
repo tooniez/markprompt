@@ -51,7 +51,12 @@ export const SUPPORTED_MODELS: {
   completions: OpenAICompletionsModelId[];
   embeddings: OpenAIEmbeddingsModelId[];
 } = {
-  chat_completions: ['gpt-4-32k', 'gpt-4', 'gpt-3.5-turbo'],
+  chat_completions: [
+    'gpt-4-1106-preview',
+    'gpt-4-32k',
+    'gpt-4',
+    'gpt-3.5-turbo',
+  ],
   completions: [
     'text-davinci-003',
     'text-davinci-002',

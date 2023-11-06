@@ -483,6 +483,7 @@ export const stringToLLMInfo = (
     case 'gpt-3.5-turbo':
     case 'gpt-4':
     case 'gpt-4-32k':
+    case 'gpt-4-1106-preview':
       return {
         vendor: 'openai',
         model: { type: 'chat_completions', value: model },

@@ -145,6 +145,8 @@ export const getModelDisplayName = (model: OpenAIChatCompletionsModelId) => {
       return 'GPT-4';
     case 'gpt-4-32k':
       return 'GPT-4 32k';
+    case 'gpt-4-1106-preview':
+      return 'GPT-4 Turbo';
   }
 };
 

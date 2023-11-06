@@ -395,6 +395,7 @@ const getPriceFactor = (
 ) => {
   switch (model) {
     case 'gpt-4':
+    case 'gpt-4-1106-preview':
       return type === 'output' ? 1 : 0.5;
     case 'gpt-4-32k':
       return type === 'output' ? 2 : 1;
