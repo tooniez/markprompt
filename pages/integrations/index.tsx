@@ -41,8 +41,14 @@ const integrations: IntegrationSpec[] = [
   },
   {
     name: 'Salesforce Case',
-    description: 'Sync your cases',
+    description: 'Sync your case resolutions',
     Icon: SalesforceIcon,
+  },
+  {
+    name: 'Salesforce AI Drafts',
+    description: 'Automatically generate case replies',
+    Icon: SalesforceIcon,
+    href: '/integrations/salesforce-ai-drafts',
   },
   {
     name: 'Zendesk Articles',
@@ -116,7 +122,7 @@ const Card: FC<IntegrationSpec> = ({
           <Link
             className={cn(
               className,
-              'no-underline transition hover:bg-neutral-1000',
+              'bg-neutral-1000 no-underline transition hover:bg-neutral-900',
             )}
             href={href}
           >
@@ -127,7 +133,7 @@ const Card: FC<IntegrationSpec> = ({
     : 'div';
 
   return (
-    <Comp className="not-prose rounded-md border border-neutral-900 p-6">
+    <Comp className="not-prose flex flex-col rounded-md border border-neutral-900 p-6">
       <div className="flex flex-row items-center gap-4">
         <div className="flex h-12 flex-none items-center justify-center">
           <Icon className="w-8 flex-none text-white" />
@@ -146,6 +152,11 @@ const Card: FC<IntegrationSpec> = ({
       <h3 className="mt-4 text-sm font-normal text-neutral-500">
         {description}
       </h3>
+      {href && (
+        <p className="subtle-underline mt-4 place-self-start text-sm text-neutral-300">
+          Learn more
+        </p>
+      )}
     </Comp>
   );
 };
@@ -164,7 +175,7 @@ const Integrations = () => {
             <LandingNavbar noAnimation />
           </div>
         </div>
-        <div className="prose prose-invert relative mx-auto min-h-screen w-full max-w-screen-xl px-6 pt-40 pb-48 sm:px-8">
+        <div className="relative mx-auto min-h-screen w-full max-w-screen-xl px-6 pt-40 pb-48 sm:px-8">
           <h1 className="gradient-heading mb-4 text-center text-3xl leading-[36px] tracking-[-0.6px] sm:text-5xl sm:leading-[64px]">
             Integrations
           </h1>
