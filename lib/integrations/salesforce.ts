@@ -1,5 +1,7 @@
 import { NangoIntegrationId } from '@/types/types';
 
+import { MarkdownProcessorOptions } from '../schema';
+
 export type SalesforceEnvironment = 'production' | 'sandbox';
 export type SalesforceDatabaseType = 'knowledge' | 'case';
 
@@ -12,6 +14,7 @@ export type SalesforceNangoMetadata = {
     path: string | undefined;
   };
   metadataFields: string[] | undefined;
+  processorOptions?: MarkdownProcessorOptions;
 };
 
 export const getSalesforceDatabaseIntegrationId = (

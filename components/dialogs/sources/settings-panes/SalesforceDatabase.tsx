@@ -21,6 +21,8 @@ import { setSourceData } from '@/lib/api';
 import useSources from '@/lib/hooks/use-sources';
 import { setMetadata } from '@/lib/integrations/nango.client';
 import { SalesforceNangoMetadata } from '@/lib/integrations/salesforce';
+import { parseProcessorOptions } from '@/lib/schema';
+import { capitalize } from '@/lib/utils';
 import { DbSource, NangoSourceDataType, Project } from '@/types/types';
 
 import { SalesforceSharedForm, prepareFields } from './SalesforceSharedForm';
@@ -152,8 +154,24 @@ export const SalesforceDatabaseSettings: FC<
           contentMapping: nangoMetadata?.mappings?.content || '',
           pathMapping: nangoMetadata?.mappings?.path || '',
           metadataFields: nangoMetadata?.metadataFields?.join(', ') || '',
+          processorOptions: nangoMetadata?.processorOptions
+            ? JSON.stringify(nangoMetadata.processorOptions, null, 2)
+            : '',
         }}
         enableReinitialize
+        validateOnMount
+        validate={async (values) => {
+          const errors: FormikErrors<FormikValues> = {};
+          if (values.processorOptions) {
+            const parsedConfig = parseProcessorOptions(values.processorOptions);
+            if (!parsedConfig && parseProcessorOptions.message) {
+              errors.processorOptions = `${capitalize(
+                parseProcessorOptions.message,
+              )} at character ${parseProcessorOptions.position}.`;
+            }
+          }
+          return errors;
+        }}
         onSubmit={async (values, { setSubmitting }) => {
           const nangoMetadata: SalesforceNangoMetadata = {
             customFields: prepareFields(values.customFields),
@@ -164,13 +182,17 @@ export const SalesforceDatabaseSettings: FC<
               path: values.pathMapping,
             },
             metadataFields: prepareFields(values.metadataFields),
+            processorOptions: parseProcessorOptions(values.processorOptions),
           };
           await updateConfiguration(undefined, nangoMetadata, setSubmitting);
         }}
       >
         {({ isSubmitting, isValid }) => (
           <FormRoot>
-            <SalesforceSharedForm isSubmitting={isSubmitting} />
+            <SalesforceSharedForm
+              isSubmitting={isSubmitting}
+              forceDisabled={forceDisabled}
+            />
             <Button
               className="mt-4 flex-none self-start"
               disabled={!isValid || forceDisabled}

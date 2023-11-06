@@ -13,8 +13,11 @@ import {
 import { NoAutoInput } from '@/components/ui/Input';
 import { NoAutoTextArea } from '@/components/ui/TextArea';
 
+import { ProcessorOptions } from './ProcessorOptions';
+
 type SalesforceSharedFormProps = {
   isSubmitting: boolean;
+  forceDisabled?: boolean;
 };
 
 export interface SalesforceNangoMetadata {
@@ -34,6 +37,7 @@ export const prepareFields = (input: string) => {
 
 export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
   isSubmitting,
+  forceDisabled,
 }) => {
   return (
     <>
@@ -120,6 +124,10 @@ export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
         textAreaSize="sm"
         as={NoAutoTextArea}
         disabled={isSubmitting}
+      />
+      <ProcessorOptions
+        isSubmitting={isSubmitting}
+        forceDisabled={forceDisabled}
       />
     </>
   );

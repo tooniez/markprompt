@@ -30,6 +30,8 @@ import { parseProcessorOptions } from '@/lib/schema';
 import { capitalize, toNormalizedUrl } from '@/lib/utils';
 import { DbSource, NangoSourceDataType, Project } from '@/types/types';
 
+import { ProcessorOptions } from './ProcessorOptions';
+
 type WebsitePagesSettingsProps = {
   projectId: Project['id'];
   source: DbSource | undefined;
@@ -178,9 +180,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
         validate={async (values) => {
           const errors: FormikErrors<FormikValues> = {};
           if (values.processorOptions) {
-            const parsedConfig = parseProcessorOptions(
-              values.processorOptions as string,
-            );
+            const parsedConfig = parseProcessorOptions(values.processorOptions);
             if (!parsedConfig && parseProcessorOptions.message) {
               errors.processorOptions = `${capitalize(
                 parseProcessorOptions.message,
@@ -190,16 +190,13 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
           return errors;
         }}
         onSubmit={async (values, { setSubmitting }) => {
-          const processorOptions = parseProcessorOptions(
-            values.processorOptions as string,
-          );
           const newNangoMetadata: Partial<WebsitePagesNangoMetadata> = {
             includeRegexes: toRegexpList(values.includeRegexes),
             excludeRegexes: toRegexpList(values.excludeRegexes),
             requestHeaders: values.requestHeaders,
             targetSelectors: values.targetSelectors,
             excludeSelectors: values.excludeSelectors,
-            processorOptions: processorOptions,
+            processorOptions: parseProcessorOptions(values.processorOptions),
           };
           await updateSourceData(
             { nangoMetadata: newNangoMetadata },
@@ -208,7 +205,6 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
         }}
       >
         {({ values, isSubmitting, isValid, setFieldValue }) => {
-          const baseUrlRegexp = toNormalizedUrl(baseUrl).replace(/\//gi, '\\/');
           return (
             <FormRoot>
               <FormHeadingGroup>
@@ -273,7 +269,11 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                   }}
                 />
               </FormField>
-              <FormHeadingGroup>
+              <ProcessorOptions
+                isSubmitting={isSubmitting}
+                forceDisabled={forceDisabled}
+              />
+              {/* <FormHeadingGroup>
                 <FormHeading>Content processing</FormHeading>
                 <FormSubHeading learnMoreHref="https://markprompt.com/docs#configuration">
                   Specify rules to process your content, such as link or image
@@ -281,7 +281,6 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                 </FormSubHeading>
               </FormHeadingGroup>
               <FormField>
-                <FormLabel>Headers</FormLabel>
                 <Field
                   className="h-[120px] flex-grow font-mono text-xs"
                   type="text"
@@ -290,7 +289,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                   as={NoAutoTextArea}
                   disabled={isSubmitting || forceDisabled}
                 />
-              </FormField>
+              </FormField> */}
               {/* <FormHeadingGroup>
                 <FormHeading>Content targets</FormHeading>
                 <FormSubHeading>

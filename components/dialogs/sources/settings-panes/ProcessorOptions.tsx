@@ -1,53 +1,41 @@
-import {
-  ErrorMessage,
-  Field,
-  Form,
-  Formik,
-  FormikErrors,
-  FormikValues,
-} from 'formik';
+import { Field } from 'formik';
 import { FC } from 'react';
-import { toast } from 'sonner';
 
-import Button from '@/components/ui/Button';
 import {
-  ErrorLabel,
   FormField,
-  FormLabel,
-  FormRoot,
+  FormHeading,
+  FormHeadingGroup,
+  FormSubHeading,
 } from '@/components/ui/Forms';
 import { NoAutoTextArea } from '@/components/ui/TextArea';
-import { MarkdownProcessorOptions } from '@/lib/schema';
 
 type ProcessorOptionsProps = {
-  processorOptions?: MarkdownProcessorOptions;
-  isValid: boolean;
   isSubmitting: boolean;
-  forceDisabled: boolean;
-  onChanged: (processorOptions: MarkdownProcessorOptions) => void;
+  forceDisabled?: boolean;
 };
 
 export const ProcessorOptions: FC<ProcessorOptionsProps> = ({
-  processorOptions,
-  isValid,
   isSubmitting,
   forceDisabled,
-  onChanged,
 }) => {
   return (
     <>
+      <FormHeadingGroup>
+        <FormHeading>Content processing</FormHeading>
+        <FormSubHeading learnMoreHref="https://markprompt.com/docs#configuration">
+          Specify rules to process your content, such as link or image source
+          transformations.
+        </FormSubHeading>
+      </FormHeadingGroup>
       <FormField>
-        <FormLabel>Name</FormLabel>
         <Field
           className="h-[120px] flex-grow font-mono text-xs"
           type="text"
-          name="metadataFields"
-          placeholder={`Example: Id, Language`}
+          name="processorOptions"
           textAreaSize="sm"
           as={NoAutoTextArea}
-          disabled={isSubmitting}
+          disabled={isSubmitting || forceDisabled}
         />
-        <ErrorMessage name="name" component={ErrorLabel} />
       </FormField>
     </>
   );

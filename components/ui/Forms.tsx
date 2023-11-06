@@ -40,22 +40,24 @@ export const FormSubHeading = ({
   children: ReactNode;
   learnMoreHref?: string;
 }) => {
-  if (learnMoreHref) {
-    return (
-      <div className="FormSubheading">
-        {children}
-        <a
-          className="subtle-underline"
-          href={learnMoreHref}
-          rel="noreferrer"
-          target="_blank"
-        >
-          Learn more
-        </a>
-      </div>
-    );
-  }
-  return <div className="FormSubheading">{children}</div>;
+  return (
+    <div className="FormSubheading">
+      {children}
+      {learnMoreHref && (
+        <>
+          {' '}
+          <a
+            className="subtle-underline"
+            href={learnMoreHref}
+            rel="noreferrer"
+            target="_blank"
+          >
+            Learn more
+          </a>
+        </>
+      )}
+    </div>
+  );
 };
 
 export const FormLabel = ({
