@@ -8,7 +8,8 @@ import {
   useEffect,
 } from 'react';
 
-import { initUserData } from '../api';
+import { initUserData, updateUser } from '../api';
+import useOnboarding from '../hooks/use-onboarding';
 import useProjects from '../hooks/use-projects';
 import useTeam from '../hooks/use-team';
 import useTeams from '../hooks/use-teams';
@@ -30,7 +31,8 @@ const initialContextState: State = {
 const AppContextProvider = (props: PropsWithChildren) => {
   const router = useRouter();
   const session = useSession();
-  const { user, loading: loadingUser } = useUser();
+
+  const { user, loading: loadingUser, mutate: mutateUser } = useUser();
   const { teams, loading: loadingTeams, mutate: mutateTeams } = useTeams();
   const { team } = useTeam();
   const { projects, mutate: mutateProjects } = useProjects();
@@ -47,16 +49,24 @@ const AppContextProvider = (props: PropsWithChildren) => {
       return;
     }
 
-    if (!user || loadingTeams) {
+    if (!user || !session?.user || loadingTeams) {
       return;
     }
 
     (async () => {
       const team = teams?.find((t) => t.is_personal);
       if (!team) {
-        await initUserData();
+        const { project, team: newTeam } = await initUserData();
         await mutateTeams();
         await mutateProjects();
+        await updateUser({ has_completed_onboarding: true });
+        await mutateUser();
+        if (newTeam && project) {
+          Router.push({
+            pathname: '/[team]/[project]',
+            query: { team: newTeam.slug, project: project.slug },
+          });
+        }
       }
     })();
   }, [
@@ -65,6 +75,7 @@ const AppContextProvider = (props: PropsWithChildren) => {
     loadingTeams,
     session?.user,
     user,
+    mutateUser,
     mutateTeams,
     mutateProjects,
   ]);

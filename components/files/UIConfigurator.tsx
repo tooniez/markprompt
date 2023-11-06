@@ -1,9 +1,8 @@
-import * as Accordion from '@radix-ui/react-accordion';
 import * as Switch from '@radix-ui/react-switch';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
-import { ExternalLinkIcon, Sparkles } from 'lucide-react';
+import { ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
-import { ChangeEvent, FC, useEffect, useMemo } from 'react';
+import { ChangeEvent, FC, useMemo } from 'react';
 
 import { useConfigContext } from '@/lib/context/config';
 import emitter, { EVENT_OPEN_PLAN_PICKER_DIALOG } from '@/lib/events';
@@ -17,13 +16,12 @@ import { Theme, ThemeColorKeys, ThemeColors } from '@/lib/themes';
 import { SerializableMarkpromptOptions } from '@/types/types';
 
 import { LayoutPicker } from './LayoutPicker';
-import { Row } from './PlaygroundDashboard';
 import { SearchProviderConfig } from './SearchProviderConfig';
 import { ThemePicker } from './ThemePicker';
-import { AccordionContent, AccordionTrigger } from '../ui/Accordion';
 import { ButtonOrLinkWrapper } from '../ui/Button';
 import ColorPickerInput from '../ui/ColorPickerInput';
 import Input from '../ui/Input';
+import { Row } from '../ui/Row';
 import { Tag } from '../ui/Tag';
 
 type ThemeColorPickerProps = {

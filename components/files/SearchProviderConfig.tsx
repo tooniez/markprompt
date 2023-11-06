@@ -7,8 +7,8 @@ import { ChangeEvent, FC } from 'react';
 import { useConfigContext } from '@/lib/context/config';
 import { safeParseJSON } from '@/lib/utils.nodeps';
 
-import { Row } from './PlaygroundDashboard';
 import Input from '../ui/Input';
+import { Row } from '../ui/Row';
 import { SelectItem } from '../ui/Select';
 import { NoAutoTextArea } from '../ui/TextArea';
 

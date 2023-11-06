@@ -4,13 +4,8 @@ import { SearchIcon } from 'lucide-react';
 import Link from 'next/link';
 import { FC } from 'react';
 
-import { useAppContext } from '@/lib/context/app';
-import useOnboarding from '@/lib/hooks/use-onboarding';
-import useUser from '@/lib/hooks/use-user';
-
 import { MarkpromptIcon } from '../icons/Markprompt';
 import { TeamProjectPicker } from '../team/TeamProjectPicker';
-import Button from '../ui/Button';
 import { DocsPrompt } from '../ui/DocsPrompt';
 import { ContactWindow } from '../user/ChatWindow';
 import ProfileMenu from '../user/ProfileMenu';
@@ -20,10 +15,6 @@ type AppNavbarProps = {
 };
 
 export const AppNavbar: FC<AppNavbarProps> = ({ animated }) => {
-  const { user, loading: loadingUser } = useUser();
-  const { finishOnboarding } = useOnboarding();
-  const { didCompleteFirstQuery } = useAppContext();
-
   return (
     <div
       className={cn(

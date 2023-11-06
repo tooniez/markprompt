@@ -13,11 +13,11 @@ import useTeam from '@/lib/hooks/use-team';
 import { canConfigureModel } from '@/lib/stripe/tiers';
 
 import { ModelPicker } from './ModelPicker';
-import { Row } from './PlaygroundDashboard';
 import { SystemPromptPicker } from './SystemPromptPicker';
 import { UpgradeNote } from './UpgradeNote';
 import { AccordionContent, AccordionTrigger } from '../ui/Accordion';
 import Button, { ButtonOrLinkWrapper } from '../ui/Button';
+import { Row } from '../ui/Row';
 import { SliderInput } from '../ui/SliderInput';
 import { Tag } from '../ui/Tag';
 import { NoAutoTextArea } from '../ui/TextArea';
