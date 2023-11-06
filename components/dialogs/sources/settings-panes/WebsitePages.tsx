@@ -26,7 +26,8 @@ import { setSourceData } from '@/lib/api';
 import useSources from '@/lib/hooks/use-sources';
 import { setMetadata } from '@/lib/integrations/nango.client';
 import { WebsitePagesNangoMetadata } from '@/lib/integrations/website';
-import { toNormalizedUrl } from '@/lib/utils';
+import { parseProcessorOptions } from '@/lib/schema';
+import { capitalize, toNormalizedUrl } from '@/lib/utils';
 import { DbSource, NangoSourceDataType, Project } from '@/types/types';
 
 type WebsitePagesSettingsProps = {
@@ -36,7 +37,7 @@ type WebsitePagesSettingsProps = {
   onDidCompletedOrSkip?: () => void;
 };
 
-const toGlobList = (text: string) => {
+const toRegexpList = (text: string) => {
   return text
     .split('\n')
     .map((url) => url.trim())
@@ -168,16 +169,37 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
           requestHeaders: nangoMetadata?.requestHeaders || [],
           targetSelectors: nangoMetadata?.targetSelectors || '',
           excludeSelectors: nangoMetadata?.excludeSelectors || '',
+          processorOptions: nangoMetadata?.processorOptions
+            ? JSON.stringify(nangoMetadata.processorOptions, null, 2)
+            : '',
         }}
         enableReinitialize
         validateOnMount
+        validate={async (values) => {
+          const errors: FormikErrors<FormikValues> = {};
+          if (values.processorOptions) {
+            const parsedConfig = parseProcessorOptions(
+              values.processorOptions as string,
+            );
+            if (!parsedConfig && parseProcessorOptions.message) {
+              errors.processorOptions = `${capitalize(
+                parseProcessorOptions.message,
+              )} at character ${parseProcessorOptions.position}.`;
+            }
+          }
+          return errors;
+        }}
         onSubmit={async (values, { setSubmitting }) => {
+          const processorOptions = parseProcessorOptions(
+            values.processorOptions as string,
+          );
           const newNangoMetadata: Partial<WebsitePagesNangoMetadata> = {
-            includeRegexes: toGlobList(values.includeRegexes),
-            excludeRegexes: toGlobList(values.excludeRegexes),
+            includeRegexes: toRegexpList(values.includeRegexes),
+            excludeRegexes: toRegexpList(values.excludeRegexes),
             requestHeaders: values.requestHeaders,
             targetSelectors: values.targetSelectors,
             excludeSelectors: values.excludeSelectors,
+            processorOptions: processorOptions,
           };
           await updateSourceData(
             { nangoMetadata: newNangoMetadata },
@@ -249,6 +271,24 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                   onRecordsChanged={(records) => {
                     setFieldValue('requestHeaders', records);
                   }}
+                />
+              </FormField>
+              <FormHeadingGroup>
+                <FormHeading>Content processing</FormHeading>
+                <FormSubHeading learnMoreHref="https://markprompt.com/docs#configuration">
+                  Specify rules to process your content, such as link or image
+                  source transformations.
+                </FormSubHeading>
+              </FormHeadingGroup>
+              <FormField>
+                <FormLabel>Headers</FormLabel>
+                <Field
+                  className="h-[120px] flex-grow font-mono text-xs"
+                  type="text"
+                  name="processorOptions"
+                  textAreaSize="sm"
+                  as={NoAutoTextArea}
+                  disabled={isSubmitting || forceDisabled}
                 />
               </FormField>
               {/* <FormHeadingGroup>
