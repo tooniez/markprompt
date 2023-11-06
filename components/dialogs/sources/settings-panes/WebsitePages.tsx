@@ -251,7 +251,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                   }}
                 />
               </FormField>
-              <FormHeadingGroup>
+              {/* <FormHeadingGroup>
                 <FormHeading>Content targets</FormHeading>
                 <FormSubHeading>
                   Specify which parts of the page to include or exclude, using
@@ -289,7 +289,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                   as={NoAutoInput}
                   disabled={isSubmitting || forceDisabled}
                 />
-              </FormField>
+              </FormField> */}
               <Button
                 className="mt-4 flex-none self-start"
                 disabled={!isValid || forceDisabled}

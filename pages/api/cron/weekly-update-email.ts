@@ -23,7 +23,6 @@ import {
 } from '@/lib/utils';
 import { Database } from '@/types/supabase';
 import {
-  CompletionsAllowances,
   DbTeam,
   DbUser,
   Project,

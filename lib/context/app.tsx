@@ -7,6 +7,7 @@ import {
   useContext,
   useEffect,
 } from 'react';
+import { toast } from 'sonner';
 
 import { initUserData, updateUser } from '../api';
 import useOnboarding from '../hooks/use-onboarding';
@@ -53,7 +54,7 @@ const AppContextProvider = (props: PropsWithChildren) => {
       return;
     }
 
-    (async () => {
+    const setupUser = async () => {
       const team = teams?.find((t) => t.is_personal);
       if (!team) {
         const { project, team: newTeam } = await initUserData();
@@ -68,7 +69,15 @@ const AppContextProvider = (props: PropsWithChildren) => {
           });
         }
       }
-    })();
+    };
+
+    toast.promise(setupUser, {
+      loading: 'Setting up your account...',
+      success: () => {
+        return 'Account has been set up. Redirecting you to your starter project.';
+      },
+      error: 'Error setting up your account',
+    });
   }, [
     teams,
     team,
