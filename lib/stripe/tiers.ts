@@ -399,6 +399,8 @@ const getPriceFactor = (
       return type === 'output' ? 1 : 0.5;
     case 'gpt-4-32k':
       return type === 'output' ? 2 : 1;
+    case 'gpt-4-1106-preview':
+      return type === 'output' ? 0.5 : 1 / 3;
     case 'gpt-3.5-turbo':
       return type === 'output' ? 1 / 30 : 1 / 40;
   }
