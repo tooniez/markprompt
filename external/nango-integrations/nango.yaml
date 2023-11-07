@@ -3,7 +3,7 @@ integrations:
   salesforce:
     salesforce-articles:
       type: sync
-      runs: every day
+      runs: every week
       auto_start: false
       returns:
         - NangoFile
@@ -11,21 +11,21 @@ integrations:
   salesforce-sandbox:
     salesforce-articles:
       type: sync
-      runs: every day
+      runs: every week
       auto_start: false
       returns:
         - NangoFile
   salesforce-knowledge:
     salesforce-knowledge:
       type: sync
-      runs: every day
+      runs: every week
       auto_start: false
       returns:
         - NangoFile
   salesforce-knowledge-sandbox:
     salesforce-knowledge-sandbox:
       type: sync
-      runs: every day
+      runs: every week
       track_deletes: true
       auto_start: false
       returns:
@@ -33,7 +33,7 @@ integrations:
   salesforce-case:
     salesforce-case:
       type: sync
-      runs: every day
+      runs: every week
       track_deletes: true
       auto_start: false
       returns:
@@ -41,7 +41,7 @@ integrations:
   salesforce-case-sandbox:
     salesforce-case-sandbox:
       type: sync
-      runs: every day
+      runs: every week
       track_deletes: true
       auto_start: false
       returns:
@@ -49,7 +49,7 @@ integrations:
   notion-pages:
     notion-pages:
       type: sync
-      runs: every day
+      runs: every week
       track_deletes: true
       auto_start: false
       returns:
