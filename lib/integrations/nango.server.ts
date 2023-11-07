@@ -15,7 +15,6 @@ export const getNangoServerInstance = () => {
   });
 };
 
-// Currently, we use the source ID as connection ID.
 export const getSourceId = async (
   supabase: SupabaseClient<Database>,
   connectionId: string,
@@ -27,4 +26,20 @@ export const getSourceId = async (
     .limit(1)
     .maybeSingle();
   return data?.id;
+};
+
+export const getSourceIdAndData = async (
+  supabase: SupabaseClient<Database>,
+  connectionId: string,
+): Promise<Pick<DbSource, 'id' | 'data'> | undefined> => {
+  const { data } = await supabase
+    .from('sources')
+    .select('id,data')
+    .eq('data->>connectionId', connectionId)
+    .limit(1)
+    .maybeSingle();
+  if (!data) {
+    return undefined;
+  }
+  return { id: data.id, data: data.data };
 };

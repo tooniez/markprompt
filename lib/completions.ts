@@ -26,7 +26,6 @@ import {
   InsightsType,
   getNormalizedTokenCountForModelUsageInfos,
 } from './stripe/tiers';
-import { stringToLLMInfo } from './utils';
 import {
   byteSize,
   getChatCompletionsResponseText,

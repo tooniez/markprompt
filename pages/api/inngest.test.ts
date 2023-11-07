@@ -13,7 +13,6 @@ import {
   vi,
 } from 'vitest';
 
-import { getSourceId } from '@/lib/integrations/nango.server';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import { DbFile, FileSections, NangoFileWithMetadata } from '@/types/types';
 

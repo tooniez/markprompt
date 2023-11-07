@@ -1,4 +1,5 @@
 import { NangoSyncWebhookBody } from '@nangohq/node';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { EventSchemas, Inngest } from 'inngest';
 import { serve } from 'inngest/next';
 import { isEqual } from 'lodash-es';
@@ -12,13 +13,15 @@ import {
 import { bulkCreateSectionEmbeddings } from '@/lib/file-processing';
 import {
   getNangoServerInstance,
-  getSourceId,
+  getSourceIdAndData,
 } from '@/lib/integrations/nango.server';
 import {
   convertToMarkdown,
   extractMeta,
   splitIntoSections,
 } from '@/lib/markdown';
+import { RemarkImageSourceRewriteOptions } from '@/lib/remark/remark-image-source-rewrite';
+import { RemarkLinkRewriteOptions } from '@/lib/remark/remark-link-rewrite';
 import { MarkdownProcessorOptions } from '@/lib/schema';
 import {
   createServiceRoleSupabaseClient,
@@ -33,7 +36,7 @@ import {
   getFilesIdAndCheksumBySourceAndNangoId,
 } from '@/lib/supabase';
 import { createChecksum, pluralize } from '@/lib/utils';
-import { Json } from '@/types/supabase';
+import { Database, Json } from '@/types/supabase';
 import {
   DbFileMetaChecksum,
   DbSource,
@@ -83,15 +86,18 @@ const syncNangoRecords = inngest.createFunction(
   async ({ event, step }) => {
     const supabase = createServiceRoleSupabaseClient();
 
-    const sourceId = await getSourceId(supabase, event.data.connectionId);
+    const sourceInfo = await getSourceIdAndData(
+      supabase,
+      event.data.connectionId,
+    );
 
-    if (!sourceId) {
+    if (!sourceInfo) {
       return { updated: 0, deleted: 0 };
     }
 
     const syncQueueId = await getOrCreateRunningSyncQueueForSource(
       supabase,
-      sourceId,
+      sourceInfo.id,
     );
 
     const recordIncludingErrors = (await nango.getRecords<any>({
@@ -118,7 +124,7 @@ const syncNangoRecords = inngest.createFunction(
       });
     }
 
-    const projectId = await getProjectIdFromSource(supabase, sourceId);
+    const projectId = await getProjectIdFromSource(supabase, sourceInfo.id);
 
     if (!projectId) {
       await updateSyncQueue(supabase, syncQueueId, 'errored', {
@@ -139,12 +145,15 @@ const syncNangoRecords = inngest.createFunction(
     // Files to delete
     await step.sendEvent('delete-files', {
       name: 'markprompt/files.delete',
-      data: { ids: filesIdsToDelete, sourceId },
+      data: { ids: filesIdsToDelete, sourceId: sourceInfo.id },
     });
 
     // Train added/updated files
 
-    const projectConfigData = await getProjectConfigData(supabase, projectId);
+    const processorOptions =
+      (sourceInfo.data as any)?.processorOptions ||
+      (await getProjectConfigData(supabase, projectId)).markpromptConfig
+        .processorOptions;
 
     const trainEvents = records
       .filter((record) => {
@@ -158,10 +167,9 @@ const syncNangoRecords = inngest.createFunction(
           name: 'markprompt/file.train',
           data: {
             file: record,
-            sourceId,
+            sourceId: sourceInfo.id,
             projectId,
-            processorOptions:
-              projectConfigData.markpromptConfig.processorOptions,
+            processorOptions,
           },
         };
       });
