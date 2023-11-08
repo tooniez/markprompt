@@ -675,8 +675,11 @@ export const getFullURLForPath = (source: Source, path: string) => {
     }
     case 'nango': {
       const data = source.data as NangoSourceDataType;
-      if (data.integrationId === 'notion-pages') {
-        return toNormalizedUrl(path);
+      switch (data.integrationId) {
+        case 'notion-pages':
+          return toNormalizedUrl(path);
+        case 'website-pages':
+          return toNormalizedUrl(path);
       }
       return undefined;
     }

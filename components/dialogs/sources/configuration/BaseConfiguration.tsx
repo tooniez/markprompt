@@ -94,7 +94,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
     ?.instance_url;
 
   // Proper to integrations like unauthed websites
-  const baseUrl = (source?.data as NangoSourceDataType)?.nangoMetadata?.baseUrl;
+  const baseUrl = (source?.data as NangoSourceDataType)?.syncMetadata?.baseUrl;
 
   return (
     <SourceDialog

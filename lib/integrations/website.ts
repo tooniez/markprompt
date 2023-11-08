@@ -8,7 +8,7 @@ import { removeTrailingSlashQueryParamsAndHash } from '../utils';
 
 export type RequestHeader = { key: string; value: string };
 
-export type WebsitePagesNangoMetadata = {
+export type WebsitePagesSyncMetadata = {
   baseUrl: string;
   includeRegexes?: string[];
   excludeRegexes?: string[];

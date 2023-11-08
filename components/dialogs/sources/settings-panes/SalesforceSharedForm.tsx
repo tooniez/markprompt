@@ -20,7 +20,7 @@ type SalesforceSharedFormProps = {
   forceDisabled?: boolean;
 };
 
-export interface SalesforceNangoMetadata {
+export interface SalesforceSyncMetadata {
   customFields: string[];
   filters: string;
   mappings: {

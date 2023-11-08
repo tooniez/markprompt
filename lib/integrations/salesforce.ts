@@ -5,7 +5,7 @@ import { MarkdownProcessorOptions } from '../schema';
 export type SalesforceEnvironment = 'production' | 'sandbox';
 export type SalesforceDatabaseType = 'knowledge' | 'case';
 
-export type SalesforceNangoMetadata = {
+export type SalesforceSyncMetadata = {
   customFields: string[] | undefined;
   filters: string | undefined;
   mappings: {

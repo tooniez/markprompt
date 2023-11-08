@@ -20,7 +20,7 @@ import { NoAutoInput } from '@/components/ui/Input';
 import { setSourceData } from '@/lib/api';
 import useSources from '@/lib/hooks/use-sources';
 import { setMetadata } from '@/lib/integrations/nango.client';
-import { SalesforceNangoMetadata } from '@/lib/integrations/salesforce';
+import { SalesforceSyncMetadata } from '@/lib/integrations/salesforce';
 import { parseProcessorOptions } from '@/lib/schema';
 import { capitalize } from '@/lib/utils';
 import { DbSource, NangoSourceDataType, Project } from '@/types/types';
@@ -40,12 +40,12 @@ export const SalesforceDatabaseSettings: FC<
   const { mutate: mutateSources, isNameAvailable } = useSources();
 
   const sourceData = source?.data as NangoSourceDataType | undefined;
-  const nangoMetadata = sourceData?.nangoMetadata as SalesforceNangoMetadata;
+  const syncMetadata = sourceData?.syncMetadata as SalesforceSyncMetadata;
 
   const updateConfiguration = useCallback(
     async (
       newData: any | undefined,
-      nangoMetadata: SalesforceNangoMetadata | undefined,
+      syncMetadata: SalesforceSyncMetadata | undefined,
       setSubmitting: (submitting: boolean) => void,
     ) => {
       if (
@@ -62,15 +62,15 @@ export const SalesforceDatabaseSettings: FC<
       await setSourceData(projectId, source.id, {
         ...(source.data as any),
         ...newData,
-        ...(nangoMetadata ? { nangoMetadata } : {}),
+        ...(syncMetadata ? { syncMetadata } : {}),
       });
 
-      if (nangoMetadata) {
+      if (syncMetadata) {
         await setMetadata(
           projectId,
           sourceData.integrationId,
           sourceData.connectionId,
-          nangoMetadata,
+          syncMetadata,
         );
       }
 
@@ -148,14 +148,14 @@ export const SalesforceDatabaseSettings: FC<
       <div className="h-8" />
       <Formik
         initialValues={{
-          customFields: nangoMetadata?.customFields?.join(', ') || '',
-          filters: nangoMetadata?.filters || '',
-          titleMapping: nangoMetadata?.mappings?.title || '',
-          contentMapping: nangoMetadata?.mappings?.content || '',
-          pathMapping: nangoMetadata?.mappings?.path || '',
-          metadataFields: nangoMetadata?.metadataFields?.join(', ') || '',
-          processorOptions: nangoMetadata?.processorOptions
-            ? JSON.stringify(nangoMetadata.processorOptions, null, 2)
+          customFields: syncMetadata?.customFields?.join(', ') || '',
+          filters: syncMetadata?.filters || '',
+          titleMapping: syncMetadata?.mappings?.title || '',
+          contentMapping: syncMetadata?.mappings?.content || '',
+          pathMapping: syncMetadata?.mappings?.path || '',
+          metadataFields: syncMetadata?.metadataFields?.join(', ') || '',
+          processorOptions: syncMetadata?.processorOptions
+            ? JSON.stringify(syncMetadata.processorOptions, null, 2)
             : '',
         }}
         enableReinitialize
@@ -173,7 +173,7 @@ export const SalesforceDatabaseSettings: FC<
           return errors;
         }}
         onSubmit={async (values, { setSubmitting }) => {
-          const nangoMetadata: SalesforceNangoMetadata = {
+          const syncMetadata: SalesforceSyncMetadata = {
             customFields: prepareFields(values.customFields),
             filters: values.filters,
             mappings: {
@@ -184,7 +184,7 @@ export const SalesforceDatabaseSettings: FC<
             metadataFields: prepareFields(values.metadataFields),
             processorOptions: parseProcessorOptions(values.processorOptions),
           };
-          await updateConfiguration(undefined, nangoMetadata, setSubmitting);
+          await updateConfiguration(undefined, syncMetadata, setSubmitting);
         }}
       >
         {({ isSubmitting, isValid }) => (

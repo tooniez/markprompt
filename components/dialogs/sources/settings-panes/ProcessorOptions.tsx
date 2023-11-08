@@ -29,7 +29,7 @@ export const ProcessorOptions: FC<ProcessorOptionsProps> = ({
       </FormHeadingGroup>
       <FormField>
         <Field
-          className="h-[120px] flex-grow font-mono text-xs"
+          className="h-[200px] flex-grow font-mono text-xs"
           type="text"
           name="processorOptions"
           textAreaSize="sm"

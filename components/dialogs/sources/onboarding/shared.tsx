@@ -16,7 +16,7 @@ export const addSourceAndNangoConnection = async (
   integrationId: NangoIntegrationId,
   name: string,
   nangoConnectionConfigParams: Record<string, string> | undefined,
-  nangoMetadata: Record<string, string> | undefined,
+  syncMetadata: Record<string, string> | undefined,
   authed: boolean,
 ): Promise<DbSource | undefined> => {
   // Create the Nango connection. Note that nango.yaml specifies
@@ -42,15 +42,15 @@ export const addSourceAndNangoConnection = async (
       connectionId,
       name,
       connectionConfig: nangoConnectionConfigParams,
-      nangoMetadata,
+      syncMetadata,
     });
 
     if (!newSource.id) {
       throw new Error('Unable to create source');
     }
 
-    if (nangoMetadata) {
-      await setMetadata(projectId, integrationId, connectionId, nangoMetadata);
+    if (syncMetadata) {
+      await setMetadata(projectId, integrationId, connectionId, syncMetadata);
     }
 
     return newSource;

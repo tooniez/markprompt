@@ -86,18 +86,18 @@ const syncNangoRecords = inngest.createFunction(
   async ({ event, step }) => {
     const supabase = createServiceRoleSupabaseClient();
 
-    const sourceInfo = await getSourceIdAndData(
+    const sourceIdAndData = await getSourceIdAndData(
       supabase,
       event.data.connectionId,
     );
 
-    if (!sourceInfo) {
+    if (!sourceIdAndData) {
       return { updated: 0, deleted: 0 };
     }
 
     const syncQueueId = await getOrCreateRunningSyncQueueForSource(
       supabase,
-      sourceInfo.id,
+      sourceIdAndData.id,
     );
 
     const recordIncludingErrors = (await nango.getRecords<any>({
@@ -124,7 +124,10 @@ const syncNangoRecords = inngest.createFunction(
       });
     }
 
-    const projectId = await getProjectIdFromSource(supabase, sourceInfo.id);
+    const projectId = await getProjectIdFromSource(
+      supabase,
+      sourceIdAndData.id,
+    );
 
     if (!projectId) {
       await updateSyncQueue(supabase, syncQueueId, 'errored', {
@@ -145,16 +148,17 @@ const syncNangoRecords = inngest.createFunction(
     // Files to delete
     await step.sendEvent('delete-files', {
       name: 'markprompt/files.delete',
-      data: { ids: filesIdsToDelete, sourceId: sourceInfo.id },
+      data: { ids: filesIdsToDelete, sourceId: sourceIdAndData.id },
     });
 
     // Train added/updated files
 
     const processorOptions =
-      (sourceInfo.data as any)?.processorOptions ||
+      (sourceIdAndData.data as any)?.syncMetadata?.processorOptions ||
       (await getProjectConfigData(supabase, projectId)).markpromptConfig
         .processorOptions;
 
+    console.log('processorOptions', JSON.stringify(processorOptions, null, 2));
     const trainEvents = records
       .filter((record) => {
         return (
@@ -167,7 +171,7 @@ const syncNangoRecords = inngest.createFunction(
           name: 'markprompt/file.train',
           data: {
             file: record,
-            sourceId: sourceInfo.id,
+            sourceId: sourceIdAndData.id,
             projectId,
             processorOptions,
           },

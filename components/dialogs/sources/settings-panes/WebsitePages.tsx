@@ -25,9 +25,9 @@ import { NoAutoTextArea } from '@/components/ui/TextArea';
 import { setSourceData } from '@/lib/api';
 import useSources from '@/lib/hooks/use-sources';
 import { setMetadata } from '@/lib/integrations/nango.client';
-import { WebsitePagesNangoMetadata } from '@/lib/integrations/website';
+import { WebsitePagesSyncMetadata } from '@/lib/integrations/website';
 import { parseProcessorOptions } from '@/lib/schema';
-import { capitalize, toNormalizedUrl } from '@/lib/utils';
+import { capitalize } from '@/lib/utils';
 import { DbSource, NangoSourceDataType, Project } from '@/types/types';
 
 import { ProcessorOptions } from './ProcessorOptions';
@@ -55,8 +55,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
   const { mutate: mutateSources, isNameAvailable } = useSources();
 
   const sourceData = source?.data as NangoSourceDataType | undefined;
-  const nangoMetadata = sourceData?.nangoMetadata as WebsitePagesNangoMetadata;
-  const baseUrl = nangoMetadata?.baseUrl || '';
+  const syncMetadata = sourceData?.syncMetadata as WebsitePagesSyncMetadata;
 
   const updateSourceData = useCallback(
     async (
@@ -77,20 +76,20 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
       await setSourceData(projectId, source.id, {
         ...(source.data as any),
         ...newSourceData,
-        nangoMetadata: {
-          ...nangoMetadata,
-          ...newSourceData.nangoMetadata,
+        syncMetadata: {
+          ...syncMetadata,
+          ...newSourceData.syncMetadata,
         },
       });
 
-      if (newSourceData?.nangoMetadata) {
+      if (newSourceData?.syncMetadata) {
         await setMetadata(
           projectId,
           sourceData.integrationId,
           sourceData.connectionId,
           {
-            ...nangoMetadata,
-            ...newSourceData?.nangoMetadata,
+            ...syncMetadata,
+            ...newSourceData?.syncMetadata,
           },
         );
       }
@@ -102,7 +101,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
     },
     [
       mutateSources,
-      nangoMetadata,
+      syncMetadata,
       onDidCompletedOrSkip,
       projectId,
       source,
@@ -166,13 +165,13 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
       <div className="h-8" />
       <Formik
         initialValues={{
-          includeRegexes: nangoMetadata?.includeRegexes?.join('\n') || '',
-          excludeRegexes: nangoMetadata?.excludeRegexes?.join('\n') || '',
-          requestHeaders: nangoMetadata?.requestHeaders || [],
-          targetSelectors: nangoMetadata?.targetSelectors || '',
-          excludeSelectors: nangoMetadata?.excludeSelectors || '',
-          processorOptions: nangoMetadata?.processorOptions
-            ? JSON.stringify(nangoMetadata.processorOptions, null, 2)
+          includeRegexes: syncMetadata?.includeRegexes?.join('\n') || '',
+          excludeRegexes: syncMetadata?.excludeRegexes?.join('\n') || '',
+          requestHeaders: syncMetadata?.requestHeaders || [],
+          targetSelectors: syncMetadata?.targetSelectors || '',
+          excludeSelectors: syncMetadata?.excludeSelectors || '',
+          processorOptions: syncMetadata?.processorOptions
+            ? JSON.stringify(syncMetadata.processorOptions, null, 2)
             : '',
         }}
         enableReinitialize
@@ -190,7 +189,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
           return errors;
         }}
         onSubmit={async (values, { setSubmitting }) => {
-          const newNangoMetadata: Partial<WebsitePagesNangoMetadata> = {
+          const newSyncMetadata: Partial<WebsitePagesSyncMetadata> = {
             includeRegexes: toRegexpList(values.includeRegexes),
             excludeRegexes: toRegexpList(values.excludeRegexes),
             requestHeaders: values.requestHeaders,
@@ -199,7 +198,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
             processorOptions: parseProcessorOptions(values.processorOptions),
           };
           await updateSourceData(
-            { nangoMetadata: newNangoMetadata },
+            { syncMetadata: newSyncMetadata },
             setSubmitting,
           );
         }}
@@ -273,23 +272,6 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                 isSubmitting={isSubmitting}
                 forceDisabled={forceDisabled}
               />
-              {/* <FormHeadingGroup>
-                <FormHeading>Content processing</FormHeading>
-                <FormSubHeading learnMoreHref="https://markprompt.com/docs#configuration">
-                  Specify rules to process your content, such as link or image
-                  source transformations.
-                </FormSubHeading>
-              </FormHeadingGroup>
-              <FormField>
-                <Field
-                  className="h-[120px] flex-grow font-mono text-xs"
-                  type="text"
-                  name="processorOptions"
-                  textAreaSize="sm"
-                  as={NoAutoTextArea}
-                  disabled={isSubmitting || forceDisabled}
-                />
-              </FormField> */}
               {/* <FormHeadingGroup>
                 <FormHeading>Content targets</FormHeading>
                 <FormSubHeading>

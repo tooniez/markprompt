@@ -219,7 +219,7 @@ export type NangoSourceDataType = {
     instance_url?: string;
     baseUrl?: string;
   };
-  nangoMetadata?: any;
+  syncMetadata?: any;
 };
 
 export type RobotsTxtInfo = { sitemap?: string; disallowedPaths: string[] };
