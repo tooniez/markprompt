@@ -14,7 +14,7 @@ import { ChevronsUpDown, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FC, useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import { createTeam } from '@/lib/api';
 import useProject from '@/lib/hooks/use-project';

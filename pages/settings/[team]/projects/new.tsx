@@ -7,7 +7,7 @@ import {
   FormikValues,
 } from 'formik';
 import { useRouter } from 'next/router';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import { TeamSettingsLayout } from '@/components/layouts/TeamSettingsLayout';
 import Button from '@/components/ui/Button';

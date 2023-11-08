@@ -120,7 +120,6 @@
     "react-day-picker": "^8.7.1",
     "react-dom": "^18.0.0",
     "react-dropzone": "^14.2.3",
-    "react-hot-toast": "^2.4.0",
     "react-markdown": "^8.0.7",
     "react-wrap-balancer": "^0.4.0",
     "remark": "^14.0.3",

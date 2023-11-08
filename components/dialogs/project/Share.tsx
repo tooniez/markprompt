@@ -2,7 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import cn from 'classnames';
 import { Link, RefreshCw } from 'lucide-react';
 import { ReactNode, useCallback, useEffect, useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import Button from '@/components/ui/Button';
 import { CTABar } from '@/components/ui/SettingsCard';

@@ -13,7 +13,7 @@ import { groupBy } from 'lodash-es';
 import { Package2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { FC, ReactNode, useMemo, useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import { GitHubIcon } from '@/components/icons/GitHub';
 import Button from '@/components/ui/Button';

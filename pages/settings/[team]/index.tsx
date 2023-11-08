@@ -11,7 +11,7 @@ import {
 } from 'formik';
 import Router, { useRouter } from 'next/router';
 import { useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import ConfirmDialog from '@/components/dialogs/Confirm';
 import { GitHubIcon } from '@/components/icons/GitHub';

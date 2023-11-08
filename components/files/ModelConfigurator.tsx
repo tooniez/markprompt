@@ -2,7 +2,7 @@ import * as Accordion from '@radix-ui/react-accordion';
 import { Info } from 'lucide-react';
 import Link from 'next/link';
 import { ChangeEvent, FC, useMemo } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import {
   isDefaultMarkpromptModelConfiguration,

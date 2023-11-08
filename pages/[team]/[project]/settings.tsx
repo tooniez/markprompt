@@ -12,7 +12,7 @@ import { Clipboard, X, Trash2, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import Router, { useRouter } from 'next/router';
 import { useCallback, useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import ConfirmDialog from '@/components/dialogs/Confirm';
 import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';

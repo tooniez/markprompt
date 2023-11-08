@@ -452,10 +452,6 @@ textarea {
   scrollbar-width: none;
 }
 
-.toast {
-  @apply flex select-none items-center rounded-md border border-neutral-900 bg-neutral-1000 px-3 py-1 text-center text-sm text-white backdrop-blur !important;
-}
-
 .loading-dots {
   @apply inline-flex items-center text-center leading-7;
 }

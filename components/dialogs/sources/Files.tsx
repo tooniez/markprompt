@@ -1,7 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import dynamic from 'next/dynamic';
 import { ReactNode } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import useUsage from '@/lib/hooks/use-usage';
 

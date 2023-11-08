@@ -10,7 +10,7 @@ import {
 } from 'formik';
 import { MessageSquare, X } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import emitter, { EVENT_OPEN_PROMPT, EVENT_OPEN_CONTACT } from '@/lib/events';
 import useSystemStatus from '@/lib/hooks/use-system-status';

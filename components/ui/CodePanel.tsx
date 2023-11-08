@@ -1,6 +1,6 @@
 import { Clipboard } from 'lucide-react';
 import { FC } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import { copyToClipboard } from '@/lib/utils';
 

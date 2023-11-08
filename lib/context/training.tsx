@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import colors from 'tailwindcss/colors';
 import { isPresent } from 'ts-is-present';
 
@@ -219,38 +219,38 @@ const TrainingContextProvider = (props: PropsWithChildren) => {
         ) {
           // If this is a quota exceeded error, throw anew in order to
           // stop the batch processing
-          toast(
-            (t) => (
-              <div className="flex w-full flex-row items-center gap-4">
-                <p className="p-2">
-                  You have reached the quota of indexed content on this plan.
-                </p>
-                <button
-                  className="whitespace-nowrap font-medium"
-                  onClick={() => {
-                    emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
-                    toast.dismiss(t.id);
-                  }}
-                  style={{
-                    // The .toast class needs to use the "!important"
-                    // flag, so we can only overwrite the text color
-                    // using a style prop.
-                    color: colors.sky['500'],
-                  }}
-                >
-                  Upgrade plan
-                </button>
-              </div>
-            ),
-            {
-              id: 'training-limit-reached',
-              duration: Infinity,
-              style: {
-                maxWidth: '400px',
-                width: '100%',
-              },
-            },
-          );
+          // toast(
+          //   (t) => (
+          //     <div className="flex w-full flex-row items-center gap-4">
+          //       <p className="p-2">
+          //         You have reached the quota of indexed content on this plan.
+          //       </p>
+          //       <button
+          //         className="whitespace-nowrap font-medium"
+          //         onClick={() => {
+          //           emitter.emit(EVENT_OPEN_PLAN_PICKER_DIALOG);
+          //           toast.dismiss(t.id);
+          //         }}
+          //         style={{
+          //           // The .toast class needs to use the "!important"
+          //           // flag, so we can only overwrite the text color
+          //           // using a style prop.
+          //           color: colors.sky['500'],
+          //         }}
+          //       >
+          //         Upgrade plan
+          //       </button>
+          //     </div>
+          //   ),
+          //   {
+          //     id: 'training-limit-reached',
+          //     duration: Infinity,
+          //     style: {
+          //       maxWidth: '400px',
+          //       width: '100%',
+          //     },
+          //   },
+          // );
           onFileProcessed?.(path);
           setState({ state: 'idle' });
           throw e;

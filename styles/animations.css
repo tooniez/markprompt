@@ -126,28 +126,6 @@
   }
 }
 
-@keyframes toast-enter {
-  0% {
-    opacity: 0;
-    transform: translateY(20%);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes toast-exit {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(20%);
-  }
-}
-
 @keyframes opacity {
   from {
     opacity: 0;
