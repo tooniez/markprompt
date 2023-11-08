@@ -2,7 +2,6 @@ import * as Dialog from '@radix-ui/react-dialog';
 import {
   ErrorMessage,
   Field,
-  Form,
   Formik,
   FormikErrors,
   FormikValues,
@@ -23,10 +22,7 @@ import useSources from '@/lib/hooks/use-sources';
 import { getNangoClientInstance } from '@/lib/integrations/nango.client';
 import { fetchPageContent } from '@/lib/integrations/website';
 import { extractMeta } from '@/lib/markdown';
-import {
-  addSchemaRemoveTrailingSlashAndHash,
-  toNormalizedUrl,
-} from '@/lib/utils';
+import { addSchemaRemoveTrailingSlashAndHash } from '@/lib/utils';
 import { guessShortNameFromTitle } from '@/lib/utils.nodeps';
 import { DbSource, Project } from '@/types/types';
 

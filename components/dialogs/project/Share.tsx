@@ -10,7 +10,6 @@ import { createPromptConfig } from '@/lib/api';
 import { useConfigContext } from '@/lib/context/config';
 import useProject from '@/lib/hooks/use-project';
 import usePromptConfigs from '@/lib/hooks/use-prompt-configs';
-import useTeam from '@/lib/hooks/use-team';
 import { copyToClipboard, generateShareKey } from '@/lib/utils';
 import { getAppOrigin, removeSchema } from '@/lib/utils.nodeps';
 
@@ -19,7 +18,6 @@ const getShareLink = (shareKey: string) => {
 };
 
 const Share = ({ children }: { children: ReactNode }) => {
-  const { team } = useTeam();
   const { project } = useProject();
   const { promptConfigs, mutate: mutatePromptConfigs } = usePromptConfigs();
   const [isGeneratingKey, setGeneratingKey] = useState(false);

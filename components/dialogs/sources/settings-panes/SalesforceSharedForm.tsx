@@ -31,10 +31,6 @@ export interface SalesforceSyncMetadata {
   metadataFields: string[];
 }
 
-export const prepareFields = (input: string) => {
-  return input.split(',').map((v) => v.trim());
-};
-
 export const SalesforceSharedForm: FC<SalesforceSharedFormProps> = ({
   isSubmitting,
   forceDisabled,

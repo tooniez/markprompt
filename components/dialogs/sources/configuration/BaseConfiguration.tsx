@@ -28,7 +28,8 @@ import {
   SourceConfigurationView,
 } from '@/types/types';
 
-import { SyncQueueLogs, getTagForSyncQueue } from './SyncQueueLogs';
+import { SyncQueueLogs } from './SyncQueueLogs';
+import { getTagForSyncQueue } from './utils';
 import SourceDialog from '../SourceDialog';
 
 const DeleteSourceDialog = dynamic(

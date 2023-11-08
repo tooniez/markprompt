@@ -2,22 +2,10 @@ import { parseISO } from 'date-fns';
 import { FC } from 'react';
 
 import { SkeletonTable } from '@/components/ui/Skeletons';
-import { Tag } from '@/components/ui/Tag';
 import { formatSystemDateTime } from '@/lib/date';
-import { DbSyncQueue, DbSyncQueueOverview } from '@/types/types';
+import { DbSyncQueue } from '@/types/types';
 
-export const getTagForSyncQueue = (status: DbSyncQueueOverview['status']) => {
-  switch (status) {
-    case 'complete':
-      return <Tag color="green">Synced</Tag>;
-    case 'canceled':
-      return <Tag color="orange">Canceled</Tag>;
-    case 'errored':
-      return <Tag color="red">Errored</Tag>;
-    case 'running':
-      return <Tag color="fuchsia">Syncing</Tag>;
-  }
-};
+import { getTagForSyncQueue } from './utils';
 
 type LogEntryProps = {
   syncQueue: DbSyncQueue;

@@ -10,7 +10,6 @@ import {
 import { toast } from 'sonner';
 
 import { initUserData, updateUser } from '../api';
-import useOnboarding from '../hooks/use-onboarding';
 import useProjects from '../hooks/use-projects';
 import useTeam from '../hooks/use-team';
 import useTeams from '../hooks/use-teams';

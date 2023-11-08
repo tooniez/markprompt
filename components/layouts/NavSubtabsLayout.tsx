@@ -2,8 +2,6 @@ import cn from 'classnames';
 import Head from 'next/head';
 import { FC, ReactNode } from 'react';
 
-import useUser from '@/lib/hooks/use-user';
-
 import { NavLayout } from './NavLayout';
 import SubTabs, { SubTabItem } from './SubTabs';
 

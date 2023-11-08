@@ -1,7 +1,6 @@
 import {
   ErrorMessage,
   Field,
-  Form,
   Formik,
   FormikErrors,
   FormikValues,
@@ -25,7 +24,8 @@ import { parseProcessorOptions } from '@/lib/schema';
 import { capitalize } from '@/lib/utils';
 import { DbSource, NangoSourceDataType, Project } from '@/types/types';
 
-import { SalesforceSharedForm, prepareFields } from './SalesforceSharedForm';
+import { SalesforceSharedForm } from './SalesforceSharedForm';
+import { prepareFields } from './utils';
 
 type SalesforceDatabaseSettingsProps = {
   projectId: Project['id'];

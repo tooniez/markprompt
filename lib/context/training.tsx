@@ -21,7 +21,6 @@ import {
   MotifSourceDataType,
   DbSource,
   WebsiteSourceDataType,
-  NangoSourceDataType,
 } from '@/types/types';
 
 import { processFile } from '../api';

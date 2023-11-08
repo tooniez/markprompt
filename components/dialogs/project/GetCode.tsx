@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { ReactNode, useState } from 'react';
 
 import Button from '@/components/ui/Button';
-import { CodePanel } from '@/components/ui/Code';
+import { CodePanel } from '@/components/ui/CodePanel';
 import { Note } from '@/components/ui/Note';
 import { MARKPROMPT_JS_PACKAGE_VERSIONS } from '@/lib/constants';
 import {
