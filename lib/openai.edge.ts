@@ -37,7 +37,7 @@ export const createEmbedding = async (
   byoOpenAIKey: string | undefined,
   modelId: OpenAIEmbeddingsModelId,
 ): Promise<CreateEmbeddingResponse | OpenAIErrorResponse> => {
-  return fetch('https://api.openai.com/v1/embeddings', {
+  const res = await fetch('https://api.openai.com/v1/embeddings', {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${byoOpenAIKey || process.env.OPENAI_API_KEY!}`,
@@ -47,5 +47,12 @@ export const createEmbedding = async (
       model: modelId,
       input: input.trim().replaceAll('\n', ' '),
     }),
-  }).then((r) => r.json());
+  });
+
+  if (!res.ok) {
+    console.error('[createEmbedding] Error', res.statusText);
+    return { error: { message: 'Error generating embedding' } };
+  }
+
+  return res.json();
 };
