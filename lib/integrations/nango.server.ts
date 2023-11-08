@@ -28,7 +28,7 @@ export const getSourceId = async (
   return data?.id;
 };
 
-export const getSourceIdAndData = async (
+export const getSourceSyncData = async (
   supabase: SupabaseClient<Database>,
   connectionId: string,
 ): Promise<Pick<DbSource, 'id' | 'data'> | undefined> => {
@@ -41,5 +41,5 @@ export const getSourceIdAndData = async (
   if (!data) {
     return undefined;
   }
-  return { id: data.id, data: data.data };
+  return data;
 };

@@ -1,5 +1,4 @@
 import { NangoSyncWebhookBody } from '@nangohq/node';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { EventSchemas, Inngest } from 'inngest';
 import { serve } from 'inngest/next';
 import { isEqual } from 'lodash-es';
@@ -13,15 +12,13 @@ import {
 import { bulkCreateSectionEmbeddings } from '@/lib/file-processing';
 import {
   getNangoServerInstance,
-  getSourceIdAndData,
+  getSourceSyncData,
 } from '@/lib/integrations/nango.server';
 import {
   convertToMarkdown,
   extractMeta,
   splitIntoSections,
 } from '@/lib/markdown';
-import { RemarkImageSourceRewriteOptions } from '@/lib/remark/remark-image-source-rewrite';
-import { RemarkLinkRewriteOptions } from '@/lib/remark/remark-link-rewrite';
 import { MarkdownProcessorOptions } from '@/lib/schema';
 import {
   createServiceRoleSupabaseClient,
@@ -36,7 +33,7 @@ import {
   getFilesIdAndCheksumBySourceAndNangoId,
 } from '@/lib/supabase';
 import { createChecksum, pluralize } from '@/lib/utils';
-import { Database, Json } from '@/types/supabase';
+import { Json } from '@/types/supabase';
 import {
   DbFileMetaChecksum,
   DbSource,
@@ -86,18 +83,18 @@ const syncNangoRecords = inngest.createFunction(
   async ({ event, step }) => {
     const supabase = createServiceRoleSupabaseClient();
 
-    const sourceIdAndData = await getSourceIdAndData(
+    const sourceSyncData = await getSourceSyncData(
       supabase,
       event.data.connectionId,
     );
 
-    if (!sourceIdAndData) {
+    if (!sourceSyncData) {
       return { updated: 0, deleted: 0 };
     }
 
     const syncQueueId = await getOrCreateRunningSyncQueueForSource(
       supabase,
-      sourceIdAndData.id,
+      sourceSyncData.id,
     );
 
     const recordIncludingErrors = (await nango.getRecords<any>({
@@ -124,10 +121,7 @@ const syncNangoRecords = inngest.createFunction(
       });
     }
 
-    const projectId = await getProjectIdFromSource(
-      supabase,
-      sourceIdAndData.id,
-    );
+    const projectId = await getProjectIdFromSource(supabase, sourceSyncData.id);
 
     if (!projectId) {
       await updateSyncQueue(supabase, syncQueueId, 'errored', {
@@ -145,20 +139,22 @@ const syncNangoRecords = inngest.createFunction(
       })
       .map((record) => record.id);
 
-    // Files to delete
+    // Delete files
+
     await step.sendEvent('delete-files', {
       name: 'markprompt/files.delete',
-      data: { ids: filesIdsToDelete, sourceId: sourceIdAndData.id },
+      data: { ids: filesIdsToDelete, sourceId: sourceSyncData.id },
     });
 
     // Train added/updated files
 
+    const syncMetadata = (sourceSyncData.data as any)?.syncMetadata;
+
     const processorOptions =
-      (sourceIdAndData.data as any)?.syncMetadata?.processorOptions ||
+      syncMetadata?.processorOptions ||
       (await getProjectConfigData(supabase, projectId)).markpromptConfig
         .processorOptions;
 
-    console.log('processorOptions', JSON.stringify(processorOptions, null, 2));
     const trainEvents = records
       .filter((record) => {
         return (
@@ -171,7 +167,7 @@ const syncNangoRecords = inngest.createFunction(
           name: 'markprompt/file.train',
           data: {
             file: record,
-            sourceId: sourceIdAndData.id,
+            sourceId: sourceSyncData.id,
             projectId,
             processorOptions,
           },
@@ -256,7 +252,11 @@ export const runTrainFile = async (data: FileTrainEventData) => {
 
   const meta = await createFullMeta(nangoFile);
   const markdown = nangoFile.content
-    ? await convertToMarkdown(nangoFile.content, nangoFile.contentType)
+    ? await convertToMarkdown(
+        nangoFile.content,
+        nangoFile.contentType,
+        data.processorOptions,
+      )
     : '';
   const checksum = createChecksum(markdown);
 
@@ -271,15 +271,29 @@ export const runTrainFile = async (data: FileTrainEventData) => {
     // on the raw content, since two different raw versions chould still have
     // the same Markdown, in which case we don't need to recreate the
     // embeddings.
+    console.log('Skipping', nangoFile.path);
     return;
   }
 
-  const sections = (
-    await splitIntoSections(markdown, data.processorOptions, MAX_CHUNK_LENGTH)
-  ).filter((s) => {
-    // Filter out very short sections, to avoid noise
-    return s.content.length >= MIN_SECTION_CONTENT_LENGTH;
-  });
+  console.log(
+    'UPDATED\n\n',
+    nangoFile.path,
+    '\n\n',
+    checksum,
+    '\n\n',
+    foundFile?.checksum,
+  );
+  console.log(
+    '\n\n=========================\n\n',
+    markdown.substring(400, 800),
+  );
+
+  const sections = (await splitIntoSections(markdown, MAX_CHUNK_LENGTH)).filter(
+    (s) => {
+      // Filter out very short sections, to avoid noise
+      return s.content.length >= MIN_SECTION_CONTENT_LENGTH;
+    },
+  );
 
   const embeddingsResponse = await bulkCreateSectionEmbeddings(
     sections.map((s) => s.content),

@@ -99,21 +99,8 @@ export const augmentMetaWithTitle = async (
   return { ...meta, title: defaultFileSectionsData.meta.title };
 };
 
-// Use `asMDX = false` for Markdoc content. What might happen in Markdoc
-// is that the page contains a statement like `{HI_THERE}`, which is
-// rendered verbatim in Markdown/Markdoc. It's also not a problem à priori
-// for MDX, since it's semantically correct MDX (no eval is happening here).
-// However, specifically for `{HI_THERE}` with an underscore, the Markdoc
-// transform will escape the underscore, turning it into `{HI\_THERE}`, and
-// then it's actually semantically incorrect MDX, because what goes inside the
-// curly braces is treated as a variable/expression, and `HI\_THERE` is
-// not a valid JS variable/expression, so the parsing will fail.
-// Similarly, statements like "<10" are valid Markdown/Markdoc, but not
-// valid MDX (https://github.com/micromark/micromark-extension-mdx-jsx/issues/7)
-// and we don't want this to break Markdoc.
 export const splitIntoSections = async (
   markdown: string,
-  processorOptions: MarkdownProcessorOptions | undefined,
   maxChunkLength: number,
 ): Promise<FileSectionData[]> => {
   let tree: Root | undefined = undefined;
@@ -123,10 +110,10 @@ export const splitIntoSections = async (
   };
 
   try {
-    getProcessor(true, processorOptions).use(setTree).processSync(markdown);
+    getProcessor(true, undefined).use(setTree).processSync(markdown);
   } catch {
     try {
-      getProcessor(false, processorOptions).use(setTree).processSync(markdown);
+      getProcessor(false, undefined).use(setTree).processSync(markdown);
     } catch {
       //
     }
@@ -190,6 +177,8 @@ export const splitIntoSections = async (
 // Similarly, statements like "<10" are valid Markdown/Markdoc, but not
 // valid MDX (https://github.com/micromark/micromark-extension-mdx-jsx/issues/7)
 // and we don't want this to break Markdoc.
+//
+// Will be deprecated when everything is processed via Inngest.
 export const markdownToFileSectionData = (
   content: string,
   asMDX: boolean,
@@ -322,17 +311,79 @@ export const htmlToFileSectionData = (
 export const convertToMarkdown = (
   content: string,
   fileType: FileType | undefined,
-) => {
+  processorOptions: MarkdownProcessorOptions | undefined,
+): string => {
+  let markdown = '';
   switch (fileType) {
     case 'mdoc':
-      return markdocToMarkdown(content);
+      markdown = markdocToMarkdown(content);
+      break;
     case 'rst':
-      return rstToMarkdown(content);
+      markdown = rstToMarkdown(content);
+      break;
     case 'html':
-      return htmlToMarkdown(content);
+      markdown = htmlToMarkdown(content);
+      break;
     default:
-      return content;
+      markdown = content;
+      break;
   }
+
+  let tree: Root | undefined = undefined;
+
+  const setTree = () => (t: Root) => {
+    tree = t;
+  };
+
+  // Use `asMDX = false` for Markdoc content. What might happen in Markdoc
+  // is that the page contains a statement like `{HI_THERE}`, which is
+  // rendered verbatim in Markdown/Markdoc. It's also not a problem à priori
+  // for MDX, since it's semantically correct MDX (no eval is happening here).
+  // However, specifically for `{HI_THERE}` with an underscore, the Markdoc
+  // transform will escape the underscore, turning it into `{HI\_THERE}`, and
+  // then it's actually semantically incorrect MDX, because what goes inside the
+  // curly braces is treated as a variable/expression, and `HI\_THERE` is
+  // not a valid JS variable/expression, so the parsing will fail.
+  // Similarly, statements like "<10" are valid Markdown/Markdoc, but not
+  // valid MDX
+  // (https://github.com/micromark/micromark-extension-mdx-jsx/issues/7)
+  // and we don't want this to break Markdoc.
+  try {
+    getProcessor(true, processorOptions).use(setTree).processSync(markdown);
+  } catch {
+    try {
+      getProcessor(false, processorOptions).use(setTree).processSync(markdown);
+    } catch {
+      //
+    }
+  }
+
+  if (!tree) {
+    // Sometimes, only metadata is included and content is empty
+    return content;
+  }
+
+  // Remove all JSX and expressions from MDX
+  const mdTree: Root = filter(
+    tree,
+    (node) =>
+      ![
+        'yaml',
+        'toml',
+        'mdxjsEsm',
+        'mdxJsxFlowElement',
+        'mdxJsxTextElement',
+        'mdxFlowExpression',
+        'mdxTextExpression',
+      ].includes(node.type),
+  );
+
+  if (!mdTree) {
+    // Sometimes, only metadata is included and content is empty
+    return content;
+  }
+
+  return toMarkdown(mdTree).trim();
 };
 
 export const extractMeta = (
