@@ -50,8 +50,16 @@ export const createEmbedding = async (
   });
 
   if (!res.ok) {
-    const reason = await res.text();
-    console.log('!!! Error embedding', reason);
+    const reason = await res.json();
+    console.log(
+      '!!! Error embedding',
+      JSON.stringify(reason),
+      JSON.stringify({
+        model: modelId,
+        input: input.trim().replaceAll('\n', ' '),
+      }),
+      process.env.OPENAI_API_KEY!.slice(0, 9),
+    );
     throw new Error(reason);
   }
 
