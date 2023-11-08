@@ -53,7 +53,6 @@ import {
 } from '@/lib/utils.nodeps';
 import {
   ApiError,
-  ChatOutputFormat,
   FileSectionMatchResult,
   FileSectionMeta,
   OpenAIModelIdWithType,
