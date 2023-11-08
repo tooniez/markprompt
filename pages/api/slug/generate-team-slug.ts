@@ -16,14 +16,21 @@ type Data =
 const allowedMethods = ['POST'];
 
 const RESERVED_TEAM_SLUGS = [
-  'settings',
+  'about',
   'account',
-  'legal',
-  'docs',
   'api',
   'app',
-  's',
+  'blog',
+  'docs',
+  'emails',
   'embed',
+  'integrations',
+  'legal',
+  'login',
+  'pricing',
+  'resources',
+  's',
+  'settings',
 ];
 
 export const isTeamSlugAvailable = async (

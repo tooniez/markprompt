@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { Download } from 'lucide-react';
+import { ChevronLeft, Download } from 'lucide-react';
 import Link from 'next/link';
 import { FC, JSXElementConstructor, ReactNode } from 'react';
 import Balancer from 'react-wrap-balancer';
@@ -35,8 +35,12 @@ const Page = () => {
             <LandingNavbar noAnimation />
           </div>
         </div>
-        <div className="relative mx-auto min-h-screen w-full max-w-screen-xl px-6 pt-48 pb-48 sm:px-8">
-          <h1 className="gradient-heading mb-4 text-center text-2xl sm:text-4xl">
+        <div className="relative mx-auto min-h-screen w-full max-w-screen-xl px-6 pb-48 sm:px-8">
+          <div className="flex flex-row items-center gap-2 pt-32 text-left text-sm text-neutral-500 transition hover:text-neutral-400">
+            <ChevronLeft className="h-4 w-4" />
+            <Link href="/integrations">Back to integrations</Link>
+          </div>
+          <h1 className="gradient-heading mb-4 pt-16 text-center text-2xl sm:text-4xl">
             AI Draft Assistant for Salesforce Case
           </h1>
           <p className="mx-auto mt-4 max-w-screen-sm text-center text-neutral-500 sm:text-lg">
@@ -57,14 +61,6 @@ const Page = () => {
             >
               Install app
             </Button>
-          </div>
-          <div className="pt-16 text-center">
-            <Link
-              href="/integrations"
-              className="subtle-underline text-sm text-neutral-500"
-            >
-              Back to integrations
-            </Link>
           </div>
         </div>
       </div>
