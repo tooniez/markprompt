@@ -9,17 +9,14 @@ import useSWR from 'swr';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
-import { convertToMarkdown } from '@/lib/markdown';
 import {
   fetcher,
   getDisplayPathForPath,
-  getFileType,
   getFullURLForPath,
   getIconForSource,
   getLabelForSource,
   getURLForSource,
 } from '@/lib/utils';
-import { getFileNameForSourceAtPath } from '@/lib/utils.nodeps';
 import { getFileTitle } from '@/lib/utils.non-edge';
 import { DbFile } from '@/types/types';
 
@@ -79,18 +76,21 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
     );
   }, [source]);
 
-  const { markdownContent } = useMemo(() => {
+  const markdownContent = useMemo(() => {
     if (!file?.raw_content || !source) {
-      return { markdownContent: '', filename: '' };
+      return '';
+      // return { markdownContent: '', filename: '' };
     }
 
-    const filename = getFileNameForSourceAtPath(source, file.path);
-    const fileType =
-      (file.internal_metadata as any)?.contentType ?? getFileType(filename);
+    // const filename = getFileNameForSourceAtPath(source, file.path);
+    // const fileType =
+    //   (file.internal_metadata as any)?.contentType ?? getFileType(filename);
     const m = matter(file.raw_content);
-    const markdownContent = convertToMarkdown(m.content.trim(), fileType);
-    return { markdownContent, filename };
-  }, [file?.raw_content, file?.internal_metadata, file?.path, source]);
+    return m.content.trim();
+    // const markdownContent = convertToMarkdown(m.content.trim(), fileType);
+    // return { markdownContent, filename };
+    // }, [file?.raw_content, file?.internal_metadata, file?.path, source]);
+  }, [file?.raw_content, source]);
 
   if (loading) {
     return (
