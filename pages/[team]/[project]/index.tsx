@@ -36,15 +36,13 @@ import { IndeterminateCheckbox } from '@/components/ui/Checkbox';
 import { SkeletonTable } from '@/components/ui/Skeletons';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { deleteFiles } from '@/lib/api';
-import { useTrainingContext } from '@/lib/context/training';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
-import useUser from '@/lib/hooks/use-user';
-import { getTier, isEnterpriseOrCustomTier } from '@/lib/stripe/tiers';
+import { getTier } from '@/lib/stripe/tiers';
 import {
   getIconForSource,
   getLabelForSource,

@@ -7,12 +7,12 @@ import { FC, useState } from 'react';
 import useSWR from 'swr';
 
 import { MarkdownContainer } from '@/components/emails/templates/MarkdownContainer';
+import { PromptStatusTag } from '@/components/insights/PromptStatusTag';
 import { JSONViewer } from '@/components/ui/JSONViewer';
 import { SkeletonTable } from '@/components/ui/Skeletons';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
 import { fetcher } from '@/lib/utils';
-import { PromptStatusTag } from '@/pages/[team]/[project]/insights';
 import { DbQueryStat, PromptQueryStatFull } from '@/types/types';
 
 const Loading = <p className="p-4 text-sm text-neutral-500">Loading...</p>;
