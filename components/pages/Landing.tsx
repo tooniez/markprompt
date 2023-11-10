@@ -1,4 +1,4 @@
-import Spline from '@splinetool/react-spline';
+// import Spline from '@splinetool/react-spline';
 import {
   BookmarkCheck,
   Check,
@@ -162,7 +162,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             </div>
             <div className="z-0 col-span-2 hidden h-full sm:block">
               <div className="animate-scale-bounce ml-[-100px] mt-[5%] block h-[90%] w-[calc(100%+200px)] transform-gpu">
-                <Spline scene="https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode" />
+                {/* <Spline scene="https://prod.spline.design/JjuAUS8iM07Bemju/scene.splinecode" /> */}
               </div>
             </div>
           </div>
