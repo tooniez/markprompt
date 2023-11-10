@@ -29,6 +29,7 @@ import { SystemStatus } from '@/types/types';
 
 import { SharedHead } from './SharedHead';
 import { HubSpotIcon } from '../icons/brands/HubSpotIcon';
+import { YCIcon } from '../icons/brands/YC';
 import { PlotlyIcon } from '../icons/Plotly';
 import { SemgrepIcon } from '../icons/Semgrep';
 import { SkeduloIcon } from '../icons/Skedulo';
@@ -158,6 +159,16 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
                 <div className="flex h-10 items-center justify-center sm:h-12">
                   <SkeduloIcon className="w-[96px] text-neutral-500 sm:w-[110px]" />
                 </div>
+              </div>
+              <p className="pt-6 text-left text-sm text-neutral-700 sm:text-base">
+                Backed by
+              </p>
+              <div className="mt-3 flex flex-row items-center gap-2">
+                <YCIcon className="h-8 w-8" />
+                <span className="bg-gradient-to-br from-white to-neutral-100/50 bg-clip-text text-base font-medium leading-[1.6] text-transparent">
+                  {/* <span className="bg-gradient-to-br from-white to-neutral-300 bg-clip-text text-base font-medium leading-[1.6] text-neutral-500 text-transparent"> */}
+                  Combinator
+                </span>
               </div>
             </div>
             <div className="z-0 col-span-2 hidden h-full sm:block">
