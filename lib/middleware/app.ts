@@ -12,6 +12,7 @@ export const PUBLIC_NON_ROUTED_API_PATHS = [
 
 const UNAUTHED_PATHS = [
   '/',
+  '/about',
   '/home',
   '/docs',
   '/blog',
