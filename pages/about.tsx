@@ -91,8 +91,8 @@ const About = ({ stars, status, posts }: AboutPageStaticProps) => {
             <LandingNavbar noAnimation />
           </div>
         </div>
-        <div className="relative mx-auto min-h-screen w-full max-w-screen-lg px-6 pt-60 pb-48 sm:px-8">
-          <MarkpromptColoredIcon className="mx-auto w-40" />
+        <div className="relative mx-auto min-h-screen w-full max-w-screen-lg px-6 pt-48 pb-48 sm:px-8 sm:pt-60">
+          <MarkpromptColoredIcon className="mx-auto w-32 sm:w-40" />
           <h1 className="gradient-heading mb-4 mt-16 text-center text-4xl sm:text-6xl">
             Building the AI infrastructure for customer experience
           </h1>
