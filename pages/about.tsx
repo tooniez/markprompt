@@ -161,12 +161,12 @@ const About = ({ stars, status, posts }: AboutPageStaticProps) => {
             GitHub, Apple, Snowflake, Midjourney, Scale and Superhuman.
           </p>
 
-          <div className="mt-12 flex flex-row items-center gap-2">
+          {/* <div className="mt-12 flex flex-row items-center gap-2">
             <YCIcon className="h-8 w-8" />
             <span className="bg-gradient-to-br from-white to-neutral-100/50 bg-clip-text text-base font-medium leading-[1.6] text-transparent">
               Combinator
             </span>
-          </div>
+          </div> */}
 
           <h2 className="mt-32 text-2xl font-bold text-neutral-300">
             Read more
