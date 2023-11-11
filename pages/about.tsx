@@ -91,10 +91,12 @@ const About = ({ stars, status, posts }: AboutPageStaticProps) => {
             <LandingNavbar noAnimation />
           </div>
         </div>
-        <div className="relative mx-auto min-h-screen w-full max-w-screen-lg px-6 pt-48 pb-48 sm:px-8 sm:pt-60">
-          <MarkpromptColoredIcon className="mx-auto w-32 sm:w-40" />
+        <div className="relative mx-auto min-h-screen w-full max-w-screen-lg px-6 pt-40 pb-48 sm:px-8 sm:pt-60">
+          <MarkpromptColoredIcon className="mx-auto w-28 sm:w-40" />
           <h1 className="gradient-heading mb-4 mt-16 text-center text-4xl sm:text-6xl">
-            Building the AI infrastructure for customer experience
+            <Balancer>
+              Building the AI infrastructure for customer experience
+            </Balancer>
           </h1>
           <p className="mx-auto mt-12 max-w-screen-sm text-center text-lg text-neutral-500 sm:text-xl">
             <Balancer>
@@ -142,7 +144,9 @@ const About = ({ stars, status, posts }: AboutPageStaticProps) => {
                 alt="Marie and Michael"
               />
               <p className="mt-4 text-center text-xs text-neutral-500">
-                Marie Schneegans and Michael Fester, founders of Markprompt.
+                <Balancer>
+                  Marie Schneegans and Michael Fester, founders of Markprompt.
+                </Balancer>
               </p>
             </div>
           </div>
