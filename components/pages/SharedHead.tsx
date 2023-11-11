@@ -1,25 +1,44 @@
 import Head from 'next/head';
 import { FC } from 'react';
 
+type WebsiteSection = 'website' | 'blog' | 'docs';
+
 type SharedHeadProps = {
   title: string;
   description?: string;
+  section?: WebsiteSection;
   ogImage?: string;
-  exludeMarkpromptFromTitle?: boolean;
+  exludePostfixFromTitle?: boolean;
+};
+
+const sectionTitle = (section: WebsiteSection) => {
+  switch (section) {
+    case 'blog':
+      return 'Markprompt Blog';
+    case 'docs':
+      return 'Markprompt Docs';
+    case 'website':
+      return 'Markprompt';
+  }
 };
 
 export const SharedHead: FC<SharedHeadProps> = ({
   title,
   description,
+  section,
   ogImage,
-  exludeMarkpromptFromTitle,
+  exludePostfixFromTitle,
 }) => {
   const _ogImage = ogImage ?? 'https://markprompt.com/static/cover.png';
   const _description = description ?? 'AI for customer support';
   return (
     <Head>
       <title>
-        {`${title}${exludeMarkpromptFromTitle ? '' : ' | Markprompt'}`}
+        {`${title}${
+          exludePostfixFromTitle
+            ? ''
+            : ` | ${sectionTitle(section ?? 'website')}`
+        }`}
       </title>
       <meta property="og:title" content={title} />
       <meta name="description" content={_description} key="desc" />

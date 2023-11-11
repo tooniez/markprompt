@@ -113,7 +113,7 @@ export const getBlogIndexStaticProps = async (
     return date1 > date2 ? -1 : 1;
   });
 
-  if (limit) {
+  if (limit && limit > 0) {
     sortedMetadata = sortedMetadata.slice(0, limit);
   }
 

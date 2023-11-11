@@ -10,7 +10,7 @@ import { SharedHead } from '@/components/pages/SharedHead';
 import { Pattern } from '@/components/ui/Pattern';
 import { getBlogIndexStaticProps } from '@/lib/pages';
 
-export const getStaticProps: GetStaticProps = getBlogIndexStaticProps;
+export const getStaticProps: GetStaticProps = () => getBlogIndexStaticProps(0);
 
 const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
   posts,
@@ -27,6 +27,8 @@ const BlogIndexPage: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
       <SharedHead
         title="Markprompt Blog"
         ogImage="https://markprompt.com/static/cover-blog.png"
+        section="blog"
+        exludePostfixFromTitle
       />
       <div className="relative mx-auto min-h-screen w-full">
         <Pattern />

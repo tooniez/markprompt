@@ -168,7 +168,7 @@ const SharePage: FC<InferGetStaticPropsType<typeof getStaticProps>> & {
 
   return (
     <>
-      <SharedHead title="Playground | Markprompt" />
+      <SharedHead title="Playground" />
       <div
         className={cn('grid-background relative h-screen w-screen', {
           'grid-background-dark bg-neutral-900': !!isDark,
