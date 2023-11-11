@@ -31,7 +31,7 @@ export const YCIcon: FC<YCIconProps> = ({ className }) => {
         height="23"
         rx="4.9"
         stroke="#FF5100"
-        stroke-opacity="0.1"
+        strokeOpacity="0.1"
         width="23"
         x="0.5"
         y="0.5"
@@ -53,8 +53,8 @@ export const YCIcon: FC<YCIconProps> = ({ className }) => {
           id="paint0_radial_24_57"
           r="1"
         >
-          <stop stop-color="white" stop-opacity="0.56"></stop>
-          <stop offset="0.28125" stop-color="white" stop-opacity="0"></stop>
+          <stop stopColor="white" stopOpacity="0.56"></stop>
+          <stop offset="0.28125" stopColor="white" stopOpacity="0"></stop>
         </radialGradient>
         <clipPath id="clip0_24_57">
           <rect fill="white" height="24" rx="5.4" width="24"></rect>
