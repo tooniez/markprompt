@@ -125,8 +125,8 @@ const About = ({ stars, status, posts }: AboutPageStaticProps) => {
                 completely transform the way we interact with computers,
                 unlocking the magic potential we have been dreaming of for
                 decades. At Markprompt, we are building the infrastructure that
-                enables this tectonic shift to unfold within companies, starting
-                at the nerve center:{' '}
+                enables this tectonic shift to unfold within businesses,
+                starting at the nerve center:{' '}
                 <span className="font-medium text-neutral-300">
                   customer support
                 </span>
