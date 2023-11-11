@@ -115,7 +115,7 @@ const About = ({ stars, status, posts }: AboutPageStaticProps) => {
                   Artificial Intelligence
                 </span>{' '}
                 was coined just a few years after the invention of computers. We
-                projected magical capibilities onto them right away, yet for the
+                projected magical capabilities onto them right away, yet for the
                 next 70 years, they were to remain, at a fundamental level,
                 tedious to work with. We had to adapt to them, not the other way
                 around.
