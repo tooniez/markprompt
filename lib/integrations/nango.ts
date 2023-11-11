@@ -95,6 +95,6 @@ export const getSyncData = (
   return {
     integrationId,
     connectionId,
-    syncIds: [syncId],
+    syncId,
   };
 };

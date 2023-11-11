@@ -35,7 +35,36 @@ const triggerSyncForSource = async (data: SyncData) => {
 
   await getOrCreateRunningSyncQueueForSource(supabase, sourceId);
 
-  await nango.triggerSync(data.integrationId, data.syncIds, data.connectionId);
+  const syncStatuses = await nango.syncStatus(
+    data.integrationId,
+    [data.syncId],
+    data.connectionId,
+  );
+
+  for (const sync of syncStatuses.syncs) {
+    switch (sync.status) {
+      case 'RUNNING':
+        break;
+      case 'ERROR':
+      case 'STOPPED': {
+        await nango.startSync(
+          data.integrationId,
+          [data.syncId],
+          data.connectionId,
+        );
+        break;
+      }
+      case 'PAUSED':
+      case 'SUCCESS': {
+        await nango.triggerSync(
+          data.integrationId,
+          [data.syncId],
+          data.connectionId,
+        );
+        break;
+      }
+    }
+  }
 };
 
 export default withProjectAccess(

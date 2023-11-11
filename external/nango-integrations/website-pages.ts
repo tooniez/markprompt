@@ -53,9 +53,7 @@ const fetchPageAndUrlsWithRetryWithThrows = async (
 ): Promise<PageFetchResponse> => {
   // Note that this endpoint returns FULL urls. That is, it has resolved
   // e.g. absolute and relative URLs to their fully specified paths with
-  // base URL prepended. It has also applied the glob filters if provided
-  // (since doing it here is practically impossible, as `minimatch` cannot
-  // be imported).
+  // base URL prepended.
 
   await nango.log('Fetching ' + url);
 

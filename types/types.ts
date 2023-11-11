@@ -377,7 +377,7 @@ export type SourceConfigurationView = 'configuration' | 'logs';
 export type SyncData = {
   integrationId: NangoIntegrationId;
   connectionId: string;
-  syncIds: NangoSyncId[];
+  syncId: NangoSyncId;
 };
 
 export type DbFileMetaChecksum = Pick<
