@@ -12,7 +12,7 @@ export const YCIcon: FC<YCIconProps> = ({ className }) => {
       viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_24_57)">
+      <g clipPath="url(#clip0_24_57)">
         <rect fill="#FF5100" height="24" rx="5.4" width="24"></rect>
         <rect
           height="23"

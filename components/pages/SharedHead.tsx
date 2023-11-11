@@ -5,27 +5,25 @@ type SharedHeadProps = {
   title: string;
   description?: string;
   ogImage?: string;
+  exludeMarkpromptFromTitle?: boolean;
 };
 
 export const SharedHead: FC<SharedHeadProps> = ({
   title,
   description,
   ogImage,
+  exludeMarkpromptFromTitle,
 }) => {
   const _ogImage = ogImage ?? 'https://markprompt.com/static/cover.png';
+  const _description = description ?? 'AI for customer support';
   return (
     <Head>
-      <title>{title}</title>
-      <meta property="og:title" content="Markprompt" />
-      <meta
-        name="description"
-        content={description || 'AI for customer support'}
-        key="desc"
-      />
-      <meta
-        property="og:description"
-        content={description || 'AI for customer support'}
-      />
+      <title>
+        {`${title}${exludeMarkpromptFromTitle ? '' : ' | Markprompt'}`}
+      </title>
+      <meta property="og:title" content={title} />
+      <meta name="description" content={_description} key="desc" />
+      <meta property="og:description" content={_description} />
 
       <meta property="og:url" content="https://markprompt.com/" />
       <meta property="og:type" content="website" />
@@ -36,10 +34,7 @@ export const SharedHead: FC<SharedHeadProps> = ({
       <meta property="twitter:domain" content="markprompt.com" />
       <meta property="twitter:url" content="https://markprompt.com/" />
       <meta name="twitter:title" content={title} />
-      <meta
-        name="twitter:description"
-        content={description || 'AI for customer support'}
-      />
+      <meta name="twitter:description" content={_description} />
       <meta name="twitter:image" content={_ogImage} />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
     </Head>

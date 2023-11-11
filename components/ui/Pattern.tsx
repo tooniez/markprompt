@@ -36,7 +36,7 @@ export const Pattern = () => (
 );
 
 export const PatternMono = () => (
-  <div className="pointer-events-none absolute left-1/2 top-0 ml-[-15rem] h-[30rem] w-[80rem] opacity-70 [mask-image:linear-gradient(white,transparent)]">
+  <div className="pointer-events-none absolute left-1/2 top-0 ml-[-15rem] h-[30rem] w-[80rem] opacity-90 [mask-image:linear-gradient(white,transparent)]">
     <div className="to-highlight-200/20 absolute inset-0 bg-gradient-to-r from-neutral-500/70 opacity-100 [mask-image:radial-gradient(farthest-side_at_top,white,transparent)]">
       <svg
         aria-hidden="true"

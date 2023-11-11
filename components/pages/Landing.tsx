@@ -85,7 +85,10 @@ type LandingPageProps = {
 const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
   return (
     <>
-      <SharedHead title="Markprompt | AI for customer support" />
+      <SharedHead
+        title="Markprompt | AI for customer support"
+        exludeMarkpromptFromTitle
+      />
       {/* <div className="z-40 bg-fuchsia-700 py-1.5 px-6 sm:px-8">
         <Link
           href="/blog/markprompt-qa"

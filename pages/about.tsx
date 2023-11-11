@@ -1,5 +1,4 @@
 import { ChevronRight } from 'lucide-react';
-import { GetStaticProps } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FC } from 'react';
@@ -31,7 +30,7 @@ const backers: BackerSpec[] = [
   },
   {
     name: 'Alana Goyal',
-    position: 'Founder, Base Case',
+    position: 'Founder, basecase',
   },
   {
     name: 'Nicolas Dessaigne',
@@ -93,7 +92,7 @@ const About = ({ stars, status, posts }: AboutPageStaticProps) => {
           </div>
         </div>
         <div className="relative mx-auto min-h-screen w-full max-w-screen-lg px-6 pt-60 pb-48 sm:px-8">
-          <MarkpromptColoredIcon className="mx-auto w-56" />
+          <MarkpromptColoredIcon className="mx-auto w-40" />
           <h1 className="gradient-heading mb-4 mt-16 text-center text-4xl sm:text-6xl">
             Building the AI infrastructure for customer experience
           </h1>
@@ -116,14 +115,15 @@ const About = ({ stars, status, posts }: AboutPageStaticProps) => {
                   Artificial Intelligence
                 </span>{' '}
                 was coined just a few years after the invention of computers. We
-                projected magical capibilities onto them, yet for the next 70
-                years, they were to remain, at a fundamental level, tedious to
-                work with. We had to adapt to them, not the other way around.
+                projected magical capibilities onto them right away, yet for the
+                next 70 years, they were to remain, at a fundamental level,
+                tedious to work with. We had to adapt to them, not the other way
+                around.
               </p>
               <p className="mt-4 text-neutral-500">
                 This is changing, and it is happening now. Generative AI will
                 completely transform the way we interact with computers,
-                unlocking the magic potential we have been dreaming about for
+                unlocking the magic potential we have been dreaming of for
                 decades. At Markprompt, we are building the infrastructure that
                 enables this tectonic shift to unfold within companies, starting
                 at the nerve center:{' '}
@@ -157,8 +157,8 @@ const About = ({ stars, status, posts }: AboutPageStaticProps) => {
             })}
           </div>
           <p className="mt-8 text-sm text-neutral-500">
-            and dozens of other incredible founders and operators at companies
-            like GitHub, Apple, Snowflake, Midjourney, Scale and Superhuman.
+            and dozens other incredible founders and operators at companies like
+            GitHub, Apple, Snowflake, Midjourney, Scale and Superhuman.
           </p>
 
           <div className="mt-12 flex flex-row items-center gap-2">
