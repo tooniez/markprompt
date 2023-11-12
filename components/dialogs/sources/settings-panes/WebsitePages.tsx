@@ -255,7 +255,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
               <FormHeadingGroup>
                 <FormHeading>Request configuration</FormHeading>
                 <FormSubHeading>
-                  Specify extra data to send alongside a request to your
+                  Specify header data to send alongside a request to your
                   website.
                 </FormSubHeading>
               </FormHeadingGroup>
@@ -268,11 +268,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                   }}
                 />
               </FormField>
-              <ProcessorOptions
-                isSubmitting={isSubmitting}
-                forceDisabled={forceDisabled}
-              />
-              {/* <FormHeadingGroup>
+              <FormHeadingGroup>
                 <FormHeading>Content targets</FormHeading>
                 <FormSubHeading>
                   Specify which parts of the page to include or exclude, using
@@ -310,7 +306,11 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                   as={NoAutoInput}
                   disabled={isSubmitting || forceDisabled}
                 />
-              </FormField> */}
+              </FormField>
+              <ProcessorOptions
+                isSubmitting={isSubmitting}
+                forceDisabled={forceDisabled}
+              />
               <Button
                 className="mt-4 flex-none self-start"
                 disabled={!isValid || forceDisabled}

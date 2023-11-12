@@ -271,22 +271,8 @@ export const runTrainFile = async (data: FileTrainEventData) => {
     // on the raw content, since two different raw versions chould still have
     // the same Markdown, in which case we don't need to recreate the
     // embeddings.
-    console.log('Skipping', nangoFile.path);
     return;
   }
-
-  console.log(
-    'UPDATED\n\n',
-    nangoFile.path,
-    '\n\n',
-    checksum,
-    '\n\n',
-    foundFile?.checksum,
-  );
-  console.log(
-    '\n\n=========================\n\n',
-    markdown.substring(400, 800),
-  );
 
   const sections = (await splitIntoSections(markdown, MAX_CHUNK_LENGTH)).filter(
     (s) => {
