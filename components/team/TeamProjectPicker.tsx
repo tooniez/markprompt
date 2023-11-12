@@ -96,31 +96,33 @@ const TeamPicker: FC<TeamProjectPickerProps> = ({ onNewTeamClick }) => {
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="animate-menu-up dropdown-menu-content"
+          className="animate-menu-up dropdown-menu-content h-full max-h-[calc(100vh-80px)]"
           sideOffset={5}
         >
-          {teams?.map((t) => {
-            const checked = t.slug === team?.slug;
-            return (
-              <DropdownMenu.CheckboxItem
-                key={`team-dropdown-${t.slug}`}
-                className="dropdown-menu-item dropdown-menu-item-indent"
-                checked={checked}
-                onClick={() => {
-                  setOpen(false);
-                }}
-              >
-                <>
-                  {checked && (
-                    <DropdownMenu.ItemIndicator className="dropdown-menu-item-indicator">
-                      <Check className="h-3 w-3" />
-                    </DropdownMenu.ItemIndicator>
-                  )}
-                  <Link href={`/${t.slug}`}>{t.name}</Link>
-                </>
-              </DropdownMenu.CheckboxItem>
-            );
-          })}
+          <div className="hidden-scrollbar flex-grow overflow-y-auto">
+            {teams?.map((t) => {
+              const checked = t.slug === team?.slug;
+              return (
+                <DropdownMenu.CheckboxItem
+                  key={`team-dropdown-${t.slug}`}
+                  className="dropdown-menu-item dropdown-menu-item-indent"
+                  checked={checked}
+                  onClick={() => {
+                    setOpen(false);
+                  }}
+                >
+                  <>
+                    {checked && (
+                      <DropdownMenu.ItemIndicator className="dropdown-menu-item-indicator">
+                        <Check className="h-3 w-3" />
+                      </DropdownMenu.ItemIndicator>
+                    )}
+                    <Link href={`/${t.slug}`}>{t.name}</Link>
+                  </>
+                </DropdownMenu.CheckboxItem>
+              );
+            })}
+          </div>
           <DropdownMenu.Separator className="dropdown-menu-separator" />
           {team && (
             <DropdownMenu.Item className="dropdown-menu-item dropdown-menu-item-indent">
@@ -176,31 +178,33 @@ const ProjectPicker = () => {
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="animate-menu-up dropdown-menu-content"
+          className="animate-menu-up dropdown-menu-content h-full max-h-[calc(100vh-80px)]"
           sideOffset={5}
         >
-          {projects?.map((p) => {
-            const checked = p.slug === project?.slug;
-            return (
-              <DropdownMenu.CheckboxItem
-                key={`project-dropdown-${p.slug}`}
-                className="dropdown-menu-item dropdown-menu-item-indent"
-                checked={checked}
-                onClick={() => {
-                  setOpen(false);
-                }}
-              >
-                <>
-                  {checked && (
-                    <DropdownMenu.ItemIndicator className="dropdown-menu-item-indicator">
-                      <Check className="h-3 w-3" />
-                    </DropdownMenu.ItemIndicator>
-                  )}
-                  <Link href={`/${team.slug}/${p.slug}`}>{p.name}</Link>
-                </>
-              </DropdownMenu.CheckboxItem>
-            );
-          })}
+          <div className="hidden-scrollbar flex-grow overflow-y-auto">
+            {projects?.map((p) => {
+              const checked = p.slug === project?.slug;
+              return (
+                <DropdownMenu.CheckboxItem
+                  key={`project-dropdown-${p.slug}`}
+                  className="dropdown-menu-item dropdown-menu-item-indent"
+                  checked={checked}
+                  onClick={() => {
+                    setOpen(false);
+                  }}
+                >
+                  <>
+                    {checked && (
+                      <DropdownMenu.ItemIndicator className="dropdown-menu-item-indicator">
+                        <Check className="h-3 w-3" />
+                      </DropdownMenu.ItemIndicator>
+                    )}
+                    <Link href={`/${team.slug}/${p.slug}`}>{p.name}</Link>
+                  </>
+                </DropdownMenu.CheckboxItem>
+              );
+            })}
+          </div>
           <DropdownMenu.Separator className="dropdown-menu-separator" />
           <DropdownMenu.Item className="dropdown-menu-item dropdown-menu-item-indent">
             <Link href={`/settings/${team.slug}/projects/new`}>
