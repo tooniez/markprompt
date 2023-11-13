@@ -22,6 +22,10 @@ import { remarkImageSourceRewrite } from './remark/remark-image-source-rewrite';
 import { remarkLinkRewrite } from './remark/remark-link-rewrite';
 import { MarkdownProcessorOptions, MarkpromptConfig } from './schema';
 
+const toMarkdownOptions = {
+  fences: true,
+};
+
 const defaultFileSectionsData: FileSectionsData = {
   sections: [],
   meta: { title: 'Untitled' },
@@ -148,7 +152,7 @@ export const splitIntoSections = async (
 
   const sections: FileSectionData[] = sectionTrees.flatMap((tree) => {
     const node = tree.predicateNode as any;
-    const content = toMarkdown(tree.tree);
+    const content = toMarkdown(tree.tree, toMarkdownOptions);
     const leadHeading =
       node.type === 'heading'
         ? { value: toString(node), depth: node.depth }
@@ -234,7 +238,7 @@ export const markdownToFileSectionData = (
   const sections: FileSectionData[] = sectionTrees.map((tree) => {
     const node = tree.predicateNode as any;
     return {
-      content: toMarkdown(tree.tree),
+      content: toMarkdown(tree.tree, toMarkdownOptions),
       leadHeading:
         node.type === 'heading'
           ? { value: toString(node), depth: node.depth }
@@ -383,9 +387,7 @@ export const convertToMarkdown = (
     return content;
   }
 
-  return toMarkdown(mdTree, {
-    fences: true,
-  }).trim();
+  return toMarkdown(mdTree, toMarkdownOptions).trim();
 };
 
 export const extractMeta = (
