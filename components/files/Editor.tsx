@@ -1,11 +1,13 @@
+import { FileReferenceFileData } from '@markprompt/core';
 import { parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import matter from 'gray-matter';
 import Link from 'next/link';
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
+import { getFileIdBySourceAndPath } from '@/lib/api';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
@@ -25,27 +27,43 @@ import { SkeletonTable } from '../ui/Skeletons';
 
 dayjs.extend(localizedFormat);
 
+// The editor can take either a file id, or reference data (e.g. from
+// the conversation query stats).
 type EditorProps = {
-  filePath?: string;
+  fileId?: DbFile['id'];
+  fileReferenceData?: FileReferenceFileData;
   highlightSectionSlug?: string;
 };
 
-export const Editor: FC<EditorProps> = ({ filePath }) => {
+export const Editor: FC<EditorProps> = ({
+  fileId: _fileId,
+  fileReferenceData,
+}) => {
   const { project } = useProject();
   const { sources } = useSources();
+  const [fileId, setFileId] = useState(_fileId);
 
-  console.log('filePath', JSON.stringify(filePath, null, 2));
+  useEffect(() => {
+    if (!project?.id || _fileId || !fileReferenceData) {
+      return;
+    }
+
+    (async () => {
+      const fileId = await getFileIdBySourceAndPath(
+        project?.id,
+        fileReferenceData.source,
+        fileReferenceData.path,
+      );
+      if (fileId) {
+        setFileId(fileId);
+      }
+    })();
+  }, [project?.id, _fileId, fileReferenceData]);
+
   const { data: file, error } = useSWR(
-    project?.id && filePath
-      ? `/api/project/${project.id}/files/by-path/${encodeURIComponent(
-          filePath,
-        )}`
-      : null,
+    project?.id && fileId ? `/api/project/${project.id}/files/${fileId}` : null,
     fetcher<DbFile>,
   );
-
-  console.log('file', JSON.stringify(file, null, 2));
-  console.log('error', JSON.stringify(error, null, 2));
 
   const loading = !file && !error;
 
@@ -110,10 +128,13 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
 
   if (!file || !source) {
     return (
-      <div className="flex flex-col items-center gap-2 p-4 text-sm text-neutral-300">
+      <div className="p-4 text-sm text-neutral-300">
         The file is not accessible. Please sync your data again, and if the
         problem persists,{' '}
-        <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`}>
+        <a
+          className="subtle-underline"
+          href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`}
+        >
           contact support
         </a>
         .

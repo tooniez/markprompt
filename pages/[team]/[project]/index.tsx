@@ -353,7 +353,7 @@ const Data = () => {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'updated', desc: true },
   ]);
-  const [openFilePath, setOpenFilePath] = useState<string | undefined>(
+  const [openFileId, setOpenFileId] = useState<DbFile['id'] | undefined>(
     undefined,
   );
   const [editorOpen, setEditorOpen] = useState<boolean>(false);
@@ -460,7 +460,7 @@ const Data = () => {
             <button
               className="w-full overflow-hidden truncate text-left outline-none"
               onClick={() => {
-                setOpenFilePath(value.path);
+                setOpenFileId(value.id);
                 setEditorOpen(true);
               }}
             >
@@ -832,7 +832,7 @@ const Data = () => {
       {project?.id && (
         <>
           <EditorDialog
-            filePath={openFilePath}
+            fileId={openFileId}
             open={editorOpen}
             setOpen={(open) => {
               if (!open) {

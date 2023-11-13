@@ -1,3 +1,5 @@
+import { Source } from '@markprompt/core';
+
 import { getResponseOrThrow, slugFromNameOrRandom } from '@/lib/utils';
 import {
   DbFile,
@@ -310,4 +312,20 @@ export const processQueryStats = async (projectId: Project['id']) => {
     },
   });
   return getResponseOrThrow<QueryStatsProcessingResponseData>(res);
+};
+
+export const getFileIdBySourceAndPath = async (
+  projectId: Project['id'],
+  source: Source,
+  path: string,
+) => {
+  const res = await fetch(`/api/project/${projectId}/files/search`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+    body: JSON.stringify({ source, path }),
+  });
+  return getResponseOrThrow<DbFile['id']>(res);
 };
