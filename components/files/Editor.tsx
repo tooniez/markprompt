@@ -37,7 +37,7 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
   console.log('filePath', JSON.stringify(filePath, null, 2));
   const { data: file, error } = useSWR(
     project?.id && filePath
-      ? `/api/projects/${project.id}/files/by-path/${encodeURIComponent(
+      ? `/api/project/${project.id}/files/by-path/${encodeURIComponent(
           filePath,
         )}`
       : null,
