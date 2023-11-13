@@ -156,11 +156,13 @@ const SyncStatusIndicator: FC<SyncStatusIndicatorProps> = ({ syncQueue }) => {
       );
     }
     default:
-      return (
-        <Tooltip as="span" message="The source has not yet been synced">
-          <AlertTriangle className="h-4 w-4 text-orange-600" />
-        </Tooltip>
-      );
+      // TODO: reenable when migration to new architecture is fully completed
+      return <></>;
+    // return (
+    //   <Tooltip as="span" message="The source has not yet been synced">
+    //     <AlertTriangle className="h-4 w-4 text-orange-600" />
+    //   </Tooltip>
+    // );
   }
 };
 
