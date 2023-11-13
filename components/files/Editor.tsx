@@ -44,6 +44,9 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
     fetcher<DbFile>,
   );
 
+  console.log('file', JSON.stringify(file, null, 2));
+  console.log('error', JSON.stringify(error, null, 2));
+
   const loading = !file && !error;
 
   const source = useMemo(() => {
