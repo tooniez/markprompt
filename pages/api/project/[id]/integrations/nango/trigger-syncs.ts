@@ -42,6 +42,19 @@ const triggerSyncForSource = async (data: SyncData) => {
   );
 
   for (const sync of syncStatuses.syncs) {
+    // After a connection is made, its type is `INITIAL` and its sync state
+    // is `PAUSED`. Calling `triggerSync` in this case leads to the sync
+    // status to be `STOPPED` instead of `SUCCESS`. So we need to treat
+    // this case differently and call `startSync` here.
+    if (sync.type === 'INITIAL' && sync.status === 'PAUSED') {
+      await nango.startSync(
+        data.integrationId,
+        [data.syncId],
+        data.connectionId,
+      );
+      continue;
+    }
+
     switch (sync.status) {
       case 'RUNNING':
         break;

@@ -55,8 +55,7 @@ create table public.sources (
   inserted_at               timestamp with time zone default timezone('utc'::text, now()) not null,
   project_id                uuid references public.projects on delete cascade not null,
   type                      source_type not null,
-  data                      jsonb,
-  last_sync_config_checksum text
+  data                      jsonb
 );
 comment on table public.sources is 'Data sources for a project.';
 

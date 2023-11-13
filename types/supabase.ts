@@ -641,7 +641,6 @@ export interface Database {
           data: Json | null
           id: string
           inserted_at: string
-          last_sync_config_checksum: string | null
           project_id: string
           type: Database["public"]["Enums"]["source_type"]
         }
@@ -649,7 +648,6 @@ export interface Database {
           data?: Json | null
           id?: string
           inserted_at?: string
-          last_sync_config_checksum?: string | null
           project_id: string
           type: Database["public"]["Enums"]["source_type"]
         }
@@ -657,7 +655,6 @@ export interface Database {
           data?: Json | null
           id?: string
           inserted_at?: string
-          last_sync_config_checksum?: string | null
           project_id?: string
           type?: Database["public"]["Enums"]["source_type"]
         }

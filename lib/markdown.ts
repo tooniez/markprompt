@@ -383,7 +383,9 @@ export const convertToMarkdown = (
     return content;
   }
 
-  return toMarkdown(mdTree).trim();
+  return toMarkdown(mdTree, {
+    fences: true,
+  }).trim();
 };
 
 export const extractMeta = (

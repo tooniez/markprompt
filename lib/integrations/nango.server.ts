@@ -69,13 +69,14 @@ export const pauseSyncForSource = async (
   for (const sync of syncStatuses.syncs) {
     switch (sync.status) {
       case 'RUNNING':
-      case 'SUCCESS':
+      case 'SUCCESS': {
         await nango.pauseSync(
           data.integrationId,
           [data.syncId],
           data.connectionId,
         );
         break;
+      }
     }
   }
 };

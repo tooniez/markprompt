@@ -49,11 +49,13 @@ describe('markdown', () => {
         convertToMarkdown(contentTransformed, 'md', options),
       );
     });
+
     it('should convert remove JSX tags', () => {
       expect(
         convertToMarkdown('# Heading\n\n<JSXTag />', 'mdx', undefined),
       ).toStrictEqual('# Heading');
     });
+
     it('should remove frontmatter tags', () => {
       expect(
         convertToMarkdown(
@@ -63,7 +65,18 @@ describe('markdown', () => {
         ),
       ).toStrictEqual('# Heading');
     });
+
+    it('should convert code blocks', () => {
+      expect(
+        convertToMarkdown(
+          '<body><h1>Heading</h1><pre>var i = 0;</pre></body>',
+          'html',
+          undefined,
+        ),
+      ).toStrictEqual('# Heading\n\n```\nvar i = 0;\n```');
+    });
   });
+
   describe('markdownToFileSectionData', () => {
     it('should transform Markdown content', () => {
       expect(markdownToFileSectionData(content, false, options)).toStrictEqual(

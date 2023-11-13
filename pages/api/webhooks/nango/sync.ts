@@ -1,11 +1,18 @@
+import { SupabaseClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSourceSyncData } from '@/lib/integrations/nango.server';
-import { getTier } from '@/lib/stripe/tiers';
+import { getSyncId } from '@/lib/integrations/nango';
+import {
+  getSourceSyncData,
+  pauseSyncForSource,
+} from '@/lib/integrations/nango.server';
+import { getTier, isAutoSyncAccessible } from '@/lib/stripe/tiers';
 import {
   createServiceRoleSupabaseClient,
   getProjectIdFromSource,
 } from '@/lib/supabase';
+import { Database } from '@/types/supabase';
+import { NangoSourceDataType } from '@/types/types';
 
 import { inngest } from '../../inngest';
 import type { NangoSyncPayload } from '../../inngest';
@@ -19,9 +26,10 @@ type Data =
 
 const allowedMethods = ['POST'];
 
-const shouldPauseSync = async (nangoSyncPayload: NangoSyncPayload) => {
-  // If this is a non-enterprise project, pause the sync
-  const supabase = createServiceRoleSupabaseClient();
+const shouldPauseSync = async (
+  supabase: SupabaseClient<Database>,
+  nangoSyncPayload: NangoSyncPayload,
+) => {
   const sourceSyncData = await getSourceSyncData(
     supabase,
     nangoSyncPayload.connectionId,
@@ -44,9 +52,27 @@ const shouldPauseSync = async (nangoSyncPayload: NangoSyncPayload) => {
     return true;
   }
 
-  const tier = getTier({
-    plan_details: data.plan_details,
-    stripe_price_id: data.stripe_price_id,
+  return !isAutoSyncAccessible(data);
+};
+
+const pauseConnection = async (
+  supabase: SupabaseClient<Database>,
+  connectionId: string,
+) => {
+  const sourceSyncData = await getSourceSyncData(supabase, connectionId);
+  const data = sourceSyncData?.data as NangoSourceDataType;
+  const integrationId = data.integrationId;
+
+  if (!integrationId || !connectionId) {
+    return;
+  }
+
+  const syncId = getSyncId(integrationId);
+
+  await pauseSyncForSource(supabase, {
+    integrationId,
+    connectionId,
+    syncId,
   });
 };
 
@@ -70,6 +96,14 @@ export default async function handler(
     name: 'nango/sync',
     data: nangoSyncPayload,
   });
+
+  const supabase = createServiceRoleSupabaseClient();
+
+  // If this is a non-enterprise project, pause the sync
+  const shouldPause = await shouldPauseSync(supabase, nangoSyncPayload);
+  if (shouldPause) {
+    await pauseConnection(supabase, nangoSyncPayload.connectionId);
+  }
 
   return res.status(200).json({});
 }
