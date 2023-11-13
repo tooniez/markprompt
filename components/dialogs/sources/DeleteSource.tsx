@@ -1,22 +1,23 @@
 import { FC, useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import ConfirmDialog from '@/components/dialogs/Confirm';
 import { deleteSource } from '@/lib/api';
 import useFiles from '@/lib/hooks/use-files';
 import useSources from '@/lib/hooks/use-sources';
 import useUsage from '@/lib/hooks/use-usage';
+import { getConnectionId, getIntegrationId } from '@/lib/integrations/nango';
 import { deleteConnection } from '@/lib/integrations/nango.client';
 import { getLabelForSource } from '@/lib/utils';
-import { Project, DbSource, NangoSourceDataType } from '@/types/types';
+import { Project, DbSource } from '@/types/types';
 
-type RemoveSourceDialogProps = {
+type DeleteSourceDialogProps = {
   projectId: Project['id'];
   source: DbSource;
   onComplete: () => void;
 };
 
-const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
+const DeleteSourceDialog: FC<DeleteSourceDialogProps> = ({
   projectId,
   source,
   onComplete,
@@ -28,9 +29,9 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
 
   return (
     <ConfirmDialog
-      title={`Remove ${getLabelForSource(source, true)}?`}
-      description={<>All associated files and training data will be deleted.</>}
-      cta="Remove"
+      title={`Delete ${getLabelForSource(source, true)}?`}
+      description={<>All associated files and data will be deleted.</>}
+      cta="Delete"
       variant="danger"
       loading={loading}
       onCTAClick={async () => {
@@ -41,38 +42,33 @@ const RemoveSourceDialog: FC<RemoveSourceDialogProps> = ({
           // For Nango integrations, make sure to delete the connection to
           // avoid subsequent syncs.
           if (source.type === 'nango') {
-            const sourceData = source.data as NangoSourceDataType;
-            try {
-              await deleteConnection(
-                projectId,
-                sourceData.integrationId,
-                source.id,
-              );
-            } catch (e) {
-              // Ignore
+            const integrationId = getIntegrationId(source);
+            const connectionId = getConnectionId(source);
+            if (integrationId && connectionId) {
+              try {
+                // This can take a lot of time (20 seconds currently)
+                // so don't await here.
+                deleteConnection(projectId, integrationId, connectionId);
+              } catch (e) {
+                // Ignore
+              }
             }
           }
 
           await mutateSources();
           await mutateFiles();
           await mutateFileStats();
-
-          toast.success(
-            `The source ${getLabelForSource(
-              source,
-              true,
-            )} has been removed from the project.`,
-          );
-        } catch (e) {
-          console.error(e);
-          toast.error('Error removing source.');
-        } finally {
           setLoading(false);
           onComplete();
+
+          toast.success(`${getLabelForSource(source, true)} has been deleted`);
+        } catch (e) {
+          console.error(e);
+          toast.error('Error deleting source');
         }
       }}
     />
   );
 };
 
-export default RemoveSourceDialog;
+export default DeleteSourceDialog;

@@ -1,4 +1,3 @@
-import { SubmitChatOptions } from '@markprompt/core';
 import cn from 'classnames';
 import { Moon } from 'lucide-react';
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
@@ -8,7 +7,7 @@ import { SharedHead } from '@/components/pages/SharedHead';
 import { useLocalStorage } from '@/lib/hooks/utils/use-localstorage';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import { Theme } from '@/lib/themes';
-import { getApiUrl } from '@/lib/utils.edge';
+import { getApiUrl } from '@/lib/utils.nodeps';
 import { SerializableMarkpromptOptions } from '@/types/types';
 
 export const getStaticPaths = async () => {

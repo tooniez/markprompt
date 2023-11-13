@@ -33,12 +33,13 @@ import { PlotlyIcon } from '../icons/Plotly';
 import { SemgrepIcon } from '../icons/Semgrep';
 import { SkeduloIcon } from '../icons/Skedulo';
 import { Blurs } from '../ui/Blurs';
+import { SystemStatusButton } from '../ui/SystemStatusButton';
 
-export const S = ({ children }: { children: ReactNode }) => {
+const S = ({ children }: { children: ReactNode }) => {
   return <span className="text-neutral-300">{children}</span>;
 };
 
-export const GoalList = ({ children }: { children: ReactNode }) => {
+const GoalList = ({ children }: { children: ReactNode }) => {
   return (
     <div className="mt-12 rounded-lg border border-dashed border-neutral-900 bg-neutral-1000 px-4 py-6 sm:py-8">
       <div className="relative mx-auto grid max-w-screen-lg grid-cols-1 gap-4 sm:grid-cols-3">
@@ -48,7 +49,7 @@ export const GoalList = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const Goal = ({ children }: { children: ReactNode }) => {
+const Goal = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex flex-row items-center gap-4 text-base font-medium sm:justify-center">
       <Check className="h-5 w-5 text-green-400 sm:h-6 sm:w-6" />
@@ -57,7 +58,7 @@ export const Goal = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const FeatureCard = ({
+const FeatureCard = ({
   Icon,
   title,
   description,
@@ -255,7 +256,6 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
               </>
             }
           />
-
           <FeatureCard
             Icon={Timer}
             title="Instant responses"
@@ -288,7 +288,6 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
         </GoalList>
       </div>
       {/* <VideoSection /> */}
-      {/* <StepsSection /> */}
       <div className="relative z-0 mx-auto mt-32 max-w-screen-xl px-6 sm:px-8 sm:pt-0">
         {/* <div className="rounded-lg border border-dashed border-neutral-900 bg-neutral-1000/60 px-4 py-12 sm:px-8"> */}
         <div className="px-4 py-12 sm:px-8">

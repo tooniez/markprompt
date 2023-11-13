@@ -108,17 +108,6 @@ export const deleteFiles = async (
   });
 };
 
-export const setHasCompletedOnboarding = async () => {
-  await fetch('/api/user', {
-    method: 'PATH',
-    body: JSON.stringify({ has_completed_onboarding: true }),
-    headers: {
-      'Content-Type': 'application/json',
-      accept: 'application/json',
-    },
-  });
-};
-
 export const initUserData = async (): Promise<{
   team: DbTeam;
   project: Project;
@@ -274,6 +263,19 @@ export const addSource = async (
     headers: { 'Content-Type': 'application/json', accept: 'application/json' },
   });
   return getResponseOrThrow<DbSource>(res);
+};
+
+export const setSourceData = async (
+  projectId: Project['id'],
+  sourceId: DbSource['id'],
+  data: any,
+): Promise<void> => {
+  const res = await fetch(`/api/project/${projectId}/sources`, {
+    method: 'PATCH',
+    body: JSON.stringify({ sourceId, data }),
+    headers: { 'Content-Type': 'application/json', accept: 'application/json' },
+  });
+  return getResponseOrThrow<void>(res);
 };
 
 export const deleteSource = async (
