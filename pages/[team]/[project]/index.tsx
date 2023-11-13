@@ -665,12 +665,6 @@ const Data = () => {
           )}
         </div>
         <div className="sm:col-span-9 md:col-span-10">
-          {numFiles > 0 && (
-            <p
-              style={{ paddingBottom: 20 }}
-              className="text-right text-xs text-neutral-500"
-            >{`${numFiles} files indexed`}</p>
-          )}
           {loadingFiles && (
             <div className="relative min-h-[200px]">
               <SkeletonTable onDark loading />
@@ -805,7 +799,7 @@ const Data = () => {
             </table>
           )}
           {paginatedFiles && paginatedFiles.length > 0 && (
-            <div className="flex flex-row gap-2 py-4">
+            <div className="flex flex-row items-center gap-2 py-4">
               <Button
                 variant="plain"
                 buttonSize="xs"
@@ -822,6 +816,10 @@ const Data = () => {
               >
                 Next
               </Button>
+              <div className="flex-grow" />
+              {numFiles > 0 && (
+                <span className="flex-none whitespace-nowrap text-right text-xs text-neutral-500">{`${numFiles} files indexed`}</span>
+              )}
             </div>
           )}
         </div>
