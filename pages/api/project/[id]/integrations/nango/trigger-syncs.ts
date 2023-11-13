@@ -18,8 +18,6 @@ type Data = {
 
 const allowedMethods = ['POST'];
 
-const nango = getNangoServerInstance();
-
 const supabase = createServiceRoleSupabaseClient();
 
 const triggerSyncForSource = async (data: SyncData) => {
@@ -34,6 +32,8 @@ const triggerSyncForSource = async (data: SyncData) => {
   }
 
   await getOrCreateRunningSyncQueueForSource(supabase, sourceId);
+
+  const nango = getNangoServerInstance();
 
   const syncStatuses = await nango.syncStatus(
     data.integrationId,

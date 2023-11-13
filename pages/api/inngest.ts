@@ -70,8 +70,6 @@ type Events = {
 
 type NamedEvent<T extends keyof Events> = Events[T] & { name: T };
 
-const nango = getNangoServerInstance();
-
 export const inngest = new Inngest({
   id: 'markprompt',
   schemas: new EventSchemas().fromRecord<Events>(),
@@ -96,6 +94,8 @@ const syncNangoRecords = inngest.createFunction(
       supabase,
       sourceSyncData.id,
     );
+
+    const nango = getNangoServerInstance();
 
     const recordIncludingErrors = (await nango.getRecords<any>({
       providerConfigKey: event.data.providerConfigKey,
