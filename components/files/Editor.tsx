@@ -34,9 +34,10 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
   const { project } = useProject();
   const { sources } = useSources();
 
+  console.log('filePath', JSON.stringify(filePath, null, 2));
   const { data: file, error } = useSWR(
     project?.id && filePath
-      ? `/api/project/${project.id}/files/${encodeURIComponent(filePath)}`
+      ? `/api/files/by-path/${encodeURIComponent(filePath)}`
       : null,
     fetcher<DbFile>,
   );
@@ -105,8 +106,12 @@ export const Editor: FC<EditorProps> = ({ filePath }) => {
   if (!file || !source) {
     return (
       <div className="flex flex-col items-center gap-2 p-4 text-sm text-neutral-300">
-        The file is not accessible. Please retrain your data, and make sure to
-        enable &ldquo;force retrain&rdquo;.
+        The file is not accessible. Please sync your data again, and if the
+        problem persists,{' '}
+        <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`}>
+          contact support
+        </a>
+        .
       </div>
     );
   }
