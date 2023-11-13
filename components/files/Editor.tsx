@@ -137,6 +137,9 @@ export const Editor: FC<EditorProps> = ({
     );
   }
 
+  console.log('file', JSON.stringify(file, null, 2));
+  console.log('source', JSON.stringify(source, null, 2));
+
   if (!file || !source) {
     return (
       <div className="p-4 text-sm text-neutral-300">
