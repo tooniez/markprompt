@@ -11,14 +11,17 @@ import { getFileIdBySourceAndPath } from '@/lib/api';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
+import { convertToMarkdown } from '@/lib/markdown';
 import {
   fetcher,
   getDisplayPathForPath,
+  getFileType,
   getFullURLForPath,
   getIconForSource,
   getLabelForSource,
   getURLForSource,
 } from '@/lib/utils';
+import { getFileNameForSourceAtPath } from '@/lib/utils.nodeps';
 import { getFileTitle } from '@/lib/utils.non-edge';
 import { DbFile } from '@/types/types';
 
@@ -106,15 +109,21 @@ export const Editor: FC<EditorProps> = ({
       // return { markdownContent: '', filename: '' };
     }
 
-    // const filename = getFileNameForSourceAtPath(source, file.path);
-    // const fileType =
-    //   (file.internal_metadata as any)?.contentType ?? getFileType(filename);
+    // TODO: remove this in the future. This is for backwards
+    // compatibility for sources that have not yet been synced with
+    // the new system, which stores the converted Markdown as the
+    // raw_content.
+    if (!(source.data as any).connectionId) {
+      const filename = getFileNameForSourceAtPath(source, file.path);
+      const fileType =
+        (file.internal_metadata as any)?.contentType ?? getFileType(filename);
+      const m = matter(file.raw_content);
+      return convertToMarkdown(m.content.trim(), fileType, undefined);
+    }
+
     const m = matter(file.raw_content);
     return m.content.trim();
-    // const markdownContent = convertToMarkdown(m.content.trim(), fileType);
-    // return { markdownContent, filename };
-    // }, [file?.raw_content, file?.internal_metadata, file?.path, source]);
-  }, [file?.raw_content, source]);
+  }, [file?.internal_metadata, file?.path, file?.raw_content, source]);
 
   if (loading) {
     return (
