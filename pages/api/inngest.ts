@@ -79,6 +79,7 @@ const syncNangoRecords = inngest.createFunction(
   { id: 'sync-nango-records' },
   { event: 'nango/sync' },
   async ({ event, step }) => {
+    console.log('[INNGEST] START');
     const supabase = createServiceRoleSupabaseClient();
 
     const sourceSyncData = await getSourceSyncData(
@@ -103,6 +104,8 @@ const syncNangoRecords = inngest.createFunction(
       model: event.data.model,
       delta: event.data.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
+
+    console.log('[INNGEST] getRecords', recordIncludingErrors.length);
 
     const records = recordIncludingErrors.filter((r) => !r.error);
 
@@ -141,6 +144,11 @@ const syncNangoRecords = inngest.createFunction(
 
     // Delete files
 
+    console.log(
+      '[INNGEST] Deleting',
+      JSON.stringify(filesIdsToDelete, null, 2),
+    );
+
     await step.sendEvent('delete-files', {
       name: 'markprompt/files.delete',
       data: { ids: filesIdsToDelete, sourceId: sourceSyncData.id },
@@ -154,6 +162,11 @@ const syncNangoRecords = inngest.createFunction(
       syncMetadata?.processorOptions ||
       (await getProjectConfigData(supabase, projectId)).markpromptConfig
         .processorOptions;
+
+    console.log(
+      '[INNGEST] processorOptions',
+      JSON.stringify(processorOptions, null, 2),
+    );
 
     const trainEvents = records
       .filter((record) => {
@@ -173,6 +186,8 @@ const syncNangoRecords = inngest.createFunction(
           },
         };
       });
+
+    console.log('trainEvents', trainEvents.length);
 
     await step.sendEvent('train-files', trainEvents);
 
