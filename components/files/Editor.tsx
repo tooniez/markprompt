@@ -113,7 +113,9 @@ export const Editor: FC<EditorProps> = ({
     // compatibility for sources that have not yet been synced with
     // the new system, which stores the converted Markdown as the
     // raw_content.
-    if (!(source.data as any).connectionId) {
+    const insertedAt = new Date(source.inserted_at);
+    const newSyncArchitectureReleaseDate = new Date('2023-11-12');
+    if (insertedAt.getTime() < newSyncArchitectureReleaseDate.getTime()) {
       const filename = getFileNameForSourceAtPath(source, file.path);
       const fileType =
         (file.internal_metadata as any)?.contentType ?? getFileType(filename);
