@@ -37,7 +37,7 @@ export default withProjectAccess(
 
       if (!data) {
         console.error('File not found');
-        return res.status(404).json({ error: `File ${id} not found.` });
+        return res.status(404).json({ error: `File ${path} not found.` });
       }
 
       return res.status(200).json(data);
