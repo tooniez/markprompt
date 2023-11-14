@@ -65,17 +65,6 @@ export const DocsLayout: FC<DocsLayoutProps> = ({ content, toc }: any) => {
                 </div>
                 <TableOfContents toc={toc} currentSection={currentSection} />
               </div>
-              <p className="fixed bottom-4 -ml-4 rounded-full bg-black/20 px-4 py-2 text-sm text-neutral-700 backdrop-blur transition hover:text-neutral-300">
-                Powered by{' '}
-                <a
-                  href="https://motif.land"
-                  className="subtle-underline"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Motif
-                </a>
-              </p>
             </div>
             <div className="relative w-full max-w-full overflow-hidden pt-32 md:pl-72">
               <ProseContainer>

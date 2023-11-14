@@ -227,17 +227,6 @@ export const BlogLayout: FC<BlogLayoutProps> = ({
             </div>
           </div>
         </MarkdocContext.Provider>
-        <p className="pb-16 pt-16 text-center text-sm text-neutral-700 backdrop-blur transition hover:text-neutral-300">
-          Powered by{' '}
-          <a
-            href="https://motif.land"
-            className="subtle-underline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Motif
-          </a>
-        </p>
       </div>
     </>
   );
