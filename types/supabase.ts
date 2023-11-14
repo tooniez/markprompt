@@ -117,6 +117,7 @@ export interface Database {
           embedding: string | null
           file_id: number
           id: number
+          index_in_file: number | null
           meta: Json | null
           token_count: number | null
         }
@@ -127,6 +128,7 @@ export interface Database {
           embedding?: string | null
           file_id: number
           id?: number
+          index_in_file?: number | null
           meta?: Json | null
           token_count?: number | null
         }
@@ -137,6 +139,7 @@ export interface Database {
           embedding?: string | null
           file_id?: number
           id?: number
+          index_in_file?: number | null
           meta?: Json | null
           token_count?: number | null
         }
