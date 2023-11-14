@@ -13,7 +13,7 @@ export type WebsitePagesSyncMetadata = {
   includeRegexes?: string[];
   excludeRegexes?: string[];
   requestHeaders?: RequestHeader[];
-  targetSelectors?: string;
+  includeSelectors?: string;
   excludeSelectors?: string;
   processorOptions?: MarkdownProcessorOptions;
 };

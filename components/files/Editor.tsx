@@ -109,10 +109,11 @@ export const Editor: FC<EditorProps> = ({
       // return { markdownContent: '', filename: '' };
     }
 
-    // TODO: remove this in the future. This is for backwards
+    // TODO: remove this in the future. This is for backward
     // compatibility for sources that have not yet been synced with
-    // the new system, which stores the converted Markdown as the
-    // raw_content.
+    // the new system. In the new system, raw_content gets the value
+    // of the processed Markdown. In the old system, the raw value of
+    // the content is stored, e.g. raw HTML.
     const insertedAt = new Date(source.inserted_at);
     const newSyncArchitectureReleaseDate = new Date('2023-11-12');
     if (insertedAt.getTime() < newSyncArchitectureReleaseDate.getTime()) {
@@ -120,7 +121,13 @@ export const Editor: FC<EditorProps> = ({
       const fileType =
         (file.internal_metadata as any)?.contentType ?? getFileType(filename);
       const m = matter(file.raw_content);
-      return convertToMarkdown(m.content.trim(), fileType, undefined);
+      return convertToMarkdown(
+        m.content.trim(),
+        fileType,
+        undefined,
+        undefined,
+        undefined,
+      );
     }
 
     const m = matter(file.raw_content);
@@ -136,9 +143,6 @@ export const Editor: FC<EditorProps> = ({
       </div>
     );
   }
-
-  console.log('file', JSON.stringify(file, null, 2));
-  console.log('source', JSON.stringify(source, null, 2));
 
   if (!file || !source) {
     return (

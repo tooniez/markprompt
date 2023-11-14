@@ -85,19 +85,19 @@ declare enum AuthModes {
     ApiKey = "API_KEY",
     App = "APP"
 }
-interface AppCredentials {
-    type?: AuthModes.App;
+interface AppCredentials extends CredentialsCommon {
+    type: AuthModes.App;
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
 }
-interface BasicApiCredentials {
-    type?: AuthModes.Basic;
+interface BasicApiCredentials extends CredentialsCommon {
+    type: AuthModes.Basic;
     username: string;
     password: string;
 }
-interface ApiKeyCredentials {
-    type?: AuthModes.ApiKey;
+interface ApiKeyCredentials extends CredentialsCommon {
+    type: AuthModes.ApiKey;
     apiKey: string;
 }
 interface CredentialsCommon<T = Record<string, any>> {
@@ -212,7 +212,7 @@ export const NangoFlows = [
       {
         "name": "salesforce-knowledge",
         "type": "sync",
-        "runs": "every day",
+        "runs": "every week",
         "track_deletes": false,
         "auto_start": false,
         "attributes": {},
@@ -266,8 +266,8 @@ export const NangoFlows = [
       {
         "name": "salesforce-knowledge-sandbox",
         "type": "sync",
-        "runs": "every day",
-        "track_deletes": false,
+        "runs": "every week",
+        "track_deletes": true,
         "auto_start": false,
         "attributes": {},
         "returns": [
@@ -320,8 +320,8 @@ export const NangoFlows = [
       {
         "name": "salesforce-case",
         "type": "sync",
-        "runs": "every day",
-        "track_deletes": false,
+        "runs": "every week",
+        "track_deletes": true,
         "auto_start": false,
         "attributes": {},
         "returns": [
@@ -374,8 +374,8 @@ export const NangoFlows = [
       {
         "name": "salesforce-case-sandbox",
         "type": "sync",
-        "runs": "every day",
-        "track_deletes": false,
+        "runs": "every week",
+        "track_deletes": true,
         "auto_start": false,
         "attributes": {},
         "returns": [
@@ -428,7 +428,7 @@ export const NangoFlows = [
       {
         "name": "notion-pages",
         "type": "sync",
-        "runs": "every day",
+        "runs": "every week",
         "track_deletes": true,
         "auto_start": false,
         "attributes": {},

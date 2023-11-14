@@ -53,6 +53,8 @@ export type FileTrainEventData = {
   file: NangoFileWithMetadata;
   projectId: Project['id'];
   sourceId: DbSource['id'];
+  includeSelectors: string | undefined;
+  excludeSelectors: string | undefined;
   processorOptions: MarkdownProcessorOptions | undefined;
 };
 
@@ -101,10 +103,10 @@ const syncNangoRecords = inngest.createFunction(
       providerConfigKey: event.data.providerConfigKey,
       connectionId: event.data.connectionId,
       model: event.data.model,
-      delta: event.data.queryTimeStamp || undefined,
+      // delta: event.data.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
 
-    console.log('[INNGEST] getRecords', recordIncludingErrors.length);
+    console.debug('[INNGEST] getRecords', recordIncludingErrors.length);
 
     const records = recordIncludingErrors.filter((r) => !r.error);
 
@@ -171,6 +173,8 @@ const syncNangoRecords = inngest.createFunction(
             file: record,
             sourceId: sourceSyncData.id,
             projectId,
+            includeSelectors: syncMetadata?.includeSelectors,
+            excludeSelectors: syncMetadata?.excludeSelectors,
             processorOptions,
           },
         };
@@ -226,6 +230,8 @@ export const runTrainFile = async (data: FileTrainEventData) => {
   const sourceId = data.sourceId;
   const projectId = data.projectId;
 
+  console.debug('[INNGEST] runTrainFile', nangoFile.id);
+
   if (!nangoFile?.id || nangoFile.error) {
     return;
   }
@@ -257,6 +263,8 @@ export const runTrainFile = async (data: FileTrainEventData) => {
     ? await convertToMarkdown(
         nangoFile.content,
         nangoFile.contentType,
+        data.includeSelectors,
+        data.excludeSelectors,
         data.processorOptions,
       )
     : '';

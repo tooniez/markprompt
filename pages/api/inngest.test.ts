@@ -338,6 +338,8 @@ describe('inngest', () => {
         },
         projectId: 'test-project-id',
         sourceId: 'test-source-id',
+        includeSelectors: undefined,
+        excludeSelectors: undefined,
         processorOptions: undefined,
       };
 

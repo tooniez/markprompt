@@ -3,3 +3,4 @@ types/supabase.ts
 node_modules/
 coverage/
 external/nango-integrations/models.ts
+external/nango-integrations/dist/

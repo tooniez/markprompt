@@ -1,2 +1,3 @@
 .next/
 external/nango-integrations/models.ts
+external/nango-integrations/dist/
