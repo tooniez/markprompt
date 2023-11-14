@@ -326,7 +326,7 @@ export const runTrainFile = async (data: FileTrainEventData) => {
 
   const sectionsData = sectionsWithEmbeddings.map<
     Omit<FileSections, 'id' | 'token_count'>
-  >((section) => {
+  >((section, index) => {
     return {
       file_id: newFileId,
       content: section.content,
@@ -336,6 +336,7 @@ export const runTrainFile = async (data: FileTrainEventData) => {
       embedding: section.embedding as any,
       cf_file_meta: meta as Json,
       cf_project_id: projectId,
+      index_in_file: index,
     };
   });
 
