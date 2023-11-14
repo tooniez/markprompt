@@ -103,7 +103,7 @@ const syncNangoRecords = inngest.createFunction(
       providerConfigKey: event.data.providerConfigKey,
       connectionId: event.data.connectionId,
       model: event.data.model,
-      delta: event.data.queryTimeStamp || undefined,
+      // delta: event.data.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
 
     console.debug('[INNGEST] getRecords', recordIncludingErrors.length);
