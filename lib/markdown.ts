@@ -299,7 +299,7 @@ export const htmlToFileSectionData = (
 ): FileSectionsData | undefined => {
   const $ = load(content);
   const title = $('title').text()?.trim();
-  const md = htmlToMarkdown(content);
+  const md = htmlToMarkdown(content, undefined, undefined);
 
   const fileSectionsData = md
     ? markdownToFileSectionData(md, false, markpromptConfig.processorOptions)
@@ -315,6 +315,8 @@ export const htmlToFileSectionData = (
 export const convertToMarkdown = (
   content: string,
   fileType: FileType | undefined,
+  includeSelectors: string | undefined,
+  excludeSelectors: string | undefined,
   processorOptions: MarkdownProcessorOptions | undefined,
 ): string => {
   let markdown = '';
@@ -326,7 +328,7 @@ export const convertToMarkdown = (
       markdown = rstToMarkdown(content);
       break;
     case 'html':
-      markdown = htmlToMarkdown(content);
+      markdown = htmlToMarkdown(content, includeSelectors, excludeSelectors);
       break;
     default:
       markdown = content;

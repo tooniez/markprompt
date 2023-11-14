@@ -168,7 +168,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
           includeRegexes: syncMetadata?.includeRegexes?.join('\n') || '',
           excludeRegexes: syncMetadata?.excludeRegexes?.join('\n') || '',
           requestHeaders: syncMetadata?.requestHeaders || [],
-          targetSelectors: syncMetadata?.targetSelectors || '',
+          includeSelectors: syncMetadata?.includeSelectors || '',
           excludeSelectors: syncMetadata?.excludeSelectors || '',
           processorOptions: syncMetadata?.processorOptions
             ? JSON.stringify(syncMetadata.processorOptions, null, 2)
@@ -193,7 +193,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
             includeRegexes: toRegexpList(values.includeRegexes),
             excludeRegexes: toRegexpList(values.excludeRegexes),
             requestHeaders: values.requestHeaders,
-            targetSelectors: values.targetSelectors,
+            includeSelectors: values.includeSelectors,
             excludeSelectors: values.excludeSelectors,
             processorOptions: parseProcessorOptions(values.processorOptions),
           };
@@ -284,11 +284,11 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                 </FormSubHeading>
               </FormHeadingGroup>
               <FormField>
-                <FormLabel>Target selectors</FormLabel>
+                <FormLabel>Include selector</FormLabel>
                 <Field
                   className="flex-grow font-mono text-xs"
                   type="text"
-                  name="targetSelectors"
+                  name="includeSelectors"
                   inputSize="sm"
                   placeholder={'E.g. div.main-article-content'}
                   as={NoAutoInput}
@@ -302,7 +302,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                   type="text"
                   name="excludeSelectors"
                   inputSize="sm"
-                  placeholder={'E.g. nav, aside, .summary > blockquote'}
+                  placeholder={'E.g. #footer,.summary > blockquote'}
                   as={NoAutoInput}
                   disabled={isSubmitting || forceDisabled}
                 />

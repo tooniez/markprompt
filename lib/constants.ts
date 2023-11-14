@@ -35,10 +35,10 @@ export const EMBEDDING_MODEL = 'text-embedding-ada-002';
 
 // Requests per minute
 export const OPENAI_RPM = {
-  'text-embedding-ada-002': 3000,
+  'text-embedding-ada-002': 5_000,
 };
 
 // Tokens per minute
 export const OPENAI_TPM = {
-  'text-embedding-ada-002': 1000000,
+  'text-embedding-ada-002': 5_000_000,
 };

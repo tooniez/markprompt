@@ -45,14 +45,28 @@ const options = {
 describe('markdown', () => {
   describe('convertToMarkdown', () => {
     it('should convert to Markdown content', () => {
-      expect(convertToMarkdown(content, 'md', options)).toStrictEqual(
-        convertToMarkdown(contentTransformed, 'md', options),
+      expect(
+        convertToMarkdown(content, 'md', undefined, undefined, options),
+      ).toStrictEqual(
+        convertToMarkdown(
+          contentTransformed,
+          'md',
+          undefined,
+          undefined,
+          options,
+        ),
       );
     });
 
     it('should convert remove JSX tags', () => {
       expect(
-        convertToMarkdown('# Heading\n\n<JSXTag />', 'mdx', undefined),
+        convertToMarkdown(
+          '# Heading\n\n<JSXTag />',
+          'mdx',
+          undefined,
+          undefined,
+          undefined,
+        ),
       ).toStrictEqual('# Heading');
     });
 
@@ -61,6 +75,8 @@ describe('markdown', () => {
         convertToMarkdown(
           '---\ntitle: Some title\n---\n\n# Heading\n\n<JSXTag />',
           'md',
+          undefined,
+          undefined,
           undefined,
         ),
       ).toStrictEqual('# Heading');
@@ -71,6 +87,8 @@ describe('markdown', () => {
         convertToMarkdown(
           '<body><h1>Heading</h1><pre>var i = 0;</pre></body>',
           'html',
+          undefined,
+          undefined,
           undefined,
         ),
       ).toStrictEqual('# Heading\n\n```\nvar i = 0;\n```');

@@ -80,6 +80,7 @@ export const splitWithinTokenCutoff = (
   return subSections;
 };
 
+// TODO: deprecate this and handle via Inngest
 const processFileData = async (
   file: FileData,
   markpromptConfig: MarkpromptConfig,
