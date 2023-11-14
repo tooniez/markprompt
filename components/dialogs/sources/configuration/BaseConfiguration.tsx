@@ -212,7 +212,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
                 )}
               </div>
               <Button
-                className="flex-none"
+                className="pointer-events-none flex-none opacity-0"
                 loading={syncStarted}
                 disabled={lastSyncQueue?.status === 'running'}
                 variant="cta"
