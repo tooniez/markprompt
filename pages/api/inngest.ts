@@ -219,7 +219,9 @@ export const createFullMeta = async (file: NangoFileWithMetadata) => {
 
   meta = { ...file.meta, ...meta };
   if (file.title) {
-    meta = { title: file.title, ...meta };
+    // If title is set during Nango sync, use that instead of the
+    // title inferred from metadata.
+    meta = { ...meta, title: file.title };
   }
 
   return meta;

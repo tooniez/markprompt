@@ -1,9 +1,13 @@
 import { FileReferenceFileData } from '@markprompt/core';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import cn from 'classnames';
 import { parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import matter from 'gray-matter';
+import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
+import { Language } from 'prism-react-renderer';
 import { FC, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
@@ -11,6 +15,7 @@ import { getFileIdBySourceAndPath } from '@/lib/api';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
+import { useLocalStorage } from '@/lib/hooks/utils/use-localstorage';
 import { convertToMarkdown } from '@/lib/markdown';
 import {
   fetcher,
@@ -26,6 +31,8 @@ import { getFileTitle } from '@/lib/utils.non-edge';
 import { DbFile } from '@/types/types';
 
 import { MarkdownContainer } from '../emails/templates/MarkdownContainer';
+import Button from '../ui/Button';
+import { CodePanel } from '../ui/CodePanel';
 import { SkeletonTable } from '../ui/Skeletons';
 
 dayjs.extend(localizedFormat);
@@ -38,6 +45,29 @@ type EditorProps = {
   highlightSectionSlug?: string;
 };
 
+type EditorView = 'preview' | 'markdown' | 'source';
+
+const viewToDisplayName = (view: EditorView) => {
+  switch (view) {
+    case 'preview':
+      return 'Preview';
+    case 'markdown':
+      return 'Markdown';
+    case 'source':
+      return 'Source';
+  }
+};
+
+const toLanguage = (file: DbFile): Language => {
+  const contentType = (file.internal_metadata as any)?.contentType;
+  switch (contentType) {
+    case 'html':
+      return 'markup';
+    default:
+      return 'markdown';
+  }
+};
+
 export const Editor: FC<EditorProps> = ({
   fileId: _fileId,
   fileReferenceData,
@@ -45,6 +75,7 @@ export const Editor: FC<EditorProps> = ({
   const { project } = useProject();
   const { sources } = useSources();
   const [fileId, setFileId] = useState(_fileId);
+  const [view, setView] = useLocalStorage<EditorView>('editor:view', 'preview');
 
   useEffect(() => {
     if (!project?.id || _fileId || !fileReferenceData) {
@@ -104,14 +135,14 @@ export const Editor: FC<EditorProps> = ({
   }, [source]);
 
   const markdownContent = useMemo(() => {
-    if (!file?.raw_content || !source) {
+    const markdown = file?.processed_markdown ?? file?.raw_content;
+    if (!markdown || !source || !file?.path) {
       return '';
-      // return { markdownContent: '', filename: '' };
     }
 
     // TODO: remove this in the future. This is for backward
     // compatibility for sources that have not yet been synced with
-    // the new system. In the new system, raw_content gets the value
+    // the new system. In the new system, processed_markdown gets the value
     // of the processed Markdown. In the old system, the raw value of
     // the content is stored, e.g. raw HTML.
     const insertedAt = new Date(source.inserted_at);
@@ -120,7 +151,7 @@ export const Editor: FC<EditorProps> = ({
       const filename = getFileNameForSourceAtPath(source, file.path);
       const fileType =
         (file.internal_metadata as any)?.contentType ?? getFileType(filename);
-      const m = matter(file.raw_content);
+      const m = matter(markdown);
       return convertToMarkdown(
         m.content.trim(),
         fileType,
@@ -130,9 +161,15 @@ export const Editor: FC<EditorProps> = ({
       );
     }
 
-    const m = matter(file.raw_content);
+    const m = matter(markdown);
     return m.content.trim();
-  }, [file?.internal_metadata, file?.path, file?.raw_content, source]);
+  }, [
+    file?.internal_metadata,
+    file?.path,
+    file?.raw_content,
+    file?.processed_markdown,
+    source,
+  ]);
 
   if (loading) {
     return (
@@ -217,9 +254,81 @@ export const Editor: FC<EditorProps> = ({
             })}
           </div>
         )} */}
+      <div className="flex flex-row items-center justify-end gap-4">
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <div className="flex flex-row items-center gap-1">
+              <span className="text-xs text-neutral-500">View as:</span>
+              <button
+                className={cn(
+                  'flex flex-none select-none flex-row items-center gap-1 rounded-md py-1.5 px-1.5 text-xs text-neutral-500 outline-none transition hover:bg-neutral-900 hover:text-neutral-400',
+                )}
+                aria-label="View"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {viewToDisplayName(view || 'preview')}
+                <ChevronDown className="h-3 w-3" />
+              </button>
+            </div>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              className="animate-menu-up dropdown-menu-content mr-2 min-w-[160px]"
+              sideOffset={5}
+            >
+              <DropdownMenu.Item
+                asChild
+                onSelect={() => {
+                  setView('preview');
+                }}
+              >
+                <span className="dropdown-menu-item dropdown-menu-item-noindent block">
+                  Preview
+                </span>
+              </DropdownMenu.Item>
+              {file?.processed_markdown && (
+                <DropdownMenu.Item
+                  asChild
+                  onSelect={() => {
+                    setView('markdown');
+                  }}
+                >
+                  <span className="dropdown-menu-item dropdown-menu-item-noindent block">
+                    Markdown
+                  </span>
+                </DropdownMenu.Item>
+              )}
+              <DropdownMenu.Item
+                asChild
+                onSelect={() => {
+                  setView('source');
+                }}
+              >
+                <span className="dropdown-menu-item dropdown-menu-item-noindent block">
+                  Source
+                </span>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+      </div>
       <div className="mt-8 pb-24">
         {markdownContent ? (
-          <MarkdownContainer markdown={markdownContent} />
+          <>
+            {view === 'preview' ? (
+              <MarkdownContainer markdown={markdownContent} />
+            ) : (
+              <CodePanel
+                language={view === 'markdown' ? 'markdown' : toLanguage(file)}
+                code={
+                  (view === 'markdown'
+                    ? file?.processed_markdown
+                    : file?.raw_content) || ''
+                }
+                noPreWrap
+              />
+            )}
+          </>
         ) : (
           <p className="select-none text-sm text-neutral-700">Empty content</p>
         )}

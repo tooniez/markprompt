@@ -31,6 +31,8 @@ export default async function fetchData(nango: NangoSync) {
     query += ` AND (${filters})`;
   }
 
+  // query += ` LIMIT 5`;
+
   // if (nango.lastSyncDate) {
   //   query += ` AND LastModifiedDate > ${nango.lastSyncDate.toISOString()}`;
   // }
