@@ -16,11 +16,6 @@ type Data =
 
 const allowedMethods = ['GET', 'DELETE'];
 
-// {
-//   "Id": "ka05c000000YjVDAA0",
-//   "title": "Booking unpaid classes - Messenger[ai]",
-//   "Language": "en_US"
-// }
 const getTableSortColumnId = (sortingId: string): 'updated_at' | 'title' => {
   switch (sortingId) {
     case 'name':
