@@ -610,11 +610,11 @@ export const getGitHubOwnerRepoString = (url: string) => {
   return `${info.owner}/${info.repo}`;
 };
 
-export const getLabelForSource = (source: Source, inline: boolean) => {
+export const getLabelForSource = (source: Source, inline: boolean): string => {
   switch (source.type) {
     case 'github': {
       const data = source.data as GitHubSourceDataType;
-      return getGitHubOwnerRepoString(data.url);
+      return getGitHubOwnerRepoString(data.url) || data.url;
     }
     case 'motif': {
       const data = source.data as MotifSourceDataType;

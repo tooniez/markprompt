@@ -1,8 +1,9 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { PostgrestError } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { withProjectAccess } from '@/lib/middleware/common';
-import { safeParseInt } from '@/lib/utils.nodeps';
+import { safeParseInt, safeParseJSON } from '@/lib/utils.nodeps';
 import { Database } from '@/types/supabase';
 import { DbFileWithoutContent, Project } from '@/types/types';
 
@@ -32,14 +33,39 @@ export default withProjectAccess(
         Math.min(safeParseInt(req.query.limit as string, 50), 50),
       );
       const page = safeParseInt(req.query.page as string, 0);
+
+      let sourceIdsFilter: string[] = [];
+      if ((req.query.sourceIdsFilter as string)?.length > 0) {
+        sourceIdsFilter = JSON.parse(req.query.sourceIdsFilter as string);
+      }
+
       const startOffset = page * limit;
-      const { data: files, error } = await supabase
-        .from('files')
-        .select(
-          'id,path,meta,project_id,updated_at,source_id,checksum,token_count,internal_metadata, sources!inner (project_id)',
-        )
-        .eq('sources.project_id', projectId)
-        .range(startOffset, startOffset + limit - 1);
+
+      let error: PostgrestError | null = null;
+      let files: DbFileWithoutContent[] | null = null;
+
+      if (!sourceIdsFilter || sourceIdsFilter.length === 0) {
+        const { data, error: _error } = await supabase
+          .from('files')
+          .select(
+            'id,path,meta,project_id,updated_at,source_id,checksum,token_count,internal_metadata, sources!inner (project_id)',
+          )
+          .eq('sources.project_id', projectId)
+          .range(startOffset, startOffset + limit - 1);
+        files = data;
+        error = _error;
+      } else {
+        const { data, error: _error } = await supabase
+          .from('files')
+          .select(
+            'id,path,meta,project_id,updated_at,source_id,checksum,token_count,internal_metadata, sources!inner (id,project_id)',
+          )
+          .eq('sources.project_id', projectId)
+          .in('sources.id', sourceIdsFilter)
+          .range(startOffset, startOffset + limit - 1);
+        files = data;
+        error = _error;
+      }
 
       if (error) {
         return res.status(400).json({ error: error.message });
