@@ -366,7 +366,7 @@ const trainFile = inngest.createFunction(
     // the OpenAI rate limits.
     concurrency: {
       // 100 is the limit of our current plan on Inngest.
-      limit: Math.min(100, runTrainFileConcurrency),
+      limit: Math.min(100, Math.round(runTrainFileConcurrency)),
     },
   },
   { event: 'markprompt/file.train' },
