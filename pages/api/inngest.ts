@@ -349,13 +349,24 @@ export const runTrainFile = async (data: FileTrainEventData) => {
   }
 };
 
+// Estimate the number of calls we can run concurrently given the OpenAI
+// limits.
+const runTrainFileAvgExecutionTime = 1000;
+const runTrainFileAvgExecutionsPerMinute = 60000 / runTrainFileAvgExecutionTime;
+const runTrainFileConcurrency =
+  OPENAI_RPM[EMBEDDING_MODEL] / runTrainFileAvgExecutionsPerMinute;
+
 // The train function adheres to the OpenAI rate limits.
 const trainFile = inngest.createFunction(
   {
     id: 'train-file',
-    rateLimit: {
-      limit: OPENAI_RPM[EMBEDDING_MODEL],
-      period: '1m',
+    // We need to run the functions with concurrency rather than rate limits.
+    // Rate limits will just fail the runs that exceed the rate limits. Instead,
+    // we estimate how much we can execute in parallel while staying within
+    // the OpenAI rate limits.
+    concurrency: {
+      // 100 is the limit of our current plan on Inngest.
+      limit: Math.min(100, runTrainFileConcurrency),
     },
   },
   { event: 'markprompt/file.train' },

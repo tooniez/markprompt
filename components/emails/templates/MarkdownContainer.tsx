@@ -85,13 +85,16 @@ export const MarkdownContainer: FC<MarkdownContainerProps> = ({
           ),
           code: (props) => {
             const match = /language-(\w+)/.exec(props.className || '');
+            const inlineProp = props.inline
+              ? { inline: props.inline.toString() }
+              : {};
             return match ? (
               <Code
                 language={(match[1] as Language) || 'javascript'}
                 code={(props.children?.[0] as string)?.trim() || ''}
               />
             ) : (
-              <code className={props.className} {...props} />
+              <code className={props.className} {...props} {...inlineProp} />
             );
           },
           ...components,
