@@ -307,7 +307,7 @@ export default async function fetchData(nango: NangoSync) {
       JSON.stringify(
         filesToSave.map((f) => ({
           id: f.id,
-          content: f.content?.slice(0, 200),
+          content: f.content?.slice(0, 200).replace(/\\n/, ' '),
         })),
       ),
   );

@@ -277,11 +277,11 @@ const SourceItem: FC<SourceItemProps> = ({
             className="animate-menu-up dropdown-menu-content mr-2 min-w-[160px]"
             sideOffset={5}
           >
-            {/* <DropdownMenu.Item asChild onSelect={() => onSyncSelected()}>
+            <DropdownMenu.Item asChild onSelect={() => onSyncSelected()}>
               <span className="dropdown-menu-item dropdown-menu-item-noindent block">
                 Sync now
               </span>
-            </DropdownMenu.Item> */}
+            </DropdownMenu.Item>
             <DropdownMenu.Item
               asChild
               onSelect={() => {
