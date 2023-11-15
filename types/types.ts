@@ -121,7 +121,10 @@ export type FileData = {
 };
 export type PathContentData = Pick<FileData, 'path' | 'content'>;
 export type Checksum = Pick<DbFile, 'path' | 'checksum'>;
-export type DbFileWithoutContent = Omit<DbFile, 'raw_content'>;
+export type DbFileWithoutContent = Omit<
+  DbFile,
+  'raw_content' | 'processed_markdown'
+>;
 export type SourceType = Pick<Source, 'type'>['type'];
 export type PromptQueryStat = Pick<
   DbQueryStat,
