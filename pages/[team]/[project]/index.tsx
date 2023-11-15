@@ -898,7 +898,7 @@ const Data = () => {
               </Button>
               <div className="flex-grow" />
               {numFilesWithFilters > 0 && (
-                <span className="flex-none whitespace-nowrap pr-2 text-right text-xs text-neutral-400">
+                <span className="flex-none whitespace-nowrap pr-2 text-right text-xs text-neutral-500">
                   Viewing {(page || 0) * pageSize + 1}–
                   {Math.min(numFilesWithFilters, ((page || 0) + 1) * pageSize)}{' '}
                   of {pluralize(numFilesWithFilters, 'result', 'results')}
