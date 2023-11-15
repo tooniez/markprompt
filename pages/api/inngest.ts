@@ -316,6 +316,7 @@ export const runTrainFile = async (data: FileTrainEventData) => {
     meta,
     internalMetadata,
     checksum,
+    nangoFile.content || '',
     markdown || '',
     tokenCount,
   );

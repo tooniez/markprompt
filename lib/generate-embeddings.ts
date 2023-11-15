@@ -242,6 +242,7 @@ export const generateFileEmbeddingsAndSaveFile = async (
       internalMetadata,
       checksum,
       file.content,
+      file.content,
     );
   }
 
