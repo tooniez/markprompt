@@ -653,38 +653,7 @@ const Data = () => {
           )}
           {projectHasFiles && (
             <div className="flex h-full flex-grow flex-col overflow-hidden">
-              <div className="flex flex-none flex-row items-center gap-4 px-4 py-3 sm:px-2">
-                <MultiSelectFilterButton
-                  legend="Source"
-                  title="Filter by source"
-                  plus={sourceIdsFilter.length - 1}
-                  activeLabel={(() => {
-                    if (sourceIdsFilter.length === 0) {
-                      return undefined;
-                    }
-                    const firstSource = sources.find(
-                      (s) => s.id === sourceIdsFilter[0],
-                    );
-                    if (!firstSource) {
-                      return undefined;
-                    }
-                    return getLabelForSource(firstSource, false);
-                  })()}
-                  options={sources.map((s) => getLabelForSource(s, false))}
-                  checkedIndices={sourceIdsFilter.map((id) =>
-                    sources.findIndex((s) => s.id === id),
-                  )}
-                  onSubmit={(indices) => {
-                    setSourceIdsFilter(
-                      indices.map((i) => sources[i]?.id).filter(isPresent),
-                    );
-                  }}
-                  onClear={() => {
-                    setSourceIdsFilter([]);
-                  }}
-                  align="start"
-                />
-                <div className="flex-grow" />
+              <div className="flex flex-none flex-row items-center gap-4 px-4 py-3 sm:pl-2 sm:pr-6">
                 {numSelected > 0 && (
                   <>
                     <span className="flex-none whitespace-nowrap text-xs text-neutral-500">
@@ -747,6 +716,37 @@ const Data = () => {
                     </Dialog.Root>
                   </>
                 )}
+                <div className="flex-grow" />
+                <MultiSelectFilterButton
+                  legend="Source"
+                  title="Filter by source"
+                  plus={sourceIdsFilter.length - 1}
+                  activeLabel={(() => {
+                    if (sourceIdsFilter.length === 0) {
+                      return undefined;
+                    }
+                    const firstSource = sources.find(
+                      (s) => s.id === sourceIdsFilter[0],
+                    );
+                    if (!firstSource) {
+                      return undefined;
+                    }
+                    return getLabelForSource(firstSource, false);
+                  })()}
+                  options={sources.map((s) => getLabelForSource(s, false))}
+                  checkedIndices={sourceIdsFilter.map((id) =>
+                    sources.findIndex((s) => s.id === id),
+                  )}
+                  onSubmit={(indices) => {
+                    setSourceIdsFilter(
+                      indices.map((i) => sources[i]?.id).filter(isPresent),
+                    );
+                  }}
+                  onClear={() => {
+                    setSourceIdsFilter([]);
+                  }}
+                  align="start"
+                />
               </div>
               <div className="h-full flex-grow overflow-y-auto px-4 sm:px-0">
                 {hasPaginatedFiles ? (
