@@ -1550,6 +1550,28 @@ export interface Database {
           total_completion_completion_tokens: number
         }[]
       }
+      get_files: {
+        Args: {
+          q_project_id: string
+          q_order_by_column: string
+          q_order_by_direction: string
+          q_limit: number
+          q_offset: number
+          q_source_ids: string[]
+        }
+        Returns: {
+          id: number
+          path: string
+          meta: Json
+          title: string
+          project_id: string
+          updated_at: string
+          source_id: string
+          checksum: string
+          token_count: number
+          internal_metadata: Json
+        }[]
+      }
       get_insights_query_histogram: {
         Args: {
           project_id: string

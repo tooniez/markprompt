@@ -1,7 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import {
-  SortingState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
@@ -43,10 +42,13 @@ import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
-import { useLocalStorage } from '@/lib/hooks/utils/use-localstorage';
 import { getTier } from '@/lib/stripe/tiers';
-import { getIconForSource, getLabelForSource, pluralize } from '@/lib/utils';
-import { getNameForPath } from '@/lib/utils.nodeps';
+import {
+  canDeleteSource,
+  getIconForSource,
+  getLabelForSource,
+  pluralize,
+} from '@/lib/utils';
 import { getFileTitle } from '@/lib/utils.non-edge';
 import {
   DbFile,
@@ -313,12 +315,17 @@ const Data = () => {
     mutate: mutateFiles,
     loading: loadingFiles,
     page,
+    pageSize,
     setPage,
     hasMorePages,
-    mutateCount,
-    numFiles,
+    getSortOrder,
+    toggleSorting,
     sourceIdsFilter,
     setSourceIdsFilter,
+    mutateCount,
+    mutateCountWithFilters,
+    numFiles,
+    numFilesWithFilters,
   } = useFiles();
   const {
     sources,
@@ -337,9 +344,6 @@ const Data = () => {
   const [sourceToRemove, setSourceToRemove] = useState<DbSource | undefined>(
     undefined,
   );
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: 'updated', desc: true },
-  ]);
   const [openFileId, setOpenFileId] = useState<DbFile['id'] | undefined>(
     undefined,
   );
@@ -394,13 +398,12 @@ const Data = () => {
     token_count: number | undefined;
   }>();
 
-  // const pageHasSelectableItems = useMemo(() => {
-  //   return (paginatedFiles || []).some((f) => {
-  //     const source = sources.find((s) => s.id === f.source_id);
-  //     // return source && canDeleteSource(source.type);
-  //     return !!source;
-  //   });
-  // }, [paginatedFiles, sources]);
+  const pageHasSelectableItems = useMemo(() => {
+    return (paginatedFiles || []).some((f) => {
+      const source = sources.find((s) => s.id === f.source_id);
+      return source && canDeleteSource(source.type);
+    });
+  }, [paginatedFiles, sources]);
 
   const columns: any = useMemo(
     () => [
@@ -408,9 +411,9 @@ const Data = () => {
         id: 'select',
         enableSorting: false,
         header: ({ table }) => {
-          // if (!pageHasSelectableItems) {
-          //   return <></>;
-          // }
+          if (!pageHasSelectableItems) {
+            return <></>;
+          }
           return (
             <IndeterminateCheckbox
               checked={table.getIsAllRowsSelected()}
@@ -456,15 +459,15 @@ const Data = () => {
           );
         },
         footer: (info) => info.column.id,
-        sortingFn: (rowA, rowB, columnId) => {
-          const valueA: { sourceId: DbSource['id']; path: string } =
-            rowA.getValue(columnId);
-          const valueB: { sourceId: DbSource['id']; path: string } =
-            rowB.getValue(columnId);
-          const nameA = getNameForPath(sources, valueA.sourceId, valueA.path);
-          const nameB = getNameForPath(sources, valueB.sourceId, valueB.path);
-          return nameA.localeCompare(nameB);
-        },
+        // sortingFn: (rowA, rowB, columnId) => {
+        //   const valueA: { sourceId: DbSource['id']; path: string } =
+        //     rowA.getValue(columnId);
+        //   const valueB: { sourceId: DbSource['id']; path: string } =
+        //     rowB.getValue(columnId);
+        //   const nameA = getNameForPath(sources, valueA.sourceId, valueA.path);
+        //   const nameB = getNameForPath(sources, valueB.sourceId, valueB.path);
+        //   return nameA.localeCompare(nameB);
+        // },
       }),
       // columnHelper.accessor((row) => row.path, {
       //   id: 'path',
@@ -492,6 +495,7 @@ const Data = () => {
       columnHelper.accessor((row) => row.source_id, {
         id: 'source',
         header: () => <span>Source</span>,
+        enableSorting: false,
         cell: (info) => {
           const value = info.getValue();
           const source = sources.find((s) => s.id === value);
@@ -521,23 +525,23 @@ const Data = () => {
         footer: (info) => info.column.id,
       }),
     ],
-    // [columnHelper, pageHasSelectableItems, sources],
-    [columnHelper, sources],
+    [columnHelper, pageHasSelectableItems, sources],
   );
 
   const table = useReactTable({
     data: paginatedFiles || [],
     columns,
-    state: { rowSelection, sorting },
+    // state: { rowSelection, sorting },
+    state: { rowSelection },
     enableRowSelection: (row) => {
-      // const value = row.getValue('source');
-      // const source = sources.find((s) => s.id === value);
-      // if (source && !canDeleteSource(source.type)) {
-      //   return false;
-      // }
+      const value = row.getValue('source');
+      const source = sources.find((s) => s.id === value);
+      if (source && !canDeleteSource(source.type)) {
+        return false;
+      }
       return true;
     },
-    onSortingChange: setSorting,
+    // onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -728,6 +732,7 @@ const Data = () => {
                           );
                           await mutateFileStats();
                           await mutateCount();
+                          await mutateCountWithFilters();
                           setRowSelection([]);
                           setIsDeleting(false);
                           toast.success(
@@ -747,12 +752,17 @@ const Data = () => {
                 {hasPaginatedFiles ? (
                   <table className="w-full max-w-full flex-grow table-fixed border-collapse">
                     <colgroup>
-                      <col className="w-[32px]" />
+                      <col
+                        className={cn({
+                          'w-[32px]': pageHasSelectableItems,
+                          'w-0': !pageHasSelectableItems,
+                        })}
+                      />
                       <col className="w-[calc(80%-152px)]" />
                       <col className="w-[20%]" />
                       <col className="w-[160px]" />
                     </colgroup>
-                    <thead>
+                    <thead className="sticky top-0">
                       {table.getHeaderGroups().map((headerGroup) => (
                         <tr key={headerGroup.id}>
                           {headerGroup.headers.map((header) => {
@@ -760,8 +770,22 @@ const Data = () => {
                               <th
                                 key={header.id}
                                 colSpan={header.colSpan}
-                                className="sticky top-0 cursor-pointer bg-neutral-1100 py-2 px-2 text-left text-sm font-bold text-neutral-300"
-                                onClick={header.column.getToggleSortingHandler()}
+                                className={cn(
+                                  'sticky top-0 bg-neutral-1100 py-2 px-2 text-left text-sm font-bold text-neutral-300',
+                                  {
+                                    'cursor-pointer':
+                                      header.column.getCanSort(),
+                                  },
+                                )}
+                                onClick={() => {
+                                  if (header.column.getCanSort()) {
+                                    toggleSorting(
+                                      header.id,
+                                      header.id === 'name' ? 'asc' : 'desc',
+                                    );
+                                  }
+                                }}
+                                // header.column.getToggleSortingHandler()}
                               >
                                 {header.isPlaceholder ? null : (
                                   <div className="flex flex-row  items-center gap-2">
@@ -772,12 +796,17 @@ const Data = () => {
                                     {header.id !== 'select' && (
                                       <>
                                         <span className="text-sm font-normal text-neutral-600">
-                                          {{
-                                            asc: '↓',
-                                            desc: '↑',
-                                          }[
-                                            header.column.getIsSorted() as string
-                                          ] ?? null}
+                                          {(() => {
+                                            const sortOrder = getSortOrder(
+                                              header.id,
+                                            );
+                                            if (sortOrder === 'asc') {
+                                              return '↑';
+                                            } else if (sortOrder === 'desc') {
+                                              return '↓';
+                                            }
+                                            return '';
+                                          })()}
                                         </span>
                                       </>
                                     )}
@@ -854,7 +883,7 @@ const Data = () => {
               <Button
                 variant="plain"
                 buttonSize="xs"
-                onClick={() => setPage(page - 1)}
+                onClick={() => setPage((page || 0) - 1)}
                 disabled={page === 0 || loadingFiles}
               >
                 Previous
@@ -862,14 +891,18 @@ const Data = () => {
               <Button
                 variant="plain"
                 buttonSize="xs"
-                onClick={() => setPage(page + 1)}
+                onClick={() => setPage((page || 0) + 1)}
                 disabled={!hasMorePages || loadingFiles}
               >
                 Next
               </Button>
               <div className="flex-grow" />
-              {numFiles > 0 && (
-                <span className="flex-none whitespace-nowrap pr-2 text-right text-xs text-neutral-500">{`${numFiles} files indexed`}</span>
+              {numFilesWithFilters > 0 && (
+                <span className="flex-none whitespace-nowrap pr-2 text-right text-xs text-neutral-400">
+                  Viewing {(page || 0) * pageSize + 1}–
+                  {Math.min(numFilesWithFilters, ((page || 0) + 1) * pageSize)}{' '}
+                  of {pluralize(numFilesWithFilters, 'result', 'results')}
+                </span>
               )}
             </div>
           )}
