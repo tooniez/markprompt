@@ -3,7 +3,7 @@ import { FC, useMemo } from 'react';
 
 import { NavSubtabsLayout, NavSubtabsLayoutProps } from './NavSubtabsLayout';
 
-export const ProjectSettingsLayout: FC<NavSubtabsLayoutProps> = (props) => {
+export const ProjectLayout: FC<NavSubtabsLayoutProps> = (props) => {
   const router = useRouter();
 
   const subTabItems = useMemo(() => {

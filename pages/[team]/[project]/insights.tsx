@@ -9,7 +9,7 @@ import { PromptStatusTag } from '@/components/insights/PromptStatusTag';
 import { QueriesDataTable } from '@/components/insights/queries/table';
 import { QueriesHistogram } from '@/components/insights/queries-histogram';
 import { TopReferences } from '@/components/insights/top-references';
-import { ProjectSettingsLayout } from '@/components/layouts/ProjectSettingsLayout';
+import { ProjectLayout } from '@/components/layouts/ProjectLayout';
 import Button from '@/components/ui/Button';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
 import {
@@ -325,7 +325,7 @@ const Insights = () => {
   }, [project?.id, setProcessingQueryStats, team, mutateQueries]);
 
   return (
-    <ProjectSettingsLayout
+    <ProjectLayout
       title="Insights"
       titleComponent={
         <div className="flex items-center">
@@ -568,7 +568,7 @@ const Insights = () => {
         open={queryStatDialogOpen}
         setOpen={setQueryStatDialogOpen}
       />
-    </ProjectSettingsLayout>
+    </ProjectLayout>
   );
 };
 

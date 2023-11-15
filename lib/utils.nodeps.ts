@@ -290,3 +290,11 @@ export const deepMerge = (target: any | null, source: any | null) => {
   }
   return result;
 };
+
+export const formatTimezone = (timezone: string) => {
+  const parts = timezone.split('/');
+  if (parts.length > 1) {
+    return `${parts[1].replace('_', ' ')} (${parts[0].replace('_', ' ')})`;
+  }
+  return timezone;
+};
