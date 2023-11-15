@@ -5,7 +5,7 @@ import { parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import matter from 'gray-matter';
-import { ChevronDown } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { Language } from 'prism-react-renderer';
 import { FC, useEffect, useMemo, useState } from 'react';
@@ -171,6 +171,15 @@ export const Editor: FC<EditorProps> = ({
     source,
   ]);
 
+  const computedView = useMemo(() => {
+    // For backwards compatibility, where processed_markdown is not present,
+    // show the preview.
+    if (!file?.processed_markdown && view === 'markdown') {
+      return 'preview';
+    }
+    return view;
+  }, [view, file?.processed_markdown]);
+
   if (loading) {
     return (
       <div className="w-full p-4">
@@ -266,17 +275,34 @@ export const Editor: FC<EditorProps> = ({
                 aria-label="View"
                 onClick={(e) => e.stopPropagation()}
               >
-                {viewToDisplayName(view || 'preview')}
+                {viewToDisplayName(computedView || 'preview')}
                 <ChevronDown className="h-3 w-3" />
               </button>
             </div>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
             <DropdownMenu.Content
-              className="animate-menu-up dropdown-menu-content mr-2 min-w-[160px]"
+              className="animate-menu-up dropdown-menu-content min-w-[160px]"
               sideOffset={5}
             >
-              <DropdownMenu.Item
+              <DropdownMenu.CheckboxItem
+                className="dropdown-menu-item dropdown-menu-item-indent"
+                checked={computedView === 'preview'}
+                onClick={() => {
+                  setView('preview');
+                }}
+              >
+                <>
+                  {computedView === 'preview' && (
+                    <DropdownMenu.ItemIndicator className="dropdown-menu-item-indicator">
+                      <Check className="h-3 w-3" />
+                    </DropdownMenu.ItemIndicator>
+                  )}
+                  Preview
+                </>
+              </DropdownMenu.CheckboxItem>
+
+              {/* <DropdownMenu.Item
                 asChild
                 onSelect={() => {
                   setView('preview');
@@ -285,29 +311,41 @@ export const Editor: FC<EditorProps> = ({
                 <span className="dropdown-menu-item dropdown-menu-item-noindent block">
                   Preview
                 </span>
-              </DropdownMenu.Item>
+              </DropdownMenu.Item> */}
               {file?.processed_markdown && (
-                <DropdownMenu.Item
-                  asChild
-                  onSelect={() => {
+                <DropdownMenu.CheckboxItem
+                  className="dropdown-menu-item dropdown-menu-item-indent"
+                  checked={computedView === 'markdown'}
+                  onClick={() => {
                     setView('markdown');
                   }}
                 >
-                  <span className="dropdown-menu-item dropdown-menu-item-noindent block">
+                  <>
+                    {computedView === 'markdown' && (
+                      <DropdownMenu.ItemIndicator className="dropdown-menu-item-indicator">
+                        <Check className="h-3 w-3" />
+                      </DropdownMenu.ItemIndicator>
+                    )}
                     Markdown
-                  </span>
-                </DropdownMenu.Item>
+                  </>
+                </DropdownMenu.CheckboxItem>
               )}
-              <DropdownMenu.Item
-                asChild
-                onSelect={() => {
+              <DropdownMenu.CheckboxItem
+                className="dropdown-menu-item dropdown-menu-item-indent"
+                checked={computedView === 'source'}
+                onClick={() => {
                   setView('source');
                 }}
               >
-                <span className="dropdown-menu-item dropdown-menu-item-noindent block">
+                <>
+                  {computedView === 'source' && (
+                    <DropdownMenu.ItemIndicator className="dropdown-menu-item-indicator">
+                      <Check className="h-3 w-3" />
+                    </DropdownMenu.ItemIndicator>
+                  )}
                   Source
-                </span>
-              </DropdownMenu.Item>
+                </>
+              </DropdownMenu.CheckboxItem>
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
@@ -315,17 +353,19 @@ export const Editor: FC<EditorProps> = ({
       <div className="mt-8 pb-24">
         {markdownContent ? (
           <>
-            {view === 'preview' ? (
+            {computedView === 'preview' ? (
               <MarkdownContainer markdown={markdownContent} />
             ) : (
               <CodePanel
-                language={view === 'markdown' ? 'markdown' : toLanguage(file)}
+                className="text-sm"
+                language={
+                  computedView === 'markdown' ? 'markdown' : toLanguage(file)
+                }
                 code={
-                  (view === 'markdown'
+                  (computedView === 'markdown'
                     ? file?.processed_markdown
                     : file?.raw_content) || ''
                 }
-                noPreWrap
               />
             )}
           </>
