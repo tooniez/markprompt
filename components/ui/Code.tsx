@@ -12,10 +12,10 @@ export const Code: FC<CodeProps> = ({
   code,
   language,
   noPreWrap,
-  className,
+  className: _className,
 }) => {
   return (
-    <div className={className}>
+    <div className={_className}>
       <Highlight {...defaultProps} code={code} language={language}>
         {({ className, tokens, getLineProps, getTokenProps }) => (
           <pre

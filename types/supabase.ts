@@ -195,6 +195,7 @@ export interface Database {
           internal_metadata: Json | null
           meta: Json | null
           path: string
+          processed_markdown: string | null
           project_id: string | null
           raw_content: string | null
           source_id: string | null
@@ -207,6 +208,7 @@ export interface Database {
           internal_metadata?: Json | null
           meta?: Json | null
           path: string
+          processed_markdown?: string | null
           project_id?: string | null
           raw_content?: string | null
           source_id?: string | null
@@ -219,6 +221,7 @@ export interface Database {
           internal_metadata?: Json | null
           meta?: Json | null
           path?: string
+          processed_markdown?: string | null
           project_id?: string | null
           raw_content?: string | null
           source_id?: string | null

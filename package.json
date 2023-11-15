@@ -13,7 +13,8 @@
     "version": "changeset version && npm install",
     "test": "vitest run --coverage",
     "test:watch": "vitest watch --coverage",
-    "analyze": "ANALYZE=true npm run build"
+    "analyze": "ANALYZE=true npm run build",
+    "deploy-syncs": "pushd external/nango-integrations; nango deploy prod; pushd; curl -X PUT https://markprompt.com/api/inngest"
   },
   "overrides": {
     "@types/react": "^18.0.0",

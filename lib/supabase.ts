@@ -477,6 +477,7 @@ export const createFile = async (
   internalMetadata: any,
   checksum: string,
   rawContent: string,
+  processedMarkdown: string,
   tokenCount?: number,
 ): Promise<DbFile['id'] | undefined> => {
   const { error, data } = await supabase
@@ -490,6 +491,7 @@ export const createFile = async (
         internal_metadata: internalMetadata,
         checksum,
         raw_content: rawContent,
+        processed_markdown: processedMarkdown,
         ...(tokenCount ? { token_count: tokenCount } : {}),
       },
     ])
