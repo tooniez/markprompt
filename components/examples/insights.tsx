@@ -4,8 +4,10 @@ import { CalendarIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
+import { Database } from '@/types/supabase';
 import {
   DateCountHistogramEntry,
+  NangoIntegrationId,
   ReferenceWithOccurrenceCount,
 } from '@/types/types';
 
@@ -22,13 +24,77 @@ import {
 } from '../ui/Table';
 import { Tag } from '../ui/Tag';
 
+const sourceType = 'nango' as Database['public']['Enums']['source_type'];
+const integrationIdWebsitePages = 'website-pages' as NangoIntegrationId;
+const integrationIdNotionPages = 'notion-pages' as NangoIntegrationId;
+
 const sampleTopReferences: ReferenceWithOccurrenceCount[] = [
-  { path: '/help/getting-started', occurrences: 134 },
-  { path: '/help/tutorials/react', occurrences: 121 },
-  { path: '/blog/zendesk', occurrences: 119 },
-  { path: '/blog', occurrences: 104 },
-  { path: '/help/articles/cli', occurrences: 97 },
-  { path: '/help/faq', occurrences: 83 },
+  {
+    title: 'Getting started',
+    path: '/help/getting-started',
+    sourceData: {
+      integrationId: integrationIdWebsitePages,
+      connectionId: '123',
+      name: 'Markprompt blog',
+    },
+    sourceType,
+    occurrences: 134,
+  },
+  {
+    title: 'React tutorial',
+    path: '/help/tutorials/react',
+    sourceData: {
+      integrationId: integrationIdNotionPages,
+      connectionId: '123',
+      name: 'Markprompt blog',
+    },
+    sourceType,
+    occurrences: 121,
+  },
+  {
+    title: 'Zendesk guide',
+    path: '/blog/zendesk',
+    sourceData: {
+      integrationId: integrationIdWebsitePages,
+      connectionId: '123',
+      name: 'Markprompt blog',
+    },
+    sourceType,
+    occurrences: 119,
+  },
+  {
+    title: 'Blog',
+    path: '/blog',
+    sourceData: {
+      integrationId: integrationIdWebsitePages,
+      connectionId: '123',
+      name: 'Markprompt blog',
+    },
+    sourceType,
+    occurrences: 104,
+  },
+  {
+    title: 'CLI',
+    path: '/help/articles/cli',
+    sourceData: {
+      integrationId: integrationIdWebsitePages,
+      connectionId: '123',
+      name: 'Markprompt blog',
+    },
+    sourceType,
+    occurrences: 97,
+  },
+  {
+    title: 'FAQ',
+    path: '/help/faq',
+    sourceData: {
+      integrationId: integrationIdNotionPages,
+      connectionId: '123',
+      name: 'Markprompt blog',
+    },
+    sourceType,
+    occurrences: 83,
+  },
 ].map((s) => ({ ...s, source_type: 'github', source_data: null }));
 
 type Question = {
