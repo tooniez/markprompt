@@ -147,10 +147,11 @@ export type PromptQueryStatFull = Pick<
 > & { conversationMetadata: any | undefined };
 
 export type ReferenceWithOccurrenceCount = {
+  title: string;
   path: string;
+  sourceType: Database['public']['Enums']['source_type'];
+  sourceData: NangoSourceDataType;
   occurrences: number;
-  source_type: SourceType;
-  source_data: SourceDataType | null;
 };
 
 export type PromptQueryHistogram = {

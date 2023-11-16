@@ -1714,9 +1714,9 @@ export interface Database {
           match_count: number
         }
         Returns: {
+          title: string
           path: string
-          source_type: string
-          source_data: Json
+          source: Json
           occurrences: number
         }[]
       }
