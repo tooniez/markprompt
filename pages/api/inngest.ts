@@ -11,6 +11,7 @@ import {
 } from '@/lib/constants';
 import { bulkCreateSectionEmbeddings } from '@/lib/file-processing';
 import {
+  deleteConnection,
   getNangoServerInstance,
   getSourceSyncData,
 } from '@/lib/integrations/nango.server';
@@ -60,7 +61,7 @@ export type FileTrainEventData = {
 
 type Events = {
   'nango/sync': {
-    data: NangoSyncPayload;
+    data: { nangoSyncPayload: NangoSyncPayload; shouldPause: boolean };
   };
   'markprompt/file.train': {
     data: FileTrainEventData;
@@ -82,10 +83,11 @@ const syncNangoRecords = inngest.createFunction(
   { event: 'nango/sync' },
   async ({ event, step }) => {
     const supabase = createServiceRoleSupabaseClient();
+    const nangoSyncPayload = event.data.nangoSyncPayload;
 
     const sourceSyncData = await getSourceSyncData(
       supabase,
-      event.data.connectionId,
+      nangoSyncPayload.connectionId,
     );
 
     if (!sourceSyncData) {
@@ -100,10 +102,10 @@ const syncNangoRecords = inngest.createFunction(
     const nango = getNangoServerInstance();
 
     const recordIncludingErrors = (await nango.getRecords<any>({
-      providerConfigKey: event.data.providerConfigKey,
-      connectionId: event.data.connectionId,
-      model: event.data.model,
-      // delta: event.data.queryTimeStamp || undefined,
+      providerConfigKey: nangoSyncPayload.providerConfigKey,
+      connectionId: nangoSyncPayload.connectionId,
+      model: nangoSyncPayload.model,
+      // delta: nangoSyncPayload.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
 
     console.debug('[INNGEST] getRecords', recordIncludingErrors.length);
@@ -132,6 +134,9 @@ const syncNangoRecords = inngest.createFunction(
         message: 'Project not found',
         level: 'error',
       });
+      if (event.data.shouldPause) {
+        await deleteConnection(supabase, nangoSyncPayload.connectionId);
+      }
       return { updated: 0, deleted: 0 };
     }
 
@@ -190,6 +195,10 @@ const syncNangoRecords = inngest.createFunction(
       )}. Deleted ${pluralize(filesIdsToDelete.length, 'file', 'files')}.`,
       level: 'info',
     });
+
+    if (event.data.shouldPause) {
+      await deleteConnection(supabase, nangoSyncPayload.connectionId);
+    }
 
     return { updated: trainEvents.length, deleted: filesIdsToDelete.length };
   },

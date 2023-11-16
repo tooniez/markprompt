@@ -29,7 +29,11 @@ import type { SalesforceDatabaseType } from '@/lib/integrations/salesforce';
 import { isUrl } from '@/lib/utils';
 import { DbSource, Project } from '@/types/types';
 
-import { SyncStep, addSourceAndNangoConnection } from './shared';
+import {
+  SyncStep,
+  addSourceAndNangoConnection,
+  isIntegrationAuthed,
+} from './shared';
 import { Step, ConnectSourceStepState } from './Step';
 import { SalesforceDatabaseSettings } from '../settings-panes/SalesforceDatabase';
 import SourceDialog from '../SourceDialog';
@@ -64,7 +68,7 @@ const ConnectStep = ({
           name,
           { instance_url: instanceUrl },
           undefined,
-          true,
+          isIntegrationAuthed(integrationId),
         );
         if (!newSource) {
           toast.error('Error connecting to Salesforce');

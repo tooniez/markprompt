@@ -26,7 +26,11 @@ import { addSchemaRemoveTrailingSlashAndHash } from '@/lib/utils';
 import { guessShortNameFromTitle } from '@/lib/utils.nodeps';
 import { DbSource, Project } from '@/types/types';
 
-import { SyncStep, addSourceAndNangoConnection } from './shared';
+import {
+  SyncStep,
+  addSourceAndNangoConnection,
+  isIntegrationAuthed,
+} from './shared';
 import { Step, ConnectSourceStepState } from './Step';
 import { WebsitePagesSettings } from '../settings-panes/WebsitePages';
 import SourceDialog from '../SourceDialog';
@@ -90,7 +94,7 @@ const ConnectStep = ({
             name,
             undefined,
             { baseUrl: url },
-            false,
+            isIntegrationAuthed(integrationId),
           );
 
           if (!newSource) {
