@@ -202,22 +202,32 @@ const SourceItem: FC<SourceItemProps> = ({
 }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const Icon = getIconForSource(source);
+  const canConfigure = source.type === 'nango';
+  const canSync = source.type === 'nango';
 
   return (
     <div
       className={cn(
-        'flex gap-2 rounded-md px-2 text-sm outline-none transition hover:bg-neutral-900',
+        'flex gap-2 rounded-md px-2 text-sm outline-none transition',
         {
           'bg-neutral-1000': isDropdownOpen,
+          'hover:bg-neutral-900': canConfigure,
         },
       )}
     >
       <button
         className={cn(
-          'flex flex-grow cursor-pointer flex-row items-center gap-2 overflow-hidden py-1.5 text-sm outline-none',
-          { 'bg-neutral-1000': isDropdownOpen },
+          'flex flex-grow flex-row items-center gap-2 overflow-hidden py-1.5 text-sm outline-none',
+          {
+            'bg-neutral-1000': isDropdownOpen,
+            'cursor-pointer': canConfigure,
+            'cursor-default': !canConfigure,
+          },
         )}
         onClick={() => {
+          if (!canConfigure) {
+            return;
+          }
           onConfigureSelected('configuration');
         }}
       >
@@ -225,9 +235,11 @@ const SourceItem: FC<SourceItemProps> = ({
         <p className="flex-grow overflow-hidden truncate text-left text-neutral-100">
           {getLabelForSource(source, false)}
         </p>
-        <div className="flex-none">
-          <SyncStatusIndicator syncQueue={syncQueue} />
-        </div>
+        {canSync && (
+          <div className="flex-none">
+            <SyncStatusIndicator syncQueue={syncQueue} />
+          </div>
+        )}
       </button>
       <DropdownMenu.Root open={isDropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenu.Trigger asChild>
@@ -249,34 +261,38 @@ const SourceItem: FC<SourceItemProps> = ({
             className="animate-menu-up dropdown-menu-content mr-2 min-w-[160px]"
             sideOffset={5}
           >
-            <DropdownMenu.Item asChild onSelect={() => onSyncSelected()}>
-              <span className="dropdown-menu-item dropdown-menu-item-noindent block">
-                Sync now
-              </span>
-            </DropdownMenu.Item>
-            <DropdownMenu.Item
-              asChild
-              onSelect={() => {
-                setDropdownOpen(false);
-                onConfigureSelected('configuration');
-              }}
-            >
-              <span className="dropdown-menu-item dropdown-menu-item-noindent block">
-                Configure
-              </span>
-            </DropdownMenu.Item>
-            <DropdownMenu.Item
-              asChild
-              onSelect={() => {
-                setDropdownOpen(false);
-                onConfigureSelected('logs');
-              }}
-            >
-              <span className="dropdown-menu-item dropdown-menu-item-noindent block">
-                Show logs
-              </span>
-            </DropdownMenu.Item>
-            <DropdownMenu.Separator className="dropdown-menu-separator" />
+            {canConfigure && (
+              <>
+                <DropdownMenu.Item asChild onSelect={() => onSyncSelected()}>
+                  <span className="dropdown-menu-item dropdown-menu-item-noindent block">
+                    Sync now
+                  </span>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  asChild
+                  onSelect={() => {
+                    setDropdownOpen(false);
+                    onConfigureSelected('configuration');
+                  }}
+                >
+                  <span className="dropdown-menu-item dropdown-menu-item-noindent block">
+                    Configure
+                  </span>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  asChild
+                  onSelect={() => {
+                    setDropdownOpen(false);
+                    onConfigureSelected('logs');
+                  }}
+                >
+                  <span className="dropdown-menu-item dropdown-menu-item-noindent block">
+                    Show logs
+                  </span>
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator className="dropdown-menu-separator" />
+              </>
+            )}
             <DropdownMenu.Item
               asChild
               onSelect={() => {
