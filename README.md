@@ -20,33 +20,13 @@ Markprompt is an AI-native platform for customer support. Connect any source of 
   </a>
 </p>
 
-## Running
-
-Start the Node application:
-
-```sh
-npm run dev
-```
-
-Start the Inngest local service:
-
-```sh
-npx inngest-cli@latest dev
-```
-
-Start the ngrok tunnel:
-
-```sh
-ngrok http --domain=your-domain.ngrok.com 3000
-```
-
 ## Deploying
 
 When reploying, make sure to run the following steps:
 
 ### Nango
 
-Deploy Nango syncs to production:
+Deploy Nango syncs:
 
 ```sh
 cd external/nango-integrations

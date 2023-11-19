@@ -207,6 +207,9 @@ function mapRecords(
           return { ...acc, [key]: record[key] };
         }, {}),
       },
+      lastModified: record.LastModifiedDate
+        ? new Date(record.LastModifiedDate)
+        : new Date(),
       error: undefined,
     };
   });

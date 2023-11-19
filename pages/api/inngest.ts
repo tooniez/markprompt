@@ -9,6 +9,7 @@ import {
   MAX_CHUNK_LENGTH,
   MIN_SECTION_CONTENT_LENGTH,
   OPENAI_RPM,
+  GITHUB_RPH,
 } from '@/lib/constants';
 import { bulkCreateSectionEmbeddings } from '@/lib/file-processing';
 import {
@@ -42,6 +43,7 @@ import {
   DbSource,
   FileSections,
   NangoFileWithMetadata,
+  NangoIntegrationId,
   Project,
 } from '@/types/types';
 
@@ -68,12 +70,28 @@ type Events = {
   'markprompt/file.train': {
     data: FileTrainEventData;
   };
+  'markprompt/github-file-slow.train': {
+    data: FileTrainEventData;
+  };
+  'markprompt/github-file-fast.train': {
+    data: FileTrainEventData;
+  };
   'markprompt/files.delete': {
     data: { ids: NangoFileWithMetadata['id'][]; sourceId: string };
   };
 };
 
 type NamedEvent<T extends keyof Events> = Events[T] & { name: T };
+
+type TrainEventName =
+  | 'markprompt/file.train'
+  | 'markprompt/github-file-fast.train'
+  | 'markprompt/github-file-slow.train';
+
+type TrainEventId =
+  | 'train-files'
+  | 'train-github-files-fast'
+  | 'train-github-files-slow';
 
 export const inngest = new Inngest({
   id: 'markprompt',
@@ -92,10 +110,12 @@ const syncNangoRecords = inngest.createFunction(
       nangoSyncPayload.connectionId,
     );
 
-    const sourceSyncData = await getSourceSyncData(
-      supabase,
-      nangoSyncPayload.connectionId,
-    );
+    const integrationId =
+      nangoSyncPayload.providerConfigKey as NangoIntegrationId;
+
+    const connectionId = nangoSyncPayload.connectionId;
+
+    const sourceSyncData = await getSourceSyncData(supabase, connectionId);
 
     if (!sourceSyncData) {
       console.debug(
@@ -125,8 +145,8 @@ const syncNangoRecords = inngest.createFunction(
     );
 
     const recordIncludingErrors = (await nango.getRecords<any>({
-      providerConfigKey: nangoSyncPayload.providerConfigKey,
-      connectionId: nangoSyncPayload.connectionId,
+      providerConfigKey: integrationId,
+      connectionId: connectionId,
       model: nangoSyncPayload.model,
       // delta: nangoSyncPayload.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
@@ -193,20 +213,36 @@ const syncNangoRecords = inngest.createFunction(
       (await getProjectConfigData(supabase, projectId)).markpromptConfig
         .processorOptions;
 
-    const trainEvents = records
-      .filter((record) => {
-        return (
-          record._nango_metadata.last_action === 'ADDED' ||
-          record._nango_metadata.last_action === 'UPDATED'
-        );
-      })
-      .map<NamedEvent<'markprompt/file.train'>>((record) => {
+    const trainRecords = records.filter((record) => {
+      return (
+        record._nango_metadata.last_action === 'ADDED' ||
+        record._nango_metadata.last_action === 'UPDATED'
+      );
+    });
+
+    let eventName: TrainEventName;
+    let eventId: TrainEventId;
+    if (integrationId === 'github-repo') {
+      if (trainRecords.length < 1000) {
+        eventName = 'markprompt/github-file-fast.train';
+        eventId = 'train-github-files-fast';
+      } else {
+        eventName = 'markprompt/github-file-slow.train';
+        eventId = 'train-github-files-slow';
+      }
+    } else {
+      eventName = 'markprompt/file.train';
+      eventId = 'train-files';
+    }
+
+    const trainEvents = trainRecords.map<NamedEvent<TrainEventName>>(
+      (record) => {
         // Send compressed content to maximize chances of staying below
         // the 1Mb payload limit. Base64 is required to send over the
         // wire, otherwise the compressed content gets corrupted.
         const compressedContent = compressToBase64(record.content || '');
         return {
-          name: 'markprompt/file.train',
+          name: eventName,
           data: {
             file: {
               ...record,
@@ -219,7 +255,8 @@ const syncNangoRecords = inngest.createFunction(
             processorOptions,
           },
         };
-      });
+      },
+    );
 
     await updateSyncQueue(supabase, syncQueueId, 'running', {
       message: `Start processing ${pluralize(
@@ -230,7 +267,7 @@ const syncNangoRecords = inngest.createFunction(
       level: 'info',
     });
 
-    await step.sendEvent('train-files', trainEvents);
+    await step.sendEvent(eventId, trainEvents);
 
     await updateSyncQueue(supabase, syncQueueId, 'complete', {
       message: `Updated ${pluralize(
@@ -416,12 +453,36 @@ export const runTrainFile = async (data: FileTrainEventData) => {
   }
 };
 
-// Estimate the number of calls we can run concurrently given the OpenAI
-// limits.
-const runTrainFileAvgExecutionTime = 1000;
-const runTrainFileAvgExecutionsPerMinute = 60000 / runTrainFileAvgExecutionTime;
-const runTrainFileConcurrency =
-  OPENAI_RPM[EMBEDDING_MODEL] / runTrainFileAvgExecutionsPerMinute;
+export const fetchGitHubFileContent = async (
+  owner: string,
+  repo: string,
+  path: string,
+  connectionId: string,
+): Promise<string> => {
+  const nango = getNangoServerInstance();
+
+  const res = await nango.proxy({
+    method: 'GET',
+    endpoint: `/repos/${owner}/${repo}/contents/${path}`,
+    headers: {
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+    providerConfigKey: 'github-repo',
+    connectionId: connectionId,
+    retries: 10,
+  });
+
+  return Buffer.from(res.data?.content, 'base64').toString('utf-8');
+};
+
+const getConcurrency = (
+  averageExecutionTime: number,
+  maxRequestsPerHour: number,
+) => {
+  const numExecutionsPerHour = (60 * 60 * 1000) / averageExecutionTime;
+  return Math.round(maxRequestsPerHour / numExecutionsPerHour);
+};
 
 // The train function adheres to the OpenAI rate limits.
 const trainFile = inngest.createFunction(
@@ -432,11 +493,57 @@ const trainFile = inngest.createFunction(
     // we estimate how much we can execute in parallel while staying within
     // the OpenAI rate limits.
     concurrency: {
-      // 100 is the limit of our current plan on Inngest.
-      limit: Math.min(100, Math.round(runTrainFileConcurrency)),
+      // Estimate the number of calls we can run concurrently given the OpenAI
+      // limits.
+      // Note: 100 is the limit of our current plan on Inngest.
+      limit: Math.min(
+        100,
+        getConcurrency(1000, OPENAI_RPM[EMBEDDING_MODEL] * 60),
+      ),
     },
   },
   { event: 'markprompt/file.train' },
+  async ({ event }) => {
+    return runTrainFile(event.data);
+  },
+);
+
+// The train function adheres to the GitHub rate limits, which is more
+// restrictive than the OpenAI rate limits.
+const fetchAndTrainGitHubFileSlow = inngest.createFunction(
+  {
+    id: 'train-github-file-slow',
+    // We need to run the functions with concurrency rather than rate limits.
+    // Rate limits will just fail the runs that exceed the rate limits. Instead,
+    // we estimate how much we can execute in parallel while staying within
+    // the GitHub rate limits.
+    concurrency: {
+      // Estimate the number of calls we can run concurrently given the GitHub
+      // limits.
+      // Note: 100 is the limit of our current plan on Inngest.
+      limit: Math.min(100, getConcurrency(2_000, GITHUB_RPH)),
+    },
+  },
+  { event: 'markprompt/github-file-slow.train' },
+  async ({ event }) => {
+    return runTrainFile(event.data);
+  },
+);
+
+// Same as slow, but with maximum concurrency when we are sure to not hit
+// rate limits imposed by GitHub. Instead, we just adhere to the OpenAI
+// embeddings rate limits.
+const fetchAndTrainGitHubFileFast = inngest.createFunction(
+  {
+    id: 'train-github-file-fast',
+    concurrency: {
+      limit: Math.min(
+        100,
+        getConcurrency(1000, OPENAI_RPM[EMBEDDING_MODEL] * 60),
+      ),
+    },
+  },
+  { event: 'markprompt/github-file-fast.train' },
   async ({ event }) => {
     return runTrainFile(event.data);
   },
@@ -460,5 +567,11 @@ const deleteFiles = inngest.createFunction(
 
 export default serve({
   client: inngest,
-  functions: [syncNangoRecords, trainFile, deleteFiles],
+  functions: [
+    syncNangoRecords,
+    trainFile,
+    fetchAndTrainGitHubFileFast,
+    fetchAndTrainGitHubFileSlow,
+    deleteFiles,
+  ],
 });

@@ -15,201 +15,209 @@ import {
 } from 'vitest';
 
 import { createServiceRoleSupabaseClient } from '@/lib/supabase';
+import { mockOpenAIAPIServer } from '@/lib/testing/mocks/openai-api';
+import {
+  mockSupabaseFileSections,
+  mockSupabaseFiles,
+  resetMockSupabaseData,
+  supabaseClient,
+} from '@/lib/testing/mocks/supabase-client';
 import { DbFile, FileSections, NangoFileWithMetadata } from '@/types/types';
 
 import {
   FileTrainEventData,
   createFullMeta,
+  fetchGitHubFileContent,
   isFileChanged,
   runTrainFile,
 } from './inngest';
 
-let files: DbFile[] = [];
-let fileSections: FileSections[] = [];
+// const files: DbFile[] = [];
+// const fileSections: FileSections[] = [];
 
-const server = setupServer(
-  rest.post('https://api.openai.com/v1/embeddings', async (req, res, ctx) => {
-    const body = await req.json();
-    return res(
-      ctx.status(200),
-      ctx.body(
-        JSON.stringify({
-          model: 'text-embedding-ada-002-v2',
-          object: 'list',
-          usage: { prompt_tokens: 10, total_tokens: 10 },
-          data: Array.from(Array(body.input.length).keys()).map((i) => [
-            {
-              object: 'embedding',
-              index: 0,
-              embedding: [0, 0, 0, 0, 0, 0],
-            },
-          ]),
-        }),
-      ),
-    );
-  }),
-);
+// const server = setupServer(
+//   rest.post('https://api.openai.com/v1/embeddings', async (req, res, ctx) => {
+//     const body = await req.json();
+//     return res(
+//       ctx.status(200),
+//       ctx.body(
+//         JSON.stringify({
+//           model: 'text-embedding-ada-002-v2',
+//           object: 'list',
+//           usage: { prompt_tokens: 10, total_tokens: 10 },
+//           data: Array.from(Array(body.input.length).keys()).map((i) => [
+//             {
+//               object: 'embedding',
+//               index: 0,
+//               embedding: [0, 0, 0, 0, 0, 0],
+//             },
+//           ]),
+//         }),
+//       ),
+//     );
+//   }),
+// );
 
-const supabaseClient = {
-  from: (table: string) => ({
-    select: (select: string) => ({
-      eq: (eq1: string, value1: string) => ({
-        eq: (eq2: string, value2: string) => ({
-          then: (callback: any) => {
-            if (
-              table === 'files' &&
-              select === 'id,meta,path,checksum' &&
-              eq1 === 'source_id' &&
-              eq2 === 'internal_metadata->>nangoFileId'
-            ) {
-              // getFilesIdAndCheksumBySourceAndNangoId
-              callback({
-                data: {
-                  id: 'test-file-id-1',
-                  meta: { title: 'Test title 1' },
-                  path: '/test/path/1',
-                  checksum: 'abc',
-                },
-              });
-              return {
-                catch: () => {
-                  // Do nothing
-                },
-              };
-            }
-          },
-        }),
-        limit: (limit: number) => ({
-          maybeSingle: () => ({
-            then: (callback: any) => {
-              if (
-                table === 'sources' &&
-                select === 'id' &&
-                eq1 === 'data->>connectionId'
-              ) {
-                callback({ data: { id: 'test-source-id' } });
-                return {
-                  catch: () => {
-                    // Do nothing
-                  },
-                };
-              }
-            },
-          }),
-        }),
-      }),
-      match: (obj: any) => ({
-        limit: (limit: number) => ({
-          maybeSingle: () => ({
-            then: (callback: any) => {
-              if (obj?.['source_id'] && obj?.['path']) {
-                callback({ data: { id: 'test-source-id' } });
-                return {
-                  catch: () => {
-                    // Do nothing
-                  },
-                };
-              }
-            },
-          }),
-        }),
-      }),
-    }),
-    insert: (values: any[]) => {
-      if (table === 'files') {
-        return {
-          select: (select: string) => ({
-            limit: (limit: number) => ({
-              maybeSingle: () => ({
-                then: (callback: any) => {
-                  // createFile
-                  for (const value of values) {
-                    files.push({
-                      ...value,
-                      id: Math.round(Math.pow(10, 8) * Math.random()),
-                    });
-                  }
+// const supabaseClient = {
+//   from: (table: string) => ({
+//     select: (select: string) => ({
+//       eq: (eq1: string, value1: string) => ({
+//         eq: (eq2: string, value2: string) => ({
+//           then: (callback: any) => {
+//             if (
+//               table === 'files' &&
+//               select === 'id,meta,path,checksum' &&
+//               eq1 === 'source_id' &&
+//               eq2 === 'internal_metadata->>nangoFileId'
+//             ) {
+//               // getFilesIdAndCheksumBySourceAndNangoId
+//               callback({
+//                 data: {
+//                   id: 'test-file-id-1',
+//                   meta: { title: 'Test title 1' },
+//                   path: '/test/path/1',
+//                   checksum: 'abc',
+//                 },
+//               });
+//               return {
+//                 catch: () => {
+//                   // Do nothing
+//                 },
+//               };
+//             }
+//           },
+//         }),
+//         limit: (limit: number) => ({
+//           maybeSingle: () => ({
+//             then: (callback: any) => {
+//               if (
+//                 table === 'sources' &&
+//                 select === 'id' &&
+//                 eq1 === 'data->>connectionId'
+//               ) {
+//                 callback({ data: { id: 'test-source-id' } });
+//                 return {
+//                   catch: () => {
+//                     // Do nothing
+//                   },
+//                 };
+//               }
+//             },
+//           }),
+//         }),
+//       }),
+//       match: (obj: any) => ({
+//         limit: (limit: number) => ({
+//           maybeSingle: () => ({
+//             then: (callback: any) => {
+//               if (obj?.['source_id'] && obj?.['path']) {
+//                 callback({ data: { id: 'test-source-id' } });
+//                 return {
+//                   catch: () => {
+//                     // Do nothing
+//                   },
+//                 };
+//               }
+//             },
+//           }),
+//         }),
+//       }),
+//     }),
+//     insert: (values: any[]) => {
+//       if (table === 'files') {
+//         return {
+//           select: (select: string) => ({
+//             limit: (limit: number) => ({
+//               maybeSingle: () => ({
+//                 then: (callback: any) => {
+//                   // createFile
+//                   for (const value of values) {
+//                     files.push({
+//                       ...value,
+//                       id: Math.round(Math.pow(10, 8) * Math.random()),
+//                     });
+//                   }
 
-                  callback({
-                    data: { id: files[0].id },
-                  });
-                  return {
-                    catch: () => {
-                      // Do nothing
-                    },
-                  };
-                },
-              }),
-            }),
-          }),
-        };
-      } else if (table === 'file_sections') {
-        return {
-          then: async (callback: any) => {
-            for (const value of values) {
-              fileSections.push({
-                ...value,
-                id: Math.round(Math.pow(10, 8) * Math.random()),
-              });
-            }
+//                   callback({
+//                     data: { id: files[0].id },
+//                   });
+//                   return {
+//                     catch: () => {
+//                       // Do nothing
+//                     },
+//                   };
+//                 },
+//               }),
+//             }),
+//           }),
+//         };
+//       } else if (table === 'file_sections') {
+//         return {
+//           then: async (callback: any) => {
+//             for (const value of values) {
+//               fileSections.push({
+//                 ...value,
+//                 id: Math.round(Math.pow(10, 8) * Math.random()),
+//               });
+//             }
 
-            callback({});
-            return {
-              catch: () => {
-                // Do nothing
-              },
-            };
-          },
-        };
-      }
-    },
-    delete: () => ({
-      in: (key: string, values: any[]) => ({
-        then: (callback: any) => {
-          // batchDeleteFiles
-          if (table === 'files' && key === 'id') {
-            files = files.filter((f) => !values.includes(f.id));
-          }
-          callback();
-          return {
-            catch: () => {
-              // Do nothing
-            },
-          };
-        },
-      }),
-      eq: (eqKey: string, eqValue: any) => ({
-        in: (inKey: string, inValues: any[]) => ({
-          then: (callback: any) => {
-            // batchDeleteFilesBySourceAndNangoId
-            if (
-              table === 'files' &&
-              eqKey === 'source_id' &&
-              inKey === 'internal_metadata->>nangoFileId'
-            ) {
-              files = files.filter((f) => {
-                if (f.source_id === eqValue) {
-                  return false;
-                }
-                if (
-                  inValues.includes((f.internal_metadata as any)?.nangoFileId)
-                ) {
-                  return false;
-                }
-              });
-            }
-            callback();
-            return {
-              catch: () => {
-                // Do nothing
-              },
-            };
-          },
-        }),
-      }),
-    }),
-  }),
-};
+//             callback({});
+//             return {
+//               catch: () => {
+//                 // Do nothing
+//               },
+//             };
+//           },
+//         };
+//       }
+//     },
+//     delete: () => ({
+//       in: (key: string, values: any[]) => ({
+//         then: (callback: any) => {
+//           // batchDeleteFiles
+//           if (table === 'files' && key === 'id') {
+//             files = files.filter((f) => !values.includes(f.id));
+//           }
+//           callback();
+//           return {
+//             catch: () => {
+//               // Do nothing
+//             },
+//           };
+//         },
+//       }),
+//       eq: (eqKey: string, eqValue: any) => ({
+//         in: (inKey: string, inValues: any[]) => ({
+//           then: (callback: any) => {
+//             // batchDeleteFilesBySourceAndNangoId
+//             if (
+//               table === 'files' &&
+//               eqKey === 'source_id' &&
+//               inKey === 'internal_metadata->>nangoFileId'
+//             ) {
+//               files = files.filter((f) => {
+//                 if (f.source_id === eqValue) {
+//                   return false;
+//                 }
+//                 if (
+//                   inValues.includes((f.internal_metadata as any)?.nangoFileId)
+//                 ) {
+//                   return false;
+//                 }
+//               });
+//             }
+//             callback();
+//             return {
+//               catch: () => {
+//                 // Do nothing
+//               },
+//             };
+//           },
+//         }),
+//       }),
+//     }),
+//   }),
+// };
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => supabaseClient,
@@ -301,16 +309,15 @@ describe('inngest', () => {
 
   describe('syncNangoRecords', () => {
     beforeAll(() => {
-      server.listen({ onUnhandledRequest: 'error' });
+      mockOpenAIAPIServer.listen({ onUnhandledRequest: 'error' });
     });
 
     afterEach(() => {
-      files = [];
-      fileSections = [];
+      resetMockSupabaseData();
     });
 
     afterAll(() => {
-      server.close();
+      mockOpenAIAPIServer.close();
     });
 
     it('should sync records', async () => {
@@ -331,6 +338,7 @@ describe('inngest', () => {
           ),
           contentType: 'md',
           meta: { key: 'value' },
+          lastModified: undefined,
           error: undefined,
           _nango_metadata: {
             deleted_at: null,
@@ -348,16 +356,37 @@ describe('inngest', () => {
 
       await runTrainFile(fileTrainEventData);
 
-      expect(fileSections[0].file_id).toEqual(files[0].id);
-      expect((fileSections[0] as any).meta.leadHeading.value).toEqual(heading1);
-      expect((fileSections[0] as any).content.trim()).toEqual(
+      expect(mockSupabaseFileSections[0].file_id).toEqual(
+        mockSupabaseFiles[0].id,
+      );
+      expect(
+        (mockSupabaseFileSections[0] as any).meta.leadHeading.value,
+      ).toEqual(heading1);
+      expect((mockSupabaseFileSections[0] as any).content.trim()).toEqual(
         section1Content.trim(),
       );
-      expect(fileSections[1].file_id).toEqual(files[0].id);
-      expect((fileSections[1] as any).meta.leadHeading.value).toEqual(heading2);
-      expect((fileSections[1] as any).content.trim()).toEqual(
+      expect(mockSupabaseFileSections[1].file_id).toEqual(
+        mockSupabaseFiles[0].id,
+      );
+      expect(
+        (mockSupabaseFileSections[1] as any).meta.leadHeading.value,
+      ).toEqual(heading2);
+      expect((mockSupabaseFileSections[1] as any).content.trim()).toEqual(
         section2Content.trim(),
       );
     });
+  });
+
+  describe('fetchGitHubFileContent', () => {
+    it('should fetch GitHub file content', async () => {
+      const file = await fetchGitHubFileContent(
+        'motifland',
+        'markprompt-sample-docs',
+        'docs/quick-start.mdoc',
+        'test-connection-id',
+      );
+
+      expect(file.length).toBeGreaterThanOrEqual(0);
+    }, 10000);
   });
 });

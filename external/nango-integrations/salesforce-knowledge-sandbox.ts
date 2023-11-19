@@ -200,6 +200,7 @@ function mapRecords(
           return { ...acc, [key]: record[key] };
         }, {}),
       },
+      lastModified: record.LastModifiedDate,
       error: undefined,
     };
   });

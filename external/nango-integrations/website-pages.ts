@@ -105,7 +105,7 @@ interface Metadata {
 
 type NangoWebpageFile = Pick<
   NangoFile,
-  'id' | 'path' | 'content' | 'contentType' | 'error'
+  'id' | 'path' | 'content' | 'contentType' | 'lastModified' | 'error'
 >;
 
 type PageFetchResponse = {
@@ -179,6 +179,7 @@ const fetchPageAndUrlsWithRetryWithThrows = async (
       path: url,
       content: res.data.content,
       contentType: 'html',
+      lastModified: undefined,
       error: undefined,
     },
     nextUrls: res.data.urls || [],
@@ -222,6 +223,7 @@ const fetchPageAndUrlsWithRetry =
             path: url,
             content: undefined,
             contentType: undefined,
+            lastModified: undefined,
             error: `${e}`,
           },
         };

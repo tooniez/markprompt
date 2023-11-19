@@ -190,7 +190,8 @@ export type NangoIntegrationId =
   | 'salesforce-case'
   | 'salesforce-case-sandbox'
   | 'notion-pages'
-  | 'website-pages';
+  | 'website-pages'
+  | 'github-repo';
 
 // Must match nango.yaml definition. Currently, sync id and integration id
 // are identical.
