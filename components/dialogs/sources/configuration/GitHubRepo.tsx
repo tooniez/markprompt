@@ -1,19 +1,20 @@
-import { Globe } from 'lucide-react';
 import { FC, useMemo } from 'react';
 
+import { GitHubIcon } from '@/components/icons/GitHub';
+import { Tag } from '@/components/ui/Tag';
 import useSources from '@/lib/hooks/use-sources';
 import {
   DbSource,
+  GitHubRepoSyncMetadata,
   NangoSourceDataType,
   Project,
   SourceConfigurationView,
-  WebsitePagesSyncMetadata,
 } from '@/types/types';
 
 import { BaseConfigurationDialog } from './BaseConfiguration';
-import { WebsitePagesSettings } from '../settings-panes/WebsitePages';
+import { GitHubRepoSettings } from '../settings-panes/GitHubRepo';
 
-type WebsitePagesConfigurationDialogProps = {
+type GitHubRepoConfigurationDialogProps = {
   projectId: Project['id'];
   sourceId?: DbSource['id'];
   defaultView?: SourceConfigurationView;
@@ -21,9 +22,13 @@ type WebsitePagesConfigurationDialogProps = {
   onOpenChange?: (open: boolean) => void;
 };
 
-const WebsitePagesConfigurationDialog: FC<
-  WebsitePagesConfigurationDialogProps
-> = ({ projectId, sourceId, defaultView, open, onOpenChange }) => {
+const GitHubRepoConfigurationDialog: FC<GitHubRepoConfigurationDialogProps> = ({
+  projectId,
+  sourceId,
+  defaultView,
+  open,
+  onOpenChange,
+}) => {
   const { sources } = useSources();
 
   const source = useMemo(() => {
@@ -31,7 +36,7 @@ const WebsitePagesConfigurationDialog: FC<
   }, [sources, sourceId]);
 
   const syncMetadata = (source?.data as NangoSourceDataType)
-    ?.syncMetadata as WebsitePagesSyncMetadata;
+    ?.syncMetadata as GitHubRepoSyncMetadata;
 
   return (
     <BaseConfigurationDialog
@@ -40,9 +45,14 @@ const WebsitePagesConfigurationDialog: FC<
         syncMetadata
           ? [
               {
-                label: 'Base URL',
-                value: syncMetadata.baseUrl,
-                href: syncMetadata.baseUrl,
+                label: 'Repository',
+                value: `${syncMetadata.owner}/${syncMetadata.repo}`,
+                accessory: syncMetadata.branch ? (
+                  <Tag color="sky" rounded>
+                    #{syncMetadata.branch}
+                  </Tag>
+                ) : undefined,
+                href: `https://github.com/${syncMetadata.owner}/${syncMetadata.repo}`,
               },
             ]
           : []
@@ -50,9 +60,9 @@ const WebsitePagesConfigurationDialog: FC<
       defaultView={defaultView}
       open={open}
       onOpenChange={onOpenChange}
-      Icon={(props) => <Globe {...props} strokeWidth={1.5} />}
+      Icon={GitHubIcon}
     >
-      <WebsitePagesSettings
+      <GitHubRepoSettings
         projectId={projectId}
         source={source}
         forceDisabled={false}
@@ -61,4 +71,4 @@ const WebsitePagesConfigurationDialog: FC<
   );
 };
 
-export default WebsitePagesConfigurationDialog;
+export default GitHubRepoConfigurationDialog;

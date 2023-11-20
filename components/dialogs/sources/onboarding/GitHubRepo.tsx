@@ -20,10 +20,7 @@ import { NoAutoInput } from '@/components/ui/Input';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
 import { getNangoClientInstance } from '@/lib/integrations/nango.client';
-import { fetchPageContent } from '@/lib/integrations/website';
-import { extractMeta } from '@/lib/markdown';
-import { addSchemaRemoveTrailingSlashAndHash } from '@/lib/utils';
-import { guessShortNameFromTitle } from '@/lib/utils.nodeps';
+import { extractGithubRepo } from '@/lib/utils.nodeps';
 import { DbSource, Project } from '@/types/types';
 
 import {
@@ -32,7 +29,7 @@ import {
   isIntegrationAuthed,
 } from './shared';
 import { Step, ConnectSourceStepState } from './Step';
-import { WebsitePagesSettings } from '../settings-panes/WebsitePages';
+import { GitHubRepoSettings } from '../settings-panes/GitHubRepo';
 import SourceDialog from '../SourceDialog';
 
 const nango = getNangoClientInstance();
@@ -46,92 +43,103 @@ const ConnectStep = ({
   state: ConnectSourceStepState;
   onDidConnect: (source: DbSource) => void;
 }) => {
-  const { mutate: mutateSources, generateUniqueName } = useSources();
+  const { mutate: mutateSources } = useSources();
+
+  const connect = useCallback(
+    async (
+      owner: string,
+      repo: string,
+      branch: string | null,
+      setSubmitting: (submitting: boolean) => void,
+    ) => {
+      try {
+        setSubmitting(true);
+        const integrationId = 'github-repo';
+        const name = repo;
+        const newSource = await addSourceAndNangoConnection(
+          nango,
+          projectId,
+          integrationId,
+          name,
+          undefined,
+          { owner, repo, ...(branch ? { branch } : {}) },
+          isIntegrationAuthed(integrationId),
+        );
+
+        if (!newSource) {
+          toast.error('Error connecting to GitHub');
+          return;
+        }
+
+        await mutateSources();
+        setSubmitting(false);
+        onDidConnect(newSource);
+        toast.success('Connected to GitHub');
+      } catch (e: any) {
+        setSubmitting(false);
+        if (e?.type === 'callback_err' || e?.type === 'windowClosed') {
+          // This is the error that is thrown when the user closes or
+          // cancels the auth popup. No need to show an error here
+          toast.error('Connection canceled');
+          return;
+        }
+        toast.error('Error connecting to GitHub');
+      }
+    },
+    [projectId, mutateSources, onDidConnect],
+  );
+
+  const isEditingState = !(state === 'not_started' || state === 'complete');
 
   return (
     <Step
-      title="Set base URL"
-      description="Select the website to import."
+      title="Authorize"
+      description="Enter a repository to sync."
       state={state}
     >
       <Formik
         initialValues={{ url: '' }}
         enableReinitialize
         validateOnMount
-        onSubmit={async (values, { setSubmitting, setErrors }) => {
-          setSubmitting(true);
-
-          let url = addSchemaRemoveTrailingSlashAndHash(values.url.trim());
-
-          let content = await fetchPageContent(url, false, true);
-
-          if (!content) {
-            // Check with http:// instead of https://
-            url = addSchemaRemoveTrailingSlashAndHash(values.url, true);
-            content = await fetchPageContent(url, false, true);
+        validate={async (values) => {
+          const errors: FormikErrors<FormikValues> = {};
+          if (!extractGithubRepo(values.url)) {
+            errors.url = 'Invalid repository URL';
           }
-
-          if (!content) {
-            const errors: FormikErrors<FormikValues> = {
-              url: `Website is not accessible. If your website has security
-                  checks, this might be the reason. Please contact us at ${process.env.NEXT_PUBLIC_SUPPORT_EMAIL} to discuss options.`,
-            };
-            setErrors(errors);
-            return;
+          return errors;
+        }}
+        onSubmit={async (values, { setSubmitting }) => {
+          const repo = extractGithubRepo(values.url);
+          if (repo) {
+            await connect(repo.owner, repo.repo, repo.branch, setSubmitting);
+          } else {
+            toast.error('Error connecting to GitHub');
           }
-
-          const integrationId = 'website-pages';
-          const meta = extractMeta(content, 'html');
-          const pageTitle = (meta as any)?.title;
-          const guessedNameFromTitle =
-            pageTitle && guessShortNameFromTitle(pageTitle);
-          const name = generateUniqueName(integrationId, guessedNameFromTitle);
-
-          const newSource = await addSourceAndNangoConnection(
-            nango,
-            projectId,
-            integrationId,
-            name,
-            undefined,
-            { baseUrl: url },
-            isIntegrationAuthed(integrationId),
-          );
-
-          if (!newSource) {
-            toast.error(`Error connecting to ${url}`);
-            return;
-          }
-
-          await mutateSources();
-          setSubmitting(false);
-
-          onDidConnect(newSource);
-          toast.success(`Connected to ${url}`);
         }}
       >
-        {({ isSubmitting, isValid }) => (
+        {({ isSubmitting, isValid, values }) => (
           <FormRoot>
             <FormField>
-              <FormLabel>Base URL</FormLabel>
+              <FormLabel>Repository URL</FormLabel>
               <Field
                 className="flex-grow"
                 type="text"
                 name="url"
                 inputSize="sm"
+                placeholder="https://github.com/owner/repo"
                 as={NoAutoInput}
-                disabled={isSubmitting || state === 'complete'}
+                disabled={isSubmitting}
               />
-              <ErrorMessage name="url" component={ErrorLabel} />
             </FormField>
             <Button
               className="place-self-start"
-              disabled={!isValid || state === 'complete'}
+              disabled={!isValid || !isEditingState}
               loading={isSubmitting}
-              variant="cta"
+              variant="plain"
               buttonSize="sm"
               type="submit"
             >
-              {state === 'complete' ? 'Connected' : 'Connect'}
+              {state === 'complete' ? 'Authorized' : 'Authorize GitHub'}
             </Button>
           </FormRoot>
         )}
@@ -157,7 +165,7 @@ const ConfigureStep = ({
       description="Configure the source. You can always change the configuration later."
       state={state}
     >
-      <WebsitePagesSettings
+      <GitHubRepoSettings
         projectId={projectId}
         source={source}
         forceDisabled={state === 'not_started'}
@@ -167,7 +175,7 @@ const ConfigureStep = ({
   );
 };
 
-const WebsitePagesOnboardingDialog = ({
+const GitHubRepoOnboardingDialog = ({
   open,
   onOpenChange,
   children,
@@ -201,8 +209,8 @@ const WebsitePagesOnboardingDialog = ({
         onOpenChange?.(open);
       }}
       trigger={children && <Dialog.Trigger asChild>{children}</Dialog.Trigger>}
-      title="Connect website"
-      description="Select pages to sync from your website."
+      title="Connect GitHub"
+      description="Select a GitHub repository to sync."
     >
       <ConnectStep
         projectId={project.id}
@@ -237,4 +245,4 @@ const WebsitePagesOnboardingDialog = ({
   );
 };
 
-export default WebsitePagesOnboardingDialog;
+export default GitHubRepoOnboardingDialog;

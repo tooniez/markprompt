@@ -73,12 +73,16 @@ const SalesforceDatabaseConfigurationDialog = dynamic(
   () => import('@/components/dialogs/sources/configuration/SalesforceDatabase'),
 );
 
+const WebsitePagesConfigurationDialog = dynamic(
+  () => import('@/components/dialogs/sources/configuration/WebsitePages'),
+);
+
 const NotionPagesConfigurationDialog = dynamic(
   () => import('@/components/dialogs/sources/configuration/NotionPages'),
 );
 
-const WebsitePagesConfigurationDialog = dynamic(
-  () => import('@/components/dialogs/sources/configuration/WebsitePages'),
+const GitHubRepoConfigurationDialog = dynamic(
+  () => import('@/components/dialogs/sources/configuration/GitHubRepo'),
 );
 
 const EditorDialog = dynamic(() => import('@/components/files/EditorDialog'), {
@@ -968,19 +972,16 @@ const Data = () => {
               }
             }}
           />
-          <SalesforceDatabaseConfigurationDialog
+          <WebsitePagesConfigurationDialog
             projectId={project?.id}
             open={
               configureSourceDialogOpen.open &&
-              (configureSourceDialogOpen?.dialogId === 'salesforce-knowledge' ||
-                configureSourceDialogOpen?.dialogId ===
-                  'salesforce-knowledge-sandbox' ||
-                configureSourceDialogOpen?.dialogId === 'salesforce-case' ||
-                configureSourceDialogOpen?.dialogId ===
-                  'salesforce-case-sandbox')
+              configureSourceDialogOpen?.dialogId === 'website-pages'
             }
             onOpenChange={(open) => {
               if (!open) {
+                // Do not set to undefined, as this will cause flicker when
+                // data in nulled and the fields in the dialog get reset.
                 setConfigureSourceDialogOpen((s) => ({ ...s, open: false }));
               }
             }}
@@ -997,29 +998,44 @@ const Data = () => {
               if (!open) {
                 // Do not set to undefined, as this will cause flicker when
                 // data in nulled and the fields in the dialog get reset.
-                setConfigureSourceDialogOpen((s) => ({
-                  ...s,
-                  open: false,
-                }));
+                setConfigureSourceDialogOpen((s) => ({ ...s, open: false }));
               }
             }}
             sourceId={configureSourceDialogOpen?.source?.id}
             defaultView={configureSourceDialogOpen?.view}
           />
-          <WebsitePagesConfigurationDialog
+          <GitHubRepoConfigurationDialog
             projectId={project?.id}
             open={
               configureSourceDialogOpen.open &&
-              configureSourceDialogOpen?.dialogId === 'website-pages'
+              configureSourceDialogOpen?.dialogId === 'github-repo'
             }
             onOpenChange={(open) => {
               if (!open) {
                 // Do not set to undefined, as this will cause flicker when
                 // data in nulled and the fields in the dialog get reset.
-                setConfigureSourceDialogOpen((s) => ({
-                  ...s,
-                  open: false,
-                }));
+                setConfigureSourceDialogOpen((s) => ({ ...s, open: false }));
+              }
+            }}
+            sourceId={configureSourceDialogOpen?.source?.id}
+            defaultView={configureSourceDialogOpen?.view}
+          />
+          <SalesforceDatabaseConfigurationDialog
+            projectId={project?.id}
+            open={
+              configureSourceDialogOpen.open &&
+              (configureSourceDialogOpen?.dialogId === 'salesforce-knowledge' ||
+                configureSourceDialogOpen?.dialogId ===
+                  'salesforce-knowledge-sandbox' ||
+                configureSourceDialogOpen?.dialogId === 'salesforce-case' ||
+                configureSourceDialogOpen?.dialogId ===
+                  'salesforce-case-sandbox')
+            }
+            onOpenChange={(open) => {
+              if (!open) {
+                // Do not set to undefined, as this will cause flicker when
+                // data in nulled and the fields in the dialog get reset.
+                setConfigureSourceDialogOpen((s) => ({ ...s, open: false }));
               }
             }}
             sourceId={configureSourceDialogOpen?.source?.id}

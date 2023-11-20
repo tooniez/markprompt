@@ -883,6 +883,9 @@ export const getIconForSource = (source: Pick<DbSource, 'type' | 'data'>) => {
       if (integrationId?.startsWith('notion-')) {
         return NotionIcon;
       }
+      if (integrationId?.startsWith('github-')) {
+        return GitHubIcon;
+      }
       return Globe;
     }
     case 'website':

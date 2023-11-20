@@ -22,11 +22,9 @@ import {
   extractMeta,
   splitIntoSections,
 } from '@/lib/markdown';
-import { MarkdownProcessorOptions } from '@/lib/schema';
 import {
   createServiceRoleSupabaseClient,
   getProjectIdFromSource,
-  getProjectConfigData,
   createFile,
   batchStoreFileSections,
   batchDeleteFiles,
@@ -42,9 +40,13 @@ import {
   DbFileMetaChecksum,
   DbSource,
   FileSections,
+  GitHubRepoSyncMetadata,
   NangoFileWithMetadata,
   NangoIntegrationId,
+  NangoSourceDataType,
   Project,
+  SyncMetadata,
+  SyncMetadataWithTargetSelectors,
 } from '@/types/types';
 
 // Payload for the webhook and manual sync bodies that we send
@@ -58,9 +60,8 @@ export type FileTrainEventData = {
   file: Omit<NangoFileWithMetadata, 'content'> & { compressedContent: string };
   projectId: Project['id'];
   sourceId: DbSource['id'];
-  includeSelectors: string | undefined;
-  excludeSelectors: string | undefined;
-  processorOptions: MarkdownProcessorOptions | undefined;
+  syncMetadata: SyncMetadata;
+  connectionId: string;
 };
 
 type Events = {
@@ -206,12 +207,8 @@ const syncNangoRecords = inngest.createFunction(
 
     // Train added/updated files
 
-    const syncMetadata = (sourceSyncData.data as any)?.syncMetadata;
-
-    const processorOptions =
-      syncMetadata?.processorOptions ||
-      (await getProjectConfigData(supabase, projectId)).markpromptConfig
-        .processorOptions;
+    const syncMetadata = (sourceSyncData.data as NangoSourceDataType)
+      ?.syncMetadata;
 
     const trainRecords = records.filter((record) => {
       return (
@@ -250,9 +247,8 @@ const syncNangoRecords = inngest.createFunction(
             },
             sourceId: sourceSyncData.id,
             projectId,
-            includeSelectors: syncMetadata?.includeSelectors,
-            excludeSelectors: syncMetadata?.excludeSelectors,
-            processorOptions,
+            syncMetadata,
+            connectionId,
           },
         };
       },
@@ -366,9 +362,9 @@ export const runTrainFile = async (data: FileTrainEventData) => {
     ? await convertToMarkdown(
         nangoFile.content,
         nangoFile.contentType,
-        data.includeSelectors,
-        data.excludeSelectors,
-        data.processorOptions,
+        (data.syncMetadata as SyncMetadataWithTargetSelectors).includeSelectors,
+        (data.syncMetadata as SyncMetadataWithTargetSelectors).excludeSelectors,
+        data.syncMetadata.processorOptions,
       )
     : '';
   const checksum = createChecksum(markdown);
@@ -456,6 +452,7 @@ export const runTrainFile = async (data: FileTrainEventData) => {
 export const fetchGitHubFileContent = async (
   owner: string,
   repo: string,
+  branch: string,
   path: string,
   connectionId: string,
 ): Promise<string> => {
@@ -463,7 +460,9 @@ export const fetchGitHubFileContent = async (
 
   const res = await nango.proxy({
     method: 'GET',
-    endpoint: `/repos/${owner}/${repo}/contents/${path}`,
+    endpoint: `/repos/${owner}/${repo}/contents/${path}${
+      branch ? `?ref=${branch}` : ''
+    }`,
     headers: {
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
@@ -508,6 +507,18 @@ const trainFile = inngest.createFunction(
   },
 );
 
+const fetchAndTrainGitHubFile = async (data: FileTrainEventData) => {
+  const syncMetadata = data.syncMetadata as GitHubRepoSyncMetadata;
+  const content = await fetchGitHubFileContent(
+    syncMetadata.owner,
+    syncMetadata.repo,
+    syncMetadata.branch,
+    data.file.path,
+    data.connectionId,
+  );
+  return runTrainFile({ ...data, file: { ...data.file, content } });
+};
+
 // The train function adheres to the GitHub rate limits, which is more
 // restrictive than the OpenAI rate limits.
 const fetchAndTrainGitHubFileSlow = inngest.createFunction(
@@ -526,7 +537,7 @@ const fetchAndTrainGitHubFileSlow = inngest.createFunction(
   },
   { event: 'markprompt/github-file-slow.train' },
   async ({ event }) => {
-    return runTrainFile(event.data);
+    return fetchAndTrainGitHubFile(event.data);
   },
 );
 
@@ -545,7 +556,7 @@ const fetchAndTrainGitHubFileFast = inngest.createFunction(
   },
   { event: 'markprompt/github-file-fast.train' },
   async ({ event }) => {
-    return runTrainFile(event.data);
+    return fetchAndTrainGitHubFile(event.data);
   },
 );
 

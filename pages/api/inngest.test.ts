@@ -382,6 +382,7 @@ describe('inngest', () => {
       const file = await fetchGitHubFileContent(
         'motifland',
         'markprompt-sample-docs',
+        'main',
         'docs/quick-start.mdoc',
         'test-connection-id',
       );

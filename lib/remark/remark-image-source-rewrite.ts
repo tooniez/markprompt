@@ -4,14 +4,6 @@ import { visit } from 'unist-util-visit';
 
 const EXTERNAL_URL_REGEX = /^https?:\/\//;
 
-export type RemarkImageSourceRewriteOptions = {
-  rules: {
-    pattern: string;
-    replace: string;
-  }[];
-  excludeExternalLinks?: boolean;
-};
-
 export const remarkImageSourceRewrite: Plugin<
   [RemarkImageSourceRewriteOptions],
   Root

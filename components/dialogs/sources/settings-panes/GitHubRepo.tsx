@@ -11,6 +11,7 @@ import Button from '@/components/ui/Button';
 import {
   ErrorLabel,
   FormField,
+  FormFootnote,
   FormHeading,
   FormHeadingGroup,
   FormLabel,
@@ -19,30 +20,29 @@ import {
 } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
 import { Note } from '@/components/ui/Note';
-import { RecordEditor } from '@/components/ui/RecordEditor';
 import { NoAutoTextArea } from '@/components/ui/TextArea';
 import useSources from '@/lib/hooks/use-sources';
 import { parseProcessorOptions } from '@/lib/schema';
-import { capitalize } from '@/lib/utils';
+import { capitalize, SUPPORTED_EXTENSIONS } from '@/lib/utils';
 import { toRegexpList } from '@/lib/utils.nodeps';
 import {
   DbSource,
+  GitHubRepoSyncMetadata,
   NangoSourceDataType,
   Project,
-  WebsitePagesSyncMetadata,
 } from '@/types/types';
 
 import { ProcessorOptions } from './ProcessorOptions';
 import { updateSourceData } from './utils';
 
-type WebsitePagesSettingsProps = {
+type GitHubRepoSettingsProps = {
   projectId: Project['id'];
   source: DbSource | undefined;
   forceDisabled?: boolean;
   onDidCompletedOrSkip?: () => void;
 };
 
-export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
+export const GitHubRepoSettings: FC<GitHubRepoSettingsProps> = ({
   projectId,
   source,
   forceDisabled,
@@ -51,7 +51,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
   const { mutate: mutateSources, isNameAvailable } = useSources();
 
   const sourceData = source?.data as NangoSourceDataType | undefined;
-  const syncMetadata = sourceData?.syncMetadata as WebsitePagesSyncMetadata;
+  const syncMetadata = sourceData?.syncMetadata as GitHubRepoSyncMetadata;
 
   const _updateSourceData = useCallback(
     async (
@@ -68,42 +68,6 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
         mutateSources,
         onDidCompletedOrSkip,
       );
-      // if (
-      //   !projectId ||
-      //   !source ||
-      //   !sourceData?.integrationId ||
-      //   !sourceData?.connectionId
-      // ) {
-      //   return;
-      // }
-
-      // setSubmitting(true);
-
-      // await setSourceData(projectId, source.id, {
-      //   ...(source.data as any),
-      //   ...newSourceData,
-      //   syncMetadata: {
-      //     ...syncMetadata,
-      //     ...newSourceData.syncMetadata,
-      //   },
-      // });
-
-      // if (newSourceData?.syncMetadata) {
-      //   await setMetadata(
-      //     projectId,
-      //     sourceData.integrationId,
-      //     sourceData.connectionId,
-      //     {
-      //       ...syncMetadata,
-      //       ...newSourceData?.syncMetadata,
-      //     },
-      //   );
-      // }
-
-      // setSubmitting(false);
-      // toast.success('Configuration has been updated');
-      // onDidCompletedOrSkip?.();
-      // await mutateSources();
     },
     [
       projectId,
@@ -119,7 +83,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
     <>
       <Formik
         initialValues={{
-          name: sourceData?.name || '',
+          name: (source?.data as NangoSourceDataType)?.name || '',
         }}
         enableReinitialize
         validateOnMount
@@ -128,7 +92,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
           if (!values.name || values.name.trim().length === 0) {
             errors.name = 'Please enter a name';
           } else if (
-            values.name !== sourceData?.name &&
+            values.name !== (source?.data as NangoSourceDataType).name &&
             !isNameAvailable(values.name)
           ) {
             errors.name = 'This name is already taken';
@@ -170,11 +134,9 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
       <div className="h-8" />
       <Formik
         initialValues={{
+          branch: syncMetadata?.branch || '',
           includeRegexes: syncMetadata?.includeRegexes?.join('\n') || '',
           excludeRegexes: syncMetadata?.excludeRegexes?.join('\n') || '',
-          requestHeaders: syncMetadata?.requestHeaders || [],
-          includeSelectors: syncMetadata?.includeSelectors || '',
-          excludeSelectors: syncMetadata?.excludeSelectors || '',
           processorOptions: syncMetadata?.processorOptions
             ? JSON.stringify(syncMetadata.processorOptions, null, 2)
             : '',
@@ -194,12 +156,10 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
           return errors;
         }}
         onSubmit={async (values, { setSubmitting }) => {
-          const newSyncMetadata: Partial<WebsitePagesSyncMetadata> = {
+          const newSyncMetadata: Partial<GitHubRepoSyncMetadata> = {
+            branch: values.branch,
             includeRegexes: toRegexpList(values.includeRegexes),
             excludeRegexes: toRegexpList(values.excludeRegexes),
-            requestHeaders: values.requestHeaders,
-            includeSelectors: values.includeSelectors,
-            excludeSelectors: values.excludeSelectors,
             processorOptions: parseProcessorOptions(values.processorOptions),
           };
           await _updateSourceData(
@@ -208,13 +168,44 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
           );
         }}
       >
-        {({ values, isSubmitting, isValid, setFieldValue }) => {
+        {({ isSubmitting, isValid }) => {
           return (
             <FormRoot>
               <FormHeadingGroup>
-                <FormHeading>URL configuration</FormHeading>
+                <FormHeading>Repository settings</FormHeading>
+              </FormHeadingGroup>
+              <Note size="sm">
+                Supported extensions:{' '}
+                {SUPPORTED_EXTENSIONS.map((e, i) => {
+                  return (
+                    <>
+                      {i > 0 ? ', ' : ''}
+                      <code className="text-xs" key={e}>
+                        .{e}
+                      </code>
+                    </>
+                  );
+                })}
+                . Files with other extensions will not be indexed.
+              </Note>
+              <FormField>
+                <FormLabel>Branch</FormLabel>
+                <Field
+                  className="flex-grow"
+                  type="text"
+                  name="branch"
+                  inputSize="sm"
+                  as={NoAutoInput}
+                  disabled={isSubmitting}
+                />
+                <FormFootnote>
+                  Leave blank to use the repository&apos;s default branch.
+                </FormFootnote>
+              </FormField>
+              <FormHeadingGroup>
+                <FormHeading>Path configuration</FormHeading>
                 <FormSubHeading learnMoreHref="https://en.wikipedia.org/wiki/Regular_expression">
-                  Specify URL patterns to include and exclude, using regular
+                  Specify path patterns to include and exclude, using regular
                   expressions. One per line.{' '}
                 </FormSubHeading>
               </FormHeadingGroup>
@@ -225,7 +216,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                   type="text"
                   name="includeRegexes"
                   textAreaSize="sm"
-                  placeholder={`Examples:\n\n\\/blog\\/.*$\n\\/docs\\/.*$`}
+                  placeholder={`Examples:\n\nblog\\/.*.md$\ndocs\\/.*.md$`}
                   as={NoAutoTextArea}
                   disabled={isSubmitting || forceDisabled}
                 />
@@ -238,7 +229,7 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                   type="text"
                   name="excludeRegexes"
                   textAreaSize="sm"
-                  placeholder={`Examples:\n\n\\/login$\n\\/files\\/.+\\.txt$`}
+                  placeholder={`Examples:\n\ndocs\\/legal.*`}
                   as={NoAutoTextArea}
                   disabled={isSubmitting || forceDisabled}
                 />
@@ -257,61 +248,6 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
                 examples, and it will generate the right expressions that you
                 can paste here.
               </Note>
-              <FormHeadingGroup>
-                <FormHeading>Request configuration</FormHeading>
-                <FormSubHeading>
-                  Specify header data to send alongside a request to your
-                  website.
-                </FormSubHeading>
-              </FormHeadingGroup>
-              <FormField>
-                <FormLabel>Headers</FormLabel>
-                <RecordEditor
-                  records={values.requestHeaders || {}}
-                  onRecordsChanged={(records) => {
-                    setFieldValue('requestHeaders', records);
-                  }}
-                />
-              </FormField>
-              <FormHeadingGroup>
-                <FormHeading>Content targets</FormHeading>
-                <FormSubHeading>
-                  Specify which parts of the page to include or exclude, using
-                  CSS selectors.{' '}
-                  <a
-                    className="subtle-underline"
-                    href="https://github.com/fb55/css-select/blob/master/README.md#supported-selectors"
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    Learn more
-                  </a>
-                </FormSubHeading>
-              </FormHeadingGroup>
-              <FormField>
-                <FormLabel>Include selector</FormLabel>
-                <Field
-                  className="flex-grow font-mono text-xs"
-                  type="text"
-                  name="includeSelectors"
-                  inputSize="sm"
-                  placeholder={'E.g. div.main-article-content'}
-                  as={NoAutoInput}
-                  disabled={isSubmitting || forceDisabled}
-                />
-              </FormField>
-              <FormField>
-                <FormLabel>Exclude selectors</FormLabel>
-                <Field
-                  className="flex-grow font-mono text-xs"
-                  type="text"
-                  name="excludeSelectors"
-                  inputSize="sm"
-                  placeholder={'E.g. #footer,.summary > blockquote'}
-                  as={NoAutoInput}
-                  disabled={isSubmitting || forceDisabled}
-                />
-              </FormField>
               <ProcessorOptions
                 isSubmitting={isSubmitting}
                 forceDisabled={forceDisabled}

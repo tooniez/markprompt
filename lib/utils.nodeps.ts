@@ -302,3 +302,28 @@ export const formatTimezone = (timezone: string) => {
 export const pluralize = (value: number, singular: string, plural: string) => {
   return `${value} ${value === 1 ? singular : plural}`;
 };
+
+export const toRegexpList = (text: string) => {
+  return text
+    .split('\n')
+    .map((url) => url.trim())
+    .filter((url) => url && url.length > 0 && !url.startsWith('# '));
+};
+
+export const extractGithubRepo = (
+  url: string,
+): { owner: string; repo: string; branch: string | null } | null => {
+  const githubUrlPattern =
+    /^https?:\/\/github\.com\/([^/]+)\/([^/]+)(\/tree\/([^/]+))?/;
+  const match = url.match(githubUrlPattern);
+
+  if (match) {
+    return {
+      owner: match[1],
+      repo: match[2],
+      branch: match[4] || null,
+    };
+  } else {
+    return null;
+  }
+};

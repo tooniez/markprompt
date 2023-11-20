@@ -253,7 +253,7 @@ const ProjectSettingsPage = () => {
                     toast.success('Domain added.');
                     resetForm({ values: { domain_name: '' } });
                   } catch (e) {
-                    toast.error('Error adding domain.');
+                    toast.error('Error adding domain');
                     console.error('Error adding domain', e);
                   }
                   setSubmitting(false);
@@ -688,7 +688,7 @@ const ProjectSettingsPage = () => {
               toast.success('Token deleted.');
             } catch (e) {
               console.error(e);
-              toast.error('Error deleting token.');
+              toast.error('Error deleting token');
             } finally {
               setLoading(false);
             }
