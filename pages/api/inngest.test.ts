@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { compress, decompress } from 'lz-string';
+import { compressToBase64 } from 'lz-string';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import {
@@ -326,7 +326,7 @@ describe('inngest', () => {
           id: 'test-id',
           path: '/test/path',
           title: 'Test file',
-          compressedContent: compress(
+          compressedContent: compressToBase64(
             `${section1Content}\n\n${section2Content}`,
           ),
           contentType: 'md',

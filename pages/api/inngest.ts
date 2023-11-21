@@ -2,7 +2,7 @@ import { NangoSyncWebhookBody } from '@nangohq/node';
 import { EventSchemas, Inngest } from 'inngest';
 import { serve } from 'inngest/next';
 import { isEqual } from 'lodash-es';
-import { compress, decompress } from 'lz-string';
+import { compressToBase64, decompressFromBase64 } from 'lz-string';
 
 import {
   EMBEDDING_MODEL,
@@ -181,8 +181,9 @@ const syncNangoRecords = inngest.createFunction(
       })
       .map<NamedEvent<'markprompt/file.train'>>((record) => {
         // Send compressed content to maximize chances of staying below
-        // the 1Mb payload limit.
-        const compressedContent = compress(record.content || '');
+        // the 1Mb payload limit. Base64 is required to send over the
+        // wire, otherwise the compressed content gets corrupted.
+        const compressedContent = compressToBase64(record.content || '');
         console.log(
           'BEFORE',
           record.content?.length,
@@ -216,12 +217,12 @@ const syncNangoRecords = inngest.createFunction(
       level: 'info',
     });
 
-    if (event.data.shouldPause) {
-      // Pause website integrations (we can't pause GitHub integrations
-      // as the connection needs to stay alive in the training step to
-      // fetch the file contents).
-      await deleteConnection(supabase, nangoSyncPayload.connectionId);
-    }
+    // if (event.data.shouldPause) {
+    //   // Pause website integrations (we can't pause GitHub integrations
+    //   // as the connection needs to stay alive in the training step to
+    //   // fetch the file contents).
+    //   await deleteConnection(supabase, nangoSyncPayload.connectionId);
+    // }
 
     return { updated: trainEvents.length, deleted: filesIdsToDelete.length };
   },
@@ -262,7 +263,7 @@ export const createFullMeta = async (file: NangoFileWithMetadata) => {
 export const runTrainFile = async (data: FileTrainEventData) => {
   const nangoFile: NangoFileWithMetadata = {
     ...data.file,
-    content: decompress(data.file.compressedContent),
+    content: decompressFromBase64(data.file.compressedContent),
   };
   const sourceId = data.sourceId;
   const projectId = data.projectId;
@@ -296,6 +297,7 @@ export const runTrainFile = async (data: FileTrainEventData) => {
   }
 
   const meta = await createFullMeta(nangoFile);
+
   const markdown = nangoFile.content
     ? await convertToMarkdown(
         nangoFile.content,

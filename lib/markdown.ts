@@ -403,7 +403,9 @@ export const extractMeta = (
       return extractFrontmatter(content);
     case 'html': {
       const $ = load(content);
-      const title = $('title').text()?.trim();
+      // HTML pages can have multiple <title> nodes, pick the
+      // first one.
+      const title = $('title').first()?.text()?.trim();
       return { title };
     }
   }
