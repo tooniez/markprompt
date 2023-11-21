@@ -11,6 +11,7 @@ export const PUBLIC_NON_ROUTED_API_PATHS = [
   '/api/subscriptions/webhook',
   '/api/support/contact',
   '/api/webhooks/nango/sync',
+  '/api/webhooks/zendesk',
   '/x/inngest',
 ];
 
