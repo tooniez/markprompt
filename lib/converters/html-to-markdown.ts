@@ -15,9 +15,11 @@ export const htmlToMarkdown = (
     $(tag).remove();
   });
 
-  const target = $(includeSelectors ?? 'body');
+  const target = $(
+    includeSelectors && includeSelectors.length > 0 ? includeSelectors : 'body',
+  );
 
-  if (excludeSelectors) {
+  if (excludeSelectors && excludeSelectors.length > 0) {
     target.find(excludeSelectors).remove();
   }
 

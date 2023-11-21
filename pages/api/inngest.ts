@@ -2,6 +2,7 @@ import { NangoSyncWebhookBody } from '@nangohq/node';
 import { EventSchemas, Inngest } from 'inngest';
 import { serve } from 'inngest/next';
 import { isEqual } from 'lodash-es';
+import { compressToBase64, decompressFromBase64 } from 'lz-string';
 
 import {
   EMBEDDING_MODEL,
@@ -34,6 +35,7 @@ import {
   getFilesIdAndCheksumBySourceAndNangoId,
 } from '@/lib/supabase';
 import { createChecksum, pluralize } from '@/lib/utils';
+import { byteSize } from '@/lib/utils.nodeps';
 import { Json } from '@/types/supabase';
 import {
   DbFileMetaChecksum,
@@ -51,7 +53,7 @@ export type NangoSyncPayload = Pick<
 >;
 
 export type FileTrainEventData = {
-  file: NangoFileWithMetadata;
+  file: Omit<NangoFileWithMetadata, 'content'> & { compressedContent: string };
   projectId: Project['id'];
   sourceId: DbSource['id'];
   includeSelectors: string | undefined;
@@ -134,7 +136,13 @@ const syncNangoRecords = inngest.createFunction(
         message: 'Project not found',
         level: 'error',
       });
-      if (event.data.shouldPause) {
+      if (
+        nangoSyncPayload.providerConfigKey === 'website-pages' &&
+        event.data.shouldPause
+      ) {
+        // Pause website integrations (we can't pause GitHub integrations
+        // as the connection needs to stay alive in the training step to
+        // fetch the file contents).
         await deleteConnection(supabase, nangoSyncPayload.connectionId);
       }
       return { updated: 0, deleted: 0 };
@@ -172,10 +180,23 @@ const syncNangoRecords = inngest.createFunction(
         );
       })
       .map<NamedEvent<'markprompt/file.train'>>((record) => {
+        // Send compressed content to maximize chances of staying below
+        // the 1Mb payload limit. Base64 is required to send over the
+        // wire, otherwise the compressed content gets corrupted.
+        const compressedContent = compressToBase64(record.content || '');
+        console.log(
+          'BEFORE',
+          record.content?.length,
+          'AFTER',
+          compressedContent.length,
+        );
         return {
           name: 'markprompt/file.train',
           data: {
-            file: record,
+            file: {
+              ...record,
+              compressedContent,
+            },
             sourceId: sourceSyncData.id,
             projectId,
             includeSelectors: syncMetadata?.includeSelectors,
@@ -196,9 +217,12 @@ const syncNangoRecords = inngest.createFunction(
       level: 'info',
     });
 
-    if (event.data.shouldPause) {
-      await deleteConnection(supabase, nangoSyncPayload.connectionId);
-    }
+    // if (event.data.shouldPause) {
+    //   // Pause website integrations (we can't pause GitHub integrations
+    //   // as the connection needs to stay alive in the training step to
+    //   // fetch the file contents).
+    //   await deleteConnection(supabase, nangoSyncPayload.connectionId);
+    // }
 
     return { updated: trainEvents.length, deleted: filesIdsToDelete.length };
   },
@@ -237,7 +261,10 @@ export const createFullMeta = async (file: NangoFileWithMetadata) => {
 };
 
 export const runTrainFile = async (data: FileTrainEventData) => {
-  const nangoFile = data.file;
+  const nangoFile: NangoFileWithMetadata = {
+    ...data.file,
+    content: decompressFromBase64(data.file.compressedContent),
+  };
   const sourceId = data.sourceId;
   const projectId = data.projectId;
 
@@ -270,6 +297,7 @@ export const runTrainFile = async (data: FileTrainEventData) => {
   }
 
   const meta = await createFullMeta(nangoFile);
+
   const markdown = nangoFile.content
     ? await convertToMarkdown(
         nangoFile.content,

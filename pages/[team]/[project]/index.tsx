@@ -200,10 +200,15 @@ const SourceItem: FC<SourceItemProps> = ({
   onConfigureSelected,
   onDeleteSelected,
 }) => {
+  const { getStatusForSource, stopSync } = useSources();
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const Icon = getIconForSource(source);
   const canConfigure = source.type === 'nango';
   const canSync = source.type === 'nango';
+
+  const currentStatus = useMemo(() => {
+    return source?.id ? getStatusForSource(source.id) : undefined;
+  }, [getStatusForSource, source?.id]);
 
   return (
     <div
@@ -263,11 +268,27 @@ const SourceItem: FC<SourceItemProps> = ({
           >
             {canConfigure && (
               <>
-                <DropdownMenu.Item asChild onSelect={() => onSyncSelected()}>
-                  <span className="dropdown-menu-item dropdown-menu-item-noindent block">
-                    Sync now
-                  </span>
+                <DropdownMenu.Item
+                  disabled={currentStatus === 'running'}
+                  onSelect={() => onSyncSelected()}
+                  className={cn(
+                    'dropdown-menu-item dropdown-menu-item-noindent block',
+                  )}
+                >
+                  Sync now
                 </DropdownMenu.Item>
+                {currentStatus === 'running' && (
+                  <DropdownMenu.Item
+                    onSelect={async () => {
+                      await stopSync(source);
+                    }}
+                    className={cn(
+                      'dropdown-menu-item dropdown-menu-item-noindent block',
+                    )}
+                  >
+                    Stop syncing
+                  </DropdownMenu.Item>
+                )}
                 <DropdownMenu.Item
                   asChild
                   onSelect={() => {
