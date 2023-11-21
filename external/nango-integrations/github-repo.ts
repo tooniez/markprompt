@@ -184,11 +184,13 @@ const saveFilesUpdatedByCommit = async (
         .map(mapToFile),
       'NangoFile',
     );
+
     await nango.batchDelete(
       fileBatch.filter((file: any) => file.status === 'removed').map(mapToFile),
       'NangoFile',
     );
   }
+
   await nango.log(`Got ${count} file(s).`);
 };
 

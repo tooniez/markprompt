@@ -178,12 +178,10 @@ export const GitHubRepoSettings: FC<GitHubRepoSettingsProps> = ({
                 Supported extensions:{' '}
                 {SUPPORTED_EXTENSIONS.map((e, i) => {
                   return (
-                    <>
+                    <span key={`supported-extension-${e}-${i}`}>
                       {i > 0 ? ', ' : ''}
-                      <code className="text-xs" key={e}>
-                        .{e}
-                      </code>
-                    </>
+                      <code className="text-xs">.{e}</code>
+                    </span>
                   );
                 })}
                 . Files with other extensions will not be indexed.

@@ -77,6 +77,7 @@ const ConnectStep = ({
         toast.success('Connected to GitHub');
       } catch (e: any) {
         setSubmitting(false);
+        console.error('Error auth', e);
         if (e?.type === 'callback_err' || e?.type === 'windowClosed') {
           // This is the error that is thrown when the user closes or
           // cancels the auth popup. No need to show an error here

@@ -57,7 +57,6 @@ const ConnectStep = ({
       toast.success('Connected to Notion');
     } catch (e: any) {
       setLoading(false);
-      console.log('e', JSON.stringify(e, null, 2));
       if (e?.type === 'callback_err' || e?.type === 'windowClosed') {
         // This is the error that is thrown when the user closes or
         // cancels the auth popup. No need to show an error here
