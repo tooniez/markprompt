@@ -2,7 +2,7 @@ import { NangoSyncWebhookBody } from '@nangohq/node';
 import { EventSchemas, Inngest } from 'inngest';
 import { serve } from 'inngest/next';
 import { isEqual } from 'lodash-es';
-import LZString, { compressToBase64, decompressFromBase64 } from 'lz-string';
+import { compress, decompress } from 'lz-string';
 
 import {
   EMBEDDING_MODEL,
@@ -34,7 +34,7 @@ import {
   updateSyncQueue,
   getFilesIdAndCheksumBySourceAndNangoId,
 } from '@/lib/supabase';
-import { compress, createChecksum, decompress, pluralize } from '@/lib/utils';
+import { createChecksum, pluralize } from '@/lib/utils';
 import { byteSize } from '@/lib/utils.nodeps';
 import { Json } from '@/types/supabase';
 import {
@@ -182,7 +182,13 @@ const syncNangoRecords = inngest.createFunction(
       .map<NamedEvent<'markprompt/file.train'>>((record) => {
         // Send compressed content to maximize chances of staying below
         // the 1Mb payload limit.
-        const compressedContent = compressToBase64(record.content || '');
+        const compressedContent = compress(record.content || '');
+        console.log(
+          'BEFORE',
+          record.content?.length,
+          'AFTER',
+          compressedContent.length,
+        );
         return {
           name: 'markprompt/file.train',
           data: {
@@ -256,7 +262,7 @@ export const createFullMeta = async (file: NangoFileWithMetadata) => {
 export const runTrainFile = async (data: FileTrainEventData) => {
   const nangoFile: NangoFileWithMetadata = {
     ...data.file,
-    content: decompressFromBase64(data.file.compressedContent),
+    content: decompress(data.file.compressedContent),
   };
   const sourceId = data.sourceId;
   const projectId = data.projectId;
