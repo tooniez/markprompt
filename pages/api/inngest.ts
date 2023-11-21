@@ -2,6 +2,7 @@ import { NangoSyncWebhookBody } from '@nangohq/node';
 import { EventSchemas, Inngest } from 'inngest';
 import { serve } from 'inngest/next';
 import { isEqual } from 'lodash-es';
+import LZString, { compressToBase64, decompressFromBase64 } from 'lz-string';
 
 import {
   EMBEDDING_MODEL,
@@ -33,7 +34,7 @@ import {
   updateSyncQueue,
   getFilesIdAndCheksumBySourceAndNangoId,
 } from '@/lib/supabase';
-import { createChecksum, pluralize } from '@/lib/utils';
+import { compress, createChecksum, decompress, pluralize } from '@/lib/utils';
 import { byteSize } from '@/lib/utils.nodeps';
 import { Json } from '@/types/supabase';
 import {
@@ -52,7 +53,7 @@ export type NangoSyncPayload = Pick<
 >;
 
 export type FileTrainEventData = {
-  file: NangoFileWithMetadata;
+  file: Omit<NangoFileWithMetadata, 'content'> & { compressedContent: string };
   projectId: Project['id'];
   sourceId: DbSource['id'];
   includeSelectors: string | undefined;
@@ -135,9 +136,9 @@ const syncNangoRecords = inngest.createFunction(
         message: 'Project not found',
         level: 'error',
       });
-      if (event.data.shouldPause) {
-        await deleteConnection(supabase, nangoSyncPayload.connectionId);
-      }
+      // if (event.data.shouldPause) {
+      //   await deleteConnection(supabase, nangoSyncPayload.connectionId);
+      // }
       return { updated: 0, deleted: 0 };
     }
 
@@ -165,18 +166,6 @@ const syncNangoRecords = inngest.createFunction(
       (await getProjectConfigData(supabase, projectId)).markpromptConfig
         .processorOptions;
 
-    console.log(
-      'records',
-      JSON.stringify(
-        records.map((r) => ({
-          path: r.path,
-          action: r._nango_metadata.last_action,
-        })),
-        null,
-        2,
-      ),
-    );
-
     const trainEvents = records
       .filter((record) => {
         return (
@@ -185,11 +174,16 @@ const syncNangoRecords = inngest.createFunction(
         );
       })
       .map<NamedEvent<'markprompt/file.train'>>((record) => {
-        console.log('Size', byteSize(JSON.stringify(record)));
+        // Send compressed content to maximize chances of staying below
+        // the 1Mb payload limit.
+        const compressedContent = compressToBase64(record.content || '');
         return {
           name: 'markprompt/file.train',
           data: {
-            file: record,
+            file: {
+              ...record,
+              compressedContent,
+            },
             sourceId: sourceSyncData.id,
             projectId,
             includeSelectors: syncMetadata?.includeSelectors,
@@ -210,9 +204,9 @@ const syncNangoRecords = inngest.createFunction(
       level: 'info',
     });
 
-    if (event.data.shouldPause) {
-      await deleteConnection(supabase, nangoSyncPayload.connectionId);
-    }
+    // if (event.data.shouldPause) {
+    //   await deleteConnection(supabase, nangoSyncPayload.connectionId);
+    // }
 
     return { updated: trainEvents.length, deleted: filesIdsToDelete.length };
   },
@@ -251,7 +245,10 @@ export const createFullMeta = async (file: NangoFileWithMetadata) => {
 };
 
 export const runTrainFile = async (data: FileTrainEventData) => {
-  const nangoFile = data.file;
+  const nangoFile: NangoFileWithMetadata = {
+    ...data.file,
+    content: decompressFromBase64(data.file.compressedContent),
+  };
   const sourceId = data.sourceId;
   const projectId = data.projectId;
 
@@ -268,8 +265,6 @@ export const runTrainFile = async (data: FileTrainEventData) => {
     sourceId,
     nangoFile.id,
   );
-
-  console.log('foundFiles', JSON.stringify(foundFiles.length, null, 2));
 
   let foundFile: DbFileMetaChecksum | undefined = undefined;
 
@@ -296,8 +291,6 @@ export const runTrainFile = async (data: FileTrainEventData) => {
       )
     : '';
   const checksum = createChecksum(markdown);
-
-  console.log('markdown', JSON.stringify(markdown.slice(0, 50), null, 2));
 
   if (
     foundFile &&

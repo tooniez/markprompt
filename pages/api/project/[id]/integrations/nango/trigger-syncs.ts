@@ -48,7 +48,6 @@ const triggerSyncForSource = async (data: SyncData) => {
     // status to be `STOPPED` instead of `SUCCESS`. So we need to treat
     // this case differently and call `startSync` here.
     if (sync.type === 'INITIAL' && sync.status === 'PAUSED') {
-      console.debug('startSync INITIAL', data.integrationId, data.connectionId);
       await nango.startSync(
         data.integrationId,
         [data.syncId],
@@ -62,11 +61,6 @@ const triggerSyncForSource = async (data: SyncData) => {
         break;
       case 'ERROR':
       case 'STOPPED': {
-        console.debug(
-          'startSync FROM STOPPED',
-          data.integrationId,
-          data.connectionId,
-        );
         await nango.startSync(
           data.integrationId,
           [data.syncId],
@@ -76,7 +70,6 @@ const triggerSyncForSource = async (data: SyncData) => {
       }
       case 'PAUSED':
       case 'SUCCESS': {
-        console.debug('triggerSync', data.integrationId, data.connectionId);
         await nango.triggerSync(
           data.integrationId,
           [data.syncId],
