@@ -56,33 +56,36 @@ export type NangoSyncPayload = Pick<
   'providerConfigKey' | 'connectionId' | 'model' | 'queryTimeStamp'
 >;
 
-export type FileTrainEventData = {
+export type FileTrainEventData<T extends SyncMetadata> = {
   file: Omit<NangoFileWithMetadata, 'content'> & { compressedContent: string };
   projectId: Project['id'];
   sourceId: DbSource['id'];
-  syncMetadata: SyncMetadata;
   connectionId: string;
+  syncMetadata: T;
 };
 
-type Events = {
+type Events<T extends SyncMetadata> = {
   'nango/sync': {
     data: { nangoSyncPayload: NangoSyncPayload; shouldPause: boolean };
   };
   'markprompt/file.train': {
-    data: FileTrainEventData;
+    data: FileTrainEventData<T>;
   };
   'markprompt/github-file-slow.train': {
-    data: FileTrainEventData;
+    data: FileTrainEventData<T>;
   };
   'markprompt/github-file-fast.train': {
-    data: FileTrainEventData;
+    data: FileTrainEventData<T>;
   };
   'markprompt/files.delete': {
     data: { ids: NangoFileWithMetadata['id'][]; sourceId: string };
   };
 };
 
-type NamedEvent<T extends keyof Events> = Events[T] & { name: T };
+type NamedEvent<
+  T extends SyncMetadata,
+  U extends keyof Events<T>,
+> = Events<T>[U] & { name: U };
 
 type TrainEventName =
   | 'markprompt/file.train'
@@ -96,7 +99,7 @@ type TrainEventId =
 
 export const inngest = new Inngest({
   id: 'markprompt',
-  schemas: new EventSchemas().fromRecord<Events>(),
+  schemas: new EventSchemas().fromRecord<Events<SyncMetadata>>(),
 });
 
 const syncNangoRecords = inngest.createFunction(
@@ -232,27 +235,27 @@ const syncNangoRecords = inngest.createFunction(
       eventId = 'train-files';
     }
 
-    const trainEvents = trainRecords.map<NamedEvent<TrainEventName>>(
-      (record) => {
-        // Send compressed content to maximize chances of staying below
-        // the 1Mb payload limit. Base64 is required to send over the
-        // wire, otherwise the compressed content gets corrupted.
-        const compressedContent = compressToBase64(record.content || '');
-        return {
-          name: eventName,
-          data: {
-            file: {
-              ...record,
-              compressedContent,
-            },
-            sourceId: sourceSyncData.id,
-            projectId,
-            syncMetadata,
-            connectionId,
+    const trainEvents = trainRecords.map<
+      NamedEvent<SyncMetadata, TrainEventName>
+    >((record) => {
+      // Send compressed content to maximize chances of staying below
+      // the 1Mb payload limit. Base64 is required to send over the
+      // wire, otherwise the compressed content gets corrupted.
+      const compressedContent = compressToBase64(record.content || '');
+      return {
+        name: eventName,
+        data: {
+          file: {
+            ...record,
+            compressedContent,
           },
-        };
-      },
-    );
+          sourceId: sourceSyncData.id,
+          projectId,
+          syncMetadata,
+          connectionId,
+        },
+      };
+    });
 
     await updateSyncQueue(supabase, syncQueueId, 'running', {
       message: `Start processing ${pluralize(
@@ -320,7 +323,9 @@ export const createFullMeta = async (file: NangoFileWithMetadata) => {
   return meta;
 };
 
-export const runTrainFile = async (data: FileTrainEventData) => {
+export const runTrainFile = async <T extends SyncMetadata>(
+  data: FileTrainEventData<T>,
+) => {
   const nangoFile: NangoFileWithMetadata = {
     ...data.file,
     content: decompressFromBase64(data.file.compressedContent),
@@ -507,7 +512,9 @@ const trainFile = inngest.createFunction(
   },
 );
 
-const fetchAndTrainGitHubFile = async (data: FileTrainEventData) => {
+const fetchAndTrainGitHubFile = async (
+  data: FileTrainEventData<GitHubRepoSyncMetadata>,
+) => {
   const syncMetadata = data.syncMetadata as GitHubRepoSyncMetadata;
   const content = await fetchGitHubFileContent(
     syncMetadata.owner,
@@ -516,7 +523,10 @@ const fetchAndTrainGitHubFile = async (data: FileTrainEventData) => {
     data.file.path,
     data.connectionId,
   );
-  return runTrainFile({ ...data, file: { ...data.file, content } });
+  return runTrainFile({
+    ...data,
+    file: { ...data.file, compressedContent: compressToBase64(content) },
+  });
 };
 
 // The train function adheres to the GitHub rate limits, which is more
@@ -537,7 +547,9 @@ const fetchAndTrainGitHubFileSlow = inngest.createFunction(
   },
   { event: 'markprompt/github-file-slow.train' },
   async ({ event }) => {
-    return fetchAndTrainGitHubFile(event.data);
+    return fetchAndTrainGitHubFile(
+      event.data as FileTrainEventData<GitHubRepoSyncMetadata>,
+    );
   },
 );
 
@@ -556,7 +568,9 @@ const fetchAndTrainGitHubFileFast = inngest.createFunction(
   },
   { event: 'markprompt/github-file-fast.train' },
   async ({ event }) => {
-    return fetchAndTrainGitHubFile(event.data);
+    return fetchAndTrainGitHubFile(
+      event.data as FileTrainEventData<GitHubRepoSyncMetadata>,
+    );
   },
 );
 

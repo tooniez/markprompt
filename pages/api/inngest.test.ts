@@ -22,7 +22,13 @@ import {
   resetMockSupabaseData,
   supabaseClient,
 } from '@/lib/testing/mocks/supabase-client';
-import { DbFile, FileSections, NangoFileWithMetadata } from '@/types/types';
+import {
+  DbFile,
+  FileSections,
+  NangoFileWithMetadata,
+  SyncMetadata,
+  SyncMetadataWithTargetSelectors,
+} from '@/types/types';
 
 import {
   FileTrainEventData,
@@ -328,31 +334,35 @@ describe('inngest', () => {
       const section1Content = `# ${heading1}\n\nSome Markdown content`;
       const section2Content = `# ${heading2}\n\nSome other content`;
 
-      const fileTrainEventData: FileTrainEventData = {
-        file: {
-          id: 'test-id',
-          path: '/test/path',
-          title: 'Test file',
-          compressedContent: compressToBase64(
-            `${section1Content}\n\n${section2Content}`,
-          ),
-          contentType: 'md',
-          meta: { key: 'value' },
-          lastModified: undefined,
-          error: undefined,
-          _nango_metadata: {
-            deleted_at: null,
-            last_action: 'UPDATED',
-            first_seen_at: '2023-11-01',
-            last_modified_at: '2023-11-01',
+      const fileTrainEventData: FileTrainEventData<SyncMetadataWithTargetSelectors> =
+        {
+          file: {
+            id: 'test-id',
+            path: '/test/path',
+            title: 'Test file',
+            compressedContent: compressToBase64(
+              `${section1Content}\n\n${section2Content}`,
+            ),
+            contentType: 'md',
+            meta: { key: 'value' },
+            lastModified: undefined,
+            error: undefined,
+            _nango_metadata: {
+              deleted_at: null,
+              last_action: 'UPDATED',
+              first_seen_at: '2023-11-01',
+              last_modified_at: '2023-11-01',
+            },
           },
-        },
-        projectId: 'test-project-id',
-        sourceId: 'test-source-id',
-        includeSelectors: undefined,
-        excludeSelectors: undefined,
-        processorOptions: undefined,
-      };
+          projectId: 'test-project-id',
+          sourceId: 'test-source-id',
+          connectionId: '123',
+          syncMetadata: {
+            includeSelectors: undefined,
+            excludeSelectors: undefined,
+            processorOptions: undefined,
+          },
+        };
 
       await runTrainFile(fileTrainEventData);
 
