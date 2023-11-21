@@ -45,6 +45,30 @@ type BaseConfigurationDialogProps = {
   children?: ReactNode;
 };
 
+const StopSyncButton = ({ source }: { source: DbSource }) => {
+  const [isStopping, setStopping] = useState(false);
+  const { stopSync } = useSources();
+
+  return (
+    <Button
+      className="flex-none"
+      variant="plain"
+      buttonSize="sm"
+      loading={isStopping}
+      onClick={async () => {
+        if (!source) {
+          return;
+        }
+        setStopping(true);
+        await stopSync(source);
+        setStopping(false);
+      }}
+    >
+      Stop syncing
+    </Button>
+  );
+};
+
 export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   source,
   defaultView,
@@ -54,7 +78,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   children,
 }) => {
   const { project } = useProject();
-  const { latestSyncQueues, syncSources } = useSources();
+  const { syncSources, getStatusForSource } = useSources();
   const [syncStarted, setSyncStarted] = useState(false);
   const [showDeleteSourceDialog, setShowDeleteSourceDialog] = useState(false);
 
@@ -66,8 +90,8 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   );
 
   const currentStatus = useMemo(() => {
-    return latestSyncQueues?.find((q) => q.source_id === source?.id)?.status;
-  }, [latestSyncQueues, source?.id]);
+    return source?.id ? getStatusForSource(source.id) : undefined;
+  }, [getStatusForSource, source?.id]);
 
   const loadingSyncQueues = !allSyncQueuesForSource && !error;
 
@@ -76,7 +100,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
       ?.ended_at;
   }, [allSyncQueuesForSource]);
 
-  const lastSyncQueue = allSyncQueuesForSource?.[0];
+  // const lastSyncQueue = allSyncQueuesForSource?.[0];
 
   const title = useMemo(() => {
     if (source?.type !== 'nango') {
@@ -211,10 +235,13 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
                   </p>
                 )}
               </div>
+              {source && currentStatus === 'running' && (
+                <StopSyncButton source={source} />
+              )}
               <Button
                 className="flex-none"
                 loading={syncStarted}
-                disabled={lastSyncQueue?.status === 'running'}
+                disabled={currentStatus === 'running'}
                 variant="cta"
                 buttonSize="sm"
                 onClick={() => {
@@ -224,9 +251,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
                   syncSources([source], setSyncStarted);
                 }}
               >
-                {lastSyncQueue?.status === 'running'
-                  ? 'Initiating sync...'
-                  : 'Sync now'}
+                {currentStatus === 'running' ? 'Syncing...' : 'Sync now'}
               </Button>
             </div>
           </CTABar>

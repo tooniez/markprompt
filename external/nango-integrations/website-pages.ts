@@ -257,7 +257,7 @@ export default async function fetchData(nango: NangoSync) {
     throw new Error('Missing page fetcher service URL or API token.');
   }
 
-  const filesToSave: NangoWebpageFile[] = [];
+  // const filesToSave: NangoWebpageFile[] = [];
 
   const processedUrls: string[] = [];
   let linksToProcess = [baseUrl];
@@ -266,6 +266,7 @@ export default async function fetchData(nango: NangoSync) {
   let numProcessedLinks = 0;
 
   await nango.log(`linksToProcess: ${JSON.stringify(linksToProcess)}`);
+  // let count = 0;
 
   while (linksToProcess.length > 0) {
     try {
@@ -283,9 +284,14 @@ export default async function fetchData(nango: NangoSync) {
         excludeRegexes,
       );
 
-      files.forEach((file) => {
-        filesToSave.push(file);
-      });
+      // files.forEach((file) => {
+      //   filesToSave.push(file);
+      // });
+
+      await nango.batchSave(files, 'NangoFile');
+      // count += files.length;
+
+      await nango.log('batchSave called on ' + files.length + ' files');
 
       linksToProcess.forEach((url) => {
         processedUrls.push(url);
@@ -296,21 +302,23 @@ export default async function fetchData(nango: NangoSync) {
         .slice(0, Math.max(0, maxAllowedPages - numProcessedLinks));
     } catch (e) {
       await nango.log(`[website-pages] ERROR: ${e}`);
-      break;
+      throw e;
+      // break;
     }
   }
 
-  await nango.log(`Files to save: ${filesToSave.length}`);
+  // await nango.log(`Files to save: ${count}`);
+  // await nango.log(`Files to save: ${filesToSave.length}`);
 
-  await nango.log(
-    'batchSave called!\n\n' +
-      JSON.stringify(
-        filesToSave.map((f) => ({
-          id: f.id,
-          content: f.content?.slice(0, 200).replace(/\\n/, ' '),
-        })),
-      ),
-  );
+  // await nango.log(
+  //   'batchSave called!\n\n' +
+  //     JSON.stringify(
+  //       filesToSave.map((f) => ({
+  //         id: f.id,
+  //         content: f.content?.slice(0, 200).replace(/\\n/, ' '),
+  //       })),
+  //     ),
+  // );
 
-  await nango.batchSave(filesToSave, 'NangoFile');
+  // await nango.batchSave(filesToSave, 'NangoFile');
 }

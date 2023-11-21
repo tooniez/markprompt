@@ -13,7 +13,10 @@ import {
 
 import useProject from './use-project';
 import { getIntegrationName, getSyncData } from '../integrations/nango';
-import { getNangoClientInstance } from '../integrations/nango.client';
+import {
+  getNangoClientInstance,
+  stopSync as nangoStopSync,
+} from '../integrations/nango.client';
 import { fetcher } from '../utils';
 
 const nango = getNangoClientInstance();
@@ -76,6 +79,29 @@ export default function useSources() {
     [project?.id, mutateSyncQueues],
   );
 
+  const stopSync = useCallback(
+    async (source: Pick<DbSource, 'type' | 'data'>) => {
+      if (!project?.id) {
+        return;
+      }
+
+      const syncData = getSyncData(source);
+
+      if (!syncData) {
+        return;
+      }
+
+      const tid = toast.loading('Stopping sync...');
+
+      await nangoStopSync(project.id, syncData);
+
+      toast.success('Sync has been stopped', { id: tid });
+
+      mutateSyncQueues();
+    },
+    [project?.id, mutateSyncQueues],
+  );
+
   const isNameAvailable = useCallback(
     (name: string) => {
       return !sources?.find(
@@ -103,11 +129,20 @@ export default function useSources() {
     [isNameAvailable],
   );
 
+  const getStatusForSource = useCallback(
+    (sourceId: DbSource['id']) => {
+      return latestSyncQueues?.find((q) => q.source_id === sourceId)?.status;
+    },
+    [latestSyncQueues],
+  );
+
   return {
     sources: (sources || []) as DbSource[],
     syncAllSources,
     syncSources,
+    stopSync,
     latestSyncQueues,
+    getStatusForSource,
     mutateSyncQueues,
     isNameAvailable,
     generateUniqueName,

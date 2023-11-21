@@ -34,6 +34,7 @@ import {
   getFilesIdAndCheksumBySourceAndNangoId,
 } from '@/lib/supabase';
 import { createChecksum, pluralize } from '@/lib/utils';
+import { byteSize } from '@/lib/utils.nodeps';
 import { Json } from '@/types/supabase';
 import {
   DbFileMetaChecksum,
@@ -164,6 +165,18 @@ const syncNangoRecords = inngest.createFunction(
       (await getProjectConfigData(supabase, projectId)).markpromptConfig
         .processorOptions;
 
+    console.log(
+      'records',
+      JSON.stringify(
+        records.map((r) => ({
+          path: r.path,
+          action: r._nango_metadata.last_action,
+        })),
+        null,
+        2,
+      ),
+    );
+
     const trainEvents = records
       .filter((record) => {
         return (
@@ -172,6 +185,7 @@ const syncNangoRecords = inngest.createFunction(
         );
       })
       .map<NamedEvent<'markprompt/file.train'>>((record) => {
+        console.log('Size', byteSize(JSON.stringify(record)));
         return {
           name: 'markprompt/file.train',
           data: {
@@ -255,6 +269,8 @@ export const runTrainFile = async (data: FileTrainEventData) => {
     nangoFile.id,
   );
 
+  console.log('foundFiles', JSON.stringify(foundFiles.length, null, 2));
+
   let foundFile: DbFileMetaChecksum | undefined = undefined;
 
   if (foundFiles.length > 0) {
@@ -280,6 +296,8 @@ export const runTrainFile = async (data: FileTrainEventData) => {
       )
     : '';
   const checksum = createChecksum(markdown);
+
+  console.log('markdown', JSON.stringify(markdown.slice(0, 50), null, 2));
 
   if (
     foundFile &&
