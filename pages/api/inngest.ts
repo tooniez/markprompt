@@ -217,12 +217,15 @@ const syncNangoRecords = inngest.createFunction(
       level: 'info',
     });
 
-    // if (event.data.shouldPause) {
-    //   // Pause website integrations (we can't pause GitHub integrations
-    //   // as the connection needs to stay alive in the training step to
-    //   // fetch the file contents).
-    //   await deleteConnection(supabase, nangoSyncPayload.connectionId);
-    // }
+    if (
+      nangoSyncPayload.providerConfigKey === 'website-pages' &&
+      event.data.shouldPause
+    ) {
+      // Pause website integrations (we can't pause GitHub integrations
+      // as the connection needs to stay alive in the training step to
+      // fetch the file contents).
+      await deleteConnection(supabase, nangoSyncPayload.connectionId);
+    }
 
     return { updated: trainEvents.length, deleted: filesIdsToDelete.length };
   },
