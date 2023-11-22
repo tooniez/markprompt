@@ -1,6 +1,82 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import type { NangoSync, NangoFile } from './models';
 
+const PROVIDER_CONFIG_KEY = 'website-pages';
+
+//
+// START SHARED LOGGING CODE ==================================================
+//
+
+const getSyncQueueId = async (
+  nango: NangoSync,
+): Promise<string | undefined> => {
+  const env = await nango.getEnvironmentVariables();
+  const markpromptUrl = getEnv(env, 'MARKPROMPT_URL');
+  const markpromptAPIToken = getEnv(env, 'MARKPROMPT_API_TOKEN');
+
+  const res = await nango.proxy({
+    method: 'GET',
+    baseUrlOverride: markpromptUrl,
+    endpoint: `/api/sync-queues/running?connectionId=${nango.connectionId!}`,
+    providerConfigKey: PROVIDER_CONFIG_KEY,
+    connectionId: nango.connectionId!,
+    headers: {
+      Authorization: `Bearer ${markpromptAPIToken}`,
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+  });
+
+  return res.data?.syncQueueId || undefined;
+};
+
+const pluralize = (value: number, singular: string, plural: string) => {
+  return `${value} ${value === 1 ? singular : plural}`;
+};
+
+type LogLevel = 'info' | 'debug' | 'error' | 'warn';
+
+const appendToLogFull = async (
+  nango: NangoSync,
+  syncQueueId: string | undefined,
+  level: LogLevel,
+  message: string,
+) => {
+  const env = await nango.getEnvironmentVariables();
+  const markpromptUrl = getEnv(env, 'MARKPROMPT_URL');
+  const markpromptAPIToken = getEnv(env, 'MARKPROMPT_API_TOKEN');
+
+  if (!syncQueueId) {
+    return;
+  }
+
+  const res = await nango.proxy({
+    method: 'POST',
+    baseUrlOverride: markpromptUrl,
+    endpoint: `/api/sync-queues/${syncQueueId}/append-log`,
+    providerConfigKey: PROVIDER_CONFIG_KEY,
+    connectionId: nango.connectionId!,
+    data: { message, level },
+    headers: {
+      Authorization: `Bearer ${markpromptAPIToken}`,
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+  });
+
+  return res.data;
+};
+
+type EnvEntry = { name: string; value: string };
+
+const getEnv = (env: EnvEntry[] | null, name: string) => {
+  return env?.find((v) => v.name === name)?.value;
+};
+
+//
+// END SHARED LOGGING CODE ====================================================
+//
+
 interface Metadata {
   baseUrl: string;
   includeRegexes?: string[];
@@ -39,8 +115,6 @@ const unique = (arr: string[]) => {
   return result;
 };
 
-const WEBSITE_PAGES_PROVIDER_CONFIG_KEY = 'website-pages';
-
 const fetchPageAndUrlsWithRetryWithThrows = async (
   nango: NangoSync,
   url: string,
@@ -62,7 +136,7 @@ const fetchPageAndUrlsWithRetryWithThrows = async (
     method: 'POST',
     baseUrlOverride: pageFetcherServiceBaseUrl,
     endpoint: pageFetcherServicePath,
-    providerConfigKey: WEBSITE_PAGES_PROVIDER_CONFIG_KEY,
+    providerConfigKey: PROVIDER_CONFIG_KEY,
     connectionId: nango.connectionId!,
     retries: 10,
     data: {
@@ -230,72 +304,6 @@ const fetchPages = async (
   return { files, nextUrls: unique(nextUrls) };
 };
 
-const getSyncQueueId = async (
-  nango: NangoSync,
-  markpromptUrl: string,
-  markpromptAPIToken: string,
-): Promise<string | undefined> => {
-  const res = await nango.proxy({
-    method: 'GET',
-    baseUrlOverride: markpromptUrl,
-    endpoint: `/api/sync-queues/running?connectionId=${nango.connectionId!}`,
-    providerConfigKey: WEBSITE_PAGES_PROVIDER_CONFIG_KEY,
-    connectionId: nango.connectionId!,
-    headers: {
-      Authorization: `Bearer ${markpromptAPIToken}`,
-      'Content-Type': 'application/json',
-      accept: 'application/json',
-    },
-  });
-
-  return res.data?.syncQueueId || undefined;
-};
-
-const pluralize = (value: number, singular: string, plural: string) => {
-  return `${value} ${value === 1 ? singular : plural}`;
-};
-
-type LogLevel = 'info' | 'debug' | 'error' | 'warn';
-
-const appendToLogFull = async (
-  nango: NangoSync,
-  markpromptUrl: string,
-  markpromptAPIToken: string,
-  syncQueueId: string | undefined,
-  level: LogLevel,
-  message: string,
-) => {
-  await nango.log(`syncQueueId: ${syncQueueId}`);
-
-  if (!syncQueueId) {
-    return;
-  }
-
-  const res = await nango.proxy({
-    method: 'POST',
-    baseUrlOverride: markpromptUrl,
-    endpoint: `/api/sync-queues/${syncQueueId}/append-log`,
-    providerConfigKey: WEBSITE_PAGES_PROVIDER_CONFIG_KEY,
-    connectionId: nango.connectionId!,
-    data: { message, level },
-    headers: {
-      Authorization: `Bearer ${markpromptAPIToken}`,
-      'Content-Type': 'application/json',
-      accept: 'application/json',
-    },
-  });
-
-  await nango.log(`syncQueueId: ${JSON.stringify(res.data)}`);
-
-  return res.data;
-};
-
-type EnvEntry = { name: string; value: string };
-
-const getEnv = (env: EnvEntry[] | null, name: string) => {
-  return env?.find((v) => v.name === name)?.value;
-};
-
 export default async function fetchData(nango: NangoSync) {
   if (!nango.connectionId) {
     return;
@@ -309,7 +317,6 @@ export default async function fetchData(nango: NangoSync) {
   }
 
   const env = await nango.getEnvironmentVariables();
-  const markpromptUrl = getEnv(env, 'MARKPROMPT_URL');
   const markpromptAPIToken = getEnv(env, 'MARKPROMPT_API_TOKEN');
   const pageFetcherServiceBaseUrl = getEnv(
     env,
@@ -318,19 +325,14 @@ export default async function fetchData(nango: NangoSync) {
   const pageFetcherServicePath = getEnv(env, 'CUSTOM_PAGE_FETCH_SERVICE_PATH');
 
   if (
-    !markpromptUrl ||
-    !markpromptAPIToken ||
     !pageFetcherServiceBaseUrl ||
-    !pageFetcherServicePath
+    !pageFetcherServicePath ||
+    !markpromptAPIToken
   ) {
     throw new Error('Missing service URLs or API token.');
   }
 
-  const syncQueueId = await getSyncQueueId(
-    nango,
-    markpromptUrl,
-    markpromptAPIToken,
-  );
+  const syncQueueId = await getSyncQueueId(nango);
 
   // const filesToSave: NangoWebpageFile[] = [];
 
@@ -343,14 +345,7 @@ export default async function fetchData(nango: NangoSync) {
   await nango.log(`linksToProcess: ${JSON.stringify(linksToProcess)}`);
 
   const appendToLog = async (level: LogLevel, message: string) => {
-    return appendToLogFull(
-      nango,
-      markpromptUrl,
-      markpromptAPIToken,
-      syncQueueId,
-      level,
-      message,
-    );
+    return appendToLogFull(nango, syncQueueId, level, message);
   };
 
   await appendToLog('info', `Start importing ${baseUrl}`);
@@ -393,10 +388,10 @@ export default async function fetchData(nango: NangoSync) {
 
       await appendToLog(
         'info',
-        `Saved ${pluralize(files.length, 'page', 'pages')}.${
+        `Saved ${pluralize(files.length, 'page', 'pages')}. ${
           linksToProcess.length > 0
-            ? ` Discovered ${linksToProcess.length} new links to import.`
-            : ''
+            ? `Discovered ${linksToProcess.length} new links to import.`
+            : 'No new links found.'
         }`,
       );
     } catch (e) {
