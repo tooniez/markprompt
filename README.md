@@ -22,10 +22,23 @@ Markprompt is an AI-native platform for customer support. Connect any source of 
 
 ## Deploying
 
-When deploying, deploy syncs:
+When reploying, make sure to run the following steps:
+
+### Nango
+
+Deploy Nango syncs to production:
 
 ```sh
-npm run deploy-syncs
+cd external/nango-integrations
+nango deply prod
+```
+
+### Inngest
+
+Deploy Inngest to production:
+
+```sh
+curl -X PUT https://markprompt.com/api/inngest
 ```
 
 ## Documentation
