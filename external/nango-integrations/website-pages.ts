@@ -248,7 +248,11 @@ const getSyncQueueId = async (
     },
   });
 
-  return res.data;
+  return res.data?.syncQueueId || undefined;
+};
+
+const pluralize = (value: number, singular: string, plural: string) => {
+  return `${value} ${value === 1 ? singular : plural}`;
 };
 
 type LogLevel = 'info' | 'debug' | 'error' | 'warn';
@@ -261,6 +265,8 @@ const appendToLogFull = async (
   level: LogLevel,
   message: string,
 ) => {
+  await nango.log(`syncQueueId: ${syncQueueId}`);
+
   if (!syncQueueId) {
     return;
   }
@@ -268,7 +274,7 @@ const appendToLogFull = async (
   const res = await nango.proxy({
     method: 'POST',
     baseUrlOverride: markpromptUrl,
-    endpoint: `/api/sync-queues/${syncQueueId!}/append-log`,
+    endpoint: `/api/sync-queues/${syncQueueId}/append-log`,
     providerConfigKey: WEBSITE_PAGES_PROVIDER_CONFIG_KEY,
     connectionId: nango.connectionId!,
     data: { message, level },
@@ -278,6 +284,8 @@ const appendToLogFull = async (
       accept: 'application/json',
     },
   });
+
+  await nango.log(`syncQueueId: ${JSON.stringify(res.data)}`);
 
   return res.data;
 };
@@ -385,7 +393,7 @@ export default async function fetchData(nango: NangoSync) {
 
       await appendToLog(
         'info',
-        `Saved ${files.length} pages.${
+        `Saved ${pluralize(files.length, 'page', 'pages')}.${
           linksToProcess.length > 0
             ? ` Discovered ${linksToProcess.length} new links to import.`
             : ''
@@ -400,21 +408,12 @@ export default async function fetchData(nango: NangoSync) {
 
   await appendToLog(
     'info',
-    `Done processing ${baseUrl}. Imported ${count} pages.`,
+    `Done importing ${baseUrl}. Saved ${pluralize(
+      count,
+      'page',
+      'pages',
+    )} in total.`,
   );
-
-  // await nango.log(`Files to save: ${count}`);
-  // await nango.log(`Files to save: ${filesToSave.length}`);
-
-  // await nango.log(
-  //   'batchSave called!\n\n' +
-  //     JSON.stringify(
-  //       filesToSave.map((f) => ({
-  //         id: f.id,
-  //         content: f.content?.slice(0, 200).replace(/\\n/, ' '),
-  //       })),
-  //     ),
-  // );
 
   // await nango.batchSave(filesToSave, 'NangoFile');
 }

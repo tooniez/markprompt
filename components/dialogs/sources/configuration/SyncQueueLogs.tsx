@@ -7,6 +7,7 @@ import useSWR from 'swr';
 import { SkeletonTable } from '@/components/ui/Skeletons';
 import {
   formatShortDateTimeInTimeZone,
+  formatShortTimeInTimeZone,
   formatSystemDateTime,
 } from '@/lib/date';
 import { fetcher, pluralize } from '@/lib/utils';
@@ -54,25 +55,32 @@ const LogMessages: FC<LogMessagesProps> = ({ projectId, syncQueueId }) => {
           </div>
         </div>
       )}
-      <div className="px-4 pt-4 text-xs">
-        {logs?.map((log: LogMessage, i) => {
-          return (
-            <div
-              key={`log-${i}`}
-              className="flex flex-row gap-4 border-l border-neutral-800 py-2 pl-4"
-            >
-              <div className="w-[120px] flex-none whitespace-nowrap font-mono text-xs text-neutral-100">
-                {formatShortDateTimeInTimeZone(parseISO(log.timestamp))}
-              </div>
-              <div className="w-[70px] flex-none whitespace-nowrap text-xs">
-                <LogLevelTag level={log.level} />
-              </div>
-              <div className="flex-grow font-mono text-neutral-100">
-                {log.message}
-              </div>
-            </div>
-          );
-        })}
+      <div className="px-4 text-xs">
+        {logs && (
+          <div className="flex flex-col border-l border-neutral-800 py-2 pl-4">
+            {logs.length > 0 &&
+              logs.map((log: LogMessage, i) => {
+                return (
+                  <div className="flex flex-row gap-4 py-2" key={`log-${i}`}>
+                    <div className="w-[70px] flex-none whitespace-nowrap font-mono text-xs text-neutral-100">
+                      {formatShortTimeInTimeZone(parseISO(log.timestamp), true)}
+                    </div>
+                    <div className="w-[70px] flex-none whitespace-nowrap text-xs">
+                      <LogLevelTag level={log.level} />
+                    </div>
+                    <div className="flex-grow font-mono text-neutral-100">
+                      {log.message}
+                    </div>
+                  </div>
+                );
+              })}
+            {logs && logs.length === 0 && (
+              <p className="flex-grow font-mono text-neutral-100">
+                No logs were produced for this sync.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -108,13 +116,18 @@ const LogEntry: FC<LogEntryProps> = ({ projectId, syncQueue }) => {
   return (
     <div className="flex w-full flex-col items-center">
       <div
-        className="flex w-full cursor-pointer flex-row items-center gap-4 px-4  py-2 transition hover:bg-neutral-900"
+        className={cn(
+          'flex w-full cursor-pointer flex-row items-center gap-4 px-4  py-2 transition hover:bg-neutral-900',
+          {
+            'bg-neutral-900': isOpen,
+          },
+        )}
         onClick={() => {
           setOpen((o) => !o);
         }}
       >
         <div className="w-[200px] flex-none whitespace-nowrap font-mono text-xs text-neutral-400">
-          {formatSystemDateTime(parseISO(syncQueue.created_at))}
+          {formatSystemDateTime(parseISO(syncQueue.created_at), true)}
         </div>
         <div className="w-[160px] flex-none whitespace-nowrap font-mono text-xs text-neutral-400">
           {duration}
