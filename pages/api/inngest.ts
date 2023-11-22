@@ -34,7 +34,8 @@ import {
   updateSyncQueue,
   getFilesIdAndCheksumBySourceAndNangoId,
 } from '@/lib/supabase';
-import { createChecksum, pluralize } from '@/lib/utils';
+import { createChecksum } from '@/lib/utils';
+import { pluralize } from '@/lib/utils.nodeps';
 import { Json } from '@/types/supabase';
 import {
   DbFileMetaChecksum,

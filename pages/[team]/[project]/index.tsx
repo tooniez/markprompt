@@ -47,8 +47,8 @@ import {
   canDeleteSource,
   getIconForSource,
   getLabelForSource,
-  pluralize,
 } from '@/lib/utils';
+import { pluralize } from '@/lib/utils.nodeps';
 import { getFileTitle } from '@/lib/utils.non-edge';
 import {
   DbFile,

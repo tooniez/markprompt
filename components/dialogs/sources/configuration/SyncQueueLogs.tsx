@@ -5,12 +5,9 @@ import { FC, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
 import { SkeletonTable } from '@/components/ui/Skeletons';
-import {
-  formatShortDateTimeInTimeZone,
-  formatShortTimeInTimeZone,
-  formatSystemDateTime,
-} from '@/lib/date';
-import { fetcher, pluralize } from '@/lib/utils';
+import { formatShortTimeInTimeZone, formatSystemDateTime } from '@/lib/date';
+import { fetcher } from '@/lib/utils';
+import { pluralize } from '@/lib/utils.nodeps';
 import {
   DbSource,
   DbSyncQueueLog,
@@ -204,7 +201,7 @@ export const SyncQueueLogs: FC<SyncQueueLogsProps> = ({
           })}
           {syncQueues?.length > 0 && (
             <p className="w-full px-4 pt-4 text-xs text-neutral-600">
-              Showing last {NUM_LOGS} logs
+              Showing {NUM_LOGS} most recent logs
             </p>
           )}
         </div>

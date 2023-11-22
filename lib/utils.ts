@@ -285,10 +285,6 @@ export const isSupportedFileType = (pathOrName: string): boolean => {
   return !!(extension && SUPPORTED_EXTENSIONS.includes(extension));
 };
 
-export const pluralize = (value: number, singular: string, plural: string) => {
-  return `${value} ${value === 1 ? singular : plural}`;
-};
-
 interface SWRError extends Error {
   status: number;
   info: any;
