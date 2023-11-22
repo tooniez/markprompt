@@ -1,7 +1,6 @@
 import { SortingState } from '@tanstack/react-table';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import useSWR from 'swr';
-import { isPresent } from 'ts-is-present';
 
 import { DbFileWithoutContent, DbSource } from '@/types/types';
 

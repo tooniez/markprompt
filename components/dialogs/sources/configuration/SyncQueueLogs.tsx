@@ -12,7 +12,6 @@ import {
 import { fetcher, pluralize } from '@/lib/utils';
 import {
   DbSource,
-  DbSyncQueue,
   DbSyncQueueLog,
   DbSyncQueueOverview,
   LogLevel,
@@ -38,6 +37,10 @@ const LogMessages: FC<LogMessagesProps> = ({ projectId, syncQueueId }) => {
       ? `/api/project/${projectId}/syncs/${syncQueueId}/logs`
       : null,
     fetcher<DbSyncQueueLog[]>,
+    {
+      // Refresh every 5 seconds
+      refreshInterval: 5000,
+    },
   );
 
   const loading = !logs && !error;
