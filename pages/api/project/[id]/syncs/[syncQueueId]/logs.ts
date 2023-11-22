@@ -2,14 +2,14 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { withProjectAccess } from '@/lib/middleware/common';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase';
-import { DbSource, DbSyncQueue } from '@/types/types';
+import { DbSyncQueue, DbSyncQueueLog } from '@/types/types';
 
 type Data =
   | {
       status?: string;
       error?: string;
     }
-  | DbSyncQueue[];
+  | DbSyncQueueLog[];
 
 const allowedMethods = ['GET'];
 
@@ -23,15 +23,20 @@ export default withProjectAccess(
       return res.status(400).end();
     }
 
-    const sourceId = req.query.sourceId as DbSource['id'];
+    const syncQueueId = req.query.syncQueueId as DbSyncQueue['id'];
 
     const { data } = await supabase
       .from('sync_queues')
-      .select('*')
-      .eq('source_id', sourceId)
+      .select('logs')
+      .eq('id', syncQueueId)
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(1)
+      .maybeSingle();
 
-    return res.status(200).json(data || []);
+    if (data) {
+      return res.status(200).json(data.logs as DbSyncQueueLog[]);
+    }
+
+    return res.status(400).json({ error: 'Logs not found' });
   },
 );

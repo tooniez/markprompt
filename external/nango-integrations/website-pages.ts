@@ -130,10 +130,6 @@ const fetchPageAndUrlsWithRetry =
           },
         };
       } else {
-        // setTimeout is not defined in the Nango runtime
-        // await timeout(
-        //   (800 + Math.round(Math.random() * 400)) * Math.pow(2, retryAttempt),
-        // );
         const res = await fetchPageAndUrlsWithRetry(
           nango,
           pageFetcherServiceBaseUrl,
