@@ -35,7 +35,6 @@ import {
   getFilesIdAndCheksumBySourceAndNangoId,
 } from '@/lib/supabase';
 import { createChecksum, pluralize } from '@/lib/utils';
-import { byteSize } from '@/lib/utils.nodeps';
 import { Json } from '@/types/supabase';
 import {
   DbFileMetaChecksum,
@@ -184,12 +183,6 @@ const syncNangoRecords = inngest.createFunction(
         // the 1Mb payload limit. Base64 is required to send over the
         // wire, otherwise the compressed content gets corrupted.
         const compressedContent = compressToBase64(record.content || '');
-        console.log(
-          'BEFORE',
-          record.content?.length,
-          'AFTER',
-          compressedContent.length,
-        );
         return {
           name: 'markprompt/file.train',
           data: {

@@ -18,7 +18,7 @@ import {
   Project,
 } from '@/types/types';
 
-import { LogLevelTag, getTagForSyncQueue } from './utils';
+import { LogLevelTag, SyncQueueTag } from './utils';
 
 type LogMessagesProps = {
   projectId: Project['id'];
@@ -65,7 +65,7 @@ const LogMessages: FC<LogMessagesProps> = ({ projectId, syncQueueId }) => {
                 {formatShortDateTimeInTimeZone(parseISO(log.timestamp))}
               </div>
               <div className="w-[70px] flex-none whitespace-nowrap text-xs">
-                <LogLevelTag level="warn" />
+                <LogLevelTag level={log.level} />
               </div>
               <div className="flex-grow font-mono text-neutral-100">
                 {log.message}
@@ -113,14 +113,14 @@ const LogEntry: FC<LogEntryProps> = ({ projectId, syncQueue }) => {
           setOpen((o) => !o);
         }}
       >
-        <div className="w-[160px] flex-none whitespace-nowrap font-mono text-xs text-neutral-400">
+        <div className="w-[200px] flex-none whitespace-nowrap font-mono text-xs text-neutral-400">
           {formatSystemDateTime(parseISO(syncQueue.created_at))}
         </div>
         <div className="w-[160px] flex-none whitespace-nowrap font-mono text-xs text-neutral-400">
           {duration}
         </div>
-        <div className="flex-grow items-center">
-          {getTagForSyncQueue(syncQueue.status)}
+        <div className="flex flex-grow items-center justify-end">
+          <SyncQueueTag status={syncQueue.status} />
         </div>
         <ChevronRight
           className={cn(
@@ -143,13 +143,15 @@ type SyncQueueLogsProps = {
   sourceId: DbSource['id'];
 };
 
+const NUM_LOGS = 20;
+
 export const SyncQueueLogs: FC<SyncQueueLogsProps> = ({
   projectId,
   sourceId,
 }) => {
   const { data: syncQueues, error } = useSWR(
     projectId && sourceId
-      ? `/api/project/${projectId}/sources/${sourceId}/syncs/overview`
+      ? `/api/project/${projectId}/sources/${sourceId}/syncs/overview?limit=${NUM_LOGS}`
       : null,
     fetcher<DbSyncQueueOverview[]>,
   );
@@ -171,9 +173,12 @@ export const SyncQueueLogs: FC<SyncQueueLogsProps> = ({
       {syncQueues && syncQueues?.length > 0 ? (
         <div className="relative flex h-full w-full flex-col items-center overflow-y-auto pb-8 text-neutral-300">
           <div className="sticky top-0 z-10 mb-4 flex w-full flex-row items-center gap-4 border-b border-neutral-900 bg-neutral-1000 py-2 px-4 pb-2 text-xs text-neutral-500">
-            <div className="w-[160px] flex-none">Started</div>
+            <div className="w-[200px] flex-none">Started</div>
             <div className="w-[160px] flex-none">Duration</div>
-            <div className="flex-grow items-center">Status</div>
+            <div className="flex flex-grow items-center justify-end">
+              Status
+            </div>
+            <div className="h-4 w-4" />
           </div>
           {syncQueues.map((q, i) => {
             return (
@@ -184,6 +189,11 @@ export const SyncQueueLogs: FC<SyncQueueLogsProps> = ({
               />
             );
           })}
+          {syncQueues?.length > 0 && (
+            <p className="w-full px-4 pt-4 text-xs text-neutral-600">
+              Showing last {NUM_LOGS} logs
+            </p>
+          )}
         </div>
       ) : (
         <p className="p-4 text-sm text-neutral-500">

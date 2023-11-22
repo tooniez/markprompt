@@ -22,7 +22,7 @@ export const Tag: FC<TagProps> = ({
     <span
       className={classNames(
         className,
-        'w-min transform items-center gap-2 truncate whitespace-nowrap font-medium transition',
+        'w-min transform gap-2 truncate whitespace-nowrap font-medium transition',
         {
           'rounded-full': !rounded,
           rounded: rounded,

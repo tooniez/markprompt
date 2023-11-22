@@ -50,8 +50,8 @@ export const formatShortDateTimeInTimeZone = (date: Date) => {
 };
 
 export const formatSystemDateTime = (date: Date) => {
-  // Jun 12, 8:20 PM
-  return formatInTimeZone(date, REFERENCE_TIMEZONE, `MMM d, yyyy, h:mm a`);
+  // Jun 12, 08:20 PM
+  return formatInTimeZone(date, REFERENCE_TIMEZONE, `MMM d, yyyy, hh:mm a`);
 };
 
 export enum FixedDateRange {

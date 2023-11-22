@@ -23,14 +23,13 @@ import { fetcher, removeTrailingSlash } from '@/lib/utils';
 import { removeSchema } from '@/lib/utils.nodeps';
 import {
   DbSource,
-  DbSyncQueue,
   DbSyncQueueOverview,
   NangoSourceDataType,
   SourceConfigurationView,
 } from '@/types/types';
 
 import { SyncQueueLogs } from './SyncQueueLogs';
-import { getTagForSyncQueue } from './utils';
+import { SyncQueueTag } from './utils';
 import SourceDialog from '../SourceDialog';
 
 const DeleteSourceDialog = dynamic(
@@ -120,7 +119,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
       title={title}
       Accessory={
         currentStatus ? (
-          getTagForSyncQueue(currentStatus)
+          <SyncQueueTag status={currentStatus} />
         ) : (
           <Tag color="orange">Not synced</Tag>
         )

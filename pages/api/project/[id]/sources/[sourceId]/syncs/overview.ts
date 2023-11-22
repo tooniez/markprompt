@@ -16,8 +16,6 @@ const allowedMethods = ['GET'];
 // Admin access to Supabase, bypassing RLS.
 const supabase = createServiceRoleSupabaseClient();
 
-const limit = 20;
-
 export default withProjectAccess(
   allowedMethods,
   async (req: NextApiRequest, res: NextApiResponse<Data>) => {
@@ -27,6 +25,7 @@ export default withProjectAccess(
 
     const sourceId = req.query.sourceId as DbSource['id'];
     const page = (req.query.page || 0) as number;
+    const limit = (req.query.limit || 20) as number;
 
     const { data } = await supabase
       .from('sync_queues')
