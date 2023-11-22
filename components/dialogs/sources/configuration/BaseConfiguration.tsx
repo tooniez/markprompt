@@ -23,13 +23,13 @@ import { fetcher, removeTrailingSlash } from '@/lib/utils';
 import { removeSchema } from '@/lib/utils.nodeps';
 import {
   DbSource,
-  DbSyncQueue,
+  DbSyncQueueOverview,
   NangoSourceDataType,
   SourceConfigurationView,
 } from '@/types/types';
 
 import { SyncQueueLogs } from './SyncQueueLogs';
-import { getTagForSyncQueue } from './utils';
+import { SyncQueueTag } from './utils';
 import SourceDialog from '../SourceDialog';
 
 const DeleteSourceDialog = dynamic(
@@ -82,25 +82,16 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   const [syncStarted, setSyncStarted] = useState(false);
   const [showDeleteSourceDialog, setShowDeleteSourceDialog] = useState(false);
 
-  const { data: allSyncQueuesForSource, error } = useSWR(
+  const { data: lastSyncQueue } = useSWR(
     project?.id && source?.id
-      ? `/api/project/${project.id}/sources/syncs/${source?.id}`
+      ? `/api/project/${project.id}/sources/${source?.id}/syncs/last-sync`
       : null,
-    fetcher<DbSyncQueue[]>,
+    fetcher<DbSyncQueueOverview>,
   );
 
   const currentStatus = useMemo(() => {
     return source?.id ? getStatusForSource(source.id) : undefined;
   }, [getStatusForSource, source?.id]);
-
-  const loadingSyncQueues = !allSyncQueuesForSource && !error;
-
-  const lastCompletedSyncDate = useMemo(() => {
-    return allSyncQueuesForSource?.find((q) => q.status === 'complete')
-      ?.ended_at;
-  }, [allSyncQueuesForSource]);
-
-  // const lastSyncQueue = allSyncQueuesForSource?.[0];
 
   const title = useMemo(() => {
     if (source?.type !== 'nango') {
@@ -128,7 +119,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
       title={title}
       Accessory={
         currentStatus ? (
-          getTagForSyncQueue(currentStatus)
+          <SyncQueueTag status={currentStatus} />
         ) : (
           <Tag color="orange">Not synced</Tag>
         )
@@ -214,23 +205,20 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
             className="TabsContent flex-grow overflow-y-auto"
             value="logs"
           >
-            <div className="TabsContent flex-grow overflow-y-auto">
-              <SyncQueueLogs
-                loading={loadingSyncQueues}
-                syncQueues={allSyncQueuesForSource}
-              />
-            </div>
+            {project?.id && source?.id && (
+              <SyncQueueLogs projectId={project.id} sourceId={source.id} />
+            )}
           </Tabs.Content>
         </Tabs.Root>
         <div className="flex-none">
           <CTABar>
             <div className="flex flex-grow flex-row items-center gap-2">
               <div className="flex-grow">
-                {lastCompletedSyncDate && (
+                {lastSyncQueue?.created_at && (
                   <p className="animate-fade-in text-xs text-neutral-500">
                     Last sync completed on{' '}
                     {formatShortDateTimeInTimeZone(
-                      parseISO(lastCompletedSyncDate),
+                      parseISO(lastSyncQueue.created_at),
                     )}
                   </p>
                 )}

@@ -48,14 +48,13 @@ import {
   createChecksum,
   getGitHubOwnerRepoString,
   isHrefFromBaseUrl,
-  pluralize,
   removeTrailingSlashQueryParamsAndHash,
   shouldIncludeFileWithPath,
   toNormalizedOrigin,
   toNormalizedUrl,
   truncate,
 } from '../utils';
-import { getNameFromUrlOrPath } from '../utils.nodeps';
+import { getNameFromUrlOrPath, pluralize } from '../utils.nodeps';
 
 type IdleState = { state: 'idle' };
 type FetchingDataState = { state: 'fetching_data' };

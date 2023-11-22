@@ -244,6 +244,7 @@ export default async function handler(
     users = [{ id: data[0].id, email: data[0].email, config: data[0].config }];
   } else if (req.query.testuser) {
     const token = getAuthorizationToken(req.headers.authorization);
+
     if (token !== process.env.MARKPROMPT_API_TOKEN) {
       return res.status(401).send({ error: 'Unauthorized' });
     }

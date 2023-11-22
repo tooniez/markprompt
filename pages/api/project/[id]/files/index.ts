@@ -1,5 +1,4 @@
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { PostgrestError } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { withProjectAccess } from '@/lib/middleware/common';

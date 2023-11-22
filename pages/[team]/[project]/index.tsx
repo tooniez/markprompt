@@ -29,7 +29,6 @@ import { toast } from 'sonner';
 import { isPresent } from 'ts-is-present';
 
 import { UpgradeNote } from '@/components/files/UpgradeNote';
-import { LayoutTitle } from '@/components/layouts/LayoutTitle';
 import { ProjectLayout } from '@/components/layouts/ProjectLayout';
 import Button from '@/components/ui/Button';
 import { IndeterminateCheckbox } from '@/components/ui/Checkbox';
@@ -48,8 +47,8 @@ import {
   canDeleteSource,
   getIconForSource,
   getLabelForSource,
-  pluralize,
 } from '@/lib/utils';
+import { pluralize } from '@/lib/utils.nodeps';
 import { getFileTitle } from '@/lib/utils.non-edge';
 import {
   DbFile,

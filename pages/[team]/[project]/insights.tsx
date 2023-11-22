@@ -24,7 +24,7 @@ import useInsights from '@/lib/hooks/use-insights';
 import useProject from '@/lib/hooks/use-project';
 import useTeam from '@/lib/hooks/use-team';
 import { canViewInsights, getAccessibleInsightsType } from '@/lib/stripe/tiers';
-import { pluralize } from '@/lib/utils';
+import { pluralize } from '@/lib/utils.nodeps';
 import { useDebouncedState } from '@/lib/utils.react';
 import { DbConversation, DbQueryStat, PromptQueryStat } from '@/types/types';
 

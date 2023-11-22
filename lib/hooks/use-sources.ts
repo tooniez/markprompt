@@ -33,7 +33,7 @@ export default function useSources() {
   );
 
   const { data: latestSyncQueues, mutate: mutateSyncQueues } = useSWR(
-    project?.id ? `/api/project/${project.id}/sources/syncs/latest` : null,
+    project?.id ? `/api/project/${project.id}/syncs/latest` : null,
     fetcher<DbSyncQueueOverview[]>,
     { refreshInterval: 10000 },
   );

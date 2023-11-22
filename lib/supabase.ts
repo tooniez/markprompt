@@ -580,6 +580,7 @@ export const getOrCreateRunningSyncQueueForSource = async (
   if (data?.id) {
     return data?.id;
   }
+
   return createSyncQueue(supabase, sourceId);
 };
 
@@ -593,9 +594,11 @@ export const createSyncQueue = async (
     .select('id')
     .limit(1)
     .maybeSingle();
+
   if (error || !data?.id) {
     throw error;
   }
+
   return data.id;
 };
 
@@ -629,7 +632,7 @@ export const updateSyncQueueStatus = async (
   await supabase.from('sync_queues').update(payload).eq('id', id);
 };
 
-const appendLogToSyncQueue = async (
+export const appendLogToSyncQueue = async (
   supabase: SupabaseClient<Database>,
   syncQueueId: DbSyncQueue['id'],
   message: string,

@@ -363,7 +363,7 @@ export type ChatOutputFormat = 'markdown' | 'slack';
 
 export type DbSyncQueueOverview = Pick<
   DbSyncQueue,
-  'source_id' | 'created_at' | 'ended_at' | 'status'
+  'id' | 'source_id' | 'created_at' | 'ended_at' | 'status'
 >;
 
 export type DbSyncQueueWithDate = Omit<
@@ -388,3 +388,9 @@ export type DbFileMetaChecksum = Pick<
   DbFile,
   'id' | 'meta' | 'path' | 'checksum'
 >;
+
+export type DbSyncQueueLog = {
+  level: LogLevel;
+  message: string;
+  timestamp: string;
+};
