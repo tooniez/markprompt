@@ -574,7 +574,6 @@ export const getOrCreateRunningSyncQueueForSource = async (
     .eq('status', 'running')
     .order('created_at', { ascending: false })
     .limit(1)
-    .select()
     .maybeSingle();
 
   if (data?.id) {

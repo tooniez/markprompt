@@ -14,6 +14,13 @@ const getSyncQueueId = async (
   const markpromptUrl = getEnv(env, 'MARKPROMPT_URL');
   const markpromptAPIToken = getEnv(env, 'MARKPROMPT_API_TOKEN');
 
+  await nango.log(
+    'getSyncQueueId - markpromptUrl: ' +
+      markpromptUrl +
+      ' : ' +
+      markpromptAPIToken?.slice(0, 5),
+  );
+
   if (!markpromptUrl || !markpromptAPIToken) {
     return undefined;
   }
@@ -57,6 +64,8 @@ const appendToLogFull = async (
   if (!markpromptUrl || !markpromptAPIToken) {
     return undefined;
   }
+
+  await nango.log('appendToLogFull: ' + syncQueueId + ' ' + markpromptUrl);
 
   const res = await nango.proxy({
     method: 'POST',
@@ -341,6 +350,8 @@ export default async function fetchData(nango: NangoSync) {
   }
 
   const syncQueueId = await getSyncQueueId(nango);
+
+  await nango.log('syncQueueId: ' + syncQueueId);
 
   // const filesToSave: NangoWebpageFile[] = [];
 
