@@ -10,6 +10,7 @@ export const PUBLIC_NON_ROUTED_API_PATHS = [
   '/api/oauth',
   '/api/subscriptions/webhook',
   '/api/support/contact',
+  '/api/sync-queues',
   '/api/webhooks/nango/sync',
   '/api/webhooks/zendesk',
   '/x/inngest',
