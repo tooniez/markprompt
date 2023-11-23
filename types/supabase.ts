@@ -266,6 +266,90 @@ export interface Database {
           }
         ]
       }
+      integration_installs: {
+        Row: {
+          config: Json | null
+          id: string
+          inserted_at: string
+          integration_id: string
+          project_id: string
+        }
+        Insert: {
+          config?: Json | null
+          id?: string
+          inserted_at?: string
+          integration_id: string
+          project_id: string
+        }
+        Update: {
+          config?: Json | null
+          id?: string
+          inserted_at?: string
+          integration_id?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_installs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_installs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_installs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "v_file_section_search_infos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "integration_installs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_project_info"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "integration_installs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_project_usage_info"
+            referencedColumns: ["project_id"]
+          }
+        ]
+      }
+      integrations: {
+        Row: {
+          data: Json | null
+          id: string
+          inserted_at: string
+          name: string | null
+          slug: string | null
+        }
+        Insert: {
+          data?: Json | null
+          id?: string
+          inserted_at?: string
+          name?: string | null
+          slug?: string | null
+        }
+        Update: {
+          data?: Json | null
+          id?: string
+          inserted_at?: string
+          name?: string | null
+          slug?: string | null
+        }
+        Relationships: []
+      }
       memberships: {
         Row: {
           id: string
