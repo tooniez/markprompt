@@ -16,6 +16,10 @@ const getSyncQueueId = async (
   const markpromptUrl = getEnv(env, 'MARKPROMPT_URL');
   const markpromptAPIToken = getEnv(env, 'MARKPROMPT_API_TOKEN');
 
+  if (!markpromptUrl || !markpromptAPIToken) {
+    return undefined;
+  }
+
   const res = await nango.proxy({
     method: 'GET',
     baseUrlOverride: markpromptUrl,
@@ -44,12 +48,16 @@ const appendToLogFull = async (
   level: LogLevel,
   message: string,
 ) => {
+  if (!syncQueueId) {
+    return;
+  }
+
   const env = await nango.getEnvironmentVariables();
   const markpromptUrl = getEnv(env, 'MARKPROMPT_URL');
   const markpromptAPIToken = getEnv(env, 'MARKPROMPT_API_TOKEN');
 
-  if (!syncQueueId) {
-    return;
+  if (!markpromptUrl || !markpromptAPIToken) {
+    return undefined;
   }
 
   const res = await nango.proxy({
