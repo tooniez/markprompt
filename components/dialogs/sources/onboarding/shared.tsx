@@ -13,7 +13,6 @@ import { generateConnectionId } from '@/lib/utils';
 import {
   DbSource,
   NangoIntegrationId,
-  NangoSource,
   NangoSourceDataType,
   Project,
   SyncData,

@@ -1,3 +1,4 @@
+import { Connection } from '@nangohq/node/dist/types';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Tabs from '@radix-ui/react-tabs';
 import { parseISO } from 'date-fns';
@@ -7,7 +8,13 @@ import { FC, JSXElementConstructor, ReactNode, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
 import Button from '@/components/ui/Button';
-import { FormField, FormLabel } from '@/components/ui/Forms';
+import {
+  FormField,
+  FormHeading,
+  FormHeadingGroup,
+  FormLabel,
+  FormSubHeading,
+} from '@/components/ui/Forms';
 import { CTABar } from '@/components/ui/SettingsCard';
 import { Tag } from '@/components/ui/Tag';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
@@ -18,8 +25,9 @@ import {
   getIntegrationEnvironmentName,
   getIntegrationId,
   getIntegrationName,
+  getSyncData,
 } from '@/lib/integrations/nango';
-import { fetcher, removeTrailingSlash } from '@/lib/utils';
+import { fetcher, formatUrl, removeTrailingSlash } from '@/lib/utils';
 import { removeSchema } from '@/lib/utils.nodeps';
 import {
   DbSource,
@@ -69,6 +77,30 @@ const StopSyncButton = ({ source }: { source: DbSource }) => {
   );
 };
 
+const RetrainOnlyButton = ({ source }: { source: DbSource }) => {
+  const [isStarting, setStarting] = useState(false);
+  const { retrainOnly } = useSources();
+
+  return (
+    <Button
+      className="flex-none"
+      variant="plain"
+      buttonSize="sm"
+      loading={isStarting}
+      onClick={async () => {
+        if (!source) {
+          return;
+        }
+        setStarting(true);
+        await retrainOnly(source);
+        setStarting(false);
+      }}
+    >
+      Retrain only
+    </Button>
+  );
+};
+
 export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   source,
   defaultView,
@@ -87,6 +119,21 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
       ? `/api/project/${project.id}/sources/${source?.id}/syncs/last-sync`
       : null,
     fetcher<DbSyncQueueOverview>,
+  );
+
+  const syncData = source && getSyncData(source);
+
+  const { data: connection } = useSWR(
+    project?.id && syncData?.integrationId && syncData?.connectionId
+      ? formatUrl(
+          `/api/project/${project.id}/integrations/nango/get-connection`,
+          {
+            integrationId: syncData.integrationId,
+            connectionId: syncData.connectionId,
+          },
+        )
+      : null,
+    fetcher<{ connection: Connection }>,
   );
 
   const currentStatus = useMemo(() => {
@@ -190,16 +237,18 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
               )}
             </div>
             {children}
-            <div className="mt-8 border-t border-neutral-900 pt-8" />
-            <Button
-              buttonSize="sm"
-              variant="plainDanger"
-              onClick={() => {
-                setShowDeleteSourceDialog(true);
-              }}
-            >
-              Delete source
-            </Button>
+            <div className="mt-8 flex flex-col items-start gap-2 border-t border-neutral-900 pt-8">
+              {connection && source && <RetrainOnlyButton source={source} />}
+              <Button
+                buttonSize="sm"
+                variant="plainDanger"
+                onClick={() => {
+                  setShowDeleteSourceDialog(true);
+                }}
+              >
+                Delete source
+              </Button>
+            </div>
           </Tabs.Content>
           <Tabs.Content
             className="TabsContent flex-grow overflow-y-auto"

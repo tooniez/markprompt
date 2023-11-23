@@ -16,6 +16,7 @@ import { getIntegrationName, getSyncData } from '../integrations/nango';
 import {
   getNangoClientInstance,
   stopSync as nangoStopSync,
+  retrainOnly as nangoRetrainOnly,
 } from '../integrations/nango.client';
 import { fetcher } from '../utils';
 
@@ -75,6 +76,29 @@ export default function useSources() {
 
       mutateSyncQueues();
       onIsMessageLoading?.(false);
+    },
+    [project?.id, mutateSyncQueues],
+  );
+
+  const retrainOnly = useCallback(
+    async (source: Pick<DbSource, 'type' | 'data'>) => {
+      if (!project?.id) {
+        return;
+      }
+
+      const syncData = getSyncData(source);
+
+      if (!syncData) {
+        return;
+      }
+
+      const tid = toast.loading('Starting retraining...');
+
+      await nangoRetrainOnly(project.id, syncData);
+
+      toast.success('Retraining has been initiated', { id: tid });
+
+      mutateSyncQueues();
     },
     [project?.id, mutateSyncQueues],
   );
@@ -141,6 +165,7 @@ export default function useSources() {
     syncAllSources,
     syncSources,
     stopSync,
+    retrainOnly,
     latestSyncQueues,
     getStatusForSource,
     mutateSyncQueues,
