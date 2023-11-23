@@ -367,7 +367,7 @@ export default async function fetchData(nango: NangoSync) {
     return appendToLogFull(nango, syncQueueId, level, message);
   };
 
-  await appendToLog('info', `Start importing ${baseUrl}`);
+  await appendToLog('info', `Start importing ${baseUrl}.`);
 
   let count = 0;
 
