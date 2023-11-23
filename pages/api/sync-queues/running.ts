@@ -31,15 +31,6 @@ export default async function handler(
 
   const token = getAuthorizationToken(req.headers.authorization);
 
-  console.log(
-    '[RUNNING]',
-    token?.slice(0, 5),
-    ':',
-    process.env.MARKPROMPT_API_TOKEN,
-    'connection id:',
-    req.query.connectionId,
-  );
-
   if (token !== process.env.MARKPROMPT_API_TOKEN) {
     return res.status(401).send({ error: 'Unauthorized' });
   }
@@ -47,11 +38,6 @@ export default async function handler(
   const connectionId = req.query.connectionId as string;
 
   const sourceSyncData = await getSourceSyncData(supabase, connectionId);
-
-  console.log(
-    '[RUNNING] sourceSyncData',
-    JSON.stringify(sourceSyncData, null, 2),
-  );
 
   if (!sourceSyncData) {
     return res.status(400).json({ status: 'Sync data not accessible' });

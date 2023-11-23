@@ -426,7 +426,7 @@ export default async function fetchData(nango: NangoSync) {
       count,
       'page',
       'pages',
-    )} in total.`,
+    )} in total. Starting processing...`,
   );
 
   // await nango.batchSave(filesToSave, 'NangoFile');

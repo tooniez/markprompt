@@ -87,7 +87,7 @@ const syncNangoRecords = inngest.createFunction(
     const supabase = createServiceRoleSupabaseClient();
     const nangoSyncPayload = event.data.nangoSyncPayload;
 
-    console.log(
+    console.debug(
       '[INNGEST] start sync for connection:',
       nangoSyncPayload.connectionId,
     );
@@ -97,13 +97,8 @@ const syncNangoRecords = inngest.createFunction(
       nangoSyncPayload.connectionId,
     );
 
-    console.log(
-      '[INNGEST] Source sync data',
-      JSON.stringify(sourceSyncData, null, 2),
-    );
-
     if (!sourceSyncData) {
-      console.log(
+      console.debug(
         '[INNGEST] No source sync data found. This should never happen, unless a source has been deleted while Nango is syncing.',
       );
       return { updated: 0, deleted: 0 };
@@ -116,7 +111,7 @@ const syncNangoRecords = inngest.createFunction(
 
     const nango = getNangoServerInstance();
 
-    console.log(
+    console.debug(
       '[INNGEST] getRecords',
       JSON.stringify(
         {
