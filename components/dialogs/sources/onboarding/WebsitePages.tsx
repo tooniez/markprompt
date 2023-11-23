@@ -61,7 +61,7 @@ const ConnectStep = ({
         onSubmit={async (values, { setSubmitting, setErrors }) => {
           setSubmitting(true);
 
-          let url = addSchemaRemoveTrailingSlashAndHash(values.url);
+          let url = addSchemaRemoveTrailingSlashAndHash(values.url.trim());
 
           let content = await fetchPageContent(url, false, true);
 

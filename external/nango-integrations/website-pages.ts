@@ -155,7 +155,7 @@ const fetchPageAndUrlsWithRetryWithThrows = async (
     endpoint: pageFetcherServicePath,
     providerConfigKey: PROVIDER_CONFIG_KEY,
     connectionId: nango.connectionId!,
-    retries: 10,
+    retries: 2,
     data: {
       url,
       crawlerRoot,
@@ -351,7 +351,7 @@ export default async function fetchData(nango: NangoSync) {
 
   const syncQueueId = await getSyncQueueId(nango);
 
-  await nango.log('syncQueueId: ' + syncQueueId);
+  await nango.log('Retrieved syncQueueId: ' + syncQueueId);
 
   // const filesToSave: NangoWebpageFile[] = [];
 

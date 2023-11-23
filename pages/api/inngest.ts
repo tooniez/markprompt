@@ -116,6 +116,19 @@ const syncNangoRecords = inngest.createFunction(
 
     const nango = getNangoServerInstance();
 
+    console.log(
+      '[INNGEST] getRecords',
+      JSON.stringify(
+        {
+          providerConfigKey: nangoSyncPayload.providerConfigKey,
+          connectionId: nangoSyncPayload.connectionId,
+          model: nangoSyncPayload.model,
+        },
+        null,
+        2,
+      ),
+    );
+
     const recordIncludingErrors = (await nango.getRecords<any>({
       providerConfigKey: nangoSyncPayload.providerConfigKey,
       connectionId: nangoSyncPayload.connectionId,
@@ -149,15 +162,15 @@ const syncNangoRecords = inngest.createFunction(
         message: 'Project not found',
         level: 'error',
       });
-      if (
-        nangoSyncPayload.providerConfigKey === 'website-pages' &&
-        event.data.shouldPause
-      ) {
-        // Pause website integrations (we can't pause GitHub integrations
-        // as the connection needs to stay alive in the training step to
-        // fetch the file contents).
-        await deleteConnection(supabase, nangoSyncPayload.connectionId);
-      }
+      // if (
+      //   nangoSyncPayload.providerConfigKey === 'website-pages' &&
+      //   event.data.shouldPause
+      // ) {
+      //   // Pause website integrations (we can't pause GitHub integrations
+      //   // as the connection needs to stay alive in the training step to
+      //   // fetch the file contents).
+      //   await deleteConnection(supabase, nangoSyncPayload.connectionId);
+      // }
       return { updated: 0, deleted: 0 };
     }
 
@@ -233,15 +246,15 @@ const syncNangoRecords = inngest.createFunction(
       level: 'info',
     });
 
-    if (
-      nangoSyncPayload.providerConfigKey === 'website-pages' &&
-      event.data.shouldPause
-    ) {
-      // Pause website integrations (we can't pause GitHub integrations
-      // as the connection needs to stay alive in the training step to
-      // fetch the file contents).
-      await deleteConnection(supabase, nangoSyncPayload.connectionId);
-    }
+    // if (
+    //   nangoSyncPayload.providerConfigKey === 'website-pages' &&
+    //   event.data.shouldPause
+    // ) {
+    //   // Pause website integrations (we can't pause GitHub integrations
+    //   // as the connection needs to stay alive in the training step to
+    //   // fetch the file contents).
+    //   await deleteConnection(supabase, nangoSyncPayload.connectionId);
+    // }
 
     return { updated: trainEvents.length, deleted: filesIdsToDelete.length };
   },

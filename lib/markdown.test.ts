@@ -93,6 +93,30 @@ describe('markdown', () => {
         ),
       ).toStrictEqual('# Heading\n\n```\nvar i = 0;\n```');
     });
+
+    it('should target include selector', () => {
+      expect(
+        convertToMarkdown(
+          '<body><h1>Heading 1</h1><div id="target"><h2 class="heading2">Heading 2</h2><p>Text</p></div><pre>var i = 0;</pre></body>',
+          'html',
+          '#target',
+          undefined,
+          undefined,
+        ),
+      ).toStrictEqual('## Heading 2\n\nText');
+    });
+
+    it('should target include selector and omit exclude selectors', () => {
+      expect(
+        convertToMarkdown(
+          '<body><h1>Heading 1</h1><div id="target"><h2 class="heading2">Heading 2</h2><p>Text</p></div><pre>var i = 0;</pre></body>',
+          'html',
+          '#target',
+          '.heading2',
+          undefined,
+        ),
+      ).toStrictEqual('Text');
+    });
   });
 
   describe('markdownToFileSectionData', () => {
