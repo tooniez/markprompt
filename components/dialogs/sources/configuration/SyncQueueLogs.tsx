@@ -73,7 +73,7 @@ const LogMessages: FC<LogMessagesProps> = ({ projectId, syncQueueId }) => {
               })}
             {logs && logs.length === 0 && (
               <p className="flex-grow font-mono text-neutral-100">
-                No logs were produced for this sync.
+                No logs found.
               </p>
             )}
           </div>
