@@ -2,6 +2,8 @@ import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
+import { RemarkImageSourceRewriteOptions } from '@/types/types';
+
 const EXTERNAL_URL_REGEX = /^https?:\/\//;
 
 export const remarkImageSourceRewrite: Plugin<
