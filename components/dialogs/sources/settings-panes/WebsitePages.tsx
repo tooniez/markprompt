@@ -68,42 +68,6 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
         mutateSources,
         onDidCompletedOrSkip,
       );
-      // if (
-      //   !projectId ||
-      //   !source ||
-      //   !sourceData?.integrationId ||
-      //   !sourceData?.connectionId
-      // ) {
-      //   return;
-      // }
-
-      // setSubmitting(true);
-
-      // await setSourceData(projectId, source.id, {
-      //   ...(source.data as any),
-      //   ...newSourceData,
-      //   syncMetadata: {
-      //     ...syncMetadata,
-      //     ...newSourceData.syncMetadata,
-      //   },
-      // });
-
-      // if (newSourceData?.syncMetadata) {
-      //   await setMetadata(
-      //     projectId,
-      //     sourceData.integrationId,
-      //     sourceData.connectionId,
-      //     {
-      //       ...syncMetadata,
-      //       ...newSourceData?.syncMetadata,
-      //     },
-      //   );
-      // }
-
-      // setSubmitting(false);
-      // toast.success('Configuration has been updated');
-      // onDidCompletedOrSkip?.();
-      // await mutateSources();
     },
     [
       projectId,
