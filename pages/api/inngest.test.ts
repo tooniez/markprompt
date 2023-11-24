@@ -194,6 +194,9 @@ describe('inngest', () => {
     });
   });
 
+  // This function currently uses the Nango client, which is not accessible
+  // in a test environment (requires env variables), and we probably want
+  // to mock the Nango client and not hit their APIs in unit tests.
   // describe('fetchGitHubFileContent', () => {
   //   it('should fetch GitHub file content', async () => {
   //     const file = await fetchGitHubFileContent(

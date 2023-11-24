@@ -413,7 +413,11 @@ export default async function fetchData(nango: NangoSync) {
         'info',
         `Saved ${pluralize(files.length, 'page', 'pages')}. ${
           linksToProcess.length > 0
-            ? `Discovered ${linksToProcess.length} new links to import.`
+            ? `Importing ${pluralize(
+                linksToProcess.length,
+                'new link',
+                'new links',
+              )}.`
             : 'No new links found.'
         }`,
       );
@@ -430,7 +434,7 @@ export default async function fetchData(nango: NangoSync) {
       count,
       'page',
       'pages',
-    )} in total. Starting processing...`,
+    )} in total.`,
   );
 
   // await nango.batchSave(filesToSave, 'NangoFile');
