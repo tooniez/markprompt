@@ -182,7 +182,7 @@ const saveAllRepositoryFiles = async (
     nango,
     syncQueueId,
     'info',
-    `Fetching branch ${branch} of repository ${owner}/${repo}.`,
+    `Fetching ${branch} branch of repository ${owner}/${repo}.`,
   );
 
   for await (const fileBatch of nango.paginate(proxyConfig)) {
@@ -196,7 +196,12 @@ const saveAllRepositoryFiles = async (
     await nango.batchSave(blobFiles.map(mapToFile), 'NangoFile');
   }
 
-  await appendToLogFull(nango, syncQueueId, 'info', `Saved ${count} files.`);
+  await appendToLogFull(
+    nango,
+    syncQueueId,
+    'info',
+    `Saved ${pluralize(count, 'file', 'files')}.`,
+  );
 
   await nango.log(`Got ${count} file(s).`);
 };
@@ -253,7 +258,7 @@ const getCommitsSinceLastSync = async (
     nango,
     syncQueueId,
     'info',
-    `Fetching commit from ${owner}/${repo}.`,
+    `Fetching changes from ${owner}/${repo}.`,
   );
 
   const commitsSinceLastSync: any[] = [];
@@ -316,7 +321,12 @@ const saveFilesUpdatedByCommit = async (
     );
   }
 
-  await appendToLogFull(nango, syncQueueId, 'info', `Saved ${count} files.`);
+  await appendToLogFull(
+    nango,
+    syncQueueId,
+    'info',
+    `Saved ${pluralize(count, 'file', 'files')}.`,
+  );
 
   await nango.log(`Got ${count} file(s).`);
 };
