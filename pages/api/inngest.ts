@@ -181,15 +181,6 @@ const syncNangoRecords = inngest.createFunction(
         message: 'Project not found',
         level: 'error',
       });
-      // if (
-      //   nangoSyncPayload.providerConfigKey === 'website-pages' &&
-      //   event.data.shouldPause
-      // ) {
-      //   // Pause website integrations (we can't pause GitHub integrations
-      //   // as the connection needs to stay alive in the training step to
-      //   // fetch the file contents).
-      //   await deleteConnection(supabase, nangoSyncPayload.connectionId);
-      // }
       return { updated: 0, deleted: 0 };
     }
 
@@ -276,16 +267,6 @@ const syncNangoRecords = inngest.createFunction(
       )}. Deleted ${pluralize(filesIdsToDelete.length, 'file', 'files')}.`,
       level: 'info',
     });
-
-    // if (
-    //   nangoSyncPayload.providerConfigKey === 'website-pages' &&
-    //   event.data.shouldPause
-    // ) {
-    //   // Pause website integrations (we can't pause GitHub integrations
-    //   // as the connection needs to stay alive in the training step to
-    //   // fetch the file contents).
-    //   await deleteConnection(supabase, nangoSyncPayload.connectionId);
-    // }
 
     return { updated: trainEvents.length, deleted: filesIdsToDelete.length };
   },

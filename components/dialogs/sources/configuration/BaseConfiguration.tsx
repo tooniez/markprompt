@@ -87,13 +87,18 @@ const StopSyncButton = ({ source }: { source: DbSource }) => {
 
 const RetrainOnlyButton = ({ source }: { source: DbSource }) => {
   const [isStarting, setStarting] = useState(false);
-  const { retrainOnly } = useSources();
+  const { retrainOnly, getStatusForSource } = useSources();
+
+  const currentStatus = useMemo(() => {
+    return source?.id ? getStatusForSource(source.id) : undefined;
+  }, [getStatusForSource, source?.id]);
 
   return (
     <Button
       className="flex-none"
       variant="plain"
       buttonSize="sm"
+      disabled={currentStatus === 'running'}
       loading={isStarting}
       onClick={async () => {
         if (!source) {
