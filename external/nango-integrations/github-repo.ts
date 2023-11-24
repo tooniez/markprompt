@@ -1,6 +1,101 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NangoSync, NangoFile } from './models';
 
+const PROVIDER_CONFIG_KEY = 'github-repo';
+
+//
+// START SHARED LOGGING CODE ==================================================
+//
+
+const getSyncQueueId = async (
+  nango: NangoSync,
+): Promise<string | undefined> => {
+  const env = await nango.getEnvironmentVariables();
+  const markpromptUrl = getEnv(env, 'MARKPROMPT_URL');
+  const markpromptAPIToken = getEnv(env, 'MARKPROMPT_API_TOKEN');
+
+  await nango.log(
+    'getSyncQueueId - markpromptUrl: ' +
+      markpromptUrl +
+      ' : ' +
+      markpromptAPIToken?.slice(0, 5),
+  );
+
+  if (!markpromptUrl || !markpromptAPIToken) {
+    return undefined;
+  }
+
+  const res = await nango.proxy({
+    method: 'GET',
+    baseUrlOverride: markpromptUrl,
+    endpoint: `/api/sync-queues/running?connectionId=${nango.connectionId!}`,
+    providerConfigKey: PROVIDER_CONFIG_KEY,
+    connectionId: nango.connectionId!,
+    headers: {
+      Authorization: `Bearer ${markpromptAPIToken}`,
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+  });
+
+  return res.data?.syncQueueId || undefined;
+};
+
+const pluralize = (value: number, singular: string, plural: string) => {
+  return `${value} ${value === 1 ? singular : plural}`;
+};
+
+type LogLevel = 'info' | 'debug' | 'error' | 'warn';
+
+const appendToLogFull = async (
+  nango: NangoSync,
+  syncQueueId: string | undefined,
+  level: LogLevel,
+  message: string,
+) => {
+  if (!syncQueueId) {
+    return;
+  }
+
+  const env = await nango.getEnvironmentVariables();
+  const markpromptUrl = getEnv(env, 'MARKPROMPT_URL');
+  const markpromptAPIToken = getEnv(env, 'MARKPROMPT_API_TOKEN');
+
+  if (!markpromptUrl || !markpromptAPIToken) {
+    return;
+  }
+
+  await nango.log('appendToLogFull: ' + syncQueueId + ' ' + markpromptUrl);
+
+  try {
+    await nango.proxy({
+      method: 'POST',
+      baseUrlOverride: markpromptUrl,
+      endpoint: `/api/sync-queues/${syncQueueId}/append-log`,
+      providerConfigKey: PROVIDER_CONFIG_KEY,
+      connectionId: nango.connectionId!,
+      data: { message, level },
+      headers: {
+        Authorization: `Bearer ${markpromptAPIToken}`,
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+      },
+    });
+  } catch (e) {
+    await nango.log(`Error posting log: ${e}`);
+  }
+};
+
+type EnvEntry = { name: string; value: string };
+
+const getEnv = (env: EnvEntry[] | null, name: string) => {
+  return env?.find((v) => v.name === name)?.value;
+};
+
+//
+// END SHARED LOGGING CODE ====================================================
+//
+
 interface Metadata {
   owner: string;
   repo: string;
@@ -10,8 +105,6 @@ interface Metadata {
 }
 
 const LIMIT = 100_000;
-
-const GITHUB_REPO_PROVIDER_CONFIG_KEY = 'github-repo';
 
 export default async function fetchData(nango: NangoSync) {
   const {
@@ -56,7 +149,7 @@ const getDefaultBranch = async (
   const res = await nango.proxy({
     method: 'GET',
     endpoint: `/repos/${owner}/${repo}`,
-    providerConfigKey: GITHUB_REPO_PROVIDER_CONFIG_KEY,
+    providerConfigKey: PROVIDER_CONFIG_KEY,
     connectionId: nango.connectionId!,
     retries: 10,
   });
@@ -83,6 +176,15 @@ const saveAllRepositoryFiles = async (
 
   await nango.log(`Fetching files from endpoint ${endpoint}.`);
 
+  const syncQueueId = await getSyncQueueId(nango);
+
+  await appendToLogFull(
+    nango,
+    syncQueueId,
+    'info',
+    `Fetching branch ${branch} of repository ${owner}/${repo}.`,
+  );
+
   for await (const fileBatch of nango.paginate(proxyConfig)) {
     const blobFiles = fileBatch.filter((item: any) => {
       return (
@@ -93,6 +195,9 @@ const saveAllRepositoryFiles = async (
     count += blobFiles.length;
     await nango.batchSave(blobFiles.map(mapToFile), 'NangoFile');
   }
+
+  await appendToLogFull(nango, syncQueueId, 'info', `Saved ${count} files.`);
+
   await nango.log(`Got ${count} file(s).`);
 };
 
@@ -142,12 +247,23 @@ const getCommitsSinceLastSync = async (
 
   await nango.log(`Fetching commits from endpoint ${endpoint}.`);
 
+  const syncQueueId = await getSyncQueueId(nango);
+
+  await appendToLogFull(
+    nango,
+    syncQueueId,
+    'info',
+    `Fetching commit from ${owner}/${repo}.`,
+  );
+
   const commitsSinceLastSync: any[] = [];
   for await (const commitBatch of nango.paginate(proxyConfig)) {
     count += commitBatch.length;
     commitsSinceLastSync.push(...commitBatch);
   }
+
   await nango.log(`Got ${count} commits(s).`);
+
   return commitsSinceLastSync;
 };
 
@@ -159,6 +275,15 @@ const saveFilesUpdatedByCommit = async (
   excludeRegexes: string[],
   nango: NangoSync,
 ) => {
+  const syncQueueId = await getSyncQueueId(nango);
+
+  await appendToLogFull(
+    nango,
+    syncQueueId,
+    'info',
+    `Fetching commit: ${commitSummary}.`,
+  );
+
   let count = 0;
   const endpoint = `/repos/${owner}/${repo}/commits/${commitSummary.sha}`;
   const proxyConfig = {
@@ -190,6 +315,8 @@ const saveFilesUpdatedByCommit = async (
       'NangoFile',
     );
   }
+
+  await appendToLogFull(nango, syncQueueId, 'info', `Saved ${count} files.`);
 
   await nango.log(`Got ${count} file(s).`);
 };
