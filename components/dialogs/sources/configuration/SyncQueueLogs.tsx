@@ -218,7 +218,7 @@ export const SyncQueueLogs: FC<SyncQueueLogsProps> = ({
               />
             );
           })}
-          {syncQueues?.length > 0 && (
+          {syncQueues?.length >= NUM_LOGS && (
             <p className="w-full px-4 pt-4 text-xs text-neutral-600">
               Showing {NUM_LOGS} most recent logs
             </p>

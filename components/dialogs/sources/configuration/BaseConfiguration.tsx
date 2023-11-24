@@ -233,7 +233,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
               <div className="flex-grow">
                 {lastSyncQueue?.created_at && (
                   <p className="animate-fade-in text-xs text-neutral-500">
-                    Last sync completed on{' '}
+                    Last sync started on{' '}
                     {formatShortDateTimeInTimeZone(
                       parseISO(lastSyncQueue.created_at),
                     )}

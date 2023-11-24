@@ -256,6 +256,12 @@ const syncNangoRecords = inngest.createFunction(
       level: 'info',
     });
 
+    // const summaries = await Promise.all(
+    //   chunks.map((chunk) =>
+    //     step.run("summarize-chunk", () => summarizeChunk(chunk))
+    //   )
+    // );
+
     await step.sendEvent(eventId, trainEvents);
 
     await updateSyncQueue(supabase, syncQueueId, 'complete', {
