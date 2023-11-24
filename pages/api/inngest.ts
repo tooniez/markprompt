@@ -13,7 +13,6 @@ import {
 } from '@/lib/constants';
 import { bulkCreateSectionEmbeddings } from '@/lib/file-processing';
 import {
-  deleteConnection,
   getNangoServerInstance,
   getSourceSyncData,
 } from '@/lib/integrations/nango.server';

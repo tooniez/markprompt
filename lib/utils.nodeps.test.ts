@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   arrayEquals,
   extractGithubRepo,
+  removeConsecutiveDuplicates,
   removeSchema,
   safeParseInt,
   safeParseIntOrUndefined,
@@ -117,6 +118,27 @@ describe('utils.nodeps', () => {
         repo: 'markprompt',
         branch: 'test',
       });
+    });
+  });
+
+  describe('removeConsecutiveDuplicates', () => {
+    it('should remove return an empty array if given an empty array', () => {
+      expect(removeConsecutiveDuplicates([])).toEqual([]);
+    });
+    it('should remove consecutive duplicates for primitive type array', () => {
+      expect(
+        removeConsecutiveDuplicates([1, 2, 2, 3, 2, 2, 2, 1, 1, 2]),
+      ).toEqual([1, 2, 3, 2, 1, 2]);
+    });
+    it('should remove consecutive duplicates for primitive type array', () => {
+      const A = { name: 'a', value: 1, extra: 'abc' };
+      const B = { name: 'b', value: 2, extra: '123' };
+      expect(
+        removeConsecutiveDuplicates(
+          [A, A, B, A, B, B],
+          (e1, e2) => e1.name === e2.name && e1.value === e2.value,
+        ),
+      ).toStrictEqual([A, B, A, B]);
     });
   });
 });

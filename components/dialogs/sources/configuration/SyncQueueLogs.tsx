@@ -1,5 +1,6 @@
 import cn from 'classnames';
 import { parseISO, differenceInMinutes, differenceInSeconds } from 'date-fns';
+import { uniqBy } from 'lodash-es';
 import { ChevronRight } from 'lucide-react';
 import { FC, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
@@ -8,7 +9,7 @@ import { SkeletonTable } from '@/components/ui/Skeletons';
 import { formatShortTimeInTimeZone, formatSystemDateTime } from '@/lib/date';
 import useSource from '@/lib/hooks/use-source';
 import { fetcher } from '@/lib/utils';
-import { pluralize } from '@/lib/utils.nodeps';
+import { pluralize, removeConsecutiveDuplicates } from '@/lib/utils.nodeps';
 import {
   DbSource,
   DbSyncQueueLog,
@@ -44,6 +45,17 @@ const LogMessages: FC<LogMessagesProps> = ({ projectId, syncQueueId }) => {
 
   const loading = !logs && !error;
 
+  const uniqueLogs = useMemo(() => {
+    if (!logs) {
+      return undefined;
+    }
+    // Duplicate logs may be appended, e.g. when Inngest reruns a function.
+    // We don't want to show subsequent identical logs.
+    return removeConsecutiveDuplicates(logs, (l1, l2) => {
+      return l1.level === l2.level && l1.message === l2.message;
+    });
+  }, [logs]);
+
   return (
     <div className="relative flex w-full flex-col pb-4">
       {loading && (
@@ -54,10 +66,10 @@ const LogMessages: FC<LogMessagesProps> = ({ projectId, syncQueueId }) => {
         </div>
       )}
       <div className="px-4 text-xs">
-        {logs && (
+        {uniqueLogs && (
           <div className="flex flex-col border-l border-neutral-800 py-2 pl-4">
-            {logs.length > 0 &&
-              logs.map((log: LogMessage, i) => {
+            {uniqueLogs.length > 0 &&
+              uniqueLogs.map((log: LogMessage, i) => {
                 return (
                   <div className="flex flex-row gap-4 py-2" key={`log-${i}`}>
                     <div className="w-[70px] flex-none whitespace-nowrap font-mono text-xs text-neutral-100">
@@ -72,7 +84,7 @@ const LogMessages: FC<LogMessagesProps> = ({ projectId, syncQueueId }) => {
                   </div>
                 );
               })}
-            {logs && logs.length === 0 && (
+            {uniqueLogs && uniqueLogs.length === 0 && (
               <p className="flex-grow font-mono text-neutral-100">
                 No logs found.
               </p>

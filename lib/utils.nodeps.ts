@@ -327,3 +327,25 @@ export const extractGithubRepo = (
     return null;
   }
 };
+
+export const removeConsecutiveDuplicates = <T>(
+  arr: T[],
+  comp?: (a: T, b: T) => boolean,
+) => {
+  if (arr.length === 0) {
+    return [];
+  }
+
+  const result = [arr[0]];
+
+  for (let i = 1; i < arr.length; i++) {
+    if (
+      (comp && !comp(arr[i], arr[i - 1])) ||
+      (!comp && arr[i] !== arr[i - 1])
+    ) {
+      result.push(arr[i]);
+    }
+  }
+
+  return result;
+};
