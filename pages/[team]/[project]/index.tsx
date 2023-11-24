@@ -39,6 +39,7 @@ import { deleteFiles } from '@/lib/api';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useFiles from '@/lib/hooks/use-files';
 import useProject from '@/lib/hooks/use-project';
+import useSource from '@/lib/hooks/use-source';
 import useSources from '@/lib/hooks/use-sources';
 import useTeam from '@/lib/hooks/use-team';
 import useUsage from '@/lib/hooks/use-usage';
@@ -203,15 +204,11 @@ const SourceItem: FC<SourceItemProps> = ({
   onConfigureSelected,
   onDeleteSelected,
 }) => {
-  const { getStatusForSource, stopSync } = useSources();
+  const { currentStatus, stopSync } = useSource(source);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const Icon = getIconForSource(source);
   const canConfigure = source.type === 'nango';
   const canSync = source.type === 'nango';
-
-  const currentStatus = useMemo(() => {
-    return source?.id ? getStatusForSource(source.id) : undefined;
-  }, [getStatusForSource, source?.id]);
 
   return (
     <div
@@ -283,7 +280,7 @@ const SourceItem: FC<SourceItemProps> = ({
                 {currentStatus === 'running' && (
                   <DropdownMenu.Item
                     onSelect={async () => {
-                      await stopSync(source);
+                      await stopSync();
                     }}
                     className={cn(
                       'dropdown-menu-item dropdown-menu-item-noindent block',

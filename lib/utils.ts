@@ -290,6 +290,17 @@ interface SWRError extends Error {
   info: any;
 }
 
+export const fetcherOrUndefined = async <T = any>(
+  input: RequestInfo,
+  init?: RequestInit,
+): Promise<T | undefined> => {
+  const res = await fetch(input, init);
+  if (!res.ok) {
+    return undefined;
+  }
+  return res.json();
+};
+
 export const fetcher = async <T = any>(
   input: RequestInfo,
   init?: RequestInit,

@@ -1,11 +1,12 @@
 import cn from 'classnames';
 import { parseISO, differenceInMinutes, differenceInSeconds } from 'date-fns';
 import { ChevronRight } from 'lucide-react';
-import { FC, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
 import { SkeletonTable } from '@/components/ui/Skeletons';
 import { formatShortTimeInTimeZone, formatSystemDateTime } from '@/lib/date';
+import useSource from '@/lib/hooks/use-source';
 import { fetcher } from '@/lib/utils';
 import { pluralize } from '@/lib/utils.nodeps';
 import {
@@ -150,21 +151,31 @@ const LogEntry: FC<LogEntryProps> = ({ projectId, syncQueue }) => {
 
 type SyncQueueLogsProps = {
   projectId: Project['id'];
-  sourceId: DbSource['id'];
+  source: DbSource;
 };
 
 const NUM_LOGS = 20;
 
 export const SyncQueueLogs: FC<SyncQueueLogsProps> = ({
   projectId,
-  sourceId,
+  source,
 }) => {
-  const { data: syncQueues, error } = useSWR(
-    projectId && sourceId
-      ? `/api/project/${projectId}/sources/${sourceId}/syncs/overview?limit=${NUM_LOGS}`
+  const { currentStatus } = useSource(source);
+
+  const {
+    data: syncQueues,
+    mutate: mutateSyncQueues,
+    error,
+  } = useSWR(
+    projectId && source?.id
+      ? `/api/project/${projectId}/sources/${source?.id}/syncs/overview?limit=${NUM_LOGS}`
       : null,
     fetcher<DbSyncQueueOverview[]>,
   );
+
+  useEffect(() => {
+    mutateSyncQueues();
+  }, [currentStatus, mutateSyncQueues]);
 
   const loading = !syncQueues && !error;
 

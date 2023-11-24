@@ -19,6 +19,7 @@ import { CTABar } from '@/components/ui/SettingsCard';
 import { Tag } from '@/components/ui/Tag';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
+import useSource from '@/lib/hooks/use-source';
 import useSources from '@/lib/hooks/use-sources';
 import {
   getIntegrationEnvironment,
@@ -63,7 +64,7 @@ type BaseConfigurationDialogProps = {
 
 const StopSyncButton = ({ source }: { source: DbSource }) => {
   const [isStopping, setStopping] = useState(false);
-  const { stopSync } = useSources();
+  const { stopSync } = useSource(source);
 
   return (
     <Button
@@ -76,7 +77,7 @@ const StopSyncButton = ({ source }: { source: DbSource }) => {
           return;
         }
         setStopping(true);
-        await stopSync(source);
+        await stopSync();
         setStopping(false);
       }}
     >
@@ -87,11 +88,7 @@ const StopSyncButton = ({ source }: { source: DbSource }) => {
 
 const RetrainOnlyButton = ({ source }: { source: DbSource }) => {
   const [isStarting, setStarting] = useState(false);
-  const { retrainOnly, getStatusForSource } = useSources();
-
-  const currentStatus = useMemo(() => {
-    return source?.id ? getStatusForSource(source.id) : undefined;
-  }, [getStatusForSource, source?.id]);
+  const { currentStatus, retrainOnly } = useSource(source);
 
   return (
     <Button
@@ -105,7 +102,7 @@ const RetrainOnlyButton = ({ source }: { source: DbSource }) => {
           return;
         }
         setStarting(true);
-        await retrainOnly(source);
+        await retrainOnly();
         setStarting(false);
       }}
     >
@@ -124,35 +121,10 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   children,
 }) => {
   const { project } = useProject();
-  const { syncSources, getStatusForSource } = useSources();
+  const { syncSources } = useSources();
+  const { currentStatus, connection, lastSyncQueue } = useSource(source);
   const [syncStarted, setSyncStarted] = useState(false);
   const [showDeleteSourceDialog, setShowDeleteSourceDialog] = useState(false);
-
-  const { data: lastSyncQueue } = useSWR(
-    project?.id && source?.id
-      ? `/api/project/${project.id}/sources/${source?.id}/syncs/last-sync`
-      : null,
-    fetcher<DbSyncQueueOverview>,
-  );
-
-  const syncData = source && getSyncData(source);
-
-  const { data: connection } = useSWR(
-    project?.id && syncData?.integrationId && syncData?.connectionId
-      ? formatUrl(
-          `/api/project/${project.id}/integrations/nango/get-connection`,
-          {
-            integrationId: syncData.integrationId,
-            connectionId: syncData.connectionId,
-          },
-        )
-      : null,
-    fetcher<{ connection: Connection }>,
-  );
-
-  const currentStatus = useMemo(() => {
-    return source?.id ? getStatusForSource(source.id) : undefined;
-  }, [getStatusForSource, source?.id]);
 
   const title = useMemo(() => {
     if (source?.type !== 'nango') {
@@ -251,7 +223,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
             value="logs"
           >
             {project?.id && source?.id && (
-              <SyncQueueLogs projectId={project.id} sourceId={source.id} />
+              <SyncQueueLogs projectId={project.id} source={source} />
             )}
           </Tabs.Content>
         </Tabs.Root>

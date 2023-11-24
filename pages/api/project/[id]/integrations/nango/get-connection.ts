@@ -16,23 +16,31 @@ const allowedMethods = ['GET'];
 export default withProjectAccess(
   allowedMethods,
   async (req: NextApiRequest, res: NextApiResponse<Data>) => {
-    if (req.method === 'GET') {
-      if (!req.query.integrationId) {
-        return res.status(400).json({ error: 'No integration id provided.' });
-      } else if (!req.query.connectionId) {
-        return res.status(400).json({ error: 'No connection id provided.' });
+    try {
+      if (req.method === 'GET') {
+        if (!req.query.integrationId) {
+          return res.status(400).json({ error: 'No integration id provided.' });
+        } else if (!req.query.connectionId) {
+          return res.status(400).json({ error: 'No connection id provided.' });
+        }
+
+        const nango = getNangoServerInstance();
+
+        const connection = await nango.getConnection(
+          req.query.integrationId as string,
+          req.query.connectionId as string,
+        );
+
+        return res.status(200).json({ connection });
       }
-
-      const nango = getNangoServerInstance();
-
-      const connection = await nango.getConnection(
-        req.query.integrationId as string,
-        req.query.connectionId as string,
+    } catch (e) {
+      console.error(
+        '[CONNECTION] Error getting connection:',
+        (e as any).response?.data?.error,
       );
-
-      return res.status(200).json({ connection });
+      // Do nothing
     }
 
-    return res.status(400).end();
+    return res.status(400).json({ error: 'Connection not found.' });
   },
 );

@@ -47,9 +47,14 @@ const pauseSyncForSource = async (data: SyncData) => {
 
   await updateSyncQueueStatus(supabase, syncQueueId, 'canceled');
 
-  const nango = getNangoServerInstance();
+  try {
+    const nango = getNangoServerInstance();
 
-  await nango.deleteConnection(data.integrationId, data.connectionId);
+    await nango.deleteConnection(data.integrationId, data.connectionId);
+  } catch (e) {
+    // Do nothing
+    console.error('[STOP SYNC]', e);
+  }
 };
 
 // Currently, stop syncing is treated as deleting the connection.

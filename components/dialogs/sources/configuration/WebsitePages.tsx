@@ -2,6 +2,7 @@ import { Globe } from 'lucide-react';
 import { FC, useMemo } from 'react';
 
 import useSources from '@/lib/hooks/use-sources';
+import { removeSchema } from '@/lib/utils.nodeps';
 import {
   DbSource,
   NangoSourceDataType,
@@ -41,7 +42,7 @@ const WebsitePagesConfigurationDialog: FC<
           ? [
               {
                 label: 'Base URL',
-                value: syncMetadata.baseUrl,
+                value: removeSchema(syncMetadata.baseUrl),
                 href: syncMetadata.baseUrl,
               },
             ]
