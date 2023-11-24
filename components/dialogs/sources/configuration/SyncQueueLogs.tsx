@@ -94,11 +94,7 @@ const LogEntry: FC<LogEntryProps> = ({ projectId, syncQueue }) => {
 
   const duration = useMemo(() => {
     const start = parseISO(syncQueue.created_at);
-    if (!syncQueue.ended_at) {
-      return undefined;
-    }
-
-    const end = parseISO(syncQueue.ended_at);
+    const end = syncQueue.ended_at ? parseISO(syncQueue.ended_at) : new Date();
     const diff = differenceInMinutes(end, start);
     if (diff < 1) {
       return `${pluralize(

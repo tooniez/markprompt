@@ -144,12 +144,13 @@ const fetchPageAndUrlsWithRetryWithThrows = async (
   requestHeaders: { [key: string]: string } | undefined,
   includeRegexes: string[] | undefined,
   excludeRegexes: string[] | undefined,
+  maxRetries: number,
 ): Promise<PageFetchResponse> => {
   // Note that this endpoint returns FULL urls. That is, it has resolved
   // e.g. absolute and relative URLs to their fully specified paths with
   // base URL prepended.
 
-  await nango.log('Fetching ' + url);
+  await nango.log('Fetching ' + url);
 
   const res = await nango.proxy({
     method: 'POST',
@@ -157,14 +158,15 @@ const fetchPageAndUrlsWithRetryWithThrows = async (
     endpoint: pageFetcherServicePath,
     providerConfigKey: PROVIDER_CONFIG_KEY,
     connectionId: nango.connectionId!,
-    retries: 2,
+    retries: maxRetries,
     data: {
       url,
       crawlerRoot,
-      includePageUrls: true,
       requestHeaders,
       includeRegexes,
       excludeRegexes,
+      includePageUrls: true,
+      shouldReturn200: true,
     },
     headers: {
       Authorization: `Bearer ${pageFetcherServiceAPIToken}`,
@@ -172,6 +174,10 @@ const fetchPageAndUrlsWithRetryWithThrows = async (
       accept: 'application/json',
     },
   });
+
+  if (typeof res.data?.error === 'string' && res.data.error.length > 0) {
+    throw new Error(res.data.error);
+  }
 
   return {
     file: {
@@ -196,11 +202,10 @@ const fetchPageAndUrlsWithRetry =
     requestHeaders: { [key: string]: string } | undefined,
     includeRegexes: string[] | undefined,
     excludeRegexes: string[] | undefined,
-    retryAttempt: number,
     maxRetries: number,
     appendToLog: (level: LogLevel, message: string) => Promise<void>,
   ) =>
-  async (url: string): Promise<PageFetchResponse> => {
+  async (url: string): Promise<PageFetchResponse | undefined> => {
     try {
       const res = await fetchPageAndUrlsWithRetryWithThrows(
         nango,
@@ -212,38 +217,14 @@ const fetchPageAndUrlsWithRetry =
         requestHeaders,
         includeRegexes,
         excludeRegexes,
+        maxRetries,
       );
       return res;
     } catch (e) {
       await appendToLog('error', `Error importing ${url}: ${e}`);
-      if (retryAttempt >= maxRetries) {
-        return {
-          file: {
-            id: url,
-            path: url,
-            content: undefined,
-            contentType: undefined,
-            lastModified: undefined,
-            error: `${e}`,
-          },
-        };
-      } else {
-        const res = await fetchPageAndUrlsWithRetry(
-          nango,
-          pageFetcherServiceBaseUrl,
-          pageFetcherServicePath,
-          pageFetcherServiceAPIToken,
-          crawlerRoot,
-          requestHeaders,
-          includeRegexes,
-          excludeRegexes,
-          retryAttempt + 1,
-          maxRetries,
-          appendToLog,
-        )(url);
-        return res;
-      }
     }
+
+    return undefined;
   };
 
 const parallelFetchPages = async (
@@ -270,8 +251,7 @@ const parallelFetchPages = async (
           requestHeaders,
           includeRegexes,
           excludeRegexes,
-          0,
-          5,
+          3,
           appendToLog,
         ),
       ),
