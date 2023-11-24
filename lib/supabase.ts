@@ -19,10 +19,10 @@ import {
   DbSyncQueue,
   LogLevel,
   DbFileMetaChecksum,
+  MarkpromptConfig,
 } from '@/types/types';
 
 import { DEFAULT_MARKPROMPT_CONFIG } from './constants';
-import { MarkpromptConfig } from './schema';
 import {
   INFINITE_TOKEN_ALLOWANCE,
   PlanDetails,

@@ -190,7 +190,8 @@ export type NangoIntegrationId =
   | 'salesforce-case'
   | 'salesforce-case-sandbox'
   | 'notion-pages'
-  | 'website-pages';
+  | 'website-pages'
+  | 'github-repo';
 
 // Must match nango.yaml definition. Currently, sync id and integration id
 // are identical.
@@ -394,3 +395,66 @@ export type DbSyncQueueLog = {
   message: string;
   timestamp: string;
 };
+
+export type RemarkImageSourceRewriteOptions = {
+  rules: {
+    pattern: string;
+    replace: string;
+  }[];
+  excludeExternalLinks?: boolean;
+};
+
+export type RemarkLinkRewriteOptions = {
+  rules: {
+    pattern: string;
+    replace: string;
+  }[];
+  excludeExternalLinks?: boolean;
+};
+
+export type MarkdownProcessorOptions = {
+  imageSourceRewrite?: RemarkImageSourceRewriteOptions;
+  linkRewrite?: RemarkLinkRewriteOptions;
+};
+
+export type MarkpromptConfig = {
+  include?: string[];
+  exclude?: string[];
+  processorOptions?: MarkdownProcessorOptions;
+};
+
+export type RequestHeader = { key: string; value: string };
+
+export interface SyncMetadata {
+  includeRegexes?: string[];
+  excludeRegexes?: string[];
+  processorOptions?: MarkdownProcessorOptions;
+}
+
+export interface SyncMetadataWithTargetSelectors extends SyncMetadata {
+  includeSelectors?: string;
+  excludeSelectors?: string;
+}
+
+export interface WebsitePagesSyncMetadata
+  extends SyncMetadataWithTargetSelectors {
+  baseUrl: string;
+  requestHeaders?: RequestHeader[];
+}
+
+export interface GitHubRepoSyncMetadata extends SyncMetadata {
+  owner: string;
+  repo: string;
+  branch: string;
+}
+
+export interface SalesforceSyncMetadata extends SyncMetadata {
+  customFields: string[] | undefined;
+  filters: string | undefined;
+  mappings: {
+    title: string | undefined;
+    content: string | undefined;
+    path: string | undefined;
+  };
+  metadataFields: string[] | undefined;
+}

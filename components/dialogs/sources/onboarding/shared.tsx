@@ -41,7 +41,10 @@ export const addSourceAndNangoConnection = async (
   projectId: Project['id'],
   integrationId: NangoIntegrationId,
   name: string,
+  // Nango-specific, like instance_url
   nangoConnectionConfigParams: Record<string, string> | undefined,
+  // Info stored in Nango metadata (to use e.g. in a Nango sync) and in
+  // the source data row in our database.
   syncMetadata: Record<string, string> | undefined,
   authed: boolean,
 ): Promise<DbSource | undefined> => {

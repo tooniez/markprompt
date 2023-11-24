@@ -9,6 +9,7 @@ import {
   MAX_CHUNK_LENGTH,
   MIN_SECTION_CONTENT_LENGTH,
   OPENAI_RPM,
+  GITHUB_RPH,
 } from '@/lib/constants';
 import { bulkCreateSectionEmbeddings } from '@/lib/file-processing';
 import {
@@ -21,11 +22,9 @@ import {
   extractMeta,
   splitIntoSections,
 } from '@/lib/markdown';
-import { MarkdownProcessorOptions } from '@/lib/schema';
 import {
   createServiceRoleSupabaseClient,
   getProjectIdFromSource,
-  getProjectConfigData,
   createFile,
   batchStoreFileSections,
   batchDeleteFiles,
@@ -41,8 +40,13 @@ import {
   DbFileMetaChecksum,
   DbSource,
   FileSections,
+  GitHubRepoSyncMetadata,
   NangoFileWithMetadata,
+  NangoIntegrationId,
+  NangoSourceDataType,
   Project,
+  SyncMetadata,
+  SyncMetadataWithTargetSelectors,
 } from '@/types/types';
 
 // Payload for the webhook and manual sync bodies that we send
@@ -52,32 +56,50 @@ export type NangoSyncPayload = Pick<
   'providerConfigKey' | 'connectionId' | 'model' | 'queryTimeStamp'
 >;
 
-export type FileTrainEventData = {
+export type FileTrainEventData<T extends SyncMetadata> = {
   file: Omit<NangoFileWithMetadata, 'content'> & { compressedContent: string };
   projectId: Project['id'];
   sourceId: DbSource['id'];
-  includeSelectors: string | undefined;
-  excludeSelectors: string | undefined;
-  processorOptions: MarkdownProcessorOptions | undefined;
+  connectionId: string;
+  syncMetadata: T;
 };
 
-type Events = {
+type Events<T extends SyncMetadata> = {
   'nango/sync': {
     data: { nangoSyncPayload: NangoSyncPayload; shouldPause: boolean };
   };
   'markprompt/file.train': {
-    data: FileTrainEventData;
+    data: FileTrainEventData<T>;
+  };
+  'markprompt/github-file-slow.train': {
+    data: FileTrainEventData<T>;
+  };
+  'markprompt/github-file-fast.train': {
+    data: FileTrainEventData<T>;
   };
   'markprompt/files.delete': {
     data: { ids: NangoFileWithMetadata['id'][]; sourceId: string };
   };
 };
 
-type NamedEvent<T extends keyof Events> = Events[T] & { name: T };
+type NamedEvent<
+  T extends SyncMetadata,
+  U extends keyof Events<T>,
+> = Events<T>[U] & { name: U };
+
+type TrainEventName =
+  | 'markprompt/file.train'
+  | 'markprompt/github-file-fast.train'
+  | 'markprompt/github-file-slow.train';
+
+type TrainEventId =
+  | 'train-files'
+  | 'train-github-files-fast'
+  | 'train-github-files-slow';
 
 export const inngest = new Inngest({
   id: 'markprompt',
-  schemas: new EventSchemas().fromRecord<Events>(),
+  schemas: new EventSchemas().fromRecord<Events<SyncMetadata>>(),
 });
 
 const syncNangoRecords = inngest.createFunction(
@@ -92,10 +114,12 @@ const syncNangoRecords = inngest.createFunction(
       nangoSyncPayload.connectionId,
     );
 
-    const sourceSyncData = await getSourceSyncData(
-      supabase,
-      nangoSyncPayload.connectionId,
-    );
+    const integrationId =
+      nangoSyncPayload.providerConfigKey as NangoIntegrationId;
+
+    const connectionId = nangoSyncPayload.connectionId;
+
+    const sourceSyncData = await getSourceSyncData(supabase, connectionId);
 
     if (!sourceSyncData) {
       console.debug(
@@ -125,8 +149,8 @@ const syncNangoRecords = inngest.createFunction(
     );
 
     const recordIncludingErrors = (await nango.getRecords<any>({
-      providerConfigKey: nangoSyncPayload.providerConfigKey,
-      connectionId: nangoSyncPayload.connectionId,
+      providerConfigKey: integrationId,
+      connectionId: connectionId,
       model: nangoSyncPayload.model,
       // delta: nangoSyncPayload.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
@@ -186,40 +210,52 @@ const syncNangoRecords = inngest.createFunction(
 
     // Train added/updated files
 
-    const syncMetadata = (sourceSyncData.data as any)?.syncMetadata;
+    const syncMetadata = (sourceSyncData.data as NangoSourceDataType)
+      ?.syncMetadata;
 
-    const processorOptions =
-      syncMetadata?.processorOptions ||
-      (await getProjectConfigData(supabase, projectId)).markpromptConfig
-        .processorOptions;
+    const trainRecords = records.filter((record) => {
+      return (
+        record._nango_metadata.last_action === 'ADDED' ||
+        record._nango_metadata.last_action === 'UPDATED'
+      );
+    });
 
-    const trainEvents = records
-      .filter((record) => {
-        return (
-          record._nango_metadata.last_action === 'ADDED' ||
-          record._nango_metadata.last_action === 'UPDATED'
-        );
-      })
-      .map<NamedEvent<'markprompt/file.train'>>((record) => {
-        // Send compressed content to maximize chances of staying below
-        // the 1Mb payload limit. Base64 is required to send over the
-        // wire, otherwise the compressed content gets corrupted.
-        const compressedContent = compressToBase64(record.content || '');
-        return {
-          name: 'markprompt/file.train',
-          data: {
-            file: {
-              ...record,
-              compressedContent,
-            },
-            sourceId: sourceSyncData.id,
-            projectId,
-            includeSelectors: syncMetadata?.includeSelectors,
-            excludeSelectors: syncMetadata?.excludeSelectors,
-            processorOptions,
+    let eventName: TrainEventName;
+    let eventId: TrainEventId;
+    if (integrationId === 'github-repo') {
+      if (trainRecords.length < 1000) {
+        eventName = 'markprompt/github-file-fast.train';
+        eventId = 'train-github-files-fast';
+      } else {
+        eventName = 'markprompt/github-file-slow.train';
+        eventId = 'train-github-files-slow';
+      }
+    } else {
+      eventName = 'markprompt/file.train';
+      eventId = 'train-files';
+    }
+
+    const trainEvents = trainRecords.map<
+      NamedEvent<SyncMetadata, TrainEventName>
+    >((record) => {
+      // Send compressed content to maximize chances of staying below
+      // the 1Mb payload limit. Base64 is required to send over the
+      // wire, otherwise the compressed content gets corrupted.
+      const compressedContent = compressToBase64(record.content || '');
+      return {
+        name: eventName,
+        data: {
+          file: {
+            ...record,
+            compressedContent,
           },
-        };
-      });
+          sourceId: sourceSyncData.id,
+          projectId,
+          syncMetadata,
+          connectionId,
+        },
+      };
+    });
 
     await updateSyncQueue(supabase, syncQueueId, 'running', {
       message: `Start processing ${pluralize(
@@ -230,7 +266,7 @@ const syncNangoRecords = inngest.createFunction(
       level: 'info',
     });
 
-    await step.sendEvent('train-files', trainEvents);
+    await step.sendEvent(eventId, trainEvents);
 
     await updateSyncQueue(supabase, syncQueueId, 'complete', {
       message: `Updated ${pluralize(
@@ -287,7 +323,9 @@ export const createFullMeta = async (file: NangoFileWithMetadata) => {
   return meta;
 };
 
-export const runTrainFile = async (data: FileTrainEventData) => {
+export const runTrainFile = async <T extends SyncMetadata>(
+  data: FileTrainEventData<T>,
+) => {
   const nangoFile: NangoFileWithMetadata = {
     ...data.file,
     content: decompressFromBase64(data.file.compressedContent),
@@ -329,9 +367,9 @@ export const runTrainFile = async (data: FileTrainEventData) => {
     ? await convertToMarkdown(
         nangoFile.content,
         nangoFile.contentType,
-        data.includeSelectors,
-        data.excludeSelectors,
-        data.processorOptions,
+        (data.syncMetadata as SyncMetadataWithTargetSelectors).includeSelectors,
+        (data.syncMetadata as SyncMetadataWithTargetSelectors).excludeSelectors,
+        data.syncMetadata.processorOptions,
       )
     : '';
   const checksum = createChecksum(markdown);
@@ -416,12 +454,39 @@ export const runTrainFile = async (data: FileTrainEventData) => {
   }
 };
 
-// Estimate the number of calls we can run concurrently given the OpenAI
-// limits.
-const runTrainFileAvgExecutionTime = 1000;
-const runTrainFileAvgExecutionsPerMinute = 60000 / runTrainFileAvgExecutionTime;
-const runTrainFileConcurrency =
-  OPENAI_RPM[EMBEDDING_MODEL] / runTrainFileAvgExecutionsPerMinute;
+export const fetchGitHubFileContent = async (
+  owner: string,
+  repo: string,
+  branch: string,
+  path: string,
+  connectionId: string,
+): Promise<string> => {
+  const nango = getNangoServerInstance();
+
+  const res = await nango.proxy({
+    method: 'GET',
+    endpoint: `/repos/${owner}/${repo}/contents/${path}${
+      branch ? `?ref=${branch}` : ''
+    }`,
+    headers: {
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+    providerConfigKey: 'github-repo',
+    connectionId: connectionId,
+    retries: 10,
+  });
+
+  return Buffer.from(res.data?.content, 'base64').toString('utf-8');
+};
+
+const getConcurrency = (
+  averageExecutionTime: number,
+  maxRequestsPerHour: number,
+) => {
+  const numExecutionsPerHour = (60 * 60 * 1000) / averageExecutionTime;
+  return Math.round(maxRequestsPerHour / numExecutionsPerHour);
+};
 
 // The train function adheres to the OpenAI rate limits.
 const trainFile = inngest.createFunction(
@@ -432,13 +497,80 @@ const trainFile = inngest.createFunction(
     // we estimate how much we can execute in parallel while staying within
     // the OpenAI rate limits.
     concurrency: {
-      // 100 is the limit of our current plan on Inngest.
-      limit: Math.min(100, Math.round(runTrainFileConcurrency)),
+      // Estimate the number of calls we can run concurrently given the OpenAI
+      // limits.
+      // Note: 100 is the limit of our current plan on Inngest.
+      limit: Math.min(
+        100,
+        getConcurrency(1000, OPENAI_RPM[EMBEDDING_MODEL] * 60),
+      ),
     },
   },
   { event: 'markprompt/file.train' },
   async ({ event }) => {
     return runTrainFile(event.data);
+  },
+);
+
+const fetchAndTrainGitHubFile = async (
+  data: FileTrainEventData<GitHubRepoSyncMetadata>,
+) => {
+  const syncMetadata = data.syncMetadata as GitHubRepoSyncMetadata;
+  const content = await fetchGitHubFileContent(
+    syncMetadata.owner,
+    syncMetadata.repo,
+    syncMetadata.branch,
+    data.file.path,
+    data.connectionId,
+  );
+  return runTrainFile({
+    ...data,
+    file: { ...data.file, compressedContent: compressToBase64(content) },
+  });
+};
+
+// The train function adheres to the GitHub rate limits, which is more
+// restrictive than the OpenAI rate limits.
+const fetchAndTrainGitHubFileSlow = inngest.createFunction(
+  {
+    id: 'train-github-file-slow',
+    // We need to run the functions with concurrency rather than rate limits.
+    // Rate limits will just fail the runs that exceed the rate limits. Instead,
+    // we estimate how much we can execute in parallel while staying within
+    // the GitHub rate limits.
+    concurrency: {
+      // Estimate the number of calls we can run concurrently given the GitHub
+      // limits.
+      // Note: 100 is the limit of our current plan on Inngest.
+      limit: Math.min(100, getConcurrency(2_000, GITHUB_RPH)),
+    },
+  },
+  { event: 'markprompt/github-file-slow.train' },
+  async ({ event }) => {
+    return fetchAndTrainGitHubFile(
+      event.data as FileTrainEventData<GitHubRepoSyncMetadata>,
+    );
+  },
+);
+
+// Same as slow, but with maximum concurrency when we are sure to not hit
+// rate limits imposed by GitHub. Instead, we just adhere to the OpenAI
+// embeddings rate limits.
+const fetchAndTrainGitHubFileFast = inngest.createFunction(
+  {
+    id: 'train-github-file-fast',
+    concurrency: {
+      limit: Math.min(
+        100,
+        getConcurrency(1000, OPENAI_RPM[EMBEDDING_MODEL] * 60),
+      ),
+    },
+  },
+  { event: 'markprompt/github-file-fast.train' },
+  async ({ event }) => {
+    return fetchAndTrainGitHubFile(
+      event.data as FileTrainEventData<GitHubRepoSyncMetadata>,
+    );
   },
 );
 
@@ -460,5 +592,11 @@ const deleteFiles = inngest.createFunction(
 
 export default serve({
   client: inngest,
-  functions: [syncNangoRecords, trainFile, deleteFiles],
+  functions: [
+    syncNangoRecords,
+    trainFile,
+    fetchAndTrainGitHubFileFast,
+    fetchAndTrainGitHubFileSlow,
+    deleteFiles,
+  ],
 });

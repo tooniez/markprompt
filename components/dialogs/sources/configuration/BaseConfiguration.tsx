@@ -44,8 +44,16 @@ const DeleteSourceDialog = dynamic(
   () => import('@/components/dialogs/sources/DeleteSource'),
 );
 
+type CustomMetadata = {
+  label: string;
+  value: string;
+  accessory?: string | ReactNode;
+  href?: string;
+};
+
 type BaseConfigurationDialogProps = {
   source?: DbSource;
+  customMetadata?: CustomMetadata[];
   defaultView?: SourceConfigurationView;
   Icon?: JSXElementConstructor<any>;
   open?: boolean;
@@ -104,6 +112,7 @@ const RetrainOnlyButton = ({ source }: { source: DbSource }) => {
 export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   source,
   defaultView,
+  customMetadata,
   Icon,
   open,
   onOpenChange,
@@ -150,15 +159,6 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
 
   const integrationId = source && getIntegrationId(source);
 
-  // Proper to integrations like Salesforce
-  const integrationEnvironment =
-    integrationId && getIntegrationEnvironment(integrationId);
-  const instanceUrl = (source?.data as NangoSourceDataType)?.connectionConfig
-    ?.instance_url;
-
-  // Proper to integrations like unauthed websites
-  const baseUrl = (source?.data as NangoSourceDataType)?.syncMetadata?.baseUrl;
-
   return (
     <SourceDialog
       open={open}
@@ -201,40 +201,31 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
                   </div>
                 </div>
               </FormField>
-              {integrationEnvironment && (
-                <FormField>
-                  <FormLabel>Environment</FormLabel>
-                  <div className="truncate text-sm text-neutral-300">
-                    {getIntegrationEnvironmentName(integrationEnvironment)}
-                  </div>
-                </FormField>
-              )}
-              {instanceUrl && (
-                <FormField>
-                  <FormLabel>Instance URL</FormLabel>
-                  <Link
-                    href={instanceUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="subtle-underline self-start truncate text-sm text-neutral-300"
-                  >
-                    {removeTrailingSlash(instanceUrl)}
-                  </Link>
-                </FormField>
-              )}
-              {baseUrl && (
-                <FormField>
-                  <FormLabel>Base URL</FormLabel>
-                  <Link
-                    href={baseUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="subtle-underline self-start truncate text-sm text-neutral-300"
-                  >
-                    {removeSchema(removeTrailingSlash(baseUrl))}
-                  </Link>
-                </FormField>
-              )}
+              {customMetadata &&
+                customMetadata.map((entry, i) => {
+                  return (
+                    <FormField key={`custom-metadata-${i}`}>
+                      <FormLabel>{entry.label}</FormLabel>
+                      <div className="flex flex-row items-center gap-2">
+                        {entry.href ? (
+                          <Link
+                            href={entry.href}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="subtle-underline self-start truncate text-sm text-neutral-300"
+                          >
+                            {entry.value}
+                          </Link>
+                        ) : (
+                          <div className="truncate text-sm text-neutral-300">
+                            {entry.value}
+                          </div>
+                        )}
+                        {entry.accessory}
+                      </div>
+                    </FormField>
+                  );
+                })}
             </div>
             {children}
             <div className="mt-8 flex flex-col items-start gap-2 border-t border-neutral-900 pt-8">

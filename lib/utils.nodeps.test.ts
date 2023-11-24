@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   arrayEquals,
+  extractGithubRepo,
   removeSchema,
   safeParseInt,
   safeParseIntOrUndefined,
@@ -99,6 +100,23 @@ describe('utils.nodeps', () => {
       expect(removeSchema('ftp://example.com')).toBe('example.com');
       expect(removeSchema('http://acme.com')).toBe('acme.com');
       expect(removeSchema('globex.com')).toBe('globex.com');
+    });
+  });
+
+  describe('extractGithubRepo', () => {
+    it('should extract owner and repo', () => {
+      expect(
+        extractGithubRepo('https://github.com/motifland/markprompt'),
+      ).toStrictEqual({ owner: 'motifland', repo: 'markprompt', branch: null });
+    });
+    it('should extract owner, repo and branch', () => {
+      expect(
+        extractGithubRepo('https://github.com/motifland/markprompt/tree/test'),
+      ).toStrictEqual({
+        owner: 'motifland',
+        repo: 'markprompt',
+        branch: 'test',
+      });
     });
   });
 });

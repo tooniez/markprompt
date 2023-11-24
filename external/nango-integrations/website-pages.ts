@@ -62,26 +62,28 @@ const appendToLogFull = async (
   const markpromptAPIToken = getEnv(env, 'MARKPROMPT_API_TOKEN');
 
   if (!markpromptUrl || !markpromptAPIToken) {
-    return undefined;
+    return;
   }
 
   await nango.log('appendToLogFull: ' + syncQueueId + ' ' + markpromptUrl);
 
-  const res = await nango.proxy({
-    method: 'POST',
-    baseUrlOverride: markpromptUrl,
-    endpoint: `/api/sync-queues/${syncQueueId}/append-log`,
-    providerConfigKey: PROVIDER_CONFIG_KEY,
-    connectionId: nango.connectionId!,
-    data: { message, level },
-    headers: {
-      Authorization: `Bearer ${markpromptAPIToken}`,
-      'Content-Type': 'application/json',
-      accept: 'application/json',
-    },
-  });
-
-  return res.data;
+  try {
+    await nango.proxy({
+      method: 'POST',
+      baseUrlOverride: markpromptUrl,
+      endpoint: `/api/sync-queues/${syncQueueId}/append-log`,
+      providerConfigKey: PROVIDER_CONFIG_KEY,
+      connectionId: nango.connectionId!,
+      data: { message, level },
+      headers: {
+        Authorization: `Bearer ${markpromptAPIToken}`,
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+      },
+    });
+  } catch (e) {
+    await nango.log(`Error posting log: ${e}`);
+  }
 };
 
 type EnvEntry = { name: string; value: string };
@@ -103,7 +105,7 @@ interface Metadata {
 
 type NangoWebpageFile = Pick<
   NangoFile,
-  'id' | 'path' | 'content' | 'contentType' | 'error'
+  'id' | 'path' | 'content' | 'contentType' | 'lastModified' | 'error'
 >;
 
 type PageFetchResponse = {
@@ -177,6 +179,7 @@ const fetchPageAndUrlsWithRetryWithThrows = async (
       path: url,
       content: res.data.content,
       contentType: 'html',
+      lastModified: undefined,
       error: undefined,
     },
     nextUrls: res.data.urls || [],
@@ -220,6 +223,7 @@ const fetchPageAndUrlsWithRetry =
             path: url,
             content: undefined,
             contentType: undefined,
+            lastModified: undefined,
             error: `${e}`,
           },
         };

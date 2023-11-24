@@ -14,6 +14,13 @@ const getSyncQueueId = async (
   const markpromptUrl = getEnv(env, 'MARKPROMPT_URL');
   const markpromptAPIToken = getEnv(env, 'MARKPROMPT_API_TOKEN');
 
+  await nango.log(
+    'getSyncQueueId - markpromptUrl: ' +
+      markpromptUrl +
+      ' : ' +
+      markpromptAPIToken?.slice(0, 5),
+  );
+
   if (!markpromptUrl || !markpromptAPIToken) {
     return undefined;
   }
@@ -55,24 +62,28 @@ const appendToLogFull = async (
   const markpromptAPIToken = getEnv(env, 'MARKPROMPT_API_TOKEN');
 
   if (!markpromptUrl || !markpromptAPIToken) {
-    return undefined;
+    return;
   }
 
-  const res = await nango.proxy({
-    method: 'POST',
-    baseUrlOverride: markpromptUrl,
-    endpoint: `/api/sync-queues/${syncQueueId}/append-log`,
-    providerConfigKey: PROVIDER_CONFIG_KEY,
-    connectionId: nango.connectionId!,
-    data: { message, level },
-    headers: {
-      Authorization: `Bearer ${markpromptAPIToken}`,
-      'Content-Type': 'application/json',
-      accept: 'application/json',
-    },
-  });
+  await nango.log('appendToLogFull: ' + syncQueueId + ' ' + markpromptUrl);
 
-  return res.data;
+  try {
+    await nango.proxy({
+      method: 'POST',
+      baseUrlOverride: markpromptUrl,
+      endpoint: `/api/sync-queues/${syncQueueId}/append-log`,
+      providerConfigKey: PROVIDER_CONFIG_KEY,
+      connectionId: nango.connectionId!,
+      data: { message, level },
+      headers: {
+        Authorization: `Bearer ${markpromptAPIToken}`,
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+      },
+    });
+  } catch (e) {
+    await nango.log(`Error posting log: ${e}`);
+  }
 };
 
 type EnvEntry = { name: string; value: string };
@@ -187,6 +198,9 @@ function mapRecords(
           return { ...acc, [key]: record[key] };
         }, {}),
       },
+      lastModified: record.LastModifiedDate
+        ? new Date(record.LastModifiedDate)
+        : new Date(),
       error: undefined,
     };
   });
