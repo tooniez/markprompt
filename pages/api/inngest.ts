@@ -370,9 +370,8 @@ const syncNangoRecords = inngest.createFunction(
     numProcessed = numProcessed + trainEvents.length;
 
     console.debug(
-      `Starting parallel run of ${trainEvents.length}`,
-      eventName,
-      eventId,
+      `Starting parallel run of ${trainEvents.length} events. Size`,
+      byteSize(JSON.stringify(trainEvents)),
     );
 
     await step.sendEvent(eventId, trainEvents);
