@@ -361,7 +361,7 @@ const syncNangoRecords = inngest.createFunction(
         'files',
       )}.${
         numProcessed > 0
-          ? ` ${pluralize(numProcessed, 'file', 'files')} already processed.`
+          ? ` ${pluralize(numProcessed, 'file', 'files')} processed.`
           : ''
       }`,
       level: 'info',
