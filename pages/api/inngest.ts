@@ -33,7 +33,7 @@ import {
   getFilesIdAndCheksumBySourceAndNangoId,
 } from '@/lib/supabase';
 import { createChecksum } from '@/lib/utils';
-import { pluralize } from '@/lib/utils.nodeps';
+import { byteSize, pluralize } from '@/lib/utils.nodeps';
 import { Json } from '@/types/supabase';
 import {
   DbFileMetaChecksum,
@@ -55,7 +55,7 @@ export type NangoSyncPayload = Pick<
   'providerConfigKey' | 'connectionId' | 'model' | 'queryTimeStamp'
 >;
 
-const RECORDS_LIMIT = 50;
+const RECORDS_LIMIT = 100;
 
 export type FileTrainEventData<T extends SyncMetadata> = {
   file: Omit<NangoFileWithMetadata, 'content'> & { compressedContent: string };
@@ -218,6 +218,8 @@ const syncNangoRecords = inngest.createFunction(
       data: { ids: filesIdsToDelete, sourceId: sourceSyncData.id },
     });
 
+    console.debug(`Sent ${filesIdsToDelete.length} files for deletion`);
+
     numDeleted = numDeleted + filesIdsToDelete.length;
 
     // Train added/updated files
@@ -246,6 +248,12 @@ const syncNangoRecords = inngest.createFunction(
       eventName = 'markprompt/file.train';
       eventId = 'train-files';
     }
+
+    console.debug(
+      `Creating ${trainRecords.length} train events:`,
+      eventName,
+      eventId,
+    );
 
     const trainEvents = trainRecords.map<
       NamedEvent<SyncMetadata, TrainEventName>
@@ -283,6 +291,13 @@ const syncNangoRecords = inngest.createFunction(
     });
 
     numProcessed = numProcessed + trainRecords.length;
+
+    console.debug(
+      `Created ${trainRecords.length} train events:`,
+      eventName,
+      eventId,
+      byteSize(JSON.stringify(trainEvents)),
+    );
 
     await step.sendEvent(eventId, trainEvents);
 
