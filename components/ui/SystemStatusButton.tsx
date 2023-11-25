@@ -10,7 +10,7 @@ type SystemStatusButtonProps = {
 export const SystemStatusButton: FC<SystemStatusButtonProps> = ({ status }) => {
   return (
     <a
-      className="button-ring group flex w-min flex-row items-center gap-2 rounded-md border border-neutral-900 px-2 py-1 outline-none transition hover:bg-neutral-950"
+      className="home-button-ring group flex w-min flex-row items-center gap-2 rounded-md border border-neutral-900 px-2 py-1 outline-none transition hover:bg-neutral-950"
       href="https://status.markprompt.com"
       target="_blank"
       rel="noreferrer"

@@ -1,0 +1,30 @@
+.home-gradient-text {
+  /* This fixes right clipped gradient */
+  /* padding: 0 4px; */
+  background-color: #f59e0b;
+  background-image: linear-gradient(45deg, #bae6fd, #d9f99d);
+  background-size: 100%;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -moz-text-fill-color: transparent;
+}
+
+.home-dots {
+  background-image: radial-gradient(#ffffff25 6%, transparent 6%);
+  background-color: transparent;
+  background-position: 0 0, 1px 1px;
+  background-size: 12px 12px;
+}
+
+.home-ghost-button {
+  @apply whitespace-nowrap rounded-md border-0 bg-transparent px-2 py-2 text-sm text-neutral-500 outline-none ring-sky-500 transition duration-300 hover:bg-white/5 hover:text-white focus:ring data-[highlighted=true]:bg-white data-[highlighted=true]:font-medium data-[highlighted=true]:text-neutral-900 hover:data-[highlighted=true]:bg-white/80 sm:px-3;
+}
+
+.home-icon-button {
+  @apply rounded-md p-2 text-neutral-500 outline-none ring-sky-500 transition hover:bg-white/5 hover:text-white focus:text-white focus:ring;
+}
+
+.home-button-ring {
+  @apply transition duration-200 focus:outline-none focus:ring focus:ring-sky-500;
+}
