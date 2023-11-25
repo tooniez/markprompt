@@ -55,6 +55,8 @@ export type NangoSyncPayload = Pick<
   'providerConfigKey' | 'connectionId' | 'model' | 'queryTimeStamp'
 >;
 
+const RECORDS_LIMIT = 50;
+
 export type FileTrainEventData<T extends SyncMetadata> = {
   file: Omit<NangoFileWithMetadata, 'content'> & { compressedContent: string };
   projectId: Project['id'];
@@ -65,7 +67,14 @@ export type FileTrainEventData<T extends SyncMetadata> = {
 
 type Events<T extends SyncMetadata> = {
   'nango/sync': {
-    data: { nangoSyncPayload: NangoSyncPayload; shouldPause: boolean };
+    data: {
+      nangoSyncPayload: NangoSyncPayload;
+      shouldPause: boolean;
+      offset?: number;
+      numProcessed?: number;
+      numDeleted?: number;
+      syncQueueId?: string;
+    };
   };
   'markprompt/file.train': {
     data: FileTrainEventData<T>;
@@ -107,10 +116,16 @@ const syncNangoRecords = inngest.createFunction(
   async ({ event, step }) => {
     const supabase = createServiceRoleSupabaseClient();
     const nangoSyncPayload = event.data.nangoSyncPayload;
+    const shouldPause = event.data.shouldPause;
+    const offset = event.data.offset || 0;
+    let numProcessed = event.data.numProcessed || 0;
+    let numDeleted = event.data.numDeleted || 0;
 
     console.debug(
       '[INNGEST] start sync for connection:',
       nangoSyncPayload.connectionId,
+      '- offset:',
+      offset,
     );
 
     const integrationId =
@@ -127,10 +142,13 @@ const syncNangoRecords = inngest.createFunction(
       return { updated: 0, deleted: 0 };
     }
 
-    const syncQueueId = await getOrCreateRunningSyncQueueForSource(
-      supabase,
-      sourceSyncData.id,
-    );
+    let syncQueueId = event.data.syncQueueId;
+    if (!syncQueueId) {
+      syncQueueId = await getOrCreateRunningSyncQueueForSource(
+        supabase,
+        sourceSyncData.id,
+      );
+    }
 
     const nango = getNangoServerInstance();
 
@@ -151,6 +169,8 @@ const syncNangoRecords = inngest.createFunction(
       providerConfigKey: integrationId,
       connectionId: connectionId,
       model: nangoSyncPayload.model,
+      limit: RECORDS_LIMIT,
+      offset: offset,
       // delta: nangoSyncPayload.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
 
@@ -197,6 +217,8 @@ const syncNangoRecords = inngest.createFunction(
       name: 'markprompt/files.delete',
       data: { ids: filesIdsToDelete, sourceId: sourceSyncData.id },
     });
+
+    numDeleted = numDeleted + filesIdsToDelete.length;
 
     // Train added/updated files
 
@@ -248,32 +270,44 @@ const syncNangoRecords = inngest.createFunction(
     });
 
     await updateSyncQueue(supabase, syncQueueId, 'running', {
-      message: `Start processing ${pluralize(
+      message: `Processing batch of ${pluralize(
         trainEvents.length,
         'file',
         'files',
-      )}.`,
+      )}.${
+        numProcessed > 0
+          ? ` ${pluralize(numProcessed, 'file', 'files')} already processed.`
+          : ''
+      }`,
       level: 'info',
     });
 
-    // const summaries = await Promise.all(
-    //   chunks.map((chunk) =>
-    //     step.run("summarize-chunk", () => summarizeChunk(chunk))
-    //   )
-    // );
+    numProcessed = numProcessed + trainRecords.length;
 
     await step.sendEvent(eventId, trainEvents);
 
-    await updateSyncQueue(supabase, syncQueueId, 'complete', {
-      message: `Updated ${pluralize(
-        trainEvents.length,
-        'file',
-        'files',
-      )}. Deleted ${pluralize(filesIdsToDelete.length, 'file', 'files')}.`,
-      level: 'info',
-    });
-
-    return { updated: trainEvents.length, deleted: filesIdsToDelete.length };
+    if (recordIncludingErrors.length >= RECORDS_LIMIT) {
+      await inngest.send({
+        name: 'nango/sync',
+        data: {
+          nangoSyncPayload,
+          shouldPause,
+          offset: offset + RECORDS_LIMIT,
+          syncQueueId,
+          numProcessed,
+          numDeleted,
+        },
+      });
+    } else {
+      await updateSyncQueue(supabase, syncQueueId, 'complete', {
+        message: `Updated ${pluralize(
+          numProcessed,
+          'file',
+          'files',
+        )}. Deleted ${pluralize(numDeleted, 'file', 'files')}.`,
+        level: 'info',
+      });
+    }
   },
 );
 

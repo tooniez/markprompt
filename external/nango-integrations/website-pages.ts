@@ -410,11 +410,7 @@ export default async function fetchData(nango: NangoSync) {
 
   await appendToLog(
     'info',
-    `Done importing ${baseUrl}. Saved ${pluralize(
-      count,
-      'page',
-      'pages',
-    )} in total.`,
+    `Done importing. Saved ${pluralize(count, 'page', 'pages')} in total.`,
   );
 
   // await nango.batchSave(filesToSave, 'NangoFile');

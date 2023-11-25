@@ -105,6 +105,10 @@ const LogEntry: FC<LogEntryProps> = ({ projectId, syncQueue }) => {
   const [isOpen, setOpen] = useState(false);
 
   const duration = useMemo(() => {
+    if (!syncQueue.ended_at) {
+      return undefined;
+    }
+
     const start = parseISO(syncQueue.created_at);
     const end = syncQueue.ended_at ? parseISO(syncQueue.ended_at) : new Date();
     const diff = differenceInMinutes(end, start);
@@ -136,7 +140,7 @@ const LogEntry: FC<LogEntryProps> = ({ projectId, syncQueue }) => {
           {formatSystemDateTime(parseISO(syncQueue.created_at), true)}
         </div>
         <div className="w-[160px] flex-none whitespace-nowrap font-mono text-xs text-neutral-400">
-          {duration}
+          {duration || ''}
         </div>
         <div className="flex flex-grow items-center justify-end">
           <SyncQueueTag status={syncQueue.status} />
