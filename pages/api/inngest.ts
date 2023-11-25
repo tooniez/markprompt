@@ -275,7 +275,7 @@ const syncNangoRecords = inngest.createFunction(
         continue;
       }
 
-      console.log('eventPayloadSize', rest.path, eventPayloadSize);
+      console.debug('eventPayloadSize', rest.path, eventPayloadSize);
 
       payloadSize += eventPayloadSize;
 
@@ -478,7 +478,7 @@ export const runTrainFile = async <T extends SyncMetadata>(
     : '';
   const checksum = createChecksum(markdown);
 
-  console.log('markdown', nangoFile.path, byteSize(markdown));
+  console.debug('markdown', nangoFile.path, byteSize(markdown));
 
   if (
     foundFile &&
