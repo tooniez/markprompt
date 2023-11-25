@@ -1,7 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { shouldPauseSync } from '@/lib/integrations/nango.server';
-import { createServiceRoleSupabaseClient } from '@/lib/supabase';
+import { getSourceSyncData } from '@/lib/integrations/nango.server';
+import {
+  createServiceRoleSupabaseClient,
+  getOrCreateRunningSyncQueueForSource,
+} from '@/lib/supabase';
 
 import { inngest } from '../../inngest';
 import type { NangoSyncPayload } from '../../inngest';
@@ -33,12 +36,27 @@ export default async function handler(
 
   const supabase = createServiceRoleSupabaseClient();
 
-  // If this is a non-enterprise project, pause the sync
-  const shouldPause = await shouldPauseSync(supabase, nangoSyncPayload);
+  // If this is a non-enterprise project, pause the sync. Omitted
+  // for now.
+  // const shouldPause = await shouldPauseSync(supabase, nangoSyncPayload);
+
+  const sourceSyncData = await getSourceSyncData(
+    supabase,
+    nangoSyncPayload.connectionId,
+  );
+
+  let syncQueueId: string | undefined = undefined;
+
+  if (sourceSyncData) {
+    syncQueueId = await getOrCreateRunningSyncQueueForSource(
+      supabase,
+      sourceSyncData.id,
+    );
+  }
 
   await inngest.send({
     name: 'nango/sync',
-    data: { nangoSyncPayload, shouldPause },
+    data: { nangoSyncPayload, syncQueueId },
   });
 
   return res.status(200).json({});

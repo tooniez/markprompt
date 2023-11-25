@@ -55,7 +55,9 @@ export type NangoSyncPayload = Pick<
   'providerConfigKey' | 'connectionId' | 'model' | 'queryTimeStamp'
 >;
 
-const RECORDS_LIMIT = 100;
+const NANGO_RECORDS_LIMIT = 200;
+const MAX_FILE_SIZE = 1_000_000;
+const MAX_EVENTS_PAYLOAD_SIZE = 4_000_000;
 
 export type FileTrainEventData<T extends SyncMetadata> = {
   file: Omit<NangoFileWithMetadata, 'content'> & { compressedContent: string };
@@ -69,11 +71,11 @@ type Events<T extends SyncMetadata> = {
   'nango/sync': {
     data: {
       nangoSyncPayload: NangoSyncPayload;
-      shouldPause: boolean;
       offset?: number;
       numProcessed?: number;
       numDeleted?: number;
       syncQueueId?: string;
+      didHandleDeletions?: boolean;
     };
   };
   'markprompt/file.train': {
@@ -116,8 +118,8 @@ const syncNangoRecords = inngest.createFunction(
   async ({ event, step }) => {
     const supabase = createServiceRoleSupabaseClient();
     const nangoSyncPayload = event.data.nangoSyncPayload;
-    const shouldPause = event.data.shouldPause;
     const offset = event.data.offset || 0;
+    const didHandleDeletions = event.data.didHandleDeletions || 0;
     let numProcessed = event.data.numProcessed || 0;
     let numDeleted = event.data.numDeleted || 0;
 
@@ -150,49 +152,6 @@ const syncNangoRecords = inngest.createFunction(
       );
     }
 
-    const nango = getNangoServerInstance();
-
-    console.debug(
-      '[INNGEST] getRecords',
-      JSON.stringify(
-        {
-          providerConfigKey: nangoSyncPayload.providerConfigKey,
-          connectionId: nangoSyncPayload.connectionId,
-          model: nangoSyncPayload.model,
-        },
-        null,
-        2,
-      ),
-    );
-
-    const recordIncludingErrors = (await nango.getRecords<any>({
-      providerConfigKey: integrationId,
-      connectionId: connectionId,
-      model: nangoSyncPayload.model,
-      limit: RECORDS_LIMIT,
-      offset: offset,
-      // delta: nangoSyncPayload.queryTimeStamp || undefined,
-    })) as NangoFileWithMetadata[];
-
-    console.debug('[INNGEST] getRecords', recordIncludingErrors.length);
-
-    const records = recordIncludingErrors.filter((r) => !r.error);
-
-    const errorMessages = recordIncludingErrors
-      .filter((r) => r.error)
-      .map((r) => `${r.path}: ${r.error}`);
-
-    if (errorMessages.length > 0) {
-      await updateSyncQueue(supabase, syncQueueId, 'running', {
-        message: `Error processing ${pluralize(
-          errorMessages.length,
-          'file',
-          'files',
-        )}:\n\n${errorMessages.join('\n')}`,
-        level: 'error',
-      });
-    }
-
     const projectId = await getProjectIdFromSource(supabase, sourceSyncData.id);
 
     if (!projectId) {
@@ -203,36 +162,58 @@ const syncNangoRecords = inngest.createFunction(
       return { updated: 0, deleted: 0 };
     }
 
-    // Delete files
+    const nango = getNangoServerInstance();
 
-    const filesIdsToDelete = records
-      .filter((record) => {
-        return record._nango_metadata.last_action === 'DELETED';
-      })
-      .map((record) => record.id);
+    // -----------------------------------------------------------
+    // Handle records to delete
+    // -----------------------------------------------------------
 
-    // Delete files
+    if (!didHandleDeletions) {
+      const deletedRecordIds = (
+        (await nango.getRecords<any>({
+          providerConfigKey: integrationId,
+          connectionId: connectionId,
+          model: nangoSyncPayload.model,
+          filter: 'deleted',
+          delta: nangoSyncPayload.queryTimeStamp || undefined,
+        })) as NangoFileWithMetadata[]
+      ).map((record) => record.id);
 
-    await step.sendEvent('delete-files', {
-      name: 'markprompt/files.delete',
-      data: { ids: filesIdsToDelete, sourceId: sourceSyncData.id },
-    });
+      await step.sendEvent('delete-files', {
+        name: 'markprompt/files.delete',
+        data: { ids: deletedRecordIds, sourceId: sourceSyncData.id },
+      });
 
-    console.debug(`Sent ${filesIdsToDelete.length} files for deletion`);
+      numDeleted = numDeleted + deletedRecordIds.length;
+    }
 
-    numDeleted = numDeleted + filesIdsToDelete.length;
+    // -----------------------------------------------------------
+    // Handle records to train
+    // -----------------------------------------------------------
 
-    // Train added/updated files
+    const trainRecords = (await nango.getRecords<any>({
+      providerConfigKey: integrationId,
+      connectionId: connectionId,
+      model: nangoSyncPayload.model,
+      limit: NANGO_RECORDS_LIMIT,
+      offset: offset,
+      filter: 'added,updated',
+      // delta: nangoSyncPayload.queryTimeStamp || undefined,
+    })) as NangoFileWithMetadata[];
 
-    const syncMetadata = (sourceSyncData.data as NangoSourceDataType)
-      ?.syncMetadata;
+    if (trainRecords.length === 0) {
+      await updateSyncQueue(supabase, syncQueueId, 'complete', {
+        message: `Updated ${pluralize(
+          numProcessed,
+          'file',
+          'files',
+        )}. Deleted ${pluralize(numDeleted, 'file', 'files')}.`,
+        level: 'info',
+      });
 
-    const trainRecords = records.filter((record) => {
-      return (
-        record._nango_metadata.last_action === 'ADDED' ||
-        record._nango_metadata.last_action === 'UPDATED'
-      );
-    });
+      // We are done!
+      return;
+    }
 
     let eventName: TrainEventName;
     let eventId: TrainEventId;
@@ -249,24 +230,33 @@ const syncNangoRecords = inngest.createFunction(
       eventId = 'train-files';
     }
 
-    console.debug(
-      `Creating ${trainRecords.length} train events:`,
-      eventName,
-      eventId,
-    );
+    let payloadSize = 0;
+    const allTrainEvents: NamedEvent<SyncMetadata, TrainEventName>[] = [];
+    const tooLargeRecords: string[] = [];
 
-    const trainEvents = trainRecords.map<
-      NamedEvent<SyncMetadata, TrainEventName>
-    >((record) => {
-      // Send compressed content to maximize chances of staying below
+    const syncMetadata = (sourceSyncData.data as NangoSourceDataType)
+      ?.syncMetadata;
+
+    for (const record of trainRecords) {
+      // We need to be careful about the payload size, as it seems like
+      // Inngest break when they are too big. First step is to compress
+      // the content of each payload, to maximize chances of staying below
       // the 1Mb payload limit. Base64 is required to send over the
       // wire, otherwise the compressed content gets corrupted.
-      const compressedContent = compressToBase64(record.content || '');
-      return {
+      //
+      // IMPORTANT: we do the trimming of the records here to stay below
+      // the size limit. We don't filter out errored records or too large
+      // records here, as it would make it impossible to determine the
+      // correct offset value for the next Inngest run.
+
+      const { content, ...rest } = record;
+      const compressedContent = compressToBase64(content || '');
+
+      const event = {
         name: eventName,
         data: {
           file: {
-            ...record,
+            ...rest,
             compressedContent,
           },
           sourceId: sourceSyncData.id,
@@ -275,7 +265,94 @@ const syncNangoRecords = inngest.createFunction(
           connectionId,
         },
       };
-    });
+
+      const eventPayloadSize = byteSize(JSON.stringify(event));
+
+      // If payload exceeds 1MB, omit it, and notify below of the
+      // omitted files.
+      if (eventPayloadSize > MAX_FILE_SIZE) {
+        tooLargeRecords.push(record.path);
+        continue;
+      }
+
+      console.debug('eventPayloadSize', rest.path, eventPayloadSize);
+
+      payloadSize += eventPayloadSize;
+
+      if (payloadSize > MAX_EVENTS_PAYLOAD_SIZE) {
+        // If the overall payload has exceeded 4MB, send batch
+        // for training.
+        break;
+      } else {
+        allTrainEvents.push(event);
+      }
+    }
+
+    // Among the NANGO_RECORDS_LIMIT records fetched from Nango, the first
+    // N are being processed (and potentially omitted if too big or with
+    // errors). This value will serve as the offset for the next Inngest runs.
+    const firstNHandledRecords = tooLargeRecords.length + allTrainEvents.length;
+
+    const trainEvents = allTrainEvents.filter((r) => !r.data.file.error);
+
+    // Some records may have error during Nango processing, which
+    // we log here
+    const errorMessages = allTrainEvents
+      .filter((r) => r.data.file.error)
+      .map((r) => `${r.data.file.path}: ${r.data.file.error}`);
+
+    if (errorMessages.length > 0) {
+      await updateSyncQueue(supabase, syncQueueId, 'running', {
+        message: `Error processing ${pluralize(
+          errorMessages.length,
+          'file',
+          'files',
+        )}:\n\n${errorMessages.join('\n')}`,
+        level: 'error',
+      });
+    }
+
+    // const trainEvents = trainRecords.map<
+    //   NamedEvent<SyncMetadata, TrainEventName>
+    // >((record) => {
+    //   // Send compressed content to maximize chances of staying below
+    //   // the 1Mb payload limit. Base64 is required to send over the
+    //   // wire, otherwise the compressed content gets corrupted.
+    //   const { content, ...rest } = record;
+    //   const compressedContent = compressToBase64(content || '');
+    //   fileSizes.push(byteSize(compressedContent));
+    //   return {
+    //     name: eventName,
+    //     data: {
+    //       file: {
+    //         ...rest,
+    //         compressedContent,
+    //       },
+    //       sourceId: sourceSyncData.id,
+    //       projectId,
+    //       syncMetadata,
+    //       connectionId,
+    //     },
+    //   };
+    // });
+
+    // Notify of the too large records
+    if (tooLargeRecords.length > 0) {
+      await updateSyncQueue(supabase, syncQueueId, 'running', {
+        message: `Omitted ${`${tooLargeRecords[0]}${
+          tooLargeRecords.length > 1
+            ? ` and ${pluralize(
+                tooLargeRecords.length - 1,
+                'other file',
+                'other files',
+              )}`
+            : ''
+        }`} as ${
+          tooLargeRecords.length > 1 ? 'each are' : 'it is'
+        } exceeding the 1MB payload threshold.`,
+        level: 'error',
+      });
+    }
 
     await updateSyncQueue(supabase, syncQueueId, 'running', {
       message: `Processing batch of ${pluralize(
@@ -290,37 +367,29 @@ const syncNangoRecords = inngest.createFunction(
       level: 'info',
     });
 
-    numProcessed = numProcessed + trainRecords.length;
+    numProcessed = numProcessed + trainEvents.length;
 
     console.debug(
-      `Created ${trainRecords.length} train events:`,
+      `Starting parallel run of ${trainEvents.length}`,
       eventName,
       eventId,
-      byteSize(JSON.stringify(trainEvents)),
     );
 
     await step.sendEvent(eventId, trainEvents);
 
-    if (recordIncludingErrors.length >= RECORDS_LIMIT) {
+    if (firstNHandledRecords > 0) {
+      // Make sure `offset` is always increasing to avoid an infinite
+      // Inngest call loop.
       await inngest.send({
         name: 'nango/sync',
         data: {
           nangoSyncPayload,
-          shouldPause,
-          offset: offset + RECORDS_LIMIT,
+          offset: offset + firstNHandledRecords,
           syncQueueId,
           numProcessed,
           numDeleted,
+          didHandleDeletions: true,
         },
-      });
-    } else {
-      await updateSyncQueue(supabase, syncQueueId, 'complete', {
-        message: `Updated ${pluralize(
-          numProcessed,
-          'file',
-          'files',
-        )}. Deleted ${pluralize(numDeleted, 'file', 'files')}.`,
-        level: 'info',
       });
     }
   },
@@ -408,6 +477,8 @@ export const runTrainFile = async <T extends SyncMetadata>(
       )
     : '';
   const checksum = createChecksum(markdown);
+
+  console.debug('markdown', nangoFile.path, byteSize(markdown));
 
   if (
     foundFile &&
