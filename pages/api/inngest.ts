@@ -377,17 +377,21 @@ const syncNangoRecords = inngest.createFunction(
 
     await step.sendEvent(eventId, trainEvents);
 
-    await inngest.send({
-      name: 'nango/sync',
-      data: {
-        nangoSyncPayload,
-        offset: offset + firstNHandledRecords,
-        syncQueueId,
-        numProcessed,
-        numDeleted,
-        didHandleDeletions: true,
-      },
-    });
+    if (firstNHandledRecords > 0) {
+      // Make sure `offset` is always increasing to avoid an infinite
+      // Inngest call loop.
+      await inngest.send({
+        name: 'nango/sync',
+        data: {
+          nangoSyncPayload,
+          offset: offset + firstNHandledRecords,
+          syncQueueId,
+          numProcessed,
+          numDeleted,
+          didHandleDeletions: true,
+        },
+      });
+    }
   },
 );
 
