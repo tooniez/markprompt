@@ -21,11 +21,11 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
         title="Markprompt | AI infrastructure for customer support"
         exludePostfixFromTitle
       />
-      {/* <Hero />
-      <div className="h-20 md:h-32" />
+      <Hero />
+      {/* <div className="h-20 md:h-32" />
       <Companies />
-      <div className="h-20 md:h-32" /> */}
-      <Agents />
+      <div className="h-20 md:h-32" />
+      <Agents /> */}
       {/* <div className="h-20 md:h-40" />
       <ExpertKnowledge /> */}
 

@@ -7,10 +7,13 @@ import { BlendFunction } from 'postprocessing';
 import { useEffect, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
 
+import { ContactSalesDialog } from '@/components/dialogs/public/ContactDialog';
 import { YCIcon } from '@/components/icons/brands/YC';
 import { GitHubIcon } from '@/components/icons/GitHub';
 import { MarkpromptIcon } from '@/components/icons/Markprompt';
 import { XIcon } from '@/components/icons/X';
+import { ContactWindow } from '@/components/user/ChatWindow';
+import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import usePrefersReducedMotion from '@/lib/hooks/utils/use-reduced-motion';
 
 import Wave from './wave/Wave';
@@ -73,6 +76,14 @@ export const Hero = () => {
             >
               About
             </Link>
+            <a
+              className="home-ghost-button hidden flex-none cursor-pointer sm:block"
+              onClick={() => {
+                setSalesDialogOpen(true);
+              }}
+            >
+              Contact us
+            </a>
             {session ? (
               <Link
                 className="home-ghost-button mx-2 flex-none select-none"
@@ -205,6 +216,7 @@ export const Hero = () => {
         <div className="fixed inset-y-0 left-0 w-40 bg-gradient-to-r from-neutral-900 to-neutral-900/0"></div>
         <div className="fixed inset-y-0 right-0 w-40 bg-gradient-to-l from-neutral-900 to-neutral-900/0"></div>
       </div>
+      <ContactSalesDialog open={salesDialogOpen} setOpen={setSalesDialogOpen} />
       {/* <RequestAccessDialog
         open={requestDialogOpen}
         setOpen={setRequestDialogOpen}
