@@ -7,12 +7,13 @@ import { PlotlyIcon } from '@/components/icons/Plotly';
 import { SemgrepIcon } from '@/components/icons/Semgrep';
 import { SkeduloIcon } from '@/components/icons/Skedulo';
 import { SourcegraphIcon } from '@/components/icons/Sourcegraph';
+import { WalletconnectIcon } from '@/components/icons/Walletconnect';
 
 const List = () => {
   return (
     <>
-      <SkeduloIcon className="-mt-1 w-[120px] flex-none" />
       <AwellIcon className="w-[100px] flex-none" />
+      <SkeduloIcon className="-mt-1 w-[120px] flex-none" />
       <SemgrepIcon className="w-[130px] flex-none" />
       <MindbodyIcon className="w-[130px] flex-none" />
       <AngelListIcon className="w-[100px] flex-none" />
@@ -20,6 +21,7 @@ const List = () => {
       <PlotlyIcon className="w-[120px] flex-none" />
       <CalIcon className="w-[100px] flex-none" />
       <FlexpaIcon className="mt-1 w-[100px] flex-none" />
+      <WalletconnectIcon className="w-[180px] flex-none" />
     </>
   );
 };
