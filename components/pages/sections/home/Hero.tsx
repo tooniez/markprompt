@@ -16,11 +16,14 @@ import usePrefersReducedMotion from '@/lib/hooks/utils/use-reduced-motion';
 
 import Wave from './wave/Wave';
 
-export const Hero = () => {
+export const Hero = ({
+  onContactDialogOpen,
+}: {
+  onContactDialogOpen: () => void;
+}) => {
   const session = useSession();
   const [animated, setAnimated] = useState(true);
   const [joinButtonHover, setJoinButtonHover] = useState(false);
-  const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
@@ -71,7 +74,7 @@ export const Hero = () => {
             <a
               className="home-ghost-button hidden flex-none cursor-pointer sm:block"
               onClick={() => {
-                setContactDialogOpen(true);
+                onContactDialogOpen();
               }}
             >
               Contact us
@@ -176,20 +179,6 @@ export const Hero = () => {
         </div>
       </div>
       {/* Cover canvas boundaries to prevent glitches */}
-      <div
-        className={cn('pointer-events-none fixed inset-0 z-20 transition', {
-          'opacity-0': !contactDialogOpen,
-          'opacity-100': contactDialogOpen,
-        })}
-      >
-        <div className="fixed inset-x-0 bottom-0 h-40 bg-gradient-to-t from-neutral-900 to-neutral-900/0"></div>
-        <div className="fixed inset-y-0 left-0 w-40 bg-gradient-to-r from-neutral-900 to-neutral-900/0"></div>
-        <div className="fixed inset-y-0 right-0 w-40 bg-gradient-to-l from-neutral-900 to-neutral-900/0"></div>
-      </div>
-      <ContactSalesDialog
-        open={contactDialogOpen}
-        setOpen={setContactDialogOpen}
-      />
       {/* <RequestAccessDialog
         open={requestDialogOpen}
         setOpen={setRequestDialogOpen}

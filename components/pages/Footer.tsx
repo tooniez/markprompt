@@ -17,7 +17,7 @@ const formatNumStars = (stars: number) => {
 const Footer = ({ stars, status }: { stars: number; status: SystemStatus }) => {
   return (
     <div className="relative z-0 mx-auto max-w-screen-xl pt-8 sm:pt-16">
-      <div className="mt-20 grid grid-cols-1 items-center gap-8 border-t border-neutral-900/50 px-8 pt-12 pb-20 sm:mt-36 sm:py-12 lg:grid-cols-3">
+      <div className="mt-16 grid grid-cols-1 items-center gap-8 border-t border-neutral-900/50 px-8 pt-12 pb-20 sm:py-12 lg:grid-cols-3">
         <div className="flex flex-row items-center justify-center gap-6 text-sm text-neutral-500 lg:justify-start">
           <SystemStatusButton status={status} />
           <Link className="home-ghost-button" href="/legal/terms">
@@ -41,6 +41,7 @@ const Footer = ({ stars, status }: { stars: number; status: SystemStatus }) => {
             className="home-button-ring group flex flex-row items-center gap-2 rounded-md border border-neutral-900 bg-neutral-1000 px-3 py-2 text-sm outline-none transition hover:bg-neutral-950"
             target="_blank"
             rel="noreferrer"
+            aria-label="Star on GitHub"
             href="https://github.com/motifland/markprompt"
             // Icon={GitHubIcon}
           >
