@@ -12,8 +12,6 @@ import { YCIcon } from '@/components/icons/brands/YC';
 import { GitHubIcon } from '@/components/icons/GitHub';
 import { MarkpromptIcon } from '@/components/icons/Markprompt';
 import { XIcon } from '@/components/icons/X';
-import { ContactWindow } from '@/components/user/ChatWindow';
-import emitter, { EVENT_OPEN_CONTACT } from '@/lib/events';
 import usePrefersReducedMotion from '@/lib/hooks/utils/use-reduced-motion';
 
 import Wave from './wave/Wave';
@@ -22,8 +20,7 @@ export const Hero = () => {
   const session = useSession();
   const [animated, setAnimated] = useState(true);
   const [joinButtonHover, setJoinButtonHover] = useState(false);
-  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
-  const [salesDialogOpen, setSalesDialogOpen] = useState(false);
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
@@ -74,7 +71,7 @@ export const Hero = () => {
             <a
               className="home-ghost-button hidden flex-none cursor-pointer sm:block"
               onClick={() => {
-                setSalesDialogOpen(true);
+                setContactDialogOpen(true);
               }}
             >
               Contact us
@@ -118,7 +115,6 @@ export const Hero = () => {
         </div>
         <div className="z-10 -mt-32 flex w-full flex-col items-center px-8 sm:-mt-24">
           <h1 className="fade-in-slide-up-long home-gradient-text w-full pb-8 text-center text-5xl font-semibold tracking-[-0.6px] sm:text-6xl md:text-[80px]">
-            {/* leading-[2.5rem] md:leading-[72px]  */}
             <Balancer>AI for customer support</Balancer>
           </h1>
           <p className="fade-in-slide-up-long mb-12 max-w-screen-sm text-center text-xl text-neutral-200 sm:text-2xl">
@@ -178,36 +174,26 @@ export const Hero = () => {
             Backed by <YCIcon className="h-6 w-6" /> Combinator
           </div>
         </div>
-        {/* <div
-          className="fade-in-slide-up-long absolute inset-x-0 bottom-0 flex h-[100px] flex-row items-center justify-center gap-16 bg-white px-8 text-neutral-400"
-          style={{
-            animationDelay: '200ms',
-          }}
-        >
-          <AngelListIcon className="w-[90px]" />
-          <PlotlyIcon className="w-[110px]" />
-          <CalIcon className="w-[90px]" />
-          <SemgrepIcon className="mt-1 w-[125px]" />
-          <SkeduloIcon className="w-[110px]" />
-        </div> */}
       </div>
       {/* Cover canvas boundaries to prevent glitches */}
       <div
         className={cn('pointer-events-none fixed inset-0 z-20 transition', {
-          'opacity-0': !requestDialogOpen && !salesDialogOpen,
-          'opacity-100': requestDialogOpen || salesDialogOpen,
+          'opacity-0': !contactDialogOpen,
+          'opacity-100': contactDialogOpen,
         })}
       >
         <div className="fixed inset-x-0 bottom-0 h-40 bg-gradient-to-t from-neutral-900 to-neutral-900/0"></div>
         <div className="fixed inset-y-0 left-0 w-40 bg-gradient-to-r from-neutral-900 to-neutral-900/0"></div>
         <div className="fixed inset-y-0 right-0 w-40 bg-gradient-to-l from-neutral-900 to-neutral-900/0"></div>
       </div>
-      <ContactSalesDialog open={salesDialogOpen} setOpen={setSalesDialogOpen} />
+      <ContactSalesDialog
+        open={contactDialogOpen}
+        setOpen={setContactDialogOpen}
+      />
       {/* <RequestAccessDialog
         open={requestDialogOpen}
         setOpen={setRequestDialogOpen}
-      />
-      <ContactSalesDialog open={salesDialogOpen} setOpen={setSalesDialogOpen} /> */}
+      />*/}
     </>
   );
 };
