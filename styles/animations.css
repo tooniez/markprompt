@@ -341,3 +341,16 @@
     transform: translateY(0);
   }
 }
+
+.infinite-horizontal-scroll {
+  animation: infinite-horizontal-scroll 180s linear infinite;
+}
+
+@keyframes infinite-horizontal-scroll {
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-75%);
+  }
+}

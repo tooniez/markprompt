@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import './WaveMaterial';
 
 const Wave = ({ showPoints, animate }) => {
-  const { mouse } = useThree();
+  const { pointer } = useThree();
   const groupRef = useRef();
   const materialRef = useRef();
   const pointsMaterialRef = useRef();
@@ -15,12 +15,12 @@ const Wave = ({ showPoints, animate }) => {
       if (animate) {
         groupRef.current.rotation.x = THREE.MathUtils.lerp(
           groupRef.current.rotation.x,
-          (-mouse.y * Math.PI) / 90,
+          (-pointer.y * Math.PI) / 90,
           0.03,
         );
         groupRef.current.rotation.z = THREE.MathUtils.lerp(
           groupRef.current.rotation.z,
-          (mouse.x * Math.PI) / 90,
+          (pointer.x * Math.PI) / 90,
           0.02,
         );
       }

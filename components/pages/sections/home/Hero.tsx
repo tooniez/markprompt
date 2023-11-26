@@ -111,7 +111,7 @@ export const Hero = () => {
           </div>
         </div>
         <div className="z-10 -mt-32 flex w-full flex-col items-center px-8 sm:-mt-24">
-          <h1 className="fade-in-slide-down home-gradient-text w-full pb-8 text-center text-[2.5rem] font-semibold tracking-[-0.6px] sm:text-6xl md:text-[80px]">
+          <h1 className="fade-in-slide-down home-gradient-text w-full pb-8 text-center text-5xl font-semibold tracking-[-0.6px] sm:text-6xl md:text-[80px]">
             {/* leading-[2.5rem] md:leading-[72px]  */}
             <Balancer>AI for customer support</Balancer>
           </h1>
@@ -172,7 +172,7 @@ export const Hero = () => {
           </Canvas>
         </div>
         <div
-          className="fade-in-slide-up-long absolute inset-x-0 bottom-0 flex h-[240px] flex-row items-end justify-center gap-2 bg-gradient-to-t from-neutral-1100 to-neutral-1100/0 px-8 text-neutral-300"
+          className="fade-in-slide-up-long pointer-events-none absolute inset-x-0 bottom-0 flex h-[240px] flex-row items-end justify-center gap-2 bg-gradient-to-t from-neutral-1100 to-neutral-1100/0 px-8 text-neutral-300"
           style={{
             animationDelay: '200ms',
           }}
