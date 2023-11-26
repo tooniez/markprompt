@@ -290,7 +290,7 @@
 
 .fade-in-slide-down {
   animation-name: fade-in-slide-down;
-  animation-duration: 500ms;
+  animation-duration: 1000ms;
   animation-fill-mode: both;
   transition-timing-function: cubic-bezier(0.25, 0.4, 0.55, 1.4);
 }
@@ -352,5 +352,21 @@
   }
   to {
     transform: translateX(-75%);
+  }
+}
+
+.animate-fade-out-long {
+  animation-name: fade-out;
+  animation-duration: 2000ms;
+  animation-fill-mode: both;
+  transition-timing-function: cubic-bezier(0.25, 0.4, 0.55, 1.4);
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }

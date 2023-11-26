@@ -40,12 +40,7 @@ export const Hero = () => {
     <>
       <div className="relative flex h-screen w-full items-center justify-center bg-gradient-to-br from-neutral-1000 to-neutral-1100 antialiased">
         <div className="home-dots absolute inset-0" />
-        <div
-          className="fade-in-slide-down absolute inset-x-0 top-0 flex justify-center px-8 py-8 sm:py-12"
-          style={{
-            animationDelay: '700ms',
-          }}
-        >
+        <div className="fade-in-slide-down absolute inset-x-0 top-0 flex justify-center px-8 py-8 sm:py-12">
           <div className="flex w-full max-w-screen-lg flex-row items-center gap-2 sm:gap-2">
             <div className="flex flex-none flex-row items-center gap-3 text-sm text-white">
               <MarkpromptIcon className="mx-auto h-10 w-10" />
@@ -122,27 +117,17 @@ export const Hero = () => {
           </div>
         </div>
         <div className="z-10 -mt-32 flex w-full flex-col items-center px-8 sm:-mt-24">
-          <h1 className="fade-in-slide-down home-gradient-text w-full pb-8 text-center text-5xl font-semibold tracking-[-0.6px] sm:text-6xl md:text-[80px]">
+          <h1 className="fade-in-slide-up-long home-gradient-text w-full pb-8 text-center text-5xl font-semibold tracking-[-0.6px] sm:text-6xl md:text-[80px]">
             {/* leading-[2.5rem] md:leading-[72px]  */}
             <Balancer>AI for customer support</Balancer>
           </h1>
-          <p
-            className="fade-in-slide-up mb-12 max-w-screen-sm text-center text-xl text-neutral-200 sm:text-2xl"
-            style={{
-              animationDelay: '200ms',
-            }}
-          >
+          <p className="fade-in-slide-up-long mb-12 max-w-screen-sm text-center text-xl text-neutral-200 sm:text-2xl">
             <Balancer>
               Automate customer support, scale without increasing headcount, and
               deliver exceptional user experiences.
             </Balancer>
           </p>
-          <div
-            className="fade-in-slide-up-long"
-            style={{
-              animationDelay: '400ms',
-            }}
-          >
+          <div className="fade-in-slide-up-long">
             <a
               className="select-none rounded-lg border-0 bg-white px-5 py-3 font-medium text-neutral-900 outline-none ring-sky-500 ring-offset-4 ring-offset-neutral-900 transition hover:ring focus:ring"
               href="https://meetings.hubspot.com/markprompt/demo"
@@ -159,7 +144,8 @@ export const Hero = () => {
             </a>
           </div>
         </div>
-        <div className="fade-in-slide-up absolute inset-x-0 bottom-0 z-0 h-[65%] transform duration-500">
+        <div className="animate-fade-out-long pointer-events-none absolute inset-0 z-50 bg-neutral-1100" />
+        <div className="fade-in-slide-up-long absolute inset-x-0 bottom-0 z-0 h-[65%]">
           <Canvas
             camera={{
               position: [
@@ -185,7 +171,7 @@ export const Hero = () => {
         <div
           className="fade-in-slide-up-long pointer-events-none absolute inset-x-0 bottom-0 flex h-[240px] flex-row items-end justify-center gap-2 bg-gradient-to-t from-neutral-1100 to-neutral-1100/0 px-8 text-neutral-300"
           style={{
-            animationDelay: '200ms',
+            animationDelay: '400ms',
           }}
         >
           <div className="mb-8 flex flex-row items-center gap-2 rounded-full bg-neutral-1100/50 px-6 py-2.5 text-sm">
