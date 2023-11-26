@@ -1,9 +1,9 @@
-import { shaderMaterial } from '@react-three/drei'
-import { extend } from '@react-three/fiber'
-import * as THREE from 'three'
+import { shaderMaterial } from '@react-three/drei';
+import { extend } from '@react-three/fiber';
+import * as THREE from 'three';
 
-import waveFragmentShader from './shaders/wave.frag'
-import waveVertexShader from './shaders/wave.vert'
+import waveFragmentShader from './shaders/wave.frag';
+import waveVertexShader from './shaders/wave.vert';
 
 const WaveMaterial = shaderMaterial(
   {
@@ -16,7 +16,7 @@ const WaveMaterial = shaderMaterial(
     depthWrite: false,
   },
   waveVertexShader,
-  waveFragmentShader
-)
+  waveFragmentShader,
+);
 
-extend({ WaveMaterial })
+extend({ WaveMaterial });
