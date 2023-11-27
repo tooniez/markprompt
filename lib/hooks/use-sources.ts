@@ -16,8 +16,6 @@ import { getIntegrationName, getSyncData } from '../integrations/nango';
 import { getNangoClientInstance } from '../integrations/nango.client';
 import { fetcher } from '../utils';
 
-const nango = getNangoClientInstance();
-
 export default function useSources() {
   const { project } = useProject();
   const {
@@ -44,6 +42,8 @@ export default function useSources() {
 
     const syncData = sources.map((d) => getSyncData(d)).filter(isPresent);
 
+    const nango = getNangoClientInstance();
+
     await triggerSyncsWithRecovery(nango, project.id, syncData, sources);
   }, [project?.id, sources]);
 
@@ -65,6 +65,8 @@ export default function useSources() {
       onIsMessageLoading?.(true);
 
       const tid = toast.loading('Initiating sync...');
+
+      const nango = getNangoClientInstance();
 
       await triggerSyncsWithRecovery(nango, project.id, syncData, sources);
 

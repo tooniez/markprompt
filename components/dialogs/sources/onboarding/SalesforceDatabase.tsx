@@ -38,8 +38,6 @@ import { Step, ConnectSourceStepState } from './Step';
 import { SalesforceDatabaseSettings } from '../settings-panes/SalesforceDatabase';
 import SourceDialog from '../SourceDialog';
 
-const nango = getNangoClientInstance();
-
 const ConnectStep = ({
   projectId,
   databaseType,
@@ -56,6 +54,8 @@ const ConnectStep = ({
   const connect = useCallback(
     async (environment: SalesforceEnvironment, instanceUrl: string) => {
       try {
+        const nango = getNangoClientInstance();
+
         const integrationId = getSalesforceDatabaseIntegrationId(
           databaseType,
           environment,
