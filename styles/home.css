@@ -18,11 +18,11 @@
 }
 
 .home-ghost-button {
-  @apply whitespace-nowrap rounded-md border-0 bg-transparent px-2 py-2 text-sm text-neutral-500 outline-none ring-sky-500 transition duration-300 hover:bg-white/5 hover:text-white focus:ring data-[highlighted=true]:bg-white data-[highlighted=true]:font-medium data-[highlighted=true]:text-neutral-900 hover:data-[highlighted=true]:bg-white/80 sm:px-3;
+  @apply whitespace-nowrap rounded-md border-0 bg-transparent px-2 py-2 text-sm text-neutral-500 outline-none ring-sky-500 transition duration-300 hover:bg-neutral-900 hover:text-white focus:ring data-[highlighted=true]:bg-white data-[highlighted=true]:font-medium data-[highlighted=true]:text-neutral-900 hover:data-[highlighted=true]:bg-white/80 sm:px-3;
 }
 
 .home-icon-button {
-  @apply rounded-md p-2 text-neutral-500 outline-none ring-sky-500 transition hover:bg-white/5 hover:text-white focus:text-white focus:ring;
+  @apply rounded-md p-2 text-neutral-500 outline-none ring-sky-500 transition hover:bg-neutral-900 hover:text-white focus:text-white focus:ring;
 }
 
 .home-button-ring {
@@ -63,7 +63,7 @@
 }
 
 .home-dialog-content {
-  @apply fixed top-[50%] left-[50%] z-40 translate-x-[-50%] translate-y-[-50%] overflow-y-auto rounded-lg border border-neutral-900 bg-black antialiased shadow-2xl;
+  @apply fixed top-[50%] left-[50%] z-40 translate-x-[-50%] translate-y-[-50%] overflow-y-auto rounded-lg border border-neutral-900 bg-neutral-1200 antialiased shadow-2xl;
 }
 
 .home-animate-dialog-slide-in {
