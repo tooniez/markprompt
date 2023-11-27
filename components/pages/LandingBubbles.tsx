@@ -129,7 +129,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
                   buttonSize="lg"
                   target="_blank"
                   rel="noreferrer"
-                  href="https://meetings.hubspot.com/markprompt/demo"
+                  href="https://calendly.com/markprompt/30min"
                 >
                   Book a demo
                 </Button>
@@ -330,7 +330,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
             buttonSize="lg"
             target="_blank"
             rel="noreferrer"
-            href="https://meetings.hubspot.com/markprompt/demo"
+            href="https://calendly.com/markprompt/30min"
           >
             Book a demo
           </Button>

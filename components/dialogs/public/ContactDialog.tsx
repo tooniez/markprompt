@@ -279,7 +279,7 @@ export const ContactSalesDialog = ({
                   Want to see the product in action?
                 </p>
                 <a
-                  href="https://meetings.hubspot.com/markprompt/demo"
+                  href="https://calendly.com/markprompt/30min"
                   target="_blank"
                   rel="noreferrer"
                   className="home-border-button flex-none whitespace-nowrap"

@@ -18,7 +18,7 @@ export const Ready = ({
         <div className="col-start-1 flex flex-row items-center gap-4">
           <a
             className="select-none justify-self-start whitespace-nowrap rounded-lg border-0 bg-white px-5 py-3 font-medium text-neutral-900 outline-none ring-sky-500 ring-offset-0 ring-offset-neutral-900 transition hover:bg-white/80 focus:ring"
-            href="https://meetings.hubspot.com/markprompt/demo"
+            href="https://calendly.com/markprompt/30min"
             target="_blank"
             rel="noreferrer"
           >

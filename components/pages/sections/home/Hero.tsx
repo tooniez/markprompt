@@ -126,7 +126,7 @@ export const Hero = ({
           <div className="fade-in-slide-up-long">
             <a
               className="select-none whitespace-nowrap rounded-lg border-0 bg-white px-5 py-3 font-medium text-neutral-900 outline-none ring-sky-500 ring-offset-4 ring-offset-neutral-900 transition hover:ring focus:ring"
-              href="https://meetings.hubspot.com/markprompt/demo"
+              href="https://calendly.com/markprompt/30min"
               target="_blank"
               rel="noreferrer"
               onMouseEnter={() => {
