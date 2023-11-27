@@ -23,14 +23,6 @@ export type FileStats = {
   tokenCount: number;
 };
 
-export type OAuthProvider = 'github';
-
-export type GitHubRepository = {
-  name: string;
-  owner: string;
-  url: string;
-};
-
 export type LLMVendors = 'openai';
 
 export type LLMInfo = {

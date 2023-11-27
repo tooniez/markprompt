@@ -6,7 +6,6 @@ import { isPresent } from 'ts-is-present';
 import { Database, Json } from '@/types/supabase';
 import {
   DbUser,
-  OAuthProvider,
   Project,
   DbSource,
   DbTeam,
@@ -111,42 +110,6 @@ export const getTeamSlugAndStripeCustomerId = async (
         stripeCustomerId: data.stripe_customer_id,
       }
     : undefined;
-};
-
-export const setGitHubAuthState = async (
-  supabase: SupabaseClient<Database>,
-  userId: DbUser['id'],
-): Promise<string> => {
-  const state = generateKey();
-  const { data } = await supabase
-    .from('user_access_tokens')
-    .select('id')
-    .match({ user_id: userId, provider: 'github' })
-    .limit(1)
-    .maybeSingle();
-  if (data) {
-    await supabase
-      .from('user_access_tokens')
-      .update({ state })
-      .eq('id', data.id);
-  } else {
-    await supabase
-      .from('user_access_tokens')
-      .insert([{ user_id: userId, state, provider: 'github' }]);
-  }
-  return state;
-};
-
-export const deleteUserAccessToken = async (
-  supabase: SupabaseClient<Database>,
-  userId: DbUser['id'],
-  provider: OAuthProvider,
-): Promise<PostgrestError | null> => {
-  const { error } = await supabase
-    .from('user_access_tokens')
-    .delete()
-    .match({ user_id: userId, provider });
-  return error;
 };
 
 export const getProjectIdFromSource = async (
