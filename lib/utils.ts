@@ -755,7 +755,7 @@ export const toNormalizedUrl = (url: string, useInsecureSchema?: boolean) => {
 export const removeTrailingSlashAndHash = (url: string) => {
   const urlObj = new URL(url);
   urlObj.hash = '';
-  return urlObj.toString().replace(/\/+$/, '');
+  return urlObj.toString()?.replace(/\/+$/, '');
 };
 
 export const addSchemaRemoveTrailingSlashAndHash = (
@@ -782,7 +782,7 @@ export const removeTrailingSlashQueryParamsAndHash = (url: string) => {
 };
 
 export const removeTrailingSlash = (url: string) => {
-  return url.replace(/\/+$/, '');
+  return url?.replace(/\/+$/, '');
 };
 
 export const getUrlHostname = (url: string) => {
