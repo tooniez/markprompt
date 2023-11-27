@@ -12,7 +12,6 @@ import { WalletconnectIcon } from '@/components/icons/Walletconnect';
 const List = () => {
   return (
     <>
-      <AwellIcon className="w-[100px] flex-none" />
       <SkeduloIcon className="-mt-1 w-[120px] flex-none" />
       <SemgrepIcon className="w-[130px] flex-none" />
       <MindbodyIcon className="w-[130px] flex-none" />
@@ -22,6 +21,7 @@ const List = () => {
       <CalIcon className="w-[100px] flex-none" />
       <FlexpaIcon className="mt-1 w-[100px] flex-none" />
       <WalletconnectIcon className="w-[180px] flex-none" />
+      <AwellIcon className="w-[100px] flex-none" />
     </>
   );
 };
