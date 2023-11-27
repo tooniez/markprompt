@@ -88,7 +88,6 @@ export const Hero = ({
             ) : (
               <Link
                 className="home-ghost-button mx-2 flex-none select-none"
-                data-highlighted="true"
                 href="/login"
               >
                 Sign in
