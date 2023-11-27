@@ -164,7 +164,7 @@ export const ContactSalesDialog = ({
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="home-animate-overlay fixed inset-0 z-20 bg-black/70 backdrop-blur-xl" />
-          <Dialog.Content className="home-animate-dialog-slide-in home-dialog-content hidden-scrollbar flex max-h-[90%] w-[90%] max-w-[560px] flex-col p-8">
+          <Dialog.Content className="home-animate-dialog-slide-in home-dialog-content hidden-scrollbar flex max-h-[90%] w-[90%] max-w-[560px] flex-col p-6 sm:p-8">
             <div
               className={cn(
                 'pointer-events-none absolute inset-0 flex transform items-center justify-center p-8 text-sm delay-700 duration-700',

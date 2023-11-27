@@ -16,7 +16,7 @@ export const FeatureCard: FC<FeatureCardProps> = ({
 }) => {
   return (
     <div className="group relative rounded-lg border border-dashed border-neutral-800 bg-neutral-1000 p-2">
-      <div className="h-[300px] overflow-hidden rounded bg-neutral-900 shadow-lg">
+      <div className="h-[360px] overflow-hidden rounded bg-neutral-900 shadow-lg sm:h-[300px]">
         {children}
       </div>
       <div className="not-prose relative z-10 flex flex-col gap-4 px-4 py-6 sm:py-8 sm:px-6">

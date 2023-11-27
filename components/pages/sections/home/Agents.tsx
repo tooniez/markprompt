@@ -90,14 +90,14 @@ export const Agents = () => {
           agent and customer journey.
         </p>
       </div>
-      <div className="mx-auto grid max-w-screen-xl grid-cols-1 gap-x-8 px-6 sm:grid-cols-2 sm:px-8">
+      <div className="mx-auto grid max-w-screen-xl grid-cols-1 gap-y-8 gap-x-8 px-6 sm:grid-cols-2 sm:px-8">
         <Column offset>
           <FeatureCard
             Icon={Sticker}
             title="Ticket deflection"
             description="Reduce ticket volume by 50% overnight by answering customer questions automatically."
           >
-            <div className="relative h-full w-full select-none bg-neutral-50 px-12 pt-12">
+            <div className="relative h-full w-full select-none bg-neutral-50 px-8 pt-12 sm:px-12">
               <ColoredBlurs
                 color1="lime"
                 color2="sky"
@@ -198,7 +198,7 @@ export const Agents = () => {
             title="Triage"
             description="Categorize, summarize, translate, preprocess tickets so you can take action with the full picture."
           >
-            <div className="relative h-full w-full select-none bg-neutral-50 px-12">
+            <div className="relative h-full w-full select-none bg-neutral-50 px-8 sm:px-12">
               <ColoredBlurs
                 color1="lime"
                 color2="sky"
@@ -264,7 +264,7 @@ export const Agents = () => {
                 color2="sky"
                 className="absolute inset-0 z-0 opacity-0  transition duration-500 group-hover:opacity-100"
               />
-              <div className="absolute top-8 right-8 left-0 bottom-0 z-10 flex flex-row items-start gap-2 rounded-tr-md border-t border-r border-blue-200 bg-blue-100 pt-2 pr-2 shadow-xl">
+              <div className="absolute top-4 right-4 left-0 bottom-0 z-10 flex flex-row items-start gap-2 rounded-tr-md border-t border-r border-blue-200 bg-blue-100 pt-2 pr-2 shadow-xl sm:top-8 sm:right-8">
                 <div className="flex h-full w-[100px] flex-none flex-col items-end gap-2 rounded-tr border-t border-r bg-white pt-2 pr-2">
                   <div className="flex w-full flex-col overflow-hidden rounded-r border-t border-r border-b border-neutral-200">
                     <div className="h-8 border-b border-neutral-200 bg-neutral-100" />
