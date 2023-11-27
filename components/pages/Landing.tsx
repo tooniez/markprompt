@@ -40,18 +40,19 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
         title="Markprompt | AI for customer support"
         exludePostfixFromTitle
       />
-      <Hero onContactDialogOpen={() => setContactDialogOpen(true)} />
+      {/* <Hero onContactDialogOpen={() => setContactDialogOpen(true)} />
       <div className="h-20 md:h-32" />
       <Companies />
       <div className="h-20 md:h-32" />
       <Agents />
       <div className="h-20 md:h-40" />
-      <ExpertKnowledge />
-      {/* <Integrations /> */}
+      <ExpertKnowledge /> */}
+      <Integrations />
 
+      {/* <div className="h-20 md:h-40" />
       <Ready onContactDialogOpen={() => setContactDialogOpen(true)} />
 
-      <Footer stars={stars} status={status} />
+      <Footer stars={stars} status={status} /> */}
 
       <ContactSalesDialog
         open={contactDialogOpen}
