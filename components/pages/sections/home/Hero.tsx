@@ -36,7 +36,7 @@ export const Hero = ({
 
   return (
     <>
-      <div className="relative flex h-screen w-full items-center justify-center bg-gradient-to-br from-neutral-1000 to-neutral-1100 antialiased">
+      <div className="relative flex h-[calc(100vh-30px)] w-full items-center justify-center bg-gradient-to-br from-neutral-1000 to-neutral-1100 antialiased sm:h-screen">
         <div className="home-dots absolute inset-0" />
         <div className="fade-in-slide-down absolute inset-x-0 top-0 flex justify-center p-6 sm:px-8 md:py-12">
           <div className="flex w-full max-w-screen-lg flex-row items-center gap-2 sm:gap-2">
@@ -171,7 +171,7 @@ export const Hero = ({
             animationDelay: '400ms',
           }}
         >
-          <div className="mb-20 flex flex-row items-center gap-2 rounded-full bg-neutral-1100/80 px-6 py-2.5 text-sm sm:mb-8 sm:bg-neutral-1100/50">
+          <div className="mb-16 flex flex-row items-center gap-2 rounded-full bg-neutral-1100/80 px-6 py-2.5 text-sm sm:mb-8 sm:bg-neutral-1100/50">
             Backed by <YCIcon className="h-6 w-6" /> Combinator
           </div>
         </div>
