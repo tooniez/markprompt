@@ -171,7 +171,7 @@ export const Hero = ({
             animationDelay: '400ms',
           }}
         >
-          <div className="mb-16 flex flex-row items-center gap-2 rounded-full bg-neutral-1100/80 px-6 py-2.5 text-sm sm:mb-8 sm:bg-neutral-1100/50">
+          <div className="mb-20 flex flex-row items-center gap-2 rounded-full bg-neutral-1100/80 px-6 py-2.5 text-sm sm:mb-8 sm:bg-neutral-1100/50">
             Backed by <YCIcon className="h-6 w-6" /> Combinator
           </div>
         </div>
