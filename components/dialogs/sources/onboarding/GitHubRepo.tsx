@@ -1,21 +1,10 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import {
-  ErrorMessage,
-  Field,
-  Formik,
-  FormikErrors,
-  FormikValues,
-} from 'formik';
+import { Field, Formik, FormikErrors, FormikValues } from 'formik';
 import { ReactNode, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import Button from '@/components/ui/Button';
-import {
-  ErrorLabel,
-  FormField,
-  FormLabel,
-  FormRoot,
-} from '@/components/ui/Forms';
+import { FormField, FormLabel, FormRoot } from '@/components/ui/Forms';
 import { NoAutoInput } from '@/components/ui/Input';
 import useProject from '@/lib/hooks/use-project';
 import useSources from '@/lib/hooks/use-sources';
@@ -31,8 +20,6 @@ import {
 import { Step, ConnectSourceStepState } from './Step';
 import { GitHubRepoSettings } from '../settings-panes/GitHubRepo';
 import SourceDialog from '../SourceDialog';
-
-const nango = getNangoClientInstance();
 
 const ConnectStep = ({
   projectId,
@@ -53,6 +40,8 @@ const ConnectStep = ({
       setSubmitting: (submitting: boolean) => void,
     ) => {
       try {
+        const nango = getNangoClientInstance();
+
         setSubmitting(true);
         const integrationId = 'github-repo';
         const name = repo;

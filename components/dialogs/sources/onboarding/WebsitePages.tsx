@@ -35,8 +35,6 @@ import { Step, ConnectSourceStepState } from './Step';
 import { WebsitePagesSettings } from '../settings-panes/WebsitePages';
 import SourceDialog from '../SourceDialog';
 
-const nango = getNangoClientInstance();
-
 const ConnectStep = ({
   projectId,
   state,
@@ -86,6 +84,8 @@ const ConnectStep = ({
           const guessedNameFromTitle =
             pageTitle && guessShortNameFromTitle(pageTitle);
           const name = generateUniqueName(integrationId, guessedNameFromTitle);
+
+          const nango = getNangoClientInstance();
 
           const newSource = await addSourceAndNangoConnection(
             nango,

@@ -17,8 +17,6 @@ import { Step, ConnectSourceStepState } from './Step';
 import { NotionPagesSettings } from '../settings-panes/NotionPages';
 import SourceDialog from '../SourceDialog';
 
-const nango = getNangoClientInstance();
-
 const ConnectStep = ({
   projectId,
   state,
@@ -33,6 +31,8 @@ const ConnectStep = ({
 
   const connect = useCallback(async () => {
     try {
+      const nango = getNangoClientInstance();
+
       setLoading(true);
       const integrationId = 'notion-pages';
       const name = generateUniqueName(integrationId);
