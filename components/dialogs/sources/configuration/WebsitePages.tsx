@@ -38,7 +38,7 @@ const WebsitePagesConfigurationDialog: FC<
     <BaseConfigurationDialog
       source={source}
       customMetadata={
-        syncMetadata
+        syncMetadata?.baseUrl
           ? [
               {
                 label: 'Base URL',
