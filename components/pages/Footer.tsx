@@ -43,7 +43,7 @@ const Footer = ({ stars, status }: { stars: number; status: SystemStatus }) => {
             className="home-button-ring group flex flex-row items-center gap-2 rounded-md border border-neutral-900 bg-neutral-1000 px-3 py-2 text-sm outline-none transition hover:bg-neutral-950"
             target="_blank"
             rel="noreferrer"
-            aria-label="Star on GitHub"
+            aria-label={`Star on GitHub ${formatNumStars(stars)}`}
             href="https://github.com/motifland/markprompt"
           >
             <GitHubIcon className="h-4 w-4 text-neutral-300" />

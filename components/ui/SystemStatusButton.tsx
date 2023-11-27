@@ -14,6 +14,7 @@ export const SystemStatusButton: FC<SystemStatusButtonProps> = ({ status }) => {
       href="https://status.markprompt.com"
       target="_blank"
       rel="noreferrer"
+      aria-label="Markprompt status"
     >
       <div
         className={cn('h-1.5 w-1.5 rounded-full group-hover:animate-pulse', {

@@ -69,14 +69,14 @@ export const Hero = ({
             >
               About
             </Link>
-            <a
-              className="home-ghost-button hidden flex-none cursor-pointer sm:block"
+            <button
+              className="home-ghost-button hidden flex-none cursor-pointer outline-none sm:block"
               onClick={() => {
                 onContactDialogOpen();
               }}
             >
               Contact us
-            </a>
+            </button>
             {session ? (
               <Link
                 className="home-ghost-button mx-2 flex-none select-none"
