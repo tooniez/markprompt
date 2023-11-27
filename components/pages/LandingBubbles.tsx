@@ -87,7 +87,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
   return (
     <>
       <SharedHead
-        title="Markprompt | AI infrastructure for customer support"
+        title="Markprompt | AI for customer support"
         exludePostfixFromTitle
       />
       {/* <div className="z-40 bg-fuchsia-700 py-1.5 px-6 sm:px-8">

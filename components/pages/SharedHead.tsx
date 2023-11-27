@@ -30,7 +30,7 @@ export const SharedHead: FC<SharedHeadProps> = ({
   exludePostfixFromTitle,
 }) => {
   const _ogImage = ogImage ?? 'https://markprompt.com/static/cover.png';
-  const _description = description ?? 'AI infrastructure for customer support';
+  const _description = description ?? 'AI for customer support';
   return (
     <Head>
       <title>

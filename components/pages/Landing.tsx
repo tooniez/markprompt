@@ -37,7 +37,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
   return (
     <>
       <SharedHead
-        title="Markprompt | AI infrastructure for customer support"
+        title="Markprompt | AI for customer support"
         exludePostfixFromTitle
       />
       <Hero onContactDialogOpen={() => setContactDialogOpen(true)} />

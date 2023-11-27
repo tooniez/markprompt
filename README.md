@@ -1,5 +1,5 @@
 <a href="https://markprompt.com">
-  <img alt="Markprompt – AI infrastructure for customer support" src="https://raw.githubusercontent.com/motifland/markprompt/main/public/static/cover.png">
+  <img alt="Markprompt – AI for customer support" src="https://raw.githubusercontent.com/motifland/markprompt/main/public/static/cover.png">
   <h1 align="center">Markprompt</h1>
 </a>
 
