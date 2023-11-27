@@ -1,6 +1,6 @@
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import Router from 'next/router';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import useSWR, { useSWRConfig } from 'swr';
 
@@ -37,6 +37,24 @@ export default function useUser() {
       Router.push('/');
     }, 500);
   }, [supabase.auth, mutate]);
+
+  useEffect(() => {
+    if (
+      session &&
+      error?.status === 403 &&
+      error?.info?.status === 'InvalidSignature'
+    ) {
+      // When a JWT token is regenerated in Supabase, users will
+      // have a valid session, but the associated token will
+      // not be valid for making requests to Supabase, so we need
+      // to log them out first. This situation is handled on the
+      // server by sending a 403 error with an `InvalidSignature`
+      // status.
+      signOut();
+      // Prevent multiple calls to the toast.
+      toast.success('Please sign in again.', { id: 'jwt_auto_signout' });
+    }
+  }, [error, signOut, session]);
 
   return { loading, loggedOut, user, mutate: mutateUser, signOut };
 }
