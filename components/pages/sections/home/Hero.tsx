@@ -115,7 +115,7 @@ export const Hero = ({
           </div>
         </div>
         <div className="z-10 -mt-32 flex w-full flex-col items-center px-6 sm:-mt-24 sm:px-8">
-          <h1 className="fade-in-slide-up-long home-gradient-text w-full pb-8 text-center text-5xl font-semibold tracking-[-0.6px] sm:text-6xl md:text-[80px]">
+          <h1 className="fade-in-slide-up-long home-gradient-text w-full pb-8 text-center text-[2.5rem] font-semibold leading-tight tracking-[-0.6px] sm:text-6xl md:text-[80px]">
             AI for customer support
           </h1>
           <p className="fade-in-slide-up-long mb-12 max-w-screen-sm text-center text-xl text-neutral-200 sm:text-2xl">
