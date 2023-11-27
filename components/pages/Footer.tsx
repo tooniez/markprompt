@@ -5,14 +5,8 @@ import { GitHubIcon } from '@/components/icons/GitHub';
 import { XIcon } from '@/components/icons/X';
 import { SystemStatus } from '@/types/types';
 
+import { GitHubStarsButton } from '../ui/GitHubStarsButton';
 import { SystemStatusButton } from '../ui/SystemStatusButton';
-
-const formatNumStars = (stars: number) => {
-  if (stars > 1000) {
-    return `${(stars / 1000).toFixed(1)}k`;
-  }
-  return stars;
-};
 
 const Footer = ({ stars, status }: { stars: number; status: SystemStatus }) => {
   return (
@@ -39,19 +33,7 @@ const Footer = ({ stars, status }: { stars: number; status: SystemStatus }) => {
         </div>
         <div className="hidden flex-row items-baseline justify-center gap-1 text-center text-sm text-neutral-500 lg:flex"></div>
         <div className="mr-0 flex flex-row items-center justify-center gap-4 text-neutral-700 lg:justify-end">
-          <a
-            className="home-button-ring group flex flex-row items-center gap-2 rounded-md border border-neutral-900 bg-neutral-1000 px-3 py-2 text-sm outline-none transition hover:bg-neutral-950"
-            target="_blank"
-            rel="noreferrer"
-            aria-label={`Star on GitHub ${formatNumStars(stars)}`}
-            href="https://github.com/motifland/markprompt"
-          >
-            <GitHubIcon className="h-4 w-4 text-neutral-300" />
-            <span className="font-medium text-neutral-300">Star on GitHub</span>
-            <span className="ml-2 text-neutral-500">
-              {formatNumStars(stars)}
-            </span>
-          </a>
+          <GitHubStarsButton stars={stars} />
           <a
             className="home-icon-button"
             href="https://x.com/markprompt"
