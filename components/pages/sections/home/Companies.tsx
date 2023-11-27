@@ -2,7 +2,7 @@ import { AngelListIcon } from '@/components/icons/AngelList';
 import { AwellIcon } from '@/components/icons/Awell';
 import { CalIcon } from '@/components/icons/Cal';
 import { FlexpaIcon } from '@/components/icons/Flexpa';
-import { MindbodyIcon } from '@/components/icons/Mindbody';
+// import { MindbodyIcon } from '@/components/icons/Mindbody';
 import { PlotlyIcon } from '@/components/icons/Plotly';
 import { SemgrepIcon } from '@/components/icons/Semgrep';
 import { SkeduloIcon } from '@/components/icons/Skedulo';
@@ -15,7 +15,7 @@ const List = () => {
       <AwellIcon className="w-[100px] flex-none" />
       <SkeduloIcon className="-mt-1 w-[120px] flex-none" />
       <SemgrepIcon className="w-[130px] flex-none" />
-      <MindbodyIcon className="w-[130px] flex-none" />
+      {/* <MindbodyIcon className="w-[130px] flex-none" /> */}
       <AngelListIcon className="w-[100px] flex-none" />
       <SourcegraphIcon className="-mt-1 w-[160px] flex-none" />
       <PlotlyIcon className="w-[120px] flex-none" />
