@@ -24,13 +24,12 @@ export const Ready = ({
           >
             Book a demo
           </a>
-          <a
+          <button
             className="cursor-pointer select-none justify-self-start rounded-lg border-0 px-5 py-3 font-medium text-neutral-300 outline-none ring-sky-500 ring-offset-0 ring-offset-neutral-900 transition hover:bg-white/5 focus:ring"
-            aria-label="Contact us"
             onClick={onContactDialogOpen}
           >
             Contact us
-          </a>
+          </button>
         </div>
       </div>
     </div>

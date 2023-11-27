@@ -69,15 +69,14 @@ export const Hero = ({
             >
               About
             </Link>
-            <Link
+            <button
               className="home-ghost-button hidden flex-none cursor-pointer outline-none sm:block"
-              href="#"
               onClick={() => {
                 onContactDialogOpen();
               }}
             >
               Contact us
-            </Link>
+            </button>
             {session ? (
               <Link
                 className="home-ghost-button mx-2 flex-none select-none"
@@ -88,7 +87,7 @@ export const Hero = ({
               </Link>
             ) : (
               <Link
-                className="home-ghost-button flex-none select-none"
+                className="home-ghost-button mx-2 flex-none select-none"
                 href="/login"
               >
                 Sign in
