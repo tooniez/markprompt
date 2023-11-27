@@ -7,7 +7,7 @@ export const Ready = ({
 }) => {
   return (
     <div className="relative bg-neutral-1100 py-20">
-      <div className="relative z-10 mx-auto grid max-w-screen-xl grid-cols-1 place-items-start gap-8 px-8 md:grid-cols-2">
+      <div className="relative z-10 mx-auto grid max-w-screen-xl grid-cols-1 place-items-start gap-8 px-6 sm:px-8 md:grid-cols-2">
         <h1 className="text-left text-4xl font-semibold text-neutral-100 sm:text-4xl">
           <Balancer>Ready to close tickets faster?</Balancer>
         </h1>
@@ -17,11 +17,10 @@ export const Ready = ({
         </p>
         <div className="col-start-1 flex flex-row items-center gap-4">
           <a
-            className="select-none justify-self-start rounded-lg border-0 bg-white px-5 py-3 font-medium text-neutral-900 outline-none ring-sky-500 ring-offset-0 ring-offset-neutral-900 transition hover:bg-white/80 focus:ring"
+            className="select-none justify-self-start whitespace-nowrap rounded-lg border-0 bg-white px-5 py-3 font-medium text-neutral-900 outline-none ring-sky-500 ring-offset-0 ring-offset-neutral-900 transition hover:bg-white/80 focus:ring"
             href="https://meetings.hubspot.com/markprompt/demo"
             target="_blank"
             rel="noreferrer"
-            aria-label="Book a demo"
           >
             Book a demo
           </a>

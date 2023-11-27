@@ -19,7 +19,7 @@ export const FeatureCard: FC<FeatureCardProps> = ({
       <div className="h-[300px] overflow-hidden rounded bg-neutral-900 shadow-lg">
         {children}
       </div>
-      <div className="not-prose relative z-10 flex flex-col gap-4 px-6 py-8">
+      <div className="not-prose relative z-10 flex flex-col gap-4 px-4 py-6 sm:py-8 sm:px-6">
         <h2 className="text-2xl font-semibold text-neutral-100">{title}</h2>
         {subtitle && <div className="text-sm text-neutral-300">{subtitle}</div>}
         <p className="text-neutral-400">{description}</p>

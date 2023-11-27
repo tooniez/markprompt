@@ -69,10 +69,10 @@ const Connector = ({
 }) => {
   return (
     <div className="group relative flex select-none items-center justify-center p-2 md:p-6">
-      <div className="absolute inset-0 z-0 transform rounded-md border border-neutral-900 bg-neutral-1100 p-4 transition duration-300 group-hover:scale-[115%] group-hover:border group-hover:border-lime-400 group-hover:bg-neutral-1000"></div>
+      <div className="absolute inset-0 z-0 rounded-md border border-neutral-900 bg-neutral-1100 p-4 transition duration-300 group-hover:border group-hover:border-lime-400 group-hover:bg-neutral-1000 sm:transform sm:group-hover:scale-[115%]"></div>
       <SquareEmptySVG className="relative z-10 h-full w-full" />
-      <Icon className="absolute z-10 h-8 w-8 transform text-neutral-600 transition duration-300 group-hover:-translate-y-3 group-hover:text-neutral-100 sm:h-6 sm:w-6 md:h-6 md:w-6 lg:h-8 lg:w-8" />
-      <p className="absolute inset-x-0 bottom-0 z-10 flex h-9 translate-y-2 transform items-center justify-center overflow-hidden text-center text-xs font-medium text-neutral-100 opacity-0 transition duration-300 group-hover:translate-y-1 group-hover:opacity-100 sm:text-[9px] lg:text-xs">
+      <Icon className="absolute z-10 h-8 w-8 transform text-neutral-500 transition duration-300 group-hover:text-neutral-100 sm:h-6 sm:w-6 sm:text-neutral-600 sm:group-hover:-translate-y-3 md:h-6 md:w-6 lg:h-8 lg:w-8" />
+      <p className="absolute inset-x-0 bottom-0 z-10 flex h-9 translate-y-2 transform items-center justify-center overflow-hidden text-center text-xs font-medium text-neutral-100 opacity-0 transition duration-300 sm:text-[9px] sm:group-hover:translate-y-1 sm:group-hover:opacity-100 lg:text-xs">
         <span className="leading-tight">{label}</span>
       </p>
     </div>
@@ -85,7 +85,7 @@ export const ExpertKnowledge = () => {
       <div className="absolute inset-x-0 top-0 z-10 h-[500px] bg-gradient-to-b from-neutral-1100 to-neutral-1100/0" />
       <div className="absolute inset-x-0 bottom-0 z-10 h-[500px] bg-gradient-to-t from-neutral-1100 to-neutral-1100/0" />
       <div className="home-dots absolute inset-0" />
-      <div className="relative z-10 mx-auto grid max-w-screen-xl grid-cols-1 px-8 md:grid-cols-2">
+      <div className="relative z-10 mx-auto grid max-w-screen-xl grid-cols-1 px-6 sm:px-8 md:grid-cols-2">
         <h1 className="pb-8 text-left text-4xl font-semibold text-neutral-100 sm:text-4xl md:-mr-8">
           <Balancer>Pull in expert knowledge from anywhere</Balancer>
         </h1>
@@ -95,7 +95,7 @@ export const ExpertKnowledge = () => {
         </p>
       </div>
       <div className="relative z-10 mt-8 md:-mt-8">
-        <div className="mt-8 grid w-full grid-cols-1 items-center gap-y-8 px-8 md:grid-cols-8 md:px-0">
+        <div className="mt-8 grid w-full grid-cols-1 items-center gap-y-8 px-6 sm:px-8 md:grid-cols-8 md:px-0">
           <div className="col-span-3 md:col-span-3 md:col-start-2">
             <div className="grid grid-cols-5 gap-4 md:grid-cols-6">
               <Connector Icon={GitHubIcon} label="GitHub Repo" />
@@ -189,8 +189,8 @@ export const ExpertKnowledge = () => {
             </div>
           </div>
         </div>
-        <div className="relative z-10 mx-auto mt-8 flex max-w-screen-xl flex-row items-start justify-start gap-2 px-8 md:mt-0 ">
-          <ShieldCheck className="h-4 w-4 flex-none text-lime-800" />
+        <div className="relative z-10 mx-auto mt-8 flex max-w-screen-xl flex-row items-start justify-start gap-2 px-6 sm:px-8 md:mt-0 ">
+          <ShieldCheck className="h-4 w-4 flex-none text-lime-600" />
           <p className="flex-grow text-xs text-neutral-600 md:max-w-[400px]">
             Markprompt supports encryption at rest, and is actively pursuing SOC
             2 Type II compliance (january 2024).

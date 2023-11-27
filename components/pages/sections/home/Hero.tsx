@@ -1,13 +1,11 @@
 import { Canvas } from '@react-three/fiber';
 import { EffectComposer, HueSaturation } from '@react-three/postprocessing';
 import { useSession } from '@supabase/auth-helpers-react';
-import cn from 'classnames';
 import Link from 'next/link';
 import { BlendFunction } from 'postprocessing';
 import { useEffect, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
 
-import { ContactSalesDialog } from '@/components/dialogs/public/ContactDialog';
 import { YCIcon } from '@/components/icons/brands/YC';
 import { GitHubIcon } from '@/components/icons/GitHub';
 import { MarkpromptIcon } from '@/components/icons/Markprompt';
@@ -40,7 +38,7 @@ export const Hero = ({
     <>
       <div className="relative flex h-screen w-full items-center justify-center bg-gradient-to-br from-neutral-1000 to-neutral-1100 antialiased">
         <div className="home-dots absolute inset-0" />
-        <div className="fade-in-slide-down absolute inset-x-0 top-0 flex justify-center px-8 py-8 sm:py-12">
+        <div className="fade-in-slide-down absolute inset-x-0 top-0 flex justify-center p-6 sm:px-8 md:py-12">
           <div className="flex w-full max-w-screen-lg flex-row items-center gap-2 sm:gap-2">
             <div className="flex flex-none flex-row items-center gap-3 text-sm text-white">
               <MarkpromptIcon className="mx-auto h-10 w-10" />
@@ -48,7 +46,7 @@ export const Hero = ({
             </div>
             <div className="flex-grow" />
             <Link
-              className="home-ghost-button hidden flex-none sm:block"
+              className="home-ghost-button hidden flex-none md:block"
               href="/integrations"
             >
               Integrations
@@ -97,7 +95,7 @@ export const Hero = ({
               </Link>
             )}
             <a
-              className="home-icon-button"
+              className="home-icon-button hidden md:block"
               href="https://github.com/motifland/markprompt"
               aria-label="Markprompt on GitHub"
               target="_blank"
@@ -116,9 +114,9 @@ export const Hero = ({
             </a>
           </div>
         </div>
-        <div className="z-10 -mt-32 flex w-full flex-col items-center px-8 sm:-mt-24">
+        <div className="z-10 -mt-32 flex w-full flex-col items-center px-6 sm:-mt-24 sm:px-8">
           <h1 className="fade-in-slide-up-long home-gradient-text w-full pb-8 text-center text-5xl font-semibold tracking-[-0.6px] sm:text-6xl md:text-[80px]">
-            <Balancer>AI for customer support</Balancer>
+            AI for customer support
           </h1>
           <p className="fade-in-slide-up-long mb-12 max-w-screen-sm text-center text-xl text-neutral-200 sm:text-2xl">
             <Balancer>
@@ -128,7 +126,7 @@ export const Hero = ({
           </p>
           <div className="fade-in-slide-up-long">
             <a
-              className="select-none rounded-lg border-0 bg-white px-5 py-3 font-medium text-neutral-900 outline-none ring-sky-500 ring-offset-4 ring-offset-neutral-900 transition hover:ring focus:ring"
+              className="select-none whitespace-nowrap rounded-lg border-0 bg-white px-5 py-3 font-medium text-neutral-900 outline-none ring-sky-500 ring-offset-4 ring-offset-neutral-900 transition hover:ring focus:ring"
               href="https://meetings.hubspot.com/markprompt/demo"
               target="_blank"
               rel="noreferrer"
@@ -173,7 +171,7 @@ export const Hero = ({
             animationDelay: '400ms',
           }}
         >
-          <div className="mb-8 flex flex-row items-center gap-2 rounded-full bg-neutral-1100/50 px-6 py-2.5 text-sm">
+          <div className="mb-20 flex flex-row items-center gap-2 rounded-full bg-neutral-1100/80 px-6 py-2.5 text-sm sm:mb-8 sm:bg-neutral-1100/50">
             Backed by <YCIcon className="h-6 w-6" /> Combinator
           </div>
         </div>

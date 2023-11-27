@@ -282,7 +282,7 @@ export const ContactSalesDialog = ({
                   href="https://meetings.hubspot.com/markprompt/demo"
                   target="_blank"
                   rel="noreferrer"
-                  className="home-border-button flex-none"
+                  className="home-border-button flex-none whitespace-nowrap"
                 >
                   Book a demo
                 </a>

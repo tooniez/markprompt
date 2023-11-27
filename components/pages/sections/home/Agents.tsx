@@ -78,7 +78,7 @@ export const Column = ({
 export const Agents = () => {
   return (
     <div className="relative bg-neutral-1100 py-20">
-      <div className="relative z-10 mx-auto grid max-w-screen-xl grid-cols-1 px-8 md:grid-cols-2">
+      <div className="relative z-10 mx-auto grid max-w-screen-xl grid-cols-1 px-6 sm:px-8 md:grid-cols-2">
         <h1 className="pb-8 text-left text-4xl font-semibold text-neutral-100 sm:text-4xl md:-mr-8">
           <Balancer>
             A suite of tools to scale your mighty customer support team
@@ -90,7 +90,7 @@ export const Agents = () => {
           agent and customer journey.
         </p>
       </div>
-      <div className="mx-auto grid max-w-screen-xl grid-cols-1 gap-x-8 px-8 sm:grid-cols-2">
+      <div className="mx-auto grid max-w-screen-xl grid-cols-1 gap-x-8 px-6 sm:grid-cols-2 sm:px-8">
         <Column offset>
           <FeatureCard
             Icon={Sticker}
@@ -126,7 +126,7 @@ export const Agents = () => {
                   </p>
                 </div>
                 <div className="absolute inset-x-0 bottom-0 flex flex-row items-center justify-end gap-4 border-t border-neutral-100 bg-neutral-50 px-4 py-2.5 text-[9px]">
-                  <p className="text-neutral-600">
+                  <p className="text-neutral-700">
                     Did this not solve your issue?
                   </p>
                   <Button color="black">Create a ticket</Button>
@@ -139,7 +139,7 @@ export const Agents = () => {
             title="Automations"
             description="Trigger automations, such as reimbursements, cancelations, or customer information lookup."
           >
-            <div className="relative flex h-full w-full select-none flex-col justify-center bg-neutral-100 px-12 py-8">
+            <div className="relative flex h-full w-full select-none flex-col justify-center bg-neutral-100 px-8 py-8 sm:px-12">
               <ColoredBlurs
                 color1="lime"
                 color2="sky"

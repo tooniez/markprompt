@@ -29,12 +29,12 @@ const List = () => {
 export const Companies = () => {
   return (
     <div>
-      <p className="mb-4 px-8 text-center text-sm text-neutral-500">
+      <p className="mb-4 px-6 text-center text-sm text-neutral-500 sm:px-8">
         Live with
       </p>
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-neutral-1100 via-neutral-1100 to-neutral-1100/0 sm:w-[300px]" />
-        <div className="absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-neutral-1100 via-neutral-1100 to-neutral-1100/0 sm:w-[300px]" />
+        <div className="absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-neutral-1100 to-neutral-1100/0 md:w-[300px] md:via-neutral-1100" />
+        <div className="absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-neutral-1100 to-neutral-1100/0 md:w-[300px] md:via-neutral-1100" />
         <div className="relative h-20 w-full max-w-full px-8 text-neutral-400">
           <div className="infinite-horizontal-scroll absolute inset-y-0 z-0 flex flex-row items-center justify-start gap-x-12 sm:gap-x-20">
             <List />
