@@ -5,7 +5,7 @@ import Balancer from 'react-wrap-balancer';
 import { ContactSalesDialog } from '@/components/dialogs/public/ContactDialog';
 import Footer from '@/components/pages/Footer';
 import { MenuLarge } from '@/components/pages/sections/home/MenuLarge';
-import { Button, ButtonNormal } from '@/components/pages/sections/home/shared';
+import { ButtonNormal } from '@/components/pages/sections/home/shared';
 import { SharedHead } from '@/components/pages/SharedHead';
 import { getIndexPageStaticProps } from '@/lib/pages';
 
@@ -61,7 +61,7 @@ const Pricing: FC<InferGetStaticPropsType<typeof getIndexPageStaticProps>> = ({
         <MenuLarge onContactDialogOpen={() => setContactDialogOpen(true)} />
         <div className="relative z-10 mx-auto w-full max-w-screen-lg pt-32 text-neutral-100">
           <h1 className="pb-8 text-left text-3xl font-semibold text-neutral-100 sm:mt-20 sm:text-4xl md:-mr-8">
-            <Balancer>Pricing that scales with your needs</Balancer>
+            <Balancer>Pricing tied to measurable outcomes</Balancer>
           </h1>
           <div className="mt-8 grid w-full grid-cols-2 gap-6">
             <Card
