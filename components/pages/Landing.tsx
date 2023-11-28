@@ -37,6 +37,7 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
       <ExpertKnowledge />
       <div className="h-20 md:h-40" />
       <Integrations />
+      <div className="h-20 md:h-40" />
       <Developers />
       <div className="h-20 md:h-40" />
       <Ready onContactDialogOpen={() => setContactDialogOpen(true)} />
