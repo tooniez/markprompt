@@ -110,7 +110,7 @@ export const Developers = () => {
       <div className="relative z-10 mx-auto grid max-w-screen-xl grid-cols-1 px-8 md:grid-cols-2">
         <div className="flex flex-col items-start">
           <h1 className="pb-8 text-left text-4xl font-semibold text-neutral-100 sm:mt-20 sm:text-4xl md:-mr-8">
-            <Balancer>Go deep with our APIs</Balancer>
+            <Balancer>Go deep with APIs</Balancer>
           </h1>
           <div className="sm:pr-16">
             <p className="col-start-1 text-lg text-neutral-500">

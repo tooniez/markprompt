@@ -1,4 +1,5 @@
 import cn from 'classnames';
+import { Check } from 'lucide-react';
 import { JSXElementConstructor, ReactNode } from 'react';
 
 export const Button = ({
@@ -35,5 +36,68 @@ export const Button = ({
     >
       {children}
     </Comp>
+  );
+};
+
+export const Label = ({
+  className,
+  size,
+  children,
+}: {
+  className?: string;
+  size?: 'md';
+  children: ReactNode;
+}) => {
+  return (
+    <span
+      className={cn(className, 'text-bold mt-0.5 font-semibold', {
+        'text-[9px]': size !== 'md',
+        'text-[11px]': size === 'md',
+      })}
+    >
+      {children}
+    </span>
+  );
+};
+
+export const Input = ({
+  className,
+  checked,
+  size,
+  multiline,
+  noContainer,
+  children,
+}: {
+  className?: string;
+  checked?: boolean;
+  size?: 'md';
+  multiline?: boolean;
+  noContainer?: boolean;
+  children?: ReactNode;
+}) => {
+  return (
+    <div
+      className={cn(
+        className,
+        'flex flex-row gap-2 rounded border border-neutral-100 px-1.5 text-neutral-900',
+        {
+          'items-start py-1.5': multiline,
+          'items-center py-1': !multiline,
+          'text-[9px]': size !== 'md',
+          'text-[11px]': size === 'md',
+        },
+      )}
+    >
+      {noContainer ? children : <div className="flex-grow">{children}</div>}
+      {checked && (
+        <div
+          className={cn('flex-none rounded-full bg-lime-500 p-[1px]', {
+            'mt-0.5': multiline,
+          })}
+        >
+          <Check className="h-1.5 w-1.5 text-white" strokeWidth={4} />
+        </div>
+      )}
+    </div>
   );
 };

@@ -142,7 +142,13 @@ const sampleQueriesHistogram: DateCountHistogramEntry[] = [
   903, 848, 740, 1003, 1014, 859, 992, 1023,
 ].map((c, i) => ({ count: c, date: add(new Date(), { days: -7 + i }) }));
 
-export const InsightsExample = () => {
+export const InsightsExample = ({
+  light,
+  noDecorations,
+}: {
+  light?: boolean;
+  noDecorations?: boolean;
+}) => {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -163,52 +169,58 @@ export const InsightsExample = () => {
     <>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="col-span-2">
-          <h3 className="mb-4 text-xl font-bold text-neutral-300">Insights</h3>
-          <div className="pointer-events-none hidden flex-row sm:flex">
-            <Button
-              variant="plain"
-              left
-              light
-              buttonSize="sm"
-              asDropdown
-              squareCorners="right"
-              className="justify-start text-left font-normal"
-            >
-              Past 7 days
-            </Button>
-            <Button
-              variant="plain"
-              left
-              light
-              buttonSize="sm"
-              squareCorners="left"
-              className="justify-start text-left font-normal"
-              Icon={(props) => (
-                <CalendarIcon
-                  {...props}
-                  className={cn(props.className, 'text-neutral-500')}
-                />
-              )}
-            >
-              {format(dateRange.from, 'LLL dd, y')} -{' '}
-              {format(dateRange.to, 'LLL dd, y')}
-            </Button>
-          </div>
-          <div className="pointer-events-none block sm:hidden">
-            <Button
-              variant="plain"
-              left
-              light
-              buttonSize="sm"
-              asDropdown
-              className="justify-start text-left font-normal"
-            >
-              Past 7 days
-            </Button>
-          </div>
-          <h3 className="mb-4 mt-8 font-bold text-neutral-300">
-            Latest questions
-          </h3>
+          {!light && (
+            <>
+              <h3 className="mb-4 text-xl font-bold text-neutral-300">
+                Insights
+              </h3>
+              <div className="pointer-events-none hidden flex-row sm:flex">
+                <Button
+                  variant="plain"
+                  left
+                  light
+                  buttonSize="sm"
+                  asDropdown
+                  squareCorners="right"
+                  className="justify-start text-left font-normal"
+                >
+                  Past 7 days
+                </Button>
+                <Button
+                  variant="plain"
+                  left
+                  light
+                  buttonSize="sm"
+                  squareCorners="left"
+                  className="justify-start text-left font-normal"
+                  Icon={(props) => (
+                    <CalendarIcon
+                      {...props}
+                      className={cn(props.className, 'text-neutral-500')}
+                    />
+                  )}
+                >
+                  {format(dateRange.from, 'LLL dd, y')} -{' '}
+                  {format(dateRange.to, 'LLL dd, y')}
+                </Button>
+              </div>
+              <div className="pointer-events-none block sm:hidden">
+                <Button
+                  variant="plain"
+                  left
+                  light
+                  buttonSize="sm"
+                  asDropdown
+                  className="justify-start text-left font-normal"
+                >
+                  Past 7 days
+                </Button>
+              </div>
+              <h3 className="mb-4 mt-8 font-bold text-neutral-300">
+                Latest questions
+              </h3>
+            </>
+          )}
           <div className="overflow-x-auto">
             <Table>
               <colgroup>
@@ -218,34 +230,53 @@ export const InsightsExample = () => {
                 <col className="w-[190px]" />
               </colgroup>
               <TableHeader className="text-neutral-300">
-                <TableRow>
-                  <TableHead>Question</TableHead>
-                  <TableHead>Feedback</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
+                <TableRow light={light}>
+                  <TableHead light={light}>Question</TableHead>
+                  <TableHead light={light}>Feedback</TableHead>
+                  <TableHead light={light}>Status</TableHead>
+                  <TableHead light={light}>Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sampleQuestions.map((q, i) => {
                   return (
-                    <TableRow key={`sample-question-${i}`}>
-                      <TableCell className="overflow-hidden truncate text-neutral-300">
+                    <TableRow light={light} key={`sample-question-${i}`}>
+                      <TableCell
+                        className={cn('overflow-hidden truncate', {
+                          'text-neutral-300': !light,
+                          'text-neutral-500': light,
+                        })}
+                      >
                         {q.question}
                       </TableCell>
                       <TableCell>
                         {q.feedback === '1' ? (
-                          <ThumbsUpIcon className="h-4 w-4 text-green-600" />
+                          <ThumbsUpIcon
+                            className={cn('h-4 w-4', {
+                              'text-green-600': !light,
+                              'text-green-400': light,
+                            })}
+                          />
                         ) : q.feedback === '-1' ? (
-                          <ThumbsDownIcon className="h-4 w-4 text-orange-600" />
+                          <ThumbsDownIcon
+                            className={cn('h-4 w-4', {
+                              'text-orange-600': !light,
+                              'text-orange-400': light,
+                            })}
+                          />
                         ) : (
                           <></>
                         )}
                       </TableCell>
                       <TableCell>
                         {q.unanswered ? (
-                          <Tag color="orange">Unanswered</Tag>
+                          <Tag color="orange" inverted={light}>
+                            Unanswered
+                          </Tag>
                         ) : (
-                          <Tag color="green">Answered</Tag>
+                          <Tag color="green" inverted={light}>
+                            Answered
+                          </Tag>
                         )}
                       </TableCell>
                       <TableCell className="text-neutral-500">
@@ -259,15 +290,29 @@ export const InsightsExample = () => {
           </div>
         </div>
         <div>
-          <h3 className="mb-4 font-bold text-neutral-300">New questions</h3>
+          <h3
+            className={cn('mb-4', {
+              'font-bold text-neutral-300': !light,
+              'font-medium text-neutral-500': light,
+            })}
+          >
+            New questions
+          </h3>
           <QueriesHistogram
             dateRange={dateRange}
             data={sampleQueriesHistogram}
+            light={light}
+            noDecorations={noDecorations}
           />
-          <h3 className="mb-4 mt-8 font-bold text-neutral-300">
+          <h3
+            className={cn('mb-4 mt-8 font-bold', {
+              'text-neutral-300': !light,
+              'text-neutral-500': light,
+            })}
+          >
             Most cited sources
           </h3>
-          <TopReferences topReferences={sampleTopReferences} />
+          {!light && <TopReferences topReferences={sampleTopReferences} />}
         </div>
       </div>
     </>

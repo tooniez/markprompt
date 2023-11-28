@@ -36,14 +36,11 @@ const LandingPage: FC<LandingPageProps> = ({ stars, status }) => {
       <div className="h-20 md:h-40" />
       <ExpertKnowledge />
       <div className="h-20 md:h-40" />
-      {/* <Integrations /> */}
+      <Integrations />
       <Developers />
-
       <div className="h-20 md:h-40" />
       <Ready onContactDialogOpen={() => setContactDialogOpen(true)} />
-
       <Footer stars={stars} status={status} />
-
       <ContactSalesDialog
         open={contactDialogOpen}
         setOpen={setContactDialogOpen}

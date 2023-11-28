@@ -1,65 +1,13 @@
 import cn from 'classnames';
-import { Check, PenLine, RotateCw, Sticker } from 'lucide-react';
+import { PenLine, RotateCw, Sticker } from 'lucide-react';
 import { ReactNode } from 'react';
 import Balancer from 'react-wrap-balancer';
 
 import { ColoredBlurs } from '@/components/ui/Blurs';
 import { formatShortDateTimeInTimeZone } from '@/lib/date';
 
-import { Button } from './shared';
+import { Button, Input, Label } from './shared';
 import { FeatureCard } from '../../components/FeatureCard';
-
-const Label = ({
-  className,
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}) => {
-  return (
-    <span
-      className={cn(className, 'text-bold mt-0.5 text-[9px] font-semibold')}
-    >
-      {children}
-    </span>
-  );
-};
-
-const Input = ({
-  className,
-  checked,
-  multiline,
-  children,
-}: {
-  className?: string;
-  checked?: boolean;
-  multiline?: boolean;
-  children?: ReactNode;
-}) => {
-  return (
-    <div
-      className={cn(
-        className,
-        'flex flex-row gap-2 rounded border border-neutral-100 px-1.5 text-[9px] text-neutral-900',
-        {
-          'items-start py-1.5': multiline,
-          'items-center py-1': !multiline,
-        },
-      )}
-    >
-      <div className="flex-grow">{children}</div>
-      {checked && (
-        <div
-          className={cn('flex-none rounded-full bg-lime-500 p-[1px]', {
-            'mt-0.5': multiline,
-          })}
-        >
-          <Check className="h-1.5 w-1.5 text-white" strokeWidth={4} />
-        </div>
-      )}
-    </div>
-  );
-};
 
 export const Column = ({
   offset,
