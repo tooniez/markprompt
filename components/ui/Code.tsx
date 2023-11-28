@@ -31,12 +31,10 @@ export const Code: FC<CodeProps> = ({
                   <span className="inline-block w-6">{i + 1}</span>
                 )}
                 {line.map((token, key) => (
-                  <>
-                    <span
-                      key={`code-line-${i}-${key}`}
-                      {...getTokenProps({ token, key })}
-                    />
-                  </>
+                  <span
+                    key={`code-line-${i}-${key}`}
+                    {...getTokenProps({ token, key })}
+                  />
                 ))}
               </div>
             ))}

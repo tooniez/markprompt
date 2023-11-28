@@ -26,13 +26,13 @@ type CardProps = {
 export const Card: FC<CardProps> = ({ title, description, children }) => {
   return (
     <div className="group relative transform p-2">
-      <div className="absolute inset-0 z-0 rounded-lg border border-dashed border-neutral-800 bg-neutral-1000 transition duration-300 group-hover:scale-[102%] group-hover:bg-neutral-900" />
+      <div className="absolute inset-0 z-0 rounded-lg border border-dashed border-neutral-800 bg-neutral-1000 transition duration-300 group-hover:scale-[102%] group-hover:bg-neutral-950" />
       <div className="relative z-10 h-[240px] select-none overflow-hidden rounded bg-neutral-900 sm:h-[200px]">
         {children}
       </div>
       <div className="not-prose relative z-10 flex flex-col gap-4 px-4 py-6">
         <h2 className="text-xl font-semibold text-neutral-100">{title}</h2>
-        <p className="text-base text-neutral-400">{description}</p>
+        <p className="text-base text-neutral-500">{description}</p>
       </div>
     </div>
   );
