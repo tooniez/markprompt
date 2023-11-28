@@ -64,7 +64,7 @@ export type FileTrainEventData<T extends SyncMetadata> = {
   projectId: Project['id'];
   sourceId: DbSource['id'];
   connectionId: string;
-  syncMetadata: T;
+  syncMetadata: T | undefined;
 };
 
 type Events<T extends SyncMetadata> = {
@@ -470,9 +470,11 @@ export const runTrainFile = async <T extends SyncMetadata>(
     ? await convertToMarkdown(
         nangoFile.content,
         nangoFile.contentType,
-        (data.syncMetadata as SyncMetadataWithTargetSelectors).includeSelectors,
-        (data.syncMetadata as SyncMetadataWithTargetSelectors).excludeSelectors,
-        data.syncMetadata.processorOptions,
+        (data.syncMetadata as SyncMetadataWithTargetSelectors)
+          ?.includeSelectors,
+        (data.syncMetadata as SyncMetadataWithTargetSelectors)
+          ?.excludeSelectors,
+        data.syncMetadata?.processorOptions,
       )
     : '';
   const checksum = createChecksum(markdown);
@@ -620,7 +622,11 @@ const trainFile = inngest.createFunction(
 const fetchAndTrainGitHubFile = async (
   data: FileTrainEventData<GitHubRepoSyncMetadata>,
 ) => {
-  const syncMetadata = data.syncMetadata as GitHubRepoSyncMetadata;
+  const syncMetadata = data.syncMetadata as GitHubRepoSyncMetadata | undefined;
+  if (!syncMetadata) {
+    return;
+  }
+
   const content = await fetchGitHubFileContent(
     syncMetadata.owner,
     syncMetadata.repo,

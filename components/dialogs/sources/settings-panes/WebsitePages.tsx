@@ -51,7 +51,9 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
   const { mutate: mutateSources, isNameAvailable } = useSources();
 
   const sourceData = source?.data as NangoSourceDataType | undefined;
-  const syncMetadata = sourceData?.syncMetadata as WebsitePagesSyncMetadata;
+  const syncMetadata = sourceData?.syncMetadata as
+    | WebsitePagesSyncMetadata
+    | undefined;
 
   const _updateSourceData = useCallback(
     async (

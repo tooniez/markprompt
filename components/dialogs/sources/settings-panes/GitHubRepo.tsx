@@ -51,7 +51,9 @@ export const GitHubRepoSettings: FC<GitHubRepoSettingsProps> = ({
   const { mutate: mutateSources, isNameAvailable } = useSources();
 
   const sourceData = source?.data as NangoSourceDataType | undefined;
-  const syncMetadata = sourceData?.syncMetadata as GitHubRepoSyncMetadata;
+  const syncMetadata = sourceData?.syncMetadata as
+    | GitHubRepoSyncMetadata
+    | undefined;
 
   const _updateSourceData = useCallback(
     async (

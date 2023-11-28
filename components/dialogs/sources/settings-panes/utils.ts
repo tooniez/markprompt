@@ -2,7 +2,12 @@ import { toast } from 'sonner';
 
 import { setSourceData } from '@/lib/api';
 import { setMetadata } from '@/lib/integrations/nango.client';
-import { DbSource, NangoSourceDataType, Project } from '@/types/types';
+import {
+  DbSource,
+  NangoSourceDataType,
+  Project,
+  SyncMetadata,
+} from '@/types/types';
 
 export const prepareFields = (input: string) => {
   return input.split(',').map((v) => v.trim());
@@ -11,7 +16,7 @@ export const prepareFields = (input: string) => {
 export const updateSourceData = async (
   projectId: Project['id'] | undefined,
   source: DbSource | undefined,
-  syncMetadata: any,
+  syncMetadata: SyncMetadata | undefined,
   sourceData: NangoSourceDataType | undefined,
   newSourceData: Partial<NangoSourceDataType>,
   setSubmitting: (submitting: boolean) => void,
