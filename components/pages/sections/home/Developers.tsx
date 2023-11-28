@@ -115,9 +115,9 @@ export const Developers = () => {
           <div className="sm:pr-16">
             <p className="col-start-1 text-lg text-neutral-500">
               Bring customer support to the next level by deeply integrating it
-              into your product and touch points. With our REST APIs, JavaScript
-              libraries and headless React components, customer support becomes
-              an integral part of the user experience.
+              into your product and across touch points. With our REST APIs,
+              JavaScript libraries and headless React components, you can build
+              customer support as an integral part of the user experience.
             </p>
           </div>
           <Link
