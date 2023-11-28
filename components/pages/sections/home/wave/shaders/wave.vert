@@ -22,11 +22,11 @@ vec4 taylorInvSqrt(vec4 r) {
 }
 
 float snoise(vec3 v) {
-  const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;
-  const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
+  const vec2 C = vec2(1.0/6.0, 1.0/3.0) ;
+  const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
 
-  vec3 i  = floor(v + dot(v, C.yyy) );
-  vec3 x0 =   v - i + dot(i, C.xxx) ;
+  vec3 i = floor(v + dot(v, C.yyy) );
+  vec3 x0 = v - i + dot(i, C.xxx) ;
 
   vec3 g = step(x0.yzx, x0.xyz);
   vec3 l = 1.0 - g;
@@ -41,7 +41,7 @@ float snoise(vec3 v) {
   vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0 )) + i.y + vec4(0.0, i1.y, i2.y, 1.0 )) + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
 
   float n_ = 0.142857142857;
-  vec3  ns = n_ * D.wyz - D.xzx;
+  vec3 ns = n_ * D.wyz - D.xzx;
 
   vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
 
