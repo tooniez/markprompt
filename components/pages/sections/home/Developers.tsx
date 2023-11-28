@@ -27,7 +27,7 @@ const BashCodeLine = ({ code }: { code: string }) => {
 export const APITerminal = () => {
   return (
     <div
-      className="flex flex-col overflow-hidden rounded-md border border-neutral-800 bg-neutral-900"
+      className="flex flex-col overflow-hidden rounded-md border border-neutral-900 bg-neutral-1000"
       style={{
         boxShadow: '20px -21px 44px -19px rgba(0,0,0,0.3)',
       }}
