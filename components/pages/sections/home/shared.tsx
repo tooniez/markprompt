@@ -1,19 +1,23 @@
 import cn from 'classnames';
-import { ReactNode } from 'react';
+import { JSXElementConstructor, ReactNode } from 'react';
 
 export const Button = ({
   className,
   color,
   size,
+  as,
   children,
+  ...rest
 }: {
   className?: string;
   color?: 'violet' | 'sky' | 'black' | 'blackLight' | 'white' | 'whiteBordered';
   size?: 'xs' | 'md';
+  as?: JSXElementConstructor<any> | string;
   children: ReactNode;
-}) => {
+} & any) => {
+  const Comp = as || 'div';
   return (
-    <div
+    <Comp
       className={cn(className, 'whitespace-nowrap text-center font-medium', {
         'bg-violet-600 text-white': color === 'violet',
         'bg-sky-600 text-white': color === 'sky',
@@ -27,8 +31,9 @@ export const Button = ({
         'rounded px-2 py-1 text-[11px]': size === 'md',
         'rounded-[3px] px-1.5 py-[3px] text-[8px]': size === 'xs',
       })}
+      {...rest}
     >
       {children}
-    </div>
+    </Comp>
   );
 };
