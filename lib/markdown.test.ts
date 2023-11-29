@@ -117,6 +117,38 @@ describe('markdown', () => {
         ),
       ).toStrictEqual('Text');
     });
+
+    it('should remove superfluous content within an anchor', () => {
+      expect(
+        convertToMarkdown(
+          '<a class="some-class" href="/link"><div class="class">Link</div></a>',
+          'html',
+          undefined,
+          undefined,
+          undefined,
+        ),
+      ).toStrictEqual('[Link](/link)');
+
+      expect(
+        convertToMarkdown(
+          '<a href="/link"><img src="abc" /></a>',
+          'html',
+          undefined,
+          undefined,
+          undefined,
+        ),
+      ).toStrictEqual('[![](abc)](/link)');
+
+      expect(
+        convertToMarkdown(
+          '<a href="/link"><h2>Heading</h2></a>',
+          'html',
+          undefined,
+          undefined,
+          undefined,
+        ),
+      ).toStrictEqual('## [Heading](/link)');
+    });
   });
 
   describe('markdownToFileSectionData', () => {

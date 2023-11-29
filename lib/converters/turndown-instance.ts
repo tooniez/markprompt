@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import TurndownService from 'turndown';
 
 const getTurndownService = () => {
@@ -11,6 +12,27 @@ const getTurndownService = () => {
     replacement: (content: string, node: any) => {
       const lang = node.getAttribute('data-language') || '';
       return `\n\n\`\`\`${lang}\n${content.trim()}\n\`\`\`\n\n`;
+    },
+  });
+
+  turndownService.addRule('anchor', {
+    filter: 'a',
+    replacement: function (content, node: any) {
+      if (!content) {
+        return '';
+      }
+
+      const href = node.getAttribute('href');
+      const sanitizedContent = content.replace(/\n+/gi, ' ').trim();
+      console.log(
+        'sanitizedContent',
+        JSON.stringify(sanitizedContent, null, 2),
+      );
+      const match = sanitizedContent.match(/^(#+)\s(.*)/);
+      if (match) {
+        return `${match[1]} [${match[2]}](${href})`;
+      }
+      return `[${sanitizedContent}](${href})`;
     },
   });
 
