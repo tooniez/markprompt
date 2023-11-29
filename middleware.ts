@@ -78,5 +78,7 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
     }
   }
 
+  console.log('[MIDDLEWARE]', req.headers);
+
   return NextResponse.next();
 }
