@@ -84,8 +84,8 @@ export const Agents = () => {
           </FeatureCard>
           <FeatureCard
             Icon={Sticker}
-            title="Automations"
-            description="Trigger automations, such as reimbursements, cancelations, or customer information lookup."
+            title="Chatbots with automations"
+            description="Build chatbots that trigger automations, such as reimbursements, cancelations, or customer information lookup."
           >
             <div className="relative flex h-full w-full select-none flex-col justify-center bg-neutral-100 px-8 py-8 sm:px-12">
               <ColoredBlurs
