@@ -21,8 +21,6 @@ export const config = {
 export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
   const hostname = req.headers.get('host');
 
-  console.log('[MIDDLEWARE] User-Agent', req.headers.get('User-Agent'));
-
   if (req.method === 'OPTIONS') {
     return new Response('ok', { status: 200 });
   }
