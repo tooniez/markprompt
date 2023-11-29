@@ -144,6 +144,7 @@
     "three": "^0.158.0",
     "ts-is-present": "^1.2.2",
     "turndown": "^7.1.2",
+    "turndown-plugin-gfm": "^1.0.2",
     "unified": "^10.1.2",
     "unique-names-generator": "^4.7.1",
     "unist-builder": "^3.0.1",

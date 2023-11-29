@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import TurndownService from 'turndown';
+import { gfm } from 'turndown-plugin-gfm';
 
 const getTurndownService = () => {
   const turndownService = new TurndownService({
     headingStyle: 'atx',
     codeBlockStyle: 'fenced',
   });
+
+  turndownService.use(gfm);
 
   turndownService.addRule('pre', {
     filter: 'pre',
