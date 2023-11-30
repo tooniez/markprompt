@@ -25,12 +25,12 @@ export const MenuLarge = ({
         >
           Integrations
         </Link>
-        <Link
+        {/* <Link
           className="home-ghost-button hidden flex-none sm:block"
           href="/pricing"
         >
           Pricing
-        </Link>
+        </Link> */}
         <Link
           className="home-ghost-button hidden flex-none sm:block"
           href="/blog"
