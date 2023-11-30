@@ -55,6 +55,12 @@ export default function LandingNavbar({
       </Link>
       <Link
         className="block transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100"
+        href="/templates"
+      >
+        Templates
+      </Link>
+      <Link
+        className="block transform whitespace-nowrap text-sm font-medium text-white opacity-60 hover:opacity-100"
         href="/blog"
       >
         Blog
