@@ -30,7 +30,7 @@ export const Companies = () => {
   return (
     <div>
       <p className="mb-4 px-6 text-center text-sm text-neutral-500 sm:px-8">
-        Live with
+        Live with established enterprises and fast-growing startups
       </p>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-neutral-1100 to-neutral-1100/0 md:w-[300px] md:via-neutral-1100" />
