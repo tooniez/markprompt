@@ -1,17 +1,13 @@
 import { Canvas } from '@react-three/fiber';
 import { EffectComposer, HueSaturation } from '@react-three/postprocessing';
-import { useSession } from '@supabase/auth-helpers-react';
-import Link from 'next/link';
 import { BlendFunction } from 'postprocessing';
 import { useEffect, useState } from 'react';
 import Balancer from 'react-wrap-balancer';
 
 import { YCIcon } from '@/components/icons/brands/YC';
-import { GitHubIcon } from '@/components/icons/GitHub';
-import { MarkpromptIcon } from '@/components/icons/Markprompt';
-import { XIcon } from '@/components/icons/X';
 import usePrefersReducedMotion from '@/lib/hooks/utils/use-reduced-motion';
 
+import { MenuLarge } from './MenuLarge';
 import Wave from './wave/Wave';
 
 export const Hero = ({
@@ -19,7 +15,6 @@ export const Hero = ({
 }: {
   onContactDialogOpen: () => void;
 }) => {
-  const session = useSession();
   const [animated, setAnimated] = useState(true);
   const [joinButtonHover, setJoinButtonHover] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -38,81 +33,7 @@ export const Hero = ({
     <>
       <div className="relative flex h-[calc(100vh-30px)] w-full items-center justify-center bg-gradient-to-br from-neutral-1000 to-neutral-1100 antialiased sm:h-screen">
         <div className="home-dots absolute inset-0" />
-        <div className="fade-in-slide-down absolute inset-x-0 top-0 flex justify-center p-6 sm:px-8 md:py-12">
-          <div className="flex w-full max-w-screen-lg flex-row items-center gap-2 sm:gap-2">
-            <div className="flex flex-none flex-row items-center gap-3 text-sm text-white">
-              <MarkpromptIcon className="mx-auto h-10 w-10" />
-              <span className="font-medium tracking-wide">Markprompt</span>
-            </div>
-            <div className="flex-grow" />
-            <Link
-              className="home-ghost-button hidden flex-none md:block"
-              href="/integrations"
-            >
-              Integrations
-            </Link>
-            <Link
-              className="home-ghost-button hidden flex-none sm:block"
-              href="/blog"
-            >
-              Blog
-            </Link>
-            <Link
-              className="home-ghost-button hidden flex-none sm:block"
-              href="/docs"
-            >
-              Docs
-            </Link>
-            <Link
-              className="home-ghost-button hidden flex-none sm:block"
-              href="/about"
-            >
-              About
-            </Link>
-            <button
-              className="home-ghost-button hidden flex-none cursor-pointer outline-none sm:block"
-              onClick={() => {
-                onContactDialogOpen();
-              }}
-            >
-              Contact us
-            </button>
-            {session ? (
-              <Link
-                className="home-ghost-button mx-2 flex-none select-none"
-                data-highlighted="true"
-                href="/"
-              >
-                Go to app
-              </Link>
-            ) : (
-              <Link
-                className="home-ghost-button flex-none select-none"
-                href="/login"
-              >
-                Sign in
-              </Link>
-            )}
-            <a
-              className="home-icon-button hidden md:block"
-              href="https://github.com/motifland/markprompt"
-              aria-label="Markprompt on GitHub"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <GitHubIcon className="h-5 w-5" />
-            </a>
-            <a
-              className="home-icon-button"
-              href="https://x.com/markprompt"
-              aria-label="Follow Markprompt on Twitter"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <XIcon className="h-5 w-5" />
-            </a>
-          </div>
-        </div>
+        <MenuLarge onContactDialogOpen={onContactDialogOpen} />
         <div className="z-10 -mt-32 flex w-full flex-col items-center px-6 sm:-mt-24 sm:px-8">
           <h1 className="fade-in-slide-up-long home-gradient-text w-full pb-8 text-center text-[2.5rem] font-semibold leading-none tracking-[-0.6px] sm:text-6xl md:text-[80px]">
             AI for customer support

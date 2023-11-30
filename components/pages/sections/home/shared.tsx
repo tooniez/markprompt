@@ -1,5 +1,6 @@
 import cn from 'classnames';
 import { Check } from 'lucide-react';
+import Link from 'next/link';
 import { JSXElementConstructor, ReactNode } from 'react';
 
 export const Button = ({
@@ -32,6 +33,34 @@ export const Button = ({
         'rounded px-2 py-1 text-[11px]': size === 'md',
         'rounded-[3px] px-1.5 py-[3px] text-[8px]': size === 'xs',
       })}
+      {...rest}
+    >
+      {children}
+    </Comp>
+  );
+};
+
+export const ButtonNormal = ({
+  className,
+  color,
+  size,
+  as,
+  children,
+  ...rest
+}: {
+  className?: string;
+  color?: 'violet' | 'sky' | 'black' | 'blackLight' | 'white' | 'whiteBordered';
+  size?: 'xs' | 'md';
+  as?: JSXElementConstructor<any> | string;
+  children: ReactNode;
+} & any) => {
+  const Comp = as === 'Link' ? Link : as || 'div';
+  return (
+    <Comp
+      className={cn(
+        className,
+        'home-border-button mt-8 flex-none select-none justify-self-start whitespace-nowrap rounded-md px-4 py-2 font-medium outline-none ring-sky-500 ring-offset-0 ring-offset-neutral-900 transition focus:ring',
+      )}
       {...rest}
     >
       {children}

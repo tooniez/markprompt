@@ -21,6 +21,8 @@ const UNAUTHED_PATHS = [
   '/about',
   '/blog',
   '/blog/**/*',
+  '/customers',
+  '/customers/**/*',
   '/docs',
   '/home',
   '/embed/*',
@@ -32,9 +34,13 @@ const UNAUTHED_PATHS = [
   '/login/confirm',
   '/login/confirm-signup',
   '/login/email',
+  '/pricing',
+  '/resources',
   '/resources/**/*',
   '/s/*',
   '/signup',
+  '/templates',
+  '/templates/**/*',
   ...PUBLIC_NON_ROUTED_API_PATHS,
 ];
 
