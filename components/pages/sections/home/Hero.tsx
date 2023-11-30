@@ -92,11 +92,6 @@ export const Hero = () => {
           </div>
         </div>
       </div>
-      {/* Cover canvas boundaries to prevent glitches */}
-      {/* <RequestAccessDialog
-        open={requestDialogOpen}
-        setOpen={setRequestDialogOpen}
-      />*/}
     </>
   );
 };

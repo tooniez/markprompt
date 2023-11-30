@@ -157,6 +157,8 @@ export const ContactSalesDialog = ({
           'opacity-100': open,
         })}
       >
+        {/* Cover boundaries to prevent glitches when shown over
+          the hero canvas animation */}
         <div className="fixed inset-x-0 bottom-0 h-40 bg-gradient-to-t from-neutral-1100 to-neutral-1100/0"></div>
         <div className="fixed inset-y-0 left-0 w-40 bg-gradient-to-r from-neutral-1100 to-neutral-1100/0"></div>
         <div className="fixed inset-y-0 right-0 w-40 bg-gradient-to-l from-neutral-1100 to-neutral-1100/0"></div>
