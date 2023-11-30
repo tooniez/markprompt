@@ -1,9 +1,9 @@
 import { useSession } from '@supabase/auth-helpers-react';
-import { XIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { GitHubIcon } from '@/components/icons/GitHub';
 import { MarkpromptIcon } from '@/components/icons/Markprompt';
+import { XIcon } from '@/components/icons/X';
 
 export const MenuLarge = ({
   onContactDialogOpen,
@@ -24,6 +24,12 @@ export const MenuLarge = ({
           href="/integrations"
         >
           Integrations
+        </Link>
+        <Link
+          className="home-ghost-button hidden flex-none lg:block"
+          href="/templates"
+        >
+          Templates
         </Link>
         {/* <Link
           className="home-ghost-button hidden flex-none sm:block"

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 // import { DiscordIcon } from '@/components/icons/Discord';
-import { GitHubIcon } from '@/components/icons/GitHub';
 import { XIcon } from '@/components/icons/X';
 import { SystemStatus } from '@/types/types';
 

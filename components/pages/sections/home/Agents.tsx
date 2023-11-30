@@ -8,6 +8,8 @@ import { formatShortDateTimeInTimeZone } from '@/lib/date';
 
 import { Button, Input, Label } from './shared';
 import { FeatureCard } from '../../components/FeatureCard';
+import { AIAgent } from '../../previews/ai-agent';
+import { TicketDeflection } from '../../previews/ticket-deflection';
 
 export const Column = ({
   offset,
@@ -44,6 +46,7 @@ export const Agents = () => {
             Icon={Sticker}
             title="Ticket deflection"
             description="Reduce ticket volume by 50% overnight by answering customer questions automatically."
+            href="/templates"
           >
             <div className="relative h-full w-full select-none bg-neutral-50 px-8 pt-12 sm:px-12">
               <ColoredBlurs
@@ -51,93 +54,16 @@ export const Agents = () => {
                 color2="sky"
                 className="absolute inset-0 z-0 opacity-0  transition duration-500 group-hover:opacity-100"
               />
-              <div className="relative z-10 flex h-full flex-col gap-2 rounded-t-lg border-l border-t border-r border-neutral-200 bg-white p-4 text-neutral-900 shadow-2xl">
-                <h2 className="text-bold text-sm font-bold">New ticket</h2>
-                <Label>Describe your issue</Label>
-                <Input>
-                  I am not able to find the cancellation policy if I can&apos;t
-                  attend a class I&apos;ve booked. Are there any penalties or
-                  fees if I can&apos;t attend a booked class?
-                </Input>
-                <Label>Suggested answer</Label>
-                <div className="flex flex-col gap-2 rounded border border-lime-100 bg-lime-50 p-2 text-[9px] text-neutral-900">
-                  <p>Hello Joyce!</p>
-                  <p>
-                    The cancellation policy for a booked class may vary
-                    depending on the studio you are booking with. Generally, we
-                    allow you to cancel a class reservation without any penalty
-                    up to a certain time before the class starts. However, if
-                    you cancel within 24 hours of the class start time, you may
-                    be subject to a late cancellation fee. This fee is typically
-                    deducted from your credits or charged to your payment method
-                    on file.
-                  </p>
-                </div>
-                <div className="absolute inset-x-0 bottom-0 flex flex-row items-center justify-end gap-4 border-t border-neutral-100 bg-neutral-50 px-4 py-2.5 text-[9px]">
-                  <p className="text-neutral-700">
-                    Did this not solve your issue?
-                  </p>
-                  <Button color="black">Create a ticket</Button>
-                </div>
-              </div>
+              <TicketDeflection />
             </div>
           </FeatureCard>
           <FeatureCard
             Icon={Sticker}
             title="Chatbots with automations"
             description="Build chatbots that trigger automations, such as reimbursements, cancelations, or customer information lookup."
+            href="/templates"
           >
-            <div className="relative flex h-full w-full select-none flex-col justify-center bg-neutral-100 px-8 py-8 sm:px-12">
-              <ColoredBlurs
-                color1="lime"
-                color2="sky"
-                className="absolute inset-0 z-0 opacity-0 transition duration-500 group-hover:opacity-100"
-                alt
-              />
-              <div className="z-10 w-[80%] transform place-self-end rounded-md bg-sky-500 px-3 py-2 text-xs text-white transition duration-500 group-hover:-translate-y-1">
-                Is there any way I can get a refund for the unused month of
-                October?
-              </div>
-              {/* <div className="relative mt-2 flex flex-col gap-2 py-2 pl-4">
-              <div className="absolute inset-y-0 left-[21px] z-0 w-1 border-l border-dashed border-neutral-200" />
-              <div className="flex flex-row items-center gap-2">
-                <div className="relative z-10 flex-none rounded-full bg-green-500 p-[3px]">
-                  <Check
-                    className="h-[5px] w-[5px] text-white"
-                    strokeWidth={4}
-                  />
-                </div>
-                <p className="text-[11px] text-neutral-500">
-                  Checking eligibility for user robyn@globex.com...
-                </p>
-              </div>
-              <div className="flex flex-row items-center gap-2">
-                <div className="relative z-10 flex-none rounded-full bg-green-500 p-[3px]">
-                  <Check
-                    className="h-[5px] w-[5px] text-white"
-                    strokeWidth={4}
-                  />
-                </div>
-                <p className="text-[11px] text-neutral-500">
-                  Eligibility confirmed.
-                </p>
-              </div>
-            </div> */}
-              <div className="z-10 flex transform flex-col justify-center">
-                <div className="mt-4 w-[80%] place-self-start rounded-md bg-white px-3 py-2 text-xs text-neutral-900 transition delay-100 duration-500 group-hover:-translate-y-1">
-                  Yes, you are eligible for a full refund for the month of
-                  October. Do you want to proceed with the refund?
-                </div>
-                <div className="mt-2 flex flex-row gap-1 transition delay-200 duration-500 group-hover:-translate-y-1">
-                  <Button size="md" color="black">
-                    Yes, process my refund
-                  </Button>
-                  <Button size="md" color="whiteBordered">
-                    No
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <AIAgent withBlurs />
           </FeatureCard>
         </Column>
         <Column>
@@ -145,6 +71,7 @@ export const Agents = () => {
             Icon={Sticker}
             title="Triage"
             description="Categorize, summarize, translate, preprocess tickets so you can take action with the full picture."
+            href="/templates"
           >
             <div className="relative h-full w-full select-none bg-neutral-50 px-8 sm:px-12">
               <ColoredBlurs

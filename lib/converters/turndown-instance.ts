@@ -27,10 +27,6 @@ const getTurndownService = () => {
 
       const href = node.getAttribute('href');
       const sanitizedContent = content.replace(/\n+/gi, ' ').trim();
-      console.log(
-        'sanitizedContent',
-        JSON.stringify(sanitizedContent, null, 2),
-      );
       const match = sanitizedContent.match(/^(#+)\s(.*)/);
       if (match) {
         return `${match[1]} [${match[2]}](${href})`;
