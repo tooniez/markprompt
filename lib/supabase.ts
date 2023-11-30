@@ -241,7 +241,7 @@ export const getTeamUsageInfoByTeamOrProject = async (
     .select('stripe_price_id,team_token_count,plan_details')
     .eq(
       teamOrProjectId.teamId ? 'team_id' : 'project_id',
-      teamOrProjectId.teamId ?? teamOrProjectId.projectId,
+      (teamOrProjectId.teamId ?? teamOrProjectId.projectId)!,
     )
     .limit(1)
     .maybeSingle();
@@ -254,7 +254,7 @@ export const getTeamUsageInfoByTeamOrProject = async (
       .select('stripe_price_id,plan_details')
       .eq(
         teamOrProjectId.teamId ? 'team_id' : 'project_id',
-        teamOrProjectId.teamId ?? teamOrProjectId.projectId,
+        (teamOrProjectId.teamId ?? teamOrProjectId.projectId)!,
       )
       .limit(1)
       .maybeSingle();

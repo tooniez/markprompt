@@ -64,6 +64,10 @@ export const shouldPauseSync = async (
 
   const projectId = await getProjectIdFromSource(supabase, sourceSyncData.id);
 
+  if (!projectId) {
+    return true;
+  }
+
   const { data } = await supabase
     .from('projects')
     .select('id,teams(stripe_price_id,plan_details)')

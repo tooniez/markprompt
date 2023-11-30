@@ -235,7 +235,7 @@ export default async function handler(
     const { data } = await supabaseAdmin
       .from('users')
       .select('id,email,config')
-      .eq('id', process.env.TEST_USER_ID);
+      .eq('id', process.env.TEST_USER_ID!);
 
     if (!data || data.length === 0) {
       return res.status(400).send({ error: 'Test user not found' });
@@ -288,6 +288,11 @@ export default async function handler(
     email: string | null;
     config: any;
   }) => {
+    if (!user.id) {
+      console.error(`Error updating user config: missing user.id`);
+      return;
+    }
+
     const { error: updateConfigError } = await supabaseAdmin
       .from('users')
       .update({
