@@ -1,9 +1,6 @@
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
 import { FC } from 'react';
 
-import LandingPage from '@/components/pages/Landing';
-import { getIndexPageStaticProps } from '@/lib/pages';
-
 type Template = {
   name: number;
   slug: number;
