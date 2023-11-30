@@ -7,6 +7,7 @@ import {
   RefreshCw,
   ShieldCheck,
 } from 'lucide-react';
+import Link from 'next/link';
 import { JSXElementConstructor, ReactNode } from 'react';
 import Balancer from 'react-wrap-balancer';
 
@@ -68,14 +69,17 @@ const Connector = ({
   Icon: JSXElementConstructor<any>;
 }) => {
   return (
-    <div className="group relative flex select-none items-center justify-center p-2 md:p-6">
-      <div className="absolute inset-0 z-0 rounded-md border border-neutral-900 bg-neutral-1100 p-4 transition duration-300 group-hover:border group-hover:border-lime-400 group-hover:bg-neutral-1000 sm:transform sm:group-hover:scale-[115%]"></div>
+    <Link
+      href="/integrations"
+      className="group relative flex select-none items-center justify-center p-2 md:p-6"
+    >
+      <div className="absolute inset-0 z-0 rounded-md border border-neutral-900 bg-neutral-1100 p-4 transition duration-300 group-hover:border group-hover:border-lime-400 group-hover:bg-neutral-1000 sm:transform sm:group-hover:scale-[130%]" />
       <SquareEmptySVG className="relative z-10 h-full w-full" />
       <Icon className="absolute z-10 h-8 w-8 transform text-neutral-500 transition duration-300 group-hover:text-neutral-100 sm:h-6 sm:w-6 sm:text-neutral-600 sm:group-hover:-translate-y-3 md:h-6 md:w-6 lg:h-8 lg:w-8" />
-      <p className="absolute inset-x-0 bottom-0 z-10 flex h-9 translate-y-2 transform items-center justify-center overflow-hidden text-center text-xs font-medium text-neutral-100 opacity-0 transition duration-300 sm:text-[9px] sm:group-hover:translate-y-1 sm:group-hover:opacity-100 lg:text-xs">
-        <span className="leading-tight">{label}</span>
+      <p className="absolute inset-x-0 bottom-0 z-10 flex h-9 translate-y-3 transform items-center justify-center text-center text-xs font-medium text-neutral-100 opacity-0 transition duration-300 sm:text-[9px] sm:group-hover:translate-y-2 sm:group-hover:opacity-100 lg:text-xs">
+        <span className="leading-none">{label}</span>
       </p>
-    </div>
+    </Link>
   );
 };
 
