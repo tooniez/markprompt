@@ -60,5 +60,5 @@ export default async function AppMiddleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
-  return NextResponse.next();
+  return res;
 }

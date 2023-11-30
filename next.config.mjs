@@ -40,17 +40,8 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.slack-edge.com' },
     ],
   },
-  modularizeImports: {
-    'lucide-react': {
-      transform: 'lucide-react/{{lowerCase kebabCase member}}',
-      skipDefaultConversion: true,
-    },
-    'date-fns': {
-      transform: 'date-fns/{{member}}',
-    },
-    lodash: {
-      transform: 'lodash/{{member}}',
-    },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns', 'lodash'],
   },
   async headers() {
     return [{ source: '/(.*)', headers: corsHeaders }];
