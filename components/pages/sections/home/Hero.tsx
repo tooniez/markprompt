@@ -29,7 +29,6 @@ export const Hero = () => {
     <>
       <div className="relative flex h-[calc(100vh-30px)] w-full items-center justify-center bg-gradient-to-br from-neutral-1000 to-neutral-1100 antialiased sm:h-screen">
         <div className="home-dots absolute inset-0" />
-        <MenuLarge />
         <div className="z-10 -mt-32 flex w-full flex-col items-center px-6 sm:-mt-24 sm:px-8">
           <h1 className="fade-in-slide-up-long home-gradient-text w-full pb-8 text-center text-[2.5rem] font-semibold leading-none tracking-[-0.6px] sm:text-6xl md:text-[80px]">
             AI for customer support

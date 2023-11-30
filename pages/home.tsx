@@ -42,6 +42,7 @@ const HomeWithLayout: FC<
       stars={stars}
       status={status}
       exludePostfixFromTitle
+      animateNavbar
     >
       <Home />
     </LandingLayout>

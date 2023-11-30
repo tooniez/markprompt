@@ -18,6 +18,7 @@ type LandingLayoutProps = {
   stars: number;
   status: SystemStatus;
   exludePostfixFromTitle?: boolean;
+  animateNavbar?: boolean;
   children?: ReactNode;
 };
 
@@ -28,6 +29,7 @@ const LandingLayoutWithoutContext: FC<LandingLayoutProps> = ({
   stars,
   status,
   exludePostfixFromTitle,
+  animateNavbar,
   children,
 }) => {
   return (
@@ -37,7 +39,7 @@ const LandingLayoutWithoutContext: FC<LandingLayoutProps> = ({
         exludePostfixFromTitle={exludePostfixFromTitle}
       />
       <div className="relative flex w-full flex-col items-center justify-center">
-        <MenuLarge />
+        <MenuLarge animated={animateNavbar} />
       </div>
       {(heading || subheading) && (
         <LargeSection>

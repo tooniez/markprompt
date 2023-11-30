@@ -1,4 +1,5 @@
 import { useSession } from '@supabase/auth-helpers-react';
+import cn from 'classnames';
 import Link from 'next/link';
 
 import { GitHubIcon } from '@/components/icons/GitHub';
@@ -6,12 +7,19 @@ import { MarkpromptIcon } from '@/components/icons/Markprompt';
 import { XIcon } from '@/components/icons/X';
 import { useContactDialogContext } from '@/lib/context/contact-dialog';
 
-export const MenuLarge = () => {
+export const MenuLarge = ({ animated }: { animated?: boolean }) => {
   const session = useSession();
   const { setContactDialogOpen } = useContactDialogContext();
 
   return (
-    <div className="fade-in-slide-down absolute inset-x-0 top-0 z-10 flex justify-center p-6 sm:px-8 md:py-12">
+    <div
+      className={cn(
+        'absolute inset-x-0 top-0 z-10 flex justify-center p-6 sm:px-8 md:py-12',
+        {
+          'fade-in-slide-down': animated,
+        },
+      )}
+    >
       <div className="flex w-full max-w-screen-lg flex-row items-center gap-2 sm:gap-2">
         <Link
           href="/"
