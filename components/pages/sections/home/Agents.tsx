@@ -60,7 +60,7 @@ export const Agents = () => {
           <FeatureCard
             Icon={Sticker}
             title="Chatbots with automations"
-            description="Build chatbots that trigger automations, such as reimbursements, cancelations, or customer information lookup."
+            description="Build chatbots that trigger automations, such as reimbursements. Deploy standalone or within existing chatbots, such as Zendesk."
             href="/templates"
           >
             <AIAgent withBlurs />
