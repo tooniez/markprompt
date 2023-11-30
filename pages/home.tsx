@@ -9,17 +9,14 @@ import { ExpertKnowledge } from '@/components/pages/sections/home/ExpertKnowledg
 import { Hero } from '@/components/pages/sections/home/Hero';
 import { Integrations } from '@/components/pages/sections/home/Integrations';
 import { Ready } from '@/components/pages/sections/home/Ready';
-import { useContactDialogContext } from '@/lib/context/contact-dialog';
 import { getIndexPageStaticProps } from '@/lib/pages';
 
 export const getStaticProps: GetStaticProps = getIndexPageStaticProps;
 
 const Home: FC<InferGetStaticPropsType<typeof getStaticProps>> = () => {
-  const { setContactDialogOpen } = useContactDialogContext();
-
   return (
     <>
-      <Hero onContactDialogOpen={() => setContactDialogOpen(true)} />
+      <Hero />
       <div className="h-20 md:h-32" />
       <Companies />
       <div className="h-20 md:h-32" />
@@ -31,7 +28,7 @@ const Home: FC<InferGetStaticPropsType<typeof getStaticProps>> = () => {
       <div className="h-20 md:h-40" />
       <Developers />
       <div className="h-20 md:h-40" />
-      <Ready onContactDialogOpen={() => setContactDialogOpen(true)} />
+      <Ready />
     </>
   );
 };

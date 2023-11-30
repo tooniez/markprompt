@@ -10,11 +10,7 @@ import usePrefersReducedMotion from '@/lib/hooks/utils/use-reduced-motion';
 import { MenuLarge } from './MenuLarge';
 import Wave from './wave/Wave';
 
-export const Hero = ({
-  onContactDialogOpen,
-}: {
-  onContactDialogOpen: () => void;
-}) => {
+export const Hero = () => {
   const [animated, setAnimated] = useState(true);
   const [joinButtonHover, setJoinButtonHover] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();

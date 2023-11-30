@@ -1,10 +1,10 @@
 import Balancer from 'react-wrap-balancer';
 
-export const Ready = ({
-  onContactDialogOpen,
-}: {
-  onContactDialogOpen: () => void;
-}) => {
+import { useContactDialogContext } from '@/lib/context/contact-dialog';
+
+export const Ready = () => {
+  const { setContactDialogOpen } = useContactDialogContext();
+
   return (
     <div className="relative bg-neutral-1100 py-20">
       <div className="relative z-10 mx-auto grid max-w-screen-xl grid-cols-1 place-items-start gap-8 px-6 sm:px-8 md:grid-cols-2">
@@ -26,7 +26,7 @@ export const Ready = ({
           </a>
           <button
             className="cursor-pointer select-none justify-self-start rounded-lg border-0 px-5 py-3 font-medium text-neutral-300 outline-none ring-sky-500 ring-offset-0 ring-offset-neutral-900 transition hover:bg-white/5 focus:ring"
-            onClick={onContactDialogOpen}
+            onClick={() => setContactDialogOpen(true)}
           >
             Contact us
           </button>
