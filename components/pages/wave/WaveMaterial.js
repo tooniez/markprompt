@@ -2,8 +2,8 @@ import { shaderMaterial } from '@react-three/drei';
 import { extend } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import waveFragmentShader from './shaders/wave.frag';
-import waveVertexShader from './shaders/wave.vert';
+import { fragmentShader } from './shaders/fragment';
+import { vertexShader } from './shaders/vertex';
 
 const WaveMaterial = shaderMaterial(
   {
@@ -15,8 +15,8 @@ const WaveMaterial = shaderMaterial(
     transparent: true,
     depthWrite: false,
   },
-  waveVertexShader,
-  waveFragmentShader,
+  vertexShader,
+  fragmentShader,
 );
 
 extend({ WaveMaterial });

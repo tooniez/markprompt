@@ -7,8 +7,7 @@ import Balancer from 'react-wrap-balancer';
 import { YCIcon } from '@/components/icons/brands/YC';
 import usePrefersReducedMotion from '@/lib/hooks/utils/use-reduced-motion';
 
-import { MenuLarge } from './MenuLarge';
-import Wave from './wave/Wave';
+import Wave from '../../wave/Wave';
 
 export const Hero = () => {
   const [animated, setAnimated] = useState(true);

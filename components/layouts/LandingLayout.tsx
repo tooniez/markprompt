@@ -53,7 +53,7 @@ const LandingLayoutWithoutContext: FC<LandingLayoutProps> = ({
             </div>
           </div>
           {subheading && (
-            <h2 className="text-left text-xl text-neutral-500 sm:mt-4 sm:text-2xl">
+            <h2 className="text-large text-left text-neutral-500 sm:mt-4 sm:text-xl">
               <Balancer>{subheading}</Balancer>
             </h2>
           )}

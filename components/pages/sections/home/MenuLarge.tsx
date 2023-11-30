@@ -14,7 +14,7 @@ export const MenuLarge = ({ animated }: { animated?: boolean }) => {
   return (
     <div
       className={cn(
-        'absolute inset-x-0 top-0 z-10 flex justify-center p-6 sm:px-8 md:py-12',
+        'absolute inset-x-0 top-0 z-10 flex justify-center py-4 px-6 sm:px-8 md:py-6',
         {
           'fade-in-slide-down': animated,
         },

@@ -47,6 +47,7 @@ export const Agents = () => {
             title="Ticket deflection"
             description="Reduce ticket volume by 50% overnight by answering customer questions automatically."
             href="/templates"
+            hrefLabel="Explore templates"
           >
             <div className="relative h-full w-full select-none bg-neutral-50 px-8 pt-12 sm:px-12">
               <ColoredBlurs
@@ -62,6 +63,7 @@ export const Agents = () => {
             title="Chatbots with automations"
             description="Build chatbots that trigger automations, such as reimbursements. Deploy standalone or within existing chatbots, such as Zendesk."
             href="/templates"
+            hrefLabel="Explore templates"
           >
             <AIAgent withBlurs />
           </FeatureCard>
@@ -72,6 +74,7 @@ export const Agents = () => {
             title="Triage"
             description="Categorize, summarize, translate, preprocess tickets so you can take action with the full picture."
             href="/templates"
+            hrefLabel="Explore templates"
           >
             <div className="relative h-full w-full select-none bg-neutral-50 px-8 sm:px-12">
               <ColoredBlurs
@@ -124,6 +127,8 @@ export const Agents = () => {
           <FeatureCard
             Icon={Sticker}
             title="AI Draft Composer"
+            href="/integrations"
+            hrefLabel="Explore integrations"
             subtitle={
               <div className="-mt-2 flex justify-start">
                 <div className="gap-2 rounded-md bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-500">
