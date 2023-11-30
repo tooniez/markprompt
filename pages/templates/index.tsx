@@ -69,7 +69,7 @@ const Templates: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
     <LandingLayout
       pageTitle="Templates"
       heading="Start with a template"
-      subheading="Build your bespoke AI support system by starting with a template"
+      subheading="Build your bespoke AI support system by starting with a template."
       stars={stars}
       status={status}
     >
