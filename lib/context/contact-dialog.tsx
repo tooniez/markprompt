@@ -1,9 +1,7 @@
 import {
   createContext,
   FC,
-  JSXElementConstructor,
   PropsWithChildren,
-  ReactNode,
   useContext,
   useState,
 } from 'react';

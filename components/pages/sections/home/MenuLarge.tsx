@@ -4,20 +4,22 @@ import Link from 'next/link';
 import { GitHubIcon } from '@/components/icons/GitHub';
 import { MarkpromptIcon } from '@/components/icons/Markprompt';
 import { XIcon } from '@/components/icons/X';
+import { useContactDialogContext } from '@/lib/context/contact-dialog';
 
-export const MenuLarge = ({
-  onContactDialogOpen,
-}: {
-  onContactDialogOpen: () => void;
-}) => {
+export const MenuLarge = () => {
   const session = useSession();
+  const { setContactDialogOpen } = useContactDialogContext();
+
   return (
-    <div className="fade-in-slide-down absolute inset-x-0 top-0 flex justify-center p-6 sm:px-8 md:py-12">
+    <div className="fade-in-slide-down absolute inset-x-0 top-0 z-10 flex justify-center p-6 sm:px-8 md:py-12">
       <div className="flex w-full max-w-screen-lg flex-row items-center gap-2 sm:gap-2">
-        <div className="flex flex-none flex-row items-center gap-3 text-sm text-white">
+        <Link
+          href="/"
+          className="flex flex-none flex-row items-center gap-3 text-sm text-white"
+        >
           <MarkpromptIcon className="mx-auto h-10 w-10" />
           <span className="font-medium tracking-wide">Markprompt</span>
-        </div>
+        </Link>
         <div className="flex-grow" />
         <Link
           className="home-ghost-button hidden flex-none md:block"
@@ -58,7 +60,7 @@ export const MenuLarge = ({
         <button
           className="home-ghost-button hidden flex-none cursor-pointer outline-none sm:block"
           onClick={() => {
-            onContactDialogOpen();
+            setContactDialogOpen(true);
           }}
         >
           Contact us

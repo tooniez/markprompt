@@ -1,9 +1,8 @@
-import React, { FC, ReactNode, createContext, useState } from 'react';
+import React, { FC, ReactNode, createContext } from 'react';
 import Balancer from 'react-wrap-balancer';
 
-import { ContactSalesDialog } from '@/components/dialogs/public/ContactDialog';
 import Footer from '@/components/pages/Footer';
-import { useContactDialogContext } from '@/lib/context/contact-dialog';
+import { ManagedContactDialogContext } from '@/lib/context/contact-dialog';
 import { SystemStatus } from '@/types/types';
 
 import { LargeSection } from './Pages';
@@ -18,28 +17,31 @@ type LandingLayoutProps = {
   subheading?: string;
   stars: number;
   status: SystemStatus;
+  exludePostfixFromTitle?: boolean;
   children?: ReactNode;
 };
 
-export const LandingLayout: FC<LandingLayoutProps> = ({
+const LandingLayoutWithoutContext: FC<LandingLayoutProps> = ({
   pageTitle,
   heading,
   subheading,
   stars,
   status,
+  exludePostfixFromTitle,
   children,
 }) => {
-  const { setContactDialogOpen } = useContactDialogContext();
-
   return (
     <>
-      <SharedHead title={pageTitle} />
+      <SharedHead
+        title={pageTitle}
+        exludePostfixFromTitle={exludePostfixFromTitle}
+      />
       <div className="relative flex w-full flex-col items-center justify-center">
-        <MenuLarge onContactDialogOpen={() => setContactDialogOpen(true)} />
+        <MenuLarge />
       </div>
       {(heading || subheading) && (
         <LargeSection>
-          <div className="relative z-10 grid grid-cols-1 pt-24 text-neutral-100 sm:grid-cols-2">
+          <div className="relative grid grid-cols-1 pt-24 text-neutral-100 sm:grid-cols-2">
             <div>
               {heading && (
                 <h1 className="text-left text-3xl font-semibold text-neutral-100 sm:mt-20 sm:text-4xl sm:leading-[130%]">
@@ -58,5 +60,13 @@ export const LandingLayout: FC<LandingLayoutProps> = ({
       {children}
       <Footer stars={stars} status={status} />
     </>
+  );
+};
+
+export const LandingLayout: FC<any> = (props) => {
+  return (
+    <ManagedContactDialogContext>
+      <LandingLayoutWithoutContext {...props} />
+    </ManagedContactDialogContext>
   );
 };

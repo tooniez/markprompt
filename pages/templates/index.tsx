@@ -4,7 +4,6 @@ import { FC, ReactNode } from 'react';
 
 import { LandingLayout } from '@/components/layouts/LandingLayout';
 import { LargeSection } from '@/components/layouts/Pages';
-import Footer from '@/components/pages/Footer';
 import { AIAgent } from '@/components/pages/previews/ai-agent';
 import { TicketDeflection } from '@/components/pages/previews/ticket-deflection';
 import { getIndexPageStaticProps } from '@/lib/pages';
@@ -61,10 +60,32 @@ export const TemplateCard: FC<FeatureCardProps> = ({
   );
 };
 
-const Templates: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
-  stars,
-  status,
-}) => {
+const Templates = () => {
+  return (
+    <LargeSection>
+      <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2">
+        <TemplateCard
+          title="Ticket deflector"
+          subtitle="A form that answers questions and fills itself."
+          href="https://github.com/motifland/templates/tree/main/ticket-deflector"
+        >
+          <TicketDeflection />
+        </TemplateCard>
+        <TemplateCard
+          title="AI automations"
+          subtitle="A chatbot that trigger automations, such as reimbursements, cancelations, or customer information lookup."
+          href="https://github.com/motifland/templates/tree/main/ai-automations"
+        >
+          <AIAgent noAnimation />
+        </TemplateCard>
+      </div>
+    </LargeSection>
+  );
+};
+
+const TemplatesWithLayout: FC<
+  InferGetStaticPropsType<typeof getIndexPageStaticProps>
+> = ({ stars, status }) => {
   return (
     <LandingLayout
       pageTitle="Templates"
@@ -73,26 +94,9 @@ const Templates: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
       stars={stars}
       status={status}
     >
-      <LargeSection>
-        <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2">
-          <TemplateCard
-            title="Ticket deflector"
-            subtitle="A form that answers questions and fills itself."
-            href="https://github.com/motifland/templates/tree/main/ticket-deflector"
-          >
-            <TicketDeflection />
-          </TemplateCard>
-          <TemplateCard
-            title="AI automations"
-            subtitle="A chatbot that trigger automations, such as reimbursements, cancelations, or customer information lookup."
-            href="https://github.com/motifland/templates/tree/main/ai-automations"
-          >
-            <AIAgent noAnimation />
-          </TemplateCard>
-        </div>
-      </LargeSection>
+      <Templates />
     </LandingLayout>
   );
 };
 
-export default Templates;
+export default TemplatesWithLayout;

@@ -3,12 +3,8 @@ import { FC, ReactNode } from 'react';
 
 import { LandingLayout } from '@/components/layouts/LandingLayout';
 import { LargeSection } from '@/components/layouts/Pages';
-import Footer from '@/components/pages/Footer';
 import { ButtonNormal } from '@/components/pages/sections/home/shared';
-import {
-  ManagedContactDialogContext,
-  useContactDialogContext,
-} from '@/lib/context/contact-dialog';
+import { useContactDialogContext } from '@/lib/context/contact-dialog';
 import { getIndexPageStaticProps } from '@/lib/pages';
 
 export const getStaticProps: GetStaticProps = getIndexPageStaticProps;
@@ -48,19 +44,11 @@ const Card = ({
   );
 };
 
-const Pricing: FC<InferGetStaticPropsType<typeof getIndexPageStaticProps>> = ({
-  stars,
-  status,
-}) => {
+const Pricing = () => {
   const { setContactDialogOpen } = useContactDialogContext();
 
   return (
-    <LandingLayout
-      pageTitle="Pricing"
-      heading="Pricing tied to measurable outcomes"
-      stars={stars}
-      status={status}
-    >
+    <>
       <LargeSection>
         <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2">
           <Card
@@ -77,19 +65,23 @@ const Pricing: FC<InferGetStaticPropsType<typeof getIndexPageStaticProps>> = ({
           ></Card>
         </div>
       </LargeSection>
-      <Footer stars={stars} status={status} />
+    </>
+  );
+};
+
+const PricingWithLayout: FC<
+  InferGetStaticPropsType<typeof getIndexPageStaticProps>
+> = ({ stars, status }) => {
+  return (
+    <LandingLayout
+      pageTitle="Pricing"
+      heading="Pricing tied to measurable outcomes"
+      stars={stars}
+      status={status}
+    >
+      <Pricing />
     </LandingLayout>
   );
 };
 
-const PricingWithContext: FC<
-  InferGetStaticPropsType<typeof getIndexPageStaticProps>
-> = (props) => {
-  return (
-    <ManagedContactDialogContext>
-      <Pricing {...props} />
-    </ManagedContactDialogContext>
-  );
-};
-
-export default PricingWithContext;
+export default PricingWithLayout;
