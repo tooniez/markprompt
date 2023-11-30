@@ -78,14 +78,14 @@ const Templates: FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
           <TemplateCard
             title="Ticket deflector"
             subtitle="A form that answers questions and fills itself."
-            href="https://github.com/motifland/examples/tree/main/ticket-deflector"
+            href="https://github.com/motifland/templates/tree/main/ticket-deflector"
           >
             <TicketDeflection />
           </TemplateCard>
           <TemplateCard
             title="AI automations"
             subtitle="A chatbot that trigger automations, such as reimbursements, cancelations, or customer information lookup."
-            href="https://github.com/motifland/examples/tree/main/ai-automations"
+            href="https://github.com/motifland/templates/tree/main/ai-automations"
           >
             <AIAgent noAnimation />
           </TemplateCard>
