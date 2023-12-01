@@ -12,7 +12,11 @@ export const htmlToMarkdown = (
   const $ = load(htmlContent);
 
   htmlExcludeTags.forEach((tag) => {
-    $(tag).remove();
+    try {
+      $(tag).remove();
+    } catch {
+      // Do nothing
+    }
   });
 
   const target = $(
