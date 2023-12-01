@@ -297,7 +297,9 @@ const syncNangoRecords = inngest.createFunction(
 
         // const t = Date.now();
         const { content, ...rest } = record;
+        console.debug('[INNGEST] Compressing', record.path);
         const compressedContent = compressToBase64(content || '');
+        console.debug('[INNGEST] Compressing OK', record.path);
 
         const event = {
           name: eventName,
@@ -337,7 +339,7 @@ const syncNangoRecords = inngest.createFunction(
           allTrainEvents.push(event);
         }
       } catch (e) {
-        console.log('[INGEST] Error', e);
+        console.log('[INNGEST] Error', e);
         throw e;
       }
     }
