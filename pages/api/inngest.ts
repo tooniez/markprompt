@@ -57,7 +57,7 @@ export type NangoSyncPayload = Pick<
 
 const NANGO_RECORDS_LIMIT = 200;
 const MAX_FILE_SIZE = 900_000;
-const MAX_EVENTS_PAYLOAD_SIZE = 3_800_000;
+const MAX_EVENTS_PAYLOAD_SIZE = 950_000;
 
 export type FileTrainEventData<T extends SyncMetadata> = {
   file: Omit<NangoFileWithMetadata, 'content'> & { compressedContent: string };
@@ -332,7 +332,7 @@ const syncNangoRecords = inngest.createFunction(
         payloadSize += eventPayloadSize;
 
         if (payloadSize > MAX_EVENTS_PAYLOAD_SIZE) {
-          // If the overall payload has exceeded 4MB, send batch
+          // If the overall payload has exceeded 1MB, send batch
           // for training.
           break;
         } else {
