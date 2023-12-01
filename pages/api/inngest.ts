@@ -414,8 +414,14 @@ const syncNangoRecords = inngest.createFunction(
     try {
       await step.sendEvent(eventId, trainEvents);
     } catch (e) {
+      updateSyncQueue(supabase, syncQueueId, 'running', {
+        message: `Error sending ${trainEvents.length} files (${trainEvents
+          .slice(0, 2)
+          .map((e) => e.data.file.path)}...) for processing: ${e}`,
+        level: 'error',
+      });
       console.log(
-        '[INNGEST] Error sending events',
+        '[INNGEST-ERROR] Error sending events',
         JSON.stringify(trainEvents.map((e) => e.data.file.path)),
       );
     }
