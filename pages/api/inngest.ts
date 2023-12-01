@@ -274,66 +274,71 @@ const syncNangoRecords = inngest.createFunction(
     timelog.log('Start building event list');
 
     for (const record of trainRecords) {
-      // We need to be careful about the payload size, as it seems like
-      // Inngest break when they are too big. First step is to compress
-      // the content of each payload, to maximize chances of staying below
-      // the 1Mb payload limit. Base64 is required to send over the
-      // wire, otherwise the compressed content gets corrupted.
-      //
-      // IMPORTANT: we do the trimming of the records here to stay below
-      // the size limit. We don't filter out errored records or too large
-      // records here, as it would make it impossible to determine the
-      // correct offset value for the next Inngest run.
+      try {
+        // We need to be careful about the payload size, as it seems like
+        // Inngest break when they are too big. First step is to compress
+        // the content of each payload, to maximize chances of staying below
+        // the 1Mb payload limit. Base64 is required to send over the
+        // wire, otherwise the compressed content gets corrupted.
+        //
+        // IMPORTANT: we do the trimming of the records here to stay below
+        // the size limit. We don't filter out errored records or too large
+        // records here, as it would make it impossible to determine the
+        // correct offset value for the next Inngest run.
 
-      if (timelog.getTimeSinceStart() > 25000 && allTrainEvents.length > 0) {
-        // We're nearing the edge function execution time limit, and we
-        // have enqueued events already, so send them on. If no events have
-        // been queued, we continue - we would prefer for the function to
-        // fail than to end in a deadlock.
-        console.debug('[INNGEST] Nearing time end');
-        break;
-      }
+        if (timelog.getTimeSinceStart() > 25000 && allTrainEvents.length > 0) {
+          // We're nearing the edge function execution time limit, and we
+          // have enqueued events already, so send them on. If no events have
+          // been queued, we continue - we would prefer for the function to
+          // fail than to end in a deadlock.
+          console.debug('[INNGEST] Nearing time end');
+          break;
+        }
 
-      // const t = Date.now();
-      const { content, ...rest } = record;
-      const compressedContent = compressToBase64(content || '');
+        // const t = Date.now();
+        const { content, ...rest } = record;
+        const compressedContent = compressToBase64(content || '');
 
-      const event = {
-        name: eventName,
-        data: {
-          file: {
-            ...rest,
-            compressedContent,
+        const event = {
+          name: eventName,
+          data: {
+            file: {
+              ...rest,
+              compressedContent,
+            },
+            sourceId: sourceSyncData.id,
+            projectId,
+            syncMetadata,
+            connectionId,
           },
-          sourceId: sourceSyncData.id,
-          projectId,
-          syncMetadata,
-          connectionId,
-        },
-      };
+        };
 
-      const eventPayloadSize = byteSize(JSON.stringify(event));
+        const eventPayloadSize = byteSize(JSON.stringify(event));
 
-      // If payload exceeds 1MB, omit it, and notify below of the
-      // omitted files.
-      if (eventPayloadSize > MAX_FILE_SIZE) {
-        tooLargeRecords.push(record.path);
-        continue;
-      }
+        // If payload exceeds 1MB, omit it, and notify below of the
+        // omitted files.
+        if (eventPayloadSize > MAX_FILE_SIZE) {
+          tooLargeRecords.push(record.path);
+          continue;
+        }
 
-      // timelog.log(
-      //   `Payload: ${rest.path} ${eventPayloadSize}. Took: ${Date.now() - t}ms`,
-      // );
-      // console.debug('[INNGEST] eventPayloadSize', rest.path, eventPayloadSize);
+        // timelog.log(
+        //   `Payload: ${rest.path} ${eventPayloadSize}. Took: ${Date.now() - t}ms`,
+        // );
+        // console.debug('[INNGEST] eventPayloadSize', rest.path, eventPayloadSize);
 
-      payloadSize += eventPayloadSize;
+        payloadSize += eventPayloadSize;
 
-      if (payloadSize > MAX_EVENTS_PAYLOAD_SIZE) {
-        // If the overall payload has exceeded 4MB, send batch
-        // for training.
-        break;
-      } else {
-        allTrainEvents.push(event);
+        if (payloadSize > MAX_EVENTS_PAYLOAD_SIZE) {
+          // If the overall payload has exceeded 4MB, send batch
+          // for training.
+          break;
+        } else {
+          allTrainEvents.push(event);
+        }
+      } catch (e) {
+        console.log('[INGEST] Error', e);
+        throw e;
       }
     }
 
