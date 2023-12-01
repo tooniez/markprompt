@@ -12,15 +12,23 @@ export const htmlToMarkdown = (
   const $ = load(htmlContent);
 
   htmlExcludeTags.forEach((tag) => {
-    $(tag).remove();
+    try {
+      $(tag).remove();
+    } catch {
+      // Do nothing
+    }
   });
 
   const target = $(
     includeSelectors && includeSelectors.length > 0 ? includeSelectors : 'body',
   );
 
-  if (excludeSelectors && excludeSelectors.length > 0) {
-    target.find(excludeSelectors).remove();
+  try {
+    if (excludeSelectors && excludeSelectors.length > 0) {
+      target.find(excludeSelectors).remove();
+    }
+  } catch {
+    // Cheerio throws in case of empty selection
   }
 
   return turndownService.turndown(target.html() || '');
