@@ -57,7 +57,7 @@ export type NangoSyncPayload = Pick<
 
 const NANGO_RECORDS_LIMIT = 200;
 const MAX_FILE_SIZE = 900_000;
-const MAX_EVENTS_PAYLOAD_SIZE = 950_000;
+const MAX_EVENTS_PAYLOAD_SIZE = 3_500_000;
 
 export type FileTrainEventData<T extends SyncMetadata> = {
   file: Omit<NangoFileWithMetadata, 'content'> & { compressedContent: string };
