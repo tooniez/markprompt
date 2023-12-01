@@ -107,11 +107,6 @@ type TrainEventId =
   | 'train-github-files-fast'
   | 'train-github-files-slow';
 
-export const config = {
-  runtime: 'edge',
-  maxDuration: 300,
-};
-
 export const inngest = new Inngest({
   id: 'markprompt',
   schemas: new EventSchemas().fromRecord<Events<SyncMetadata>>(),
