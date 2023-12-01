@@ -150,7 +150,7 @@ const About = ({ posts }: AboutPageStaticProps) => {
         </div>
 
         <h2 className="mt-32 text-2xl font-bold text-neutral-300">Read more</h2>
-        <div className="justify-content-center mx-auto mt-12 grid grid-cols-1 divide-y divide-neutral-900 text-sm">
+        <div className="justify-content-center mx-auto mt-6 grid grid-cols-1 divide-y divide-neutral-900 text-sm">
           {posts.map((entry, i) => {
             return (
               <Link
