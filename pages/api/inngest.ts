@@ -107,6 +107,11 @@ type TrainEventId =
   | 'train-github-files-fast'
   | 'train-github-files-slow';
 
+export const config = {
+  runtime: 'edge',
+  maxDuration: 300,
+};
+
 export const inngest = new Inngest({
   id: 'markprompt',
   schemas: new EventSchemas().fromRecord<Events<SyncMetadata>>(),
@@ -155,7 +160,10 @@ const syncNangoRecords = inngest.createFunction(
     const projectId = await getProjectIdFromSource(supabase, sourceSyncData.id);
 
     if (!projectId) {
-      await updateSyncQueue(supabase, syncQueueId, 'errored', {
+      // IMPORTANT: don't `await` for the `updateSyncQueue` to finish, this
+      // is adding unnecessary long time to the run, which is limitted
+      // to 60 seconds
+      updateSyncQueue(supabase, syncQueueId, 'errored', {
         message: 'Project not found',
         level: 'error',
       });
@@ -202,7 +210,7 @@ const syncNangoRecords = inngest.createFunction(
     })) as NangoFileWithMetadata[];
 
     if (trainRecords.length === 0) {
-      await updateSyncQueue(supabase, syncQueueId, 'complete', {
+      updateSyncQueue(supabase, syncQueueId, 'complete', {
         message: `Updated ${pluralize(
           numProcessed,
           'file',
@@ -275,7 +283,7 @@ const syncNangoRecords = inngest.createFunction(
         continue;
       }
 
-      console.debug('eventPayloadSize', rest.path, eventPayloadSize);
+      console.debug('[INNGEST] eventPayloadSize', rest.path, eventPayloadSize);
 
       payloadSize += eventPayloadSize;
 
@@ -302,7 +310,7 @@ const syncNangoRecords = inngest.createFunction(
       .map((r) => `${r.data.file.path}: ${r.data.file.error}`);
 
     if (errorMessages.length > 0) {
-      await updateSyncQueue(supabase, syncQueueId, 'running', {
+      updateSyncQueue(supabase, syncQueueId, 'running', {
         message: `Error processing ${pluralize(
           errorMessages.length,
           'file',
@@ -312,33 +320,9 @@ const syncNangoRecords = inngest.createFunction(
       });
     }
 
-    // const trainEvents = trainRecords.map<
-    //   NamedEvent<SyncMetadata, TrainEventName>
-    // >((record) => {
-    //   // Send compressed content to maximize chances of staying below
-    //   // the 1Mb payload limit. Base64 is required to send over the
-    //   // wire, otherwise the compressed content gets corrupted.
-    //   const { content, ...rest } = record;
-    //   const compressedContent = compressToBase64(content || '');
-    //   fileSizes.push(byteSize(compressedContent));
-    //   return {
-    //     name: eventName,
-    //     data: {
-    //       file: {
-    //         ...rest,
-    //         compressedContent,
-    //       },
-    //       sourceId: sourceSyncData.id,
-    //       projectId,
-    //       syncMetadata,
-    //       connectionId,
-    //     },
-    //   };
-    // });
-
     // Notify of the too large records
     if (tooLargeRecords.length > 0) {
-      await updateSyncQueue(supabase, syncQueueId, 'running', {
+      updateSyncQueue(supabase, syncQueueId, 'running', {
         message: `Omitted ${`${tooLargeRecords[0]}${
           tooLargeRecords.length > 1
             ? ` and ${pluralize(
@@ -354,7 +338,7 @@ const syncNangoRecords = inngest.createFunction(
       });
     }
 
-    await updateSyncQueue(supabase, syncQueueId, 'running', {
+    updateSyncQueue(supabase, syncQueueId, 'running', {
       message: `Processing batch of ${pluralize(
         trainEvents.length,
         'file',
@@ -370,7 +354,7 @@ const syncNangoRecords = inngest.createFunction(
     numProcessed = numProcessed + trainEvents.length;
 
     console.debug(
-      `Starting parallel run of ${trainEvents.length} events. Size`,
+      `[INNGEST] Starting parallel run of ${trainEvents.length} events. Size`,
       byteSize(JSON.stringify(trainEvents)),
     );
 
@@ -379,7 +363,7 @@ const syncNangoRecords = inngest.createFunction(
     if (firstNHandledRecords > 0) {
       // Make sure `offset` is always increasing to avoid an infinite
       // Inngest call loop.
-      await inngest.send({
+      inngest.send({
         name: 'nango/sync',
         data: {
           nangoSyncPayload,
@@ -478,8 +462,6 @@ export const runTrainFile = async <T extends SyncMetadata>(
       )
     : '';
   const checksum = createChecksum(markdown);
-
-  console.debug('markdown', nangoFile.path, byteSize(markdown));
 
   if (
     foundFile &&
