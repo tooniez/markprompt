@@ -472,7 +472,11 @@ export const runTrainFile = async <T extends SyncMetadata>(
   const sourceId = data.sourceId;
   const projectId = data.projectId;
 
-  console.debug('[INNGEST] runTrainFile', nangoFile.id);
+  console.debug(
+    '[INNGEST] runTrainFile',
+    nangoFile.id,
+    nangoFile.content?.slice(0, 10),
+  );
 
   if (!nangoFile?.id || nangoFile.error) {
     return;
