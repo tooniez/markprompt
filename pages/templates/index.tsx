@@ -55,7 +55,7 @@ export const TemplateCard: FC<FeatureCardProps> = ({
 const Templates = () => {
   return (
     <LargeSection>
-      <div className="mt-12 grid w-full grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="mt-24 grid w-full grid-cols-1 gap-6 sm:grid-cols-2">
         <TemplateCard
           title="Ticket deflector"
           subtitle="A form that answers questions and fills itself."

@@ -22,7 +22,7 @@ const Page = () => {
           Install app
         </a>
         <Image
-          className="mx-auto mt-12 w-full rounded-lg"
+          className="mx-auto mt-24 w-full rounded-lg"
           src="/static/images/guides/salesforce-draft-composer/screenshot.png"
           alt="Salesforce Draft Composer"
           width={1512}

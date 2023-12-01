@@ -182,7 +182,7 @@ const Integrations = () => {
       >
         Request integration
       </button>
-      <div className="mt-12 grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="mt-24 grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
         {integrations.map((integration, i) => {
           return (
             <Card

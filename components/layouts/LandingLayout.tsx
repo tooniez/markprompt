@@ -22,6 +22,7 @@ type LandingLayoutProps = {
   exludePostfixFromTitle?: boolean;
   animateNavbar?: boolean;
   noDots?: boolean;
+  huge?: boolean;
   children?: ReactNode;
 };
 
