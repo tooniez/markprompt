@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { compressToBase64 } from 'lz-string';
+import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 import {
   afterAll,
   afterEach,
@@ -21,6 +21,8 @@ import {
   supabaseClient,
 } from '@/lib/testing/mocks/supabase-client';
 import {
+  DbFile,
+  FileSections,
   NangoFileWithMetadata,
   SyncMetadataWithTargetSelectors,
 } from '@/types/types';
@@ -147,7 +149,7 @@ describe('inngest', () => {
             id: 'test-id',
             path: '/test/path',
             title: 'Test file',
-            compressedContent: compressToBase64(
+            compressedContent: compressToUTF16(
               `${section1Content}\n\n${section2Content}`,
             ),
             contentType: 'md',
