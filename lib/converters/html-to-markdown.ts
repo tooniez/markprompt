@@ -19,8 +19,12 @@ export const htmlToMarkdown = (
     includeSelectors && includeSelectors.length > 0 ? includeSelectors : 'body',
   );
 
-  if (excludeSelectors && excludeSelectors.length > 0) {
-    target.find(excludeSelectors).remove();
+  try {
+    if (excludeSelectors && excludeSelectors.length > 0) {
+      target.find(excludeSelectors).remove();
+    }
+  } catch {
+    // Cheerio throws in case of empty selection
   }
 
   return turndownService.turndown(target.html() || '');

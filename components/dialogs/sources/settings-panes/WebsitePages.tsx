@@ -242,16 +242,25 @@ export const WebsitePagesSettings: FC<WebsitePagesSettingsProps> = ({
               <FormHeadingGroup>
                 <FormHeading>Content targets</FormHeading>
                 <FormSubHeading>
-                  Specify which parts of the page to include or exclude, using
-                  CSS selectors.{' '}
+                  Specify which parts of the page to include or exclude, using{' '}
                   <a
                     className="subtle-underline"
                     href="https://github.com/fb55/css-select/blob/master/README.md#supported-selectors"
                     rel="noreferrer"
                     target="_blank"
                   >
-                    Learn more
+                    CSS selectors
                   </a>
+                  . The full{' '}
+                  <a
+                    className="subtle-underline"
+                    href="https://cheerio.js.org/docs/basics/selecting"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    Cheerio syntax
+                  </a>{' '}
+                  is also supported.
                 </FormSubHeading>
               </FormHeadingGroup>
               <FormField>
