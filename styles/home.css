@@ -17,6 +17,10 @@
   background-size: 12px 12px;
 }
 
+.home-with-ring {
+  @apply outline-none ring-sky-500 transition focus:ring;
+}
+
 .home-ghost-button {
   @apply whitespace-nowrap rounded-md border-0 bg-transparent px-2 py-2 text-sm text-neutral-500 outline-none ring-sky-500 transition duration-300 hover:bg-neutral-900 hover:text-white focus:ring data-[highlighted=true]:bg-white data-[highlighted=true]:font-medium data-[highlighted=true]:text-neutral-900 hover:data-[highlighted=true]:bg-white/80 sm:px-3;
 }

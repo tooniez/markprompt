@@ -1,5 +1,5 @@
 import { ChevronRight } from 'lucide-react';
-import { GetStaticProps, InferGetStaticPropsType } from 'next';
+import { InferGetStaticPropsType } from 'next';
 import { FC, ReactNode } from 'react';
 
 import { LandingLayout } from '@/components/layouts/LandingLayout';
@@ -7,16 +7,8 @@ import { LargeSection } from '@/components/layouts/Pages';
 import { AIAgent } from '@/components/pages/previews/ai-agent';
 import { TicketDeflection } from '@/components/pages/previews/ticket-deflection';
 import { getIndexPageStaticProps } from '@/lib/pages';
-import { SystemStatus } from '@/types/types';
 
-export const getStaticProps = (async () => {
-  const indexPageStaticProps = await getIndexPageStaticProps();
-
-  return { props: { ...indexPageStaticProps.props } };
-}) satisfies GetStaticProps<{
-  stars: number;
-  status: SystemStatus;
-}>;
+export const getStaticProps = getIndexPageStaticProps;
 
 type FeatureCardProps = {
   title: string;
@@ -63,7 +55,7 @@ export const TemplateCard: FC<FeatureCardProps> = ({
 const Templates = () => {
   return (
     <LargeSection>
-      <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="mt-12 grid w-full grid-cols-1 gap-6 sm:grid-cols-2">
         <TemplateCard
           title="Ticket deflector"
           subtitle="A form that answers questions and fills itself."
