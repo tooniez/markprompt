@@ -2,7 +2,15 @@ import { load } from 'cheerio';
 
 import { turndownService } from './turndown-instance';
 
-const htmlExcludeTags = ['head', 'script', 'style', 'nav', 'footer', 'aside'];
+const htmlExcludeTags = [
+  'head',
+  'script',
+  'style',
+  'nav',
+  'footer',
+  'aside',
+  'svg',
+];
 
 export const htmlToMarkdown = (
   htmlContent: string,
