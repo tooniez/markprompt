@@ -411,7 +411,14 @@ const syncNangoRecords = inngest.createFunction(
 
     timelog.log('Sending events');
 
-    await step.sendEvent(eventId, trainEvents);
+    try {
+      await step.sendEvent(eventId, trainEvents);
+    } catch (e) {
+      console.log(
+        '[INNGEST] Error sending events',
+        JSON.stringify(trainEvents.map((e) => e.data.file.path)),
+      );
+    }
 
     if (firstNHandledRecords > 0) {
       // Make sure `offset` is always increasing to avoid an infinite
