@@ -131,6 +131,10 @@ export class TimeLog {
     );
     this.last = now;
   }
+
+  getTimeSinceStart() {
+    return Date.now() - this.start;
+  }
 }
 
 const syncNangoRecords = inngest.createFunction(
@@ -229,7 +233,7 @@ const syncNangoRecords = inngest.createFunction(
       // delta: nangoSyncPayload.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
 
-    timelog.log('Done fetching records');
+    timelog.log(`Done fetching ${trainRecords?.length || 0} records`);
 
     if (trainRecords.length === 0) {
       updateSyncQueue(supabase, syncQueueId, 'complete', {
@@ -279,7 +283,16 @@ const syncNangoRecords = inngest.createFunction(
       // records here, as it would make it impossible to determine the
       // correct offset value for the next Inngest run.
 
-      const t = Date.now();
+      if (timelog.getTimeSinceStart() > 25000 && allTrainEvents.length > 0) {
+        // We're nearing the edge function execution time limit, and we
+        // have enqueued events already, so send them on. If no events have
+        // been queued, we continue - we would prefer for the function to
+        // fail than to end in a deadlock.
+        console.debug('[INNGEST] Nearing time end');
+        break;
+      }
+
+      // const t = Date.now();
       const { content, ...rest } = record;
       const compressedContent = compressToBase64(content || '');
 
@@ -306,9 +319,9 @@ const syncNangoRecords = inngest.createFunction(
         continue;
       }
 
-      timelog.log(
-        `Payload: ${rest.path} ${eventPayloadSize}. Took: ${Date.now() - t}ms`,
-      );
+      // timelog.log(
+      //   `Payload: ${rest.path} ${eventPayloadSize}. Took: ${Date.now() - t}ms`,
+      // );
       // console.debug('[INNGEST] eventPayloadSize', rest.path, eventPayloadSize);
 
       payloadSize += eventPayloadSize;
