@@ -271,6 +271,8 @@ const syncNangoRecords = inngest.createFunction(
     const syncMetadata = (sourceSyncData.data as NangoSourceDataType)
       ?.syncMetadata;
 
+    timelog.log('Start building event list');
+
     for (const record of trainRecords) {
       // We need to be careful about the payload size, as it seems like
       // Inngest break when they are too big. First step is to compress
