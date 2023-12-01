@@ -23,7 +23,7 @@ export const MenuLarge = ({ animated }: { animated?: boolean }) => {
       <div className="flex w-full max-w-screen-lg flex-row items-center gap-2 sm:gap-2">
         <Link
           href="/"
-          className="home-with-ring flex flex-none flex-row items-center gap-3 rounded-md text-sm text-white"
+          className="home-with-ring -ml-1 flex flex-none flex-row items-center gap-3 rounded-md p-1 text-sm text-white"
         >
           <MarkpromptIcon className="mx-auto w-10" />
           <span className="font-medium tracking-wide">Markprompt</span>
