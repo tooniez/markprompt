@@ -2,7 +2,7 @@ import { NangoSyncWebhookBody } from '@nangohq/node';
 import { EventSchemas, Inngest } from 'inngest';
 import { serve } from 'inngest/next';
 import { isEqual } from 'lodash-es';
-import { compressToBase64, decompressFromBase64 } from 'lz-string';
+import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 
 import {
   EMBEDDING_MODEL,
@@ -298,7 +298,7 @@ const syncNangoRecords = inngest.createFunction(
         // const t = Date.now();
         const { content, ...rest } = record;
         console.debug('[INNGEST] Compressing', record.path);
-        const compressedContent = compressToBase64(content || '');
+        const compressedContent = compressToUTF16(content || '');
         console.debug('[INNGEST] Compressing OK', record.path);
 
         const event = {
@@ -467,7 +467,7 @@ export const runTrainFile = async <T extends SyncMetadata>(
 ) => {
   const nangoFile: NangoFileWithMetadata = {
     ...data.file,
-    content: decompressFromBase64(data.file.compressedContent),
+    content: decompressFromUTF16(data.file.compressedContent),
   };
   const sourceId = data.sourceId;
   const projectId = data.projectId;
@@ -670,7 +670,7 @@ const fetchAndTrainGitHubFile = async (
   );
   return runTrainFile({
     ...data,
-    file: { ...data.file, compressedContent: compressToBase64(content) },
+    file: { ...data.file, compressedContent: compressToUTF16(content) },
   });
 };
 
