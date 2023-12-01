@@ -406,6 +406,7 @@ const syncNangoRecords = inngest.createFunction(
     console.debug(
       `[INNGEST] Starting parallel run of ${trainEvents.length} events. Size`,
       byteSize(JSON.stringify(trainEvents)),
+      JSON.stringify(trainEvents.slice(0, 4).map((e) => e.data.file.path)),
     );
 
     timelog.log('Sending events');
