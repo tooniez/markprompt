@@ -9,6 +9,7 @@ type FeatureCardProps = {
   subtitle?: ReactNode;
   description?: string;
   href?: string;
+  hrefLabel?: string;
   children?: ReactNode;
 };
 
@@ -17,6 +18,7 @@ export const FeatureCard: FC<FeatureCardProps> = ({
   subtitle,
   description,
   href,
+  hrefLabel,
   children,
 }) => {
   const Comp = href ? (props: any) => <Link href={href} {...props} /> : 'div';
@@ -38,7 +40,7 @@ export const FeatureCard: FC<FeatureCardProps> = ({
         <p className="text-neutral-400">{description}</p>
         {href && (
           <p className="mt-2 flex flex-none translate-y-2 transform flex-row items-center gap-1 text-sm font-medium text-sky-500 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-            Explore templates{' '}
+            {hrefLabel}{' '}
             <ChevronRight className="mt-[1px] h-3.5 w-3.5" strokeWidth={3} />
           </p>
         )}

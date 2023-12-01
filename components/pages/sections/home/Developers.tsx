@@ -32,7 +32,7 @@ export const APITerminal = () => {
         boxShadow: '20px -21px 44px -19px rgba(0,0,0,0.3)',
       }}
     >
-      <div className="flex w-full flex-none flex-row gap-2 border-b border-neutral-800 px-4">
+      <div className="flex w-full flex-none flex-row gap-2 border-b border-neutral-900 px-4">
         <div className="flex flex-none flex-row gap-2 py-3.5">
           <div className="h-2.5 w-2.5 rounded-full bg-red-500" />
           <div className="h-2.5 w-2.5 rounded-full bg-yellow-500" />

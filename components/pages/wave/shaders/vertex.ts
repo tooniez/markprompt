@@ -1,4 +1,4 @@
-precision mediump float;
+export const vertexShader = `precision mediump float;
 uniform float time;
 uniform float opacity;
 varying vec2 vUv;
@@ -90,3 +90,4 @@ void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
   gl_PointSize = 3.0;
 }
+`;

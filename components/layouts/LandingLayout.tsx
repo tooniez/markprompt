@@ -3,8 +3,10 @@ import Balancer from 'react-wrap-balancer';
 
 import Footer from '@/components/pages/Footer';
 import { ManagedContactDialogContext } from '@/lib/context/contact-dialog';
+import { cn } from '@/lib/ui';
 import { SystemStatus } from '@/types/types';
 
+import { DotsBackground } from './Dots';
 import { LargeSection } from './Pages';
 import { MenuLarge } from '../pages/sections/home/MenuLarge';
 import { SharedHead } from '../pages/SharedHead';
@@ -19,6 +21,8 @@ type LandingLayoutProps = {
   status: SystemStatus;
   exludePostfixFromTitle?: boolean;
   animateNavbar?: boolean;
+  noDots?: boolean;
+  huge?: boolean;
   children?: ReactNode;
 };
 
@@ -30,38 +34,59 @@ const LandingLayoutWithoutContext: FC<LandingLayoutProps> = ({
   status,
   exludePostfixFromTitle,
   animateNavbar,
+  noDots,
+  huge,
   children,
 }) => {
   return (
-    <>
+    <div className="relative">
       <SharedHead
         title={pageTitle}
         exludePostfixFromTitle={exludePostfixFromTitle}
       />
       <div className="relative flex w-full flex-col items-center justify-center">
         <MenuLarge animated={animateNavbar} />
+        {!noDots && <DotsBackground />}
       </div>
       {(heading || subheading) && (
-        <LargeSection>
-          <div className="relative grid grid-cols-1 pt-24 text-neutral-100 sm:grid-cols-2">
+        <LargeSection className="relative">
+          <div
+            className={cn('relative text-neutral-100', {
+              'pt-32': huge,
+              'grid grid-cols-1 gap-4 pt-24 sm:grid-cols-2': !huge,
+            })}
+          >
             <div>
               {heading && (
-                <h1 className="text-left text-3xl font-semibold text-neutral-100 sm:mt-20 sm:text-4xl sm:leading-[130%]">
+                <h1
+                  className={cn(
+                    'mt-20 font-semibold text-neutral-100 sm:leading-[130%]',
+                    {
+                      'text-center text-4xl sm:text-5xl': huge,
+                      'text-left text-3xl sm:text-4xl': !huge,
+                    },
+                  )}
+                >
                   <Balancer>{heading}</Balancer>
                 </h1>
               )}
             </div>
           </div>
           {subheading && (
-            <h2 className="text-left text-xl text-neutral-500 sm:mt-4 sm:text-2xl">
+            <h2
+              className={cn('text-neutral-500', {
+                'mt-8 text-center text-lg sm:text-xl': huge,
+                'mt-4 max-w-[70%] text-left text-lg sm:text-xl': !huge,
+              })}
+            >
               <Balancer>{subheading}</Balancer>
             </h2>
           )}
         </LargeSection>
       )}
-      {children}
+      <div className="relative">{children}</div>
       <Footer stars={stars} status={status} />
-    </>
+    </div>
   );
 };
 

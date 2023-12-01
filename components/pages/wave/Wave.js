@@ -10,6 +10,10 @@ const Wave = ({ showPoints, animate }) => {
   const materialRef = useRef();
   const pointsMaterialRef = useRef();
 
+  // useEffect(() => {
+  //   pointsMaterialRef.current.
+  // }, [])
+
   useFrame(
     (state) => {
       if (animate) {

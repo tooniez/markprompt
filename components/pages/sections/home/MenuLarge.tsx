@@ -14,7 +14,7 @@ export const MenuLarge = ({ animated }: { animated?: boolean }) => {
   return (
     <div
       className={cn(
-        'absolute inset-x-0 top-0 z-10 flex justify-center p-6 sm:px-8 md:py-12',
+        'absolute inset-x-0 top-0 z-10 flex justify-center py-4 px-6 sm:px-8 md:py-6',
         {
           'fade-in-slide-down': animated,
         },
@@ -23,9 +23,9 @@ export const MenuLarge = ({ animated }: { animated?: boolean }) => {
       <div className="flex w-full max-w-screen-lg flex-row items-center gap-2 sm:gap-2">
         <Link
           href="/"
-          className="flex flex-none flex-row items-center gap-3 text-sm text-white"
+          className="home-with-ring flex flex-none flex-row items-center gap-3 rounded-md text-sm text-white"
         >
-          <MarkpromptIcon className="mx-auto h-10 w-10" />
+          <MarkpromptIcon className="mx-auto w-10" />
           <span className="font-medium tracking-wide">Markprompt</span>
         </Link>
         <div className="flex-grow" />

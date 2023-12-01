@@ -1,6 +1,7 @@
-precision mediump float;
+export const fragmentShader = `precision mediump float;
 varying vec2 vUv;
 varying float uOpacity;
+uniform vec3 color1;
 
 void main() {
   vec3 color1 = vec3(56./255., 189./255., 248./255.); // sky-400
@@ -11,4 +12,4 @@ void main() {
   vec3 colorBottom = mix(color3, color4, vUv.x);
   vec3 finalColor = mix(colorTop, colorBottom, vUv.y);
   gl_FragColor = vec4(finalColor, uOpacity);
-}
+}`;
