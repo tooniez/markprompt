@@ -112,6 +112,27 @@ export const inngest = new Inngest({
   schemas: new EventSchemas().fromRecord<Events<SyncMetadata>>(),
 });
 
+export class TimeLog {
+  private start;
+  private last;
+
+  constructor() {
+    this.start = Date.now();
+    this.last = this.start;
+    console.debug('[INNGEST] Start time log');
+  }
+
+  log(message: string) {
+    const now = Date.now();
+    console.debug(
+      `[INNGEST] (Delta: ${now - this.last}ms Total: ${
+        now - this.start
+      }ms) - ${message}`,
+    );
+    this.last = now;
+  }
+}
+
 const syncNangoRecords = inngest.createFunction(
   { id: 'sync-nango-records' },
   { event: 'nango/sync' },
@@ -122,6 +143,8 @@ const syncNangoRecords = inngest.createFunction(
     const didHandleDeletions = event.data.didHandleDeletions || 0;
     let numProcessed = event.data.numProcessed || 0;
     let numDeleted = event.data.numDeleted || 0;
+
+    const timelog = new TimeLog();
 
     console.debug(
       '[INNGEST] start sync for connection:',
@@ -194,6 +217,8 @@ const syncNangoRecords = inngest.createFunction(
     // Handle records to train
     // -----------------------------------------------------------
 
+    timelog.log('Fetching records');
+
     const trainRecords = (await nango.getRecords<any>({
       providerConfigKey: integrationId,
       connectionId: connectionId,
@@ -203,6 +228,8 @@ const syncNangoRecords = inngest.createFunction(
       filter: 'added,updated',
       // delta: nangoSyncPayload.queryTimeStamp || undefined,
     })) as NangoFileWithMetadata[];
+
+    timelog.log('Done fetching records');
 
     if (trainRecords.length === 0) {
       updateSyncQueue(supabase, syncQueueId, 'complete', {
@@ -291,6 +318,8 @@ const syncNangoRecords = inngest.createFunction(
       }
     }
 
+    timelog.log('Done creating event list');
+
     // Among the NANGO_RECORDS_LIMIT records fetched from Nango, the first
     // N are being processed (and potentially omitted if too big or with
     // errors). This value will serve as the offset for the next Inngest runs.
@@ -352,6 +381,8 @@ const syncNangoRecords = inngest.createFunction(
       `[INNGEST] Starting parallel run of ${trainEvents.length} events. Size`,
       byteSize(JSON.stringify(trainEvents)),
     );
+
+    timelog.log('Sending events');
 
     await step.sendEvent(eventId, trainEvents);
 
