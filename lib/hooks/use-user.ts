@@ -1,12 +1,14 @@
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import Router from 'next/router';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import useSWR, { useSWRConfig } from 'swr';
 
 import { DbUser } from '@/types/types';
 
 import { fetcher } from '../utils';
+
+const superAdmins = JSON.parse(process.env.NEXT_PUBLIC_SUPERADMINS || '[]');
 
 export default function useUser() {
   const supabase = useSupabaseClient();
@@ -56,5 +58,19 @@ export default function useUser() {
     }
   }, [error, signOut, session]);
 
-  return { loading, loggedOut, user, mutate: mutateUser, signOut };
+  const isSuperAdmin = useMemo(() => {
+    if (!user?.email) {
+      return false;
+    }
+    return superAdmins.includes(user.email);
+  }, [user?.email]);
+
+  return {
+    loading,
+    loggedOut,
+    user,
+    isSuperAdmin,
+    mutate: mutateUser,
+    signOut,
+  };
 }

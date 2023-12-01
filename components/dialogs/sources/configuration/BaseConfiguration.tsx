@@ -21,6 +21,7 @@ import { formatShortDateTimeInTimeZone } from '@/lib/date';
 import useProject from '@/lib/hooks/use-project';
 import useSource from '@/lib/hooks/use-source';
 import useSources from '@/lib/hooks/use-sources';
+import useUser from '@/lib/hooks/use-user';
 import {
   getIntegrationEnvironment,
   getIntegrationEnvironmentName,
@@ -88,14 +89,15 @@ const StopSyncButton = ({ source }: { source: DbSource }) => {
 
 const RetrainOnlyButton = ({ source }: { source: DbSource }) => {
   const [isStarting, setStarting] = useState(false);
-  const { currentStatus, retrainOnly } = useSource(source);
+  // const { currentStatus, retrainOnly } = useSource(source);
+  const { retrainOnly } = useSource(source);
 
   return (
     <Button
       className="flex-none"
       variant="plain"
       buttonSize="sm"
-      disabled={currentStatus === 'running'}
+      // disabled={currentStatus === 'running'}
       loading={isStarting}
       onClick={async () => {
         if (!source) {
@@ -121,6 +123,7 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
   children,
 }) => {
   const { project } = useProject();
+  const { isSuperAdmin } = useUser();
   const { syncSources } = useSources();
   const { currentStatus, connection, lastSyncQueue } = useSource(source);
   const [syncStarted, setSyncStarted] = useState(false);
@@ -206,7 +209,9 @@ export const BaseConfigurationDialog: FC<BaseConfigurationDialogProps> = ({
             </div>
             {children}
             <div className="mt-8 flex flex-col items-start gap-2 border-t border-neutral-900 pt-8">
-              {connection && source && <RetrainOnlyButton source={source} />}
+              {isSuperAdmin && connection && source && (
+                <RetrainOnlyButton source={source} />
+              )}
               <Button
                 buttonSize="sm"
                 variant="plainDanger"

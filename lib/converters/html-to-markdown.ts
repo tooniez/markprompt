@@ -9,7 +9,7 @@ const htmlExcludeTags = [
   'nav',
   'footer',
   'aside',
-  // 'svg',
+  'svg',
 ];
 
 export const htmlToMarkdown = (

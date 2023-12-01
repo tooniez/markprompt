@@ -279,6 +279,7 @@ const syncNangoRecords = inngest.createFunction(
       // records here, as it would make it impossible to determine the
       // correct offset value for the next Inngest run.
 
+      const t = Date.now();
       const { content, ...rest } = record;
       const compressedContent = compressToBase64(content || '');
 
@@ -305,7 +306,10 @@ const syncNangoRecords = inngest.createFunction(
         continue;
       }
 
-      console.debug('[INNGEST] eventPayloadSize', rest.path, eventPayloadSize);
+      timelog.log(
+        `Payload: ${rest.path} ${eventPayloadSize}. Took: ${Date.now() - t}ms`,
+      );
+      // console.debug('[INNGEST] eventPayloadSize', rest.path, eventPayloadSize);
 
       payloadSize += eventPayloadSize;
 
