@@ -196,8 +196,9 @@ export const ExpertKnowledge = () => {
         <div className="relative z-10 mx-auto mt-8 flex max-w-screen-xl flex-row items-start justify-start gap-2 px-6 sm:px-8 md:mt-0 ">
           <ShieldCheck className="h-4 w-4 flex-none text-lime-600" />
           <p className="flex-grow text-xs text-neutral-500 md:max-w-[400px]">
-            Markprompt supports encryption at rest, and is actively pursuing SOC
-            2 Type II compliance (january 2024).
+            Markprompt is SOC 2 Type I compliant, and is actively pursuing SOC 2
+            Type II compliance (February 2024). Markprompt encrypts all data at
+            rest and in transit.
           </p>
         </div>
       </div>
